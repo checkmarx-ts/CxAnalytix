@@ -2,6 +2,7 @@
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
+using CxAnalytics.Configuration;
 using log4net;
 
 
