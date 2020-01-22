@@ -5,6 +5,7 @@
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <ApplicationIcon />
     <StartupObject>ConsoleRunner.Program</StartupObject>
+    <RootNamespace>ConsoleRunner</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

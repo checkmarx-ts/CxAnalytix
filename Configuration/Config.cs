@@ -8,25 +8,26 @@ namespace CxAnalytics.Configuration
 {
     public class Config
     {
+        private static System.Configuration.Configuration _cfgManager;
 
         static Config()
         {
             ExeConfigurationFileMap map = new ExeConfigurationFileMap();
             map.ExeConfigFilename = Process.GetCurrentProcess().MainModule.ModuleName + ".config";
-            var mgr = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.None);
+            _cfgManager = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.None);
 
-            Credentials = mgr.Sections[CxCredentials.SECTION_NAME] as CxCredentials;
+            Credentials = _cfgManager.Sections[CxCredentials.SECTION_NAME] as CxCredentials;
             if (!Credentials.SectionInformation.IsProtected)
             {
                 Credentials.SectionInformation.ProtectSection("DataProtectionConfigurationProvider");
                 Credentials.SectionInformation.ForceSave = true;
                 Credentials.SectionInformation.ForceDeclaration(true);
 
-                mgr.Save(ConfigurationSaveMode.Modified);
+                _cfgManager.Save(ConfigurationSaveMode.Modified);
             }
 
-            Connection = mgr.Sections[CxConnection.SECTION_NAME] as CxConnection;
-            Service = mgr.Sections[CxAnalyticsService.SECTION_NAME] as CxAnalyticsService;
+            Connection = _cfgManager.Sections[CxConnection.SECTION_NAME] as CxConnection;
+            Service = _cfgManager.Sections[CxAnalyticsService.SECTION_NAME] as CxAnalyticsService;
         }
 
 
@@ -46,6 +47,12 @@ namespace CxAnalytics.Configuration
         {
             get;
             private set;
+        }
+
+
+        public static T GetConfig<T>(String sectionName) where T : ConfigurationSection
+        {
+            return _cfgManager.Sections[sectionName] as T;
         }
         
     }

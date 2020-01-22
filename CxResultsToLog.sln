@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransformLogic", "Transform
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAnalyticsExportService", "CxAnalyticsExportService\CxAnalyticsExportService.csproj", "{0BAE0589-90A5-4D6E-86F6-8A955CF02512}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Configuration", "Configuration\Configuration.csproj", "{DFB15F63-7086-4411-998F-729C02B8A5A9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Configuration", "Configuration\Configuration.csproj", "{DFB15F63-7086-4411-998F-729C02B8A5A9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Log4NetOutput", "Log4NetOutput\Log4NetOutput.csproj", "{8DC742E4-0B2E-48E1-98DE-4554B2C75667}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{DFB15F63-7086-4411-998F-729C02B8A5A9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DFB15F63-7086-4411-998F-729C02B8A5A9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DFB15F63-7086-4411-998F-729C02B8A5A9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8DC742E4-0B2E-48E1-98DE-4554B2C75667}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8DC742E4-0B2E-48E1-98DE-4554B2C75667}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8DC742E4-0B2E-48E1-98DE-4554B2C75667}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8DC742E4-0B2E-48E1-98DE-4554B2C75667}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

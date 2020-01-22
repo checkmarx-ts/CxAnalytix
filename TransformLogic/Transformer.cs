@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 
-namespace TransformLogic
+namespace CxAnalytics.TransformLogic
 {
     public class Transformer
     {
@@ -10,7 +11,7 @@ namespace TransformLogic
         // command line options, or other methods of collecting config data)
         // TODO: May need to pass a thread interupt object so that an in-progress transformation can be 
         // cancelled when the service is shut down
-        public static void doTransform (int concurrentThreads)
+        public static void doTransform (int concurrentThreads, CancellationToken token)
         {
             // TODO: This method manages object lifecycle and threads to perform the extract and transform
 

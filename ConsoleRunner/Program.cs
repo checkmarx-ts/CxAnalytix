@@ -1,10 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
-using CxAnalytics.Configuration;
 using log4net;
-
+using CxAnalytics.TransformLogic;
+using System.Threading;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile="ConsoleRunner.log4net", Watch = true)]
 
@@ -28,8 +27,11 @@ namespace ConsoleRunner
 
             appLog.InfoFormat("CWD: {0}", Directory.GetCurrentDirectory () );
 
+            CancellationTokenSource t = new CancellationTokenSource();
+
             // TODO: Execute transformation logic.  Pass configuration parameters, etc.
-            TransformLogic.Transformer.doTransform(2);
+            Transformer.doTransform(2, t.Token);
+
 
             appLog.Info("End");
 
