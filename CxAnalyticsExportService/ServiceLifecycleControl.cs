@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using CxAnalytics.TransformLogic;
 using CxAnalytics.Configuration;
+using System.Reflection;
+using System;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "CxAnalyticsExportService.log4net", Watch = true)]
 
@@ -11,8 +13,24 @@ namespace CxAnalyticsExportService
 {
     class ServiceLifecycleControl : ServiceBase
     {
-        private ILog _log = LogManager.GetLogger (typeof (ServiceLifecycleControl));
-        
+        private static ILog _log = LogManager.GetLogger(typeof(ServiceLifecycleControl));
+        private static IOutputFactory _outFactory = null;
+
+        static ServiceLifecycleControl()
+        {
+            try
+            {
+                Assembly outAssembly = Assembly.Load(Config.Service.OutputAssembly);
+                _log.DebugFormat("outAssembly loaded: {0}", outAssembly.FullName);
+                _outFactory = outAssembly.CreateInstance(Config.Service.OutputClass) as IOutputFactory;
+                _log.Debug("IOutputFactory instance created.");
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Error loading output factory.", ex);
+            }
+        }
+
         public ServiceLifecycleControl ()
         {
             CanHandlePowerEvent = false;
@@ -31,7 +49,16 @@ namespace CxAnalyticsExportService
                 if (_serviceTask != null)
                 {
                     _log.Debug("Waiting for the service task to complete after cancellation.");
-                    _serviceTask.Wait();
+
+                    try
+                    {
+                        _serviceTask.Wait();
+                    }
+                    catch (AggregateException ex)
+                    {
+                        _log.Debug("Task finished normally and exception has been logged.", ex);
+                    }
+
                     _log.Debug("Service task has stopped after wait.");
                 }
                 else
@@ -65,13 +92,19 @@ namespace CxAnalyticsExportService
 
             _cancelToken = new CancellationTokenSource();
 
-            _serviceTask = Task.Run(() =>
+            _serviceTask = Task.Run(async () =>
             {
                 do
                 {
-                    Transformer.doTransform(Config.Service.ConcurrentThreads, _cancelToken.Token);
-                    Task.Delay(Config.Service.ProcessPeriodMinutes * 60 * 1000, _cancelToken.Token);
+                    DateTime start = DateTime.Now;
+                    _log.Info("Starting data transformation.");
+                    Transformer.doTransform(Config.Service.ConcurrentThreads, _outFactory, _cancelToken.Token);
+                    _log.InfoFormat("Data transformation finished in {0:0.00} minutes.", DateTime.Now.Subtract(start).TotalMinutes);
+                    await Task.Delay(Config.Service.ProcessPeriodMinutes * 60 * 1000, _cancelToken.Token);
                 } while (!_cancelToken.Token.IsCancellationRequested);
+
+                _cancelToken.Token.ThrowIfCancellationRequested();
+
             }, _cancelToken.Token);
 
         }

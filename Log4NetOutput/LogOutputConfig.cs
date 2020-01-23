@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using CxAnalytics.Configuration;
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -29,7 +30,6 @@ namespace CxAnalytics.Out.Log4NetOutput
             get => (String)this["OutputDirectory"];
             set
             {
-                GlobalContext.Properties["logOutRootPath"] = value;
                 this["OutputDirectory"] = value;
             }
         }

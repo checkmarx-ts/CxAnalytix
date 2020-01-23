@@ -11,8 +11,10 @@ namespace CxAnalytics.TransformLogic
         // command line options, or other methods of collecting config data)
         // TODO: May need to pass a thread interupt object so that an in-progress transformation can be 
         // cancelled when the service is shut down
-        public static void doTransform (int concurrentThreads, CancellationToken token)
+        public static void doTransform (int concurrentThreads, IOutputFactory outFactory, CancellationToken token)
         {
+            Thread.Sleep(2500);
+
             // TODO: This method manages object lifecycle and threads to perform the extract and transform
 
             /* TODO:

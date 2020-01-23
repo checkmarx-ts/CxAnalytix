@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
@@ -9,21 +10,31 @@ namespace CxAnalytics.Configuration
     public class Config
     {
         private static System.Configuration.Configuration _cfgManager;
+        private static ILog _log = LogManager.GetLogger(typeof (Config) );
 
         static Config()
         {
             ExeConfigurationFileMap map = new ExeConfigurationFileMap();
-            map.ExeConfigFilename = Process.GetCurrentProcess().MainModule.ModuleName + ".config";
+            map.ExeConfigFilename = Process.GetCurrentProcess().MainModule.FileName + ".config";
+            _log.DebugFormat("Loading configuration from [{0}]", map.ExeConfigFilename);
+
             _cfgManager = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.None);
 
             Credentials = _cfgManager.Sections[CxCredentials.SECTION_NAME] as CxCredentials;
-            if (!Credentials.SectionInformation.IsProtected)
+            if (Credentials != null && !Credentials.SectionInformation.IsProtected)
             {
                 Credentials.SectionInformation.ProtectSection("DataProtectionConfigurationProvider");
                 Credentials.SectionInformation.ForceSave = true;
                 Credentials.SectionInformation.ForceDeclaration(true);
 
-                _cfgManager.Save(ConfigurationSaveMode.Modified);
+                try
+                {
+                    _cfgManager.Save(ConfigurationSaveMode.Modified);
+                }
+                catch (Exception ex)
+                {
+                    _log.Error("Exception trying to save application config.", ex);
+                }
             }
 
             Connection = _cfgManager.Sections[CxConnection.SECTION_NAME] as CxConnection;
