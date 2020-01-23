@@ -1,6 +1,8 @@
 ﻿using CxAnalytics.Configuration;
 using log4net;
 using System;
+using System.Diagnostics;
+using System.IO;
 using System.ServiceProcess;
 
 namespace CxAnalyticsExportService
@@ -13,6 +15,7 @@ namespace CxAnalyticsExportService
         {
             try
             {
+                Directory.SetCurrentDirectory(Path.GetDirectoryName(Process.GetCurrentProcess().MainModule.FileName));
                 ServiceBase.Run(new ServiceLifecycleControl());
             }
             catch (Exception ex)

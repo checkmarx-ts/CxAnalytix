@@ -17,6 +17,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Configuration\Configuration.csproj" />
+    <ProjectReference Include="..\Log4NetOutput\Log4NetOutput.csproj" />
     <ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
   </ItemGroup>
 

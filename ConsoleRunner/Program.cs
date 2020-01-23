@@ -30,7 +30,7 @@ namespace ConsoleRunner
             CancellationTokenSource t = new CancellationTokenSource();
 
             // TODO: Execute transformation logic.  Pass configuration parameters, etc.
-            Transformer.doTransform(2, t.Token);
+            Transformer.doTransform(2, null, t.Token);
 
 
             appLog.Info("End");

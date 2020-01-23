@@ -11,7 +11,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAnalyticsExportService", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Configuration", "Configuration\Configuration.csproj", "{DFB15F63-7086-4411-998F-729C02B8A5A9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Log4NetOutput", "Log4NetOutput\Log4NetOutput.csproj", "{8DC742E4-0B2E-48E1-98DE-4554B2C75667}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Log4NetOutput", "Log4NetOutput\Log4NetOutput.csproj", "{8DC742E4-0B2E-48E1-98DE-4554B2C75667}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CxRESTApi", "CxRESTApi\CxRESTApi.csproj", "{459C86C4-58F4-4EBF-89E6-D1A20583BCD8}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAPI_Core", "CxAPI_Core-master\CxAPI_Core.csproj", "{A080F53F-0865-4FCF-9C3D-8A4211F4AD01}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +43,14 @@ Global
 		{8DC742E4-0B2E-48E1-98DE-4554B2C75667}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8DC742E4-0B2E-48E1-98DE-4554B2C75667}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8DC742E4-0B2E-48E1-98DE-4554B2C75667}.Release|Any CPU.Build.0 = Release|Any CPU
+		{459C86C4-58F4-4EBF-89E6-D1A20583BCD8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{459C86C4-58F4-4EBF-89E6-D1A20583BCD8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{459C86C4-58F4-4EBF-89E6-D1A20583BCD8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{459C86C4-58F4-4EBF-89E6-D1A20583BCD8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A080F53F-0865-4FCF-9C3D-8A4211F4AD01}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A080F53F-0865-4FCF-9C3D-8A4211F4AD01}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A080F53F-0865-4FCF-9C3D-8A4211F4AD01}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A080F53F-0865-4FCF-9C3D-8A4211F4AD01}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

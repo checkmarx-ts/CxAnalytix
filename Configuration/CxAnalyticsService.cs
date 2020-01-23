@@ -28,11 +28,31 @@ namespace CxAnalytics.Configuration
             set { this["StateDataFile"] = value; }
         }
 
-        [ConfigurationProperty("OutputAssembly", IsRequired = true)]
+        [ConfigurationProperty("OutputFactoryClassPath", IsRequired = true)]
+        public String OutputFactoryClassPath
+        {
+            get => (String)this["OutputFactoryClassPath"];
+            set { this["OutputFactoryClassPath"] = value; }
+        }
+
         public String OutputAssembly
         {
-            get => (String)this["OutputAssembly"];
-            set { this["OutputAssembly"] = value; }
+            get
+            {
+                String [] components = OutputFactoryClassPath.Split(',');
+
+                if (components.Length < 2)
+                    throw new Exception(String.Format ("OutputClassPath value [{0}] does not specify the assembly.", 
+                        OutputFactoryClassPath) );
+
+                return components[1];
+
+            }
+        }
+
+        public String OutputClass
+        {
+            get => OutputFactoryClassPath.Split(',')[0];
         }
 
         [ConfigurationProperty("SASTScanSummaryRecordName", IsRequired = true)]

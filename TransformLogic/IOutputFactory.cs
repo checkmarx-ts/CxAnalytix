@@ -4,9 +4,9 @@ using System.Text;
 
 namespace CxAnalytics.TransformLogic
 {
-    public interface IOutput
+    public interface IOutputFactory
     {
+        IOutput newInstance(String recordType);
 
-        void write(Dictionary<String, String> record);
     }
 }

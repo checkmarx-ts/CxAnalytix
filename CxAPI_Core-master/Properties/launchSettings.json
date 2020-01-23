@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "CxAPI_Core": {
+      "commandName": "Project",
+      "commandLineArgs": "--scan_results --report_name=REST_REPORT_3 --start_time=2018-01-01 --end_time=2019-12-31 --debug "
+    }
+  }
+}
