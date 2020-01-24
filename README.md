@@ -128,7 +128,7 @@ Some of the specified data records need to be modified given they don't have all
 * Team Name 
 * Preset 
 * Last Scan Date 
-* Total Scans 
+* Total Scans [NOTE: This probably needs to be totals by scan product given there is not always 1:1 relationship between SAST and SCA scans]
 * Policies
 
 ## Policy Violations
