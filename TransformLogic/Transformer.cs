@@ -5,12 +5,22 @@ using System.Threading;
 
 namespace CxAnalytics.TransformLogic
 {
+    /// <summary>
+    /// A class that implements the data transformation.
+    /// </summary>
     public class Transformer
     {
         // TODO: Pass in the configuration parameters collected from the caller (via app.config,
         // command line options, or other methods of collecting config data)
-        // TODO: May need to pass a thread interupt object so that an in-progress transformation can be 
-        // cancelled when the service is shut down
+        /// <summary>
+        /// The main logic for invoking a transformation.  It does not return until a sweep
+        /// for new scans is performed across all projects.
+        /// </summary>
+        /// <param name="concurrentThreads">The number of concurrent scan transformation threads.</param>
+        /// <param name="outFactory">The factory implementation for making IOutput instances
+        /// used for outputting various record types.</param>
+        /// <param name="token">A cancellation token that can be used to stop processing of data if
+        /// the task needs to be interrupted.</param>
         public static void doTransform (int concurrentThreads, IOutputFactory outFactory, CancellationToken token)
         {
             Thread.Sleep(2500);

@@ -1,0 +1,260 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>TransformLogic</name>
+    </assembly>
+    <members>
+        <member name="T:CxAnalytics.TransformLogic.DataResolver">
+            <summary>
+            The entrypoint class for resolving which projects/scans to export
+            on the current run.
+            </summary>
+        </member>
+        <member name="M:CxAnalytics.TransformLogic.DataResolver.addPreset(System.Int32,System.String)">
+            <summary>
+            The method use to load the list of presets into memory for resolution
+            when the Resolve method is called.
+            </summary>
+            <param name="presetId">The preset numeric identifier.</param>
+            <param name="presetName">The preset name.</param>
+            <returns>True if the preset was added, false otherwise.</returns>
+            <see cref="M:CxAnalytics.TransformLogic.DataResolver.Resolve(System.IO.StreamReader,System.IO.StreamWriter)"/>
+            <see cref="M:CxAnalytics.TransformLogic.DataResolver.Resolve(System.String)"/>
+        </member>
+        <member name="M:CxAnalytics.TransformLogic.DataResolver.addTeam(System.Guid,System.String)">
+            <summary>
+            The method use to load the list of teams into memory for resolution
+            when the Resolve method is called.
+            </summary>
+            <param name="teamId">The GUID team identifier.</param>
+            <param name="teamName">The name of the team.</param>
+            <returns>True if the team was added, false otherwise.</returns>
+            <see cref="M:CxAnalytics.TransformLogic.DataResolver.Resolve(System.IO.StreamReader,System.IO.StreamWriter)"/>
+            <see cref="M:CxAnalytics.TransformLogic.DataResolver.Resolve(System.String)"/>
+        </member>
+        <member name="M:CxAnalytics.TransformLogic.DataResolver.Resolve(System.String)">
+            <summary>
+            The method called to create the <see cref="T:CxAnalytics.TransformLogic.ProjectResolver"/> instance
+            that will correlate project context to preset and team.
+            </summary>
+            <param name="previousStateFilePath">
+            The path to the file that maintains the state between resolutions.
+            </param>
+            <returns>An instance of <see cref="T:CxAnalytics.TransformLogic.ProjectResolver"/></returns>
+        </member>
+        <member name="M:CxAnalytics.TransformLogic.DataResolver.Resolve(System.IO.StreamReader,System.IO.StreamWriter)">
+            <summary>
+            The method called to create the <see cref="T:CxAnalytics.TransformLogic.ProjectResolver"/> instance
+            that will correlate project context to preset and team.
+            </summary>
+            <param name="previousState">A stream of data containing the previous state.</param>
+            <param name="nextState">A stream where data for the next state will be written.</param>
+            <returns>An instance of <see cref="T:CxAnalytics.TransformLogic.ProjectResolver"/></returns>
+        </member>
+        <member name="T:CxAnalytics.TransformLogic.IOutput">
+            <summary>
+            An interface that is used to output records to some destination
+            specific to the implementation of IOutput.
+            </summary>
+        </member>
+        <member name="M:CxAnalytics.TransformLogic.IOutput.write(System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            The method called with a key/value dictionary for writing into the appropriate record
+            format.
+            </summary>
+            <param name="record">The record data.</param>
+        </member>
+        <member name="T:CxAnalytics.TransformLogic.IOutputFactory">
+            <summary>
+            An interface that defines the factory implementation for IOutput
+            instances.
+            </summary>
+        </member>
+        <member name="M:CxAnalytics.TransformLogic.IOutputFactory.newInstance(System.String)">
+            <summary>
+            A factory method for making a new instance of <see cref="T:CxAnalytics.TransformLogic.IOutput"/>
+            that can handle the particular record type.
+            </summary>
+            <param name="recordType">A string indicating the record type.</param>
+            <returns></returns>
+        </member>
+        <member name="T:CxAnalytics.TransformLogic.ProjectDescriptor">
+            <summary>
+            A data object used to describe a project.
+            </summary>
+        </member>
+        <member name="P:CxAnalytics.TransformLogic.ProjectDescriptor.ProjectId">
+            <summary>
+            The project id as it is stored in the SAST system.
+            </summary>
+        </member>
+        <member name="P:CxAnalytics.TransformLogic.ProjectDescriptor.ProjectName">
+            <summary>
+            The name of the project.
+            </summary>
+        </member>
+        <member name="P:CxAnalytics.TransformLogic.ProjectDescriptor.TeamId">
+            <summary>
+            The GUID that identifies the team that owns the project.
+            </summary>
+        </member>
+        <member name="P:CxAnalytics.TransformLogic.ProjectDescriptor.TeamName">
+            <summary>
+            A human-readable name for the team.
+            </summary>
+        </member>
+        <member name="P:CxAnalytics.TransformLogic.ProjectDescriptor.PresetId">
+            <summary>
+            A numeric identifier of the preset configured for the project.
+            </summary>
+        </member>
+        <member name="P:CxAnalytics.TransformLogic.ProjectDescriptor.PresetName">
+            <summary>
+            A human-eadable name for the preset.
+            </summary>
+        </member>
+        <member name="P:CxAnalytics.TransformLogic.ProjectDescriptor.ScanCountByProduct">
+            <summary>
+            A dictionary showing the number of scans for the project by product.
+            SAST and SCA scans (and maybe others in the future) are not restricted
+            to a 1:1 match for each scan.
+            </summary>
+        </member>
+        <member name="P:CxAnalytics.TransformLogic.ProjectDescriptor.LatestScanDateByProduct">
+            <summary>
+            The most recent scan date for the project by product.
+            </summary>
+        </member>
+        <member name="M:CxAnalytics.TransformLogic.ProjectDescriptor.IncrementScanCount(System.String)">
+            <summary>
+            Increments the number of scans for the product name passed in 
+            the <paramref name="scanProduct"/> parameter.
+            </summary>
+            <param name="scanProduct">The name of the product.</param>
+        </member>
+        <member name="M:CxAnalytics.TransformLogic.ProjectDescriptor.UpdateLatestScanDate(System.String,System.DateTime)">
+            <summary>
+            Updates the latest scan date for the product name passed in the
+            <paramref name="scanProduct"/> parameter.
+            </summary>
+            <param name="scanTime">The time of a scan.</param>
+            <param name="scanProduct">The product that performed the scan.</param>
+        </member>
+        <member name="T:CxAnalytics.TransformLogic.ProjectResolver">
+            <summary>
+            A class that is used to correlate projects with the team and preset details.
+            </summary>
+            <remarks>
+            This class handles the persistence of project checks between executions of data resolution.
+            </remarks>
+        </member>
+        <member name="M:CxAnalytics.TransformLogic.ProjectResolver.Resolve">
+            <summary>
+            Executes logic to determine which projects are candidates for querying for scan results
+            since the last run.
+            </summary>
+            <remarks>
+            Each run will have a list of projects currently in the system.  There may be new projects
+            since the last run that have never been checked for scans.  Some projects may have been
+            deleted since the last run and need not be checked.
+            </remarks>
+            <returns>An instance of <see cref="T:CxAnalytics.TransformLogic.ScanResolver"/> that will assist with
+            picking scans that need to be used in the transformation.</returns>
+        </member>
+        <member name="M:CxAnalytics.TransformLogic.ProjectResolver.addProject(System.Guid,System.Int32,System.Int32,System.String)">
+            <summary>
+            Adds a project that is currently in the system.
+            </summary>
+            <param name="teamId">The GUID team identifier for the project.</param>
+            <param name="presetId">The numeric preset identifier set for the project.</param>
+            <param name="projectId">The numeric project identifier.</param>
+            <param name="projectName">The name of the project.</param>
+            <returns>True of the project was added, false otherwise.</returns>
+        </member>
+        <member name="T:CxAnalytics.TransformLogic.ScanDescriptor">
+            <summary>
+            A data object used to describe a scan.
+            </summary>
+        </member>
+        <member name="P:CxAnalytics.TransformLogic.ScanDescriptor.Project">
+            <summary>
+            The descriptor for the project that owns the scan.
+            </summary>
+        </member>
+        <member name="P:CxAnalytics.TransformLogic.ScanDescriptor.ScanType">
+            <summary>
+            The type of scan that was performed.
+            </summary>
+        </member>
+        <member name="P:CxAnalytics.TransformLogic.ScanDescriptor.ScanProduct">
+            <summary>
+            The product that performed the scan.
+            </summary>
+        </member>
+        <member name="P:CxAnalytics.TransformLogic.ScanDescriptor.ScanId">
+            <summary>
+            The scan identifier according to the product.
+            </summary>
+        </member>
+        <member name="P:CxAnalytics.TransformLogic.ScanDescriptor.FinishedStamp">
+            <summary>
+            The timestamp of when the scan finished.
+            </summary>
+        </member>
+        <member name="T:CxAnalytics.TransformLogic.ScanResolver">
+            <summary>
+            The class that determines which scans need to be transformed during this
+            run of the data resolution.
+            </summary>
+        </member>
+        <member name="M:CxAnalytics.TransformLogic.ScanResolver.addScan(System.Int32,System.String,System.String,System.String,System.DateTime)">
+            <summary>
+            Adds a scan to the list of scans for checking if the scan needs to be
+            transformed.
+            </summary>
+            <param name="projectId"></param>
+            <param name="scanType"></param>
+            <param name="scanProduct"></param>
+            <param name="scanId"></param>
+            <param name="finishTime"></param>
+            <returns>Returns true if the project can be added, false otherwise.</returns>
+        </member>
+        <member name="P:CxAnalytics.TransformLogic.ScanResolver.ResolvedScanCount">
+            <summary>
+            The count of scans after <see cref="M:CxAnalytics.TransformLogic.ScanResolver.Resolve(System.DateTime)"/> has been called.  Returns
+            null until <see cref="M:CxAnalytics.TransformLogic.ScanResolver.Resolve(System.DateTime)"/> is called.
+            </summary>
+        </member>
+        <member name="P:CxAnalytics.TransformLogic.ScanResolver.ResolvedProjectCount">
+            <summary>
+            The count of projects after <see cref="M:CxAnalytics.TransformLogic.ScanResolver.Resolve(System.DateTime)"/> has been called.  Returns
+            null until <see cref="M:CxAnalytics.TransformLogic.ScanResolver.Resolve(System.DateTime)"/> is called.
+            </summary>
+        </member>
+        <member name="M:CxAnalytics.TransformLogic.ScanResolver.Resolve(System.DateTime)">
+            <summary>
+            Resolves all the scans that need to be checked based on the
+            state of the previous check and the scans the were added
+            using the method <see cref="M:CxAnalytics.TransformLogic.ScanResolver.addScan(System.Int32,System.String,System.String,System.String,System.DateTime)"/>.
+            </summary>
+            <param name="lastCheckDate"></param>
+            <returns></returns>
+        </member>
+        <member name="T:CxAnalytics.TransformLogic.Transformer">
+            <summary>
+            A class that implements the data transformation.
+            </summary>
+        </member>
+        <member name="M:CxAnalytics.TransformLogic.Transformer.doTransform(System.Int32,CxAnalytics.TransformLogic.IOutputFactory,System.Threading.CancellationToken)">
+            <summary>
+            The main logic for invoking a transformation.  It does not return until a sweep
+            for new scans is performed across all projects.
+            </summary>
+            <param name="concurrentThreads">The number of concurrent scan transformation threads.</param>
+            <param name="outFactory">The factory implementation for making IOutput instances
+            used for outputting various record types.</param>
+            <param name="token">A cancellation token that can be used to stop processing of data if
+            the task needs to be interrupted.</param>
+        </member>
+    </members>
+</doc>
