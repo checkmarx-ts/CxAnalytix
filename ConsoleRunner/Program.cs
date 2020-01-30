@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using log4net;
 using CxAnalytics.TransformLogic;
 using System.Threading;
+using CxRestClient;
+using CxAnalytics.Configuration;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile="ConsoleRunner.log4net", Watch = true)]
 
@@ -27,10 +29,19 @@ namespace ConsoleRunner
 
             appLog.InfoFormat("CWD: {0}", Directory.GetCurrentDirectory () );
 
-            CancellationTokenSource t = new CancellationTokenSource();
 
-            // TODO: Execute transformation logic.  Pass configuration parameters, etc.
-            Transformer.doTransform(2, null, t.Token);
+            var builder = new CxRestContext.CxRestContextBuilder();
+            builder.serviceUrl(Config.Connection.URL)
+            .withOpTimeout(Config.Connection.TimeoutSeconds)
+            .withSSLValidate(Config.Connection.ValidateCertificates)
+            .withUsername(Config.Credentials.Username)
+            .withPassword(Config.Credentials.Password);
+
+            using (CancellationTokenSource t = new CancellationTokenSource())
+            using (CxRestContext ctx = builder.build())
+            {
+                Transformer.doTransform(2, Config.Service.StateDataFile, ctx, null, t.Token);
+            }
 
 
             appLog.Info("End");
@@ -38,12 +49,6 @@ namespace ConsoleRunner
             // TODO: Example of using a "record logger" to output a record.  We can use different loggers
             // in log4net to send formatted data out to a file.  Log a JSON payload and it gets written to a file
             // with an ISO 8601 timestamp in front of it.
-
-            for (int x = 0; x < 90; x++)
-            {
-                recordScanSummaryLog.Info("{ \"foo\" : \"bar\", \"baz\" : \"buz\"}");
-                Task.Delay(1000).Wait();
-            }
 
         }
     }

@@ -245,7 +245,7 @@
             A class that implements the data transformation.
             </summary>
         </member>
-        <member name="M:CxAnalytics.TransformLogic.Transformer.doTransform(System.Int32,CxAnalytics.TransformLogic.IOutputFactory,System.Threading.CancellationToken)">
+        <member name="M:CxAnalytics.TransformLogic.Transformer.doTransform(System.Int32,System.String,CxRestClient.CxRestContext,CxAnalytics.TransformLogic.IOutputFactory,System.Threading.CancellationToken)">
             <summary>
             The main logic for invoking a transformation.  It does not return until a sweep
             for new scans is performed across all projects.

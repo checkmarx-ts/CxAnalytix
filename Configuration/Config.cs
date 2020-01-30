@@ -15,7 +15,8 @@ namespace CxAnalytics.Configuration
         static Config()
         {
             ExeConfigurationFileMap map = new ExeConfigurationFileMap();
-            map.ExeConfigFilename = Process.GetCurrentProcess().MainModule.FileName + ".config";
+            var process = Process.GetCurrentProcess();
+            map.ExeConfigFilename = process.MainModule.ModuleName + ".config";
             _log.DebugFormat("Loading configuration from [{0}]", map.ExeConfigFilename);
 
             _cfgManager = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.None);

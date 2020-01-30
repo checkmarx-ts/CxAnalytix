@@ -13,7 +13,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Configuration", "Configurat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Log4NetOutput", "Log4NetOutput\Log4NetOutput.csproj", "{8DC742E4-0B2E-48E1-98DE-4554B2C75667}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TransformLogic_Tests", "TransformLogic_Tests\TransformLogic_Tests.csproj", "{B29EE68F-D8BA-42E0-8641-5665E12310ED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransformLogic_Tests", "TransformLogic_Tests\TransformLogic_Tests.csproj", "{B29EE68F-D8BA-42E0-8641-5665E12310ED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CxRestClient", "CxRestClient\CxRestClient.csproj", "{B7C59B51-5CD0-44CB-A7E3-C83FF72F1E2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,6 +47,10 @@ Global
 		{B29EE68F-D8BA-42E0-8641-5665E12310ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B29EE68F-D8BA-42E0-8641-5665E12310ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B29EE68F-D8BA-42E0-8641-5665E12310ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7C59B51-5CD0-44CB-A7E3-C83FF72F1E2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7C59B51-5CD0-44CB-A7E3-C83FF72F1E2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7C59B51-5CD0-44CB-A7E3-C83FF72F1E2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7C59B51-5CD0-44CB-A7E3-C83FF72F1E2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

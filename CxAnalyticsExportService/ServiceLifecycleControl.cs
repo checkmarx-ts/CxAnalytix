@@ -98,7 +98,12 @@ namespace CxAnalyticsExportService
                 {
                     DateTime start = DateTime.Now;
                     _log.Info("Starting data transformation.");
-                    Transformer.doTransform(Config.Service.ConcurrentThreads, _outFactory, _cancelToken.Token);
+
+                    // TODO: Make the REST client context.
+
+                    Transformer.doTransform(Config.Service.ConcurrentThreads, Config.Service.StateDataFile, 
+                        null, _outFactory, _cancelToken.Token);
+
                     _log.InfoFormat("Data transformation finished in {0:0.00} minutes.", DateTime.Now.Subtract(start).TotalMinutes);
                     await Task.Delay(Config.Service.ProcessPeriodMinutes * 60 * 1000, _cancelToken.Token);
                 } while (!_cancelToken.Token.IsCancellationRequested);
