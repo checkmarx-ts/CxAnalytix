@@ -41,6 +41,14 @@ namespace CxAnalytics.TransformLogic
             // Now populate the project resolver with the projects
             ProjectResolver pr = dr.Resolve(previousStatePath);
 
+           var projects = CxProjects.GetProjects(ctx);
+
+            foreach (var p in projects)
+                pr.addProject(p.TeamId, p.PresetId, p.ProjectId, p.ProjectName);
+
+            // Resolve projects to get the scan resolver.
+            ScanResolver sr = pr.Resolve();
+
         }
     }
 }
