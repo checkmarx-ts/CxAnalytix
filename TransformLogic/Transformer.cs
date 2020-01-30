@@ -22,7 +22,7 @@ namespace CxAnalytics.TransformLogic
         /// used for outputting various record types.</param>
         /// <param name="token">A cancellation token that can be used to stop processing of data if
         /// the task needs to be interrupted.</param>
-        public static void doTransform (int concurrentThreads, String previousStatePath, 
+        public static void doTransform(int concurrentThreads, String previousStatePath,
             CxRestContext ctx, IOutputFactory outFactory, CancellationToken token)
         {
             // Populate the data resolver with teams and presets
@@ -41,13 +41,22 @@ namespace CxAnalytics.TransformLogic
             // Now populate the project resolver with the projects
             ProjectResolver pr = dr.Resolve(previousStatePath);
 
-           var projects = CxProjects.GetProjects(ctx);
+            var projects = CxProjects.GetProjects(ctx);
 
             foreach (var p in projects)
                 pr.addProject(p.TeamId, p.PresetId, p.ProjectId, p.ProjectName);
 
             // Resolve projects to get the scan resolver.
             ScanResolver sr = pr.Resolve();
+
+            // Get SAST and SCA scans
+            var sastScans = CxSastScans.GetScans(ctx, CxSastScans.ScanStatus.Finished);
+
+            foreach (var sastScan in sastScans)
+                sr.addScan(sastScan.ProjectId, sastScan.ScanType, "SAST", sastScan.ScanId, sastScan.FinishTime);
+
+            // TODO: Resolve states - need to persist the last check date.
+            //var scansToProcess = sr.Resolve();
 
         }
     }
