@@ -123,8 +123,9 @@ namespace CxAnalytics.TransformLogic
         /// state of the previous check and the scans the were added
         /// using the method <see cref="addScan"/>.
         /// </summary>
-        /// <param name="lastCheckDate"></param>
-        /// <returns></returns>
+        /// <param name="lastCheckDate">The date to store with each project that is the last time the
+        /// project was checked for new scans.</param>
+        /// <returns>An enumeration of scans that should be exported.</returns>
         public IEnumerable<ScanDescriptor> Resolve (DateTime lastCheckDate)
         {
             _disallowAdds = true;
@@ -134,8 +135,9 @@ namespace CxAnalytics.TransformLogic
 
             _state.saveProjectCheckState();
 
-            _log.InfoFormat("Resolved {0} scans to check in {1} projects.", ResolvedScanCount,
-                ResolvedProjectCount);
+            _log.Info
+                ($"Resolved {ResolvedScanCount} scans to check in " +
+                $"{ResolvedProjectCount} projects since {lastCheckDate}.");
 
             if (_log.IsDebugEnabled)
             {

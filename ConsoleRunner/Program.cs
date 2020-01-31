@@ -40,7 +40,7 @@ namespace ConsoleRunner
             using (CancellationTokenSource t = new CancellationTokenSource())
             using (CxRestContext ctx = builder.build())
             {
-                Transformer.doTransform(2, Config.Service.StateDataFile, ctx, null, t.Token);
+                Transformer.doTransform(2, Config.Service.StateDataStoragePath, ctx, null, t.Token);
             }
 
 

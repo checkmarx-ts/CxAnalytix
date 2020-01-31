@@ -74,16 +74,16 @@ namespace CxAnalytics.TransformLogic
         /// The method called to create the <see cref="ProjectResolver"/> instance
         /// that will correlate project context to preset and team.
         /// </summary>
-        /// <param name="previousStateFilePath">
+        /// <param name="previousStateStoragePath">
         /// The path to the file that maintains the state between resolutions.
         /// </param>
         /// <returns>An instance of <see cref="ProjectResolver"/></returns>
-        public ProjectResolver Resolve (String previousStateFilePath)
+        public ProjectResolver Resolve (String previousStateStoragePath)
         {
             if (_res == null && !_disallowAdd)
             {
                 _disallowAdd = true;
-                _res = new ProjectResolver(this, previousStateFilePath);
+                _res = new ProjectResolver(this, previousStateStoragePath);
             }
 
             return _res;

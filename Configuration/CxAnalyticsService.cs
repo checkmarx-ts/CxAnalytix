@@ -21,11 +21,11 @@ namespace CxAnalytics.Configuration
             set { this["ConcurrentThreads"] = value; }
         }
 
-        [ConfigurationProperty("StateDataFile", IsRequired = true)]
-        public String StateDataFile
+        [ConfigurationProperty("StateDataStoragePath", IsRequired = true)]
+        public String StateDataStoragePath
         {
-            get => (String)this["StateDataFile"];
-            set { this["StateDataFile"] = value; }
+            get => (String)this["StateDataStoragePath"];
+            set { this["StateDataStoragePath"] = value; }
         }
 
         [ConfigurationProperty("OutputFactoryClassPath", IsRequired = true)]

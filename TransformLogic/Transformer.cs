@@ -11,13 +11,14 @@ namespace CxAnalytics.TransformLogic
     /// </summary>
     public class Transformer
     {
-        // TODO: Pass in the configuration parameters collected from the caller (via app.config,
-        // command line options, or other methods of collecting config data)
         /// <summary>
         /// The main logic for invoking a transformation.  It does not return until a sweep
         /// for new scans is performed across all projects.
         /// </summary>
         /// <param name="concurrentThreads">The number of concurrent scan transformation threads.</param>
+        /// <param name="previousStatePath">A folder path where files will be created to store any state
+        /// data required to resume operations across program runs.</param>
+        /// <param name="ctx"></param>
         /// <param name="outFactory">The factory implementation for making IOutput instances
         /// used for outputting various record types.</param>
         /// <param name="token">A cancellation token that can be used to stop processing of data if
@@ -25,6 +26,18 @@ namespace CxAnalytics.TransformLogic
         public static void doTransform(int concurrentThreads, String previousStatePath,
             CxRestContext ctx, IOutputFactory outFactory, CancellationToken token)
         {
+            // TODO: Scan collection logic needs to use the CancellationToken.
+
+            var scansToProcess = GetListOfScans(previousStatePath, ctx);
+
+
+
+        }
+
+        private static IEnumerable<ScanDescriptor> GetListOfScans(string previousStatePath, CxRestContext ctx)
+        {
+            DateTime checkStart = DateTime.Now;
+
             // Populate the data resolver with teams and presets
             DataResolver dr = new DataResolver();
 
@@ -55,9 +68,11 @@ namespace CxAnalytics.TransformLogic
             foreach (var sastScan in sastScans)
                 sr.addScan(sastScan.ProjectId, sastScan.ScanType, "SAST", sastScan.ScanId, sastScan.FinishTime);
 
-            // TODO: Resolve states - need to persist the last check date.
-            //var scansToProcess = sr.Resolve();
+            // TODO: SCA scans need to be loaded and added to the ScanResolver instance.
 
+
+            // Get the scans to process, update the last check date in all projects.
+            return sr.Resolve(checkStart);
         }
     }
 }

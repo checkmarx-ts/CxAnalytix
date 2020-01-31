@@ -15,13 +15,15 @@ namespace CxAnalytics.TransformLogic
     /// </remarks>
     public class ProjectResolver
     {
+        private static readonly String STORAGE_FILE = "CxAnalyticsExportState.json";
+
         private static ILog _log = LogManager.GetLogger(typeof(ProjectResolver));
 
         private DataResolver _dependentData;
 
         private bool _disallowAdd = false;
 
-        private String _stateFilePath = null;
+        private String _stateStorageFilePath = null;
 
         private StreamWriter _nextStateOutputStream = null;
 
@@ -29,14 +31,17 @@ namespace CxAnalytics.TransformLogic
         {
         }
 
-        internal ProjectResolver(DataResolver depData, String previousStateFilePath)
+        internal ProjectResolver(DataResolver depData, String previousStateStoragePath)
         {
             _dependentData = depData;
-            _stateFilePath = previousStateFilePath;
 
-            if (previousStateFilePath != null && System.IO.File.Exists(previousStateFilePath))
+            if (previousStateStoragePath != null)
+                _stateStorageFilePath = Path.Combine(previousStateStoragePath, STORAGE_FILE);
+
+            if (previousStateStoragePath != null && System.IO.File.Exists(_stateStorageFilePath))
             {
-                loadProjectCheckState(new StreamReader (previousStateFilePath) );
+                using (var sr = new StreamReader(_stateStorageFilePath))
+                    loadProjectCheckState(sr);
             }
             else
                 _previousTargets = new Dictionary<int, ProjectDescriptorExt>();
@@ -65,7 +70,7 @@ namespace CxAnalytics.TransformLogic
 
         internal void saveProjectCheckState()
         {
-            if (_stateFilePath == null && _nextStateOutputStream == null)
+            if (_stateStorageFilePath == null && _nextStateOutputStream == null)
             {
                 _log.Warn("No path to the state file was given, state is not preserved.");
                 return;
@@ -73,14 +78,22 @@ namespace CxAnalytics.TransformLogic
 
             StreamWriter outStream = null;
 
-            if (_stateFilePath != null)
-                outStream = new StreamWriter(_stateFilePath);
+            bool closeStream = false;
+
+            if (_stateStorageFilePath != null)
+            {
+                outStream = new StreamWriter(_stateStorageFilePath);
+                closeStream = true;
+            }
             else
                 outStream = _nextStateOutputStream;
 
             var serializer = JsonSerializer.Create();
             serializer.Serialize(outStream, _targets);
             outStream.Flush();
+
+            if (closeStream)
+                outStream.Close();
         }
 
 
