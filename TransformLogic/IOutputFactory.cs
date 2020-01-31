@@ -17,6 +17,5 @@ namespace CxAnalytics.TransformLogic
         /// <param name="recordType">A string indicating the record type.</param>
         /// <returns></returns>
         IOutput newInstance(String recordType);
-
     }
 }

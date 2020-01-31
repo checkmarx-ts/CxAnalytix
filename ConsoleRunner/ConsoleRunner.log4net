@@ -44,12 +44,48 @@
     </layout>
   </appender>
 
+  <appender name="SAST_SD" type="log4net.Appender.RollingFileAppender">
+    <rollingStyle value="Date" />
+    <datePattern value=".yyyy_MM_dd" />
+    <staticLogFileName value="true" />
+    <file type="log4net.Util.PatternString" value="sast_scan_detail.log" />
+    <appendToFile value="true" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="[%date{yyyy-MM-ddTHH:mm:sszzz}] %message%newline" />
+    </layout>
+  </appender>
+
+
+  <appender name="SAST_PI" type="log4net.Appender.RollingFileAppender">
+    <rollingStyle value="Date" />
+    <datePattern value=".yyyy_MM_dd" />
+    <staticLogFileName value="true" />
+    <file type="log4net.Util.PatternString" value="sast_project_info.log" />
+    <appendToFile value="true" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="[%date{yyyy-MM-ddTHH:mm:sszzz}] %message%newline" />
+    </layout>
+  </appender>
+
 
   <!-- END: Record logging appender config -->
 
   <logger name="RECORD_SAST_Scan_Summary" aditivity="false">
     <level value="ALL" />
     <appender-ref ref="SAST_SS" />
+  </logger>
+
+  <logger name="RECORD_SAST_Scan_Detail" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="SAST_SD" />
+  </logger>
+
+
+  <logger name="RECORD_Project_Info" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="SAST_PI" />
   </logger>
 
   <root>

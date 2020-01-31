@@ -31,7 +31,7 @@ namespace CxAnalyticsExportService
             }
         }
 
-        public ServiceLifecycleControl ()
+        public ServiceLifecycleControl()
         {
             CanHandlePowerEvent = false;
             CanPauseAndContinue = false;
@@ -40,7 +40,7 @@ namespace CxAnalyticsExportService
             CanHandlePowerEvent = true;
         }
 
-        private void stopService ()
+        private void stopService()
         {
             if (_cancelToken != null)
             {
@@ -101,8 +101,18 @@ namespace CxAnalyticsExportService
 
                     // TODO: Make the REST client context.
 
-                    Transformer.doTransform(Config.Service.ConcurrentThreads, Config.Service.StateDataStoragePath, 
-                        null, _outFactory, _cancelToken.Token);
+                    Transformer.doTransform(Config.Service.ConcurrentThreads, 
+                        Config.Service.StateDataStoragePath,
+                        null, _outFactory, new RecordNames()
+                        {
+                            SASTScanSummary = Config.Service.SASTScanSummaryRecordName,
+                            SASTScanDetail = Config.Service.SASTScanDetailRecordName,
+                            SCAScanSummary = Config.Service.SCAScanSummaryRecordName,
+                            SCAScanDetail = Config.Service.SCAScanDetailRecordName,
+                            ProjectInfo = Config.Service.ProjectInfoRecordName,
+                            PolicyViolations = Config.Service.PolicyViolationsRecordName
+                        },
+                        _cancelToken.Token);
 
                     _log.InfoFormat("Data transformation finished in {0:0.00} minutes.", DateTime.Now.Subtract(start).TotalMinutes);
                     await Task.Delay(Config.Service.ProcessPeriodMinutes * 60 * 1000, _cancelToken.Token);

@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Log4NetOutput", "Log4NetOut
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransformLogic_Tests", "TransformLogic_Tests\TransformLogic_Tests.csproj", "{B29EE68F-D8BA-42E0-8641-5665E12310ED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CxRestClient", "CxRestClient\CxRestClient.csproj", "{B7C59B51-5CD0-44CB-A7E3-C83FF72F1E2E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxRestClient", "CxRestClient\CxRestClient.csproj", "{B7C59B51-5CD0-44CB-A7E3-C83FF72F1E2E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

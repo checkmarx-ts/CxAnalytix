@@ -6,6 +6,7 @@ using CxAnalytics.TransformLogic;
 using System.Threading;
 using CxRestClient;
 using CxAnalytics.Configuration;
+using System;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile="ConsoleRunner.log4net", Watch = true)]
 
@@ -17,13 +18,26 @@ namespace ConsoleRunner
         private static readonly ILog recordScanSummaryLog = LogManager.Exists(Assembly.GetExecutingAssembly(), "RECORD_SAST_Scan_Summary");
         private static readonly ILog appLog = LogManager.GetLogger(typeof(Program));
 
+        private static IOutputFactory MakeFactory ()
+        {
+            IOutputFactory retVal = null;
+            try
+            {
+                Assembly outAssembly = Assembly.Load(Config.Service.OutputAssembly);
+                appLog.DebugFormat("outAssembly loaded: {0}", outAssembly.FullName);
+                retVal = outAssembly.CreateInstance(Config.Service.OutputClass) as IOutputFactory;
+                appLog.Debug("IOutputFactory instance created.");
+            }
+            catch (Exception ex)
+            {
+                appLog.Error("Error loading output factory.", ex);
+            }
+
+            return retVal;
+        }
+
         static void Main(string[] args)
         {
-
-            // TODO: Example of how properties can be used to manipulate the file output locations
-            // configured in the log4net XML.
-            GlobalContext.Properties["basePath"] = "..\\test_";
-
 
             appLog.Info("Start");
 
@@ -40,16 +54,22 @@ namespace ConsoleRunner
             using (CancellationTokenSource t = new CancellationTokenSource())
             using (CxRestContext ctx = builder.build())
             {
-                Transformer.doTransform(2, Config.Service.StateDataStoragePath, ctx, null, t.Token);
+                Transformer.doTransform(2, Config.Service.StateDataStoragePath, ctx, 
+                    MakeFactory (),
+                    new RecordNames()
+                    {
+                        SASTScanSummary = Config.Service.SASTScanSummaryRecordName,
+                        SASTScanDetail = Config.Service.SASTScanDetailRecordName,
+                        SCAScanSummary = Config.Service.SCAScanSummaryRecordName,
+                        SCAScanDetail = Config.Service.SCAScanDetailRecordName,
+                        ProjectInfo = Config.Service.ProjectInfoRecordName,
+                        PolicyViolations = Config.Service.PolicyViolationsRecordName
+                    },
+                    t.Token);
             }
 
 
             appLog.Info("End");
-
-            // TODO: Example of using a "record logger" to output a record.  We can use different loggers
-            // in log4net to send formatted data out to a file.  Log a JSON payload and it gets written to a file
-            // with an ISO 8601 timestamp in front of it.
-
         }
     }
 }

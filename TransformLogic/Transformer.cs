@@ -1,6 +1,8 @@
 ﻿using CxRestClient;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading;
 
@@ -11,6 +13,7 @@ namespace CxAnalytics.TransformLogic
     /// </summary>
     public class Transformer
     {
+        private static readonly String DATE_FORMAT = "yyyy-MM-ddTHH:mm:ss.fffzzz";
         /// <summary>
         /// The main logic for invoking a transformation.  It does not return until a sweep
         /// for new scans is performed across all projects.
@@ -21,17 +24,71 @@ namespace CxAnalytics.TransformLogic
         /// <param name="ctx"></param>
         /// <param name="outFactory">The factory implementation for making IOutput instances
         /// used for outputting various record types.</param>
+        /// <param name="records">The names of the supported record types that will be used by 
+        /// the IOutputFactory to create the correct output implementation instance.</param>
         /// <param name="token">A cancellation token that can be used to stop processing of data if
         /// the task needs to be interrupted.</param>
         public static void doTransform(int concurrentThreads, String previousStatePath,
-            CxRestContext ctx, IOutputFactory outFactory, CancellationToken token)
+            CxRestContext ctx, IOutputFactory outFactory, RecordNames records,  CancellationToken token)
         {
             // TODO: Scan collection logic needs to use the CancellationToken.
 
             var scansToProcess = GetListOfScans(previousStatePath, ctx);
 
+            var project_info_out = outFactory.newInstance(records.ProjectInfo);
+            OutputProjectInfoRecords(scansToProcess, project_info_out);
 
+            var scan_summary_out = outFactory.newInstance(records.SASTScanSummary);
 
+            foreach (var scanRecord in scansToProcess)
+            {
+                Dictionary<String, String> flat = new Dictionary<string, string>();
+                AddPrimaryKeyElements(scanRecord, flat);
+                flat.Add("ScanId", scanRecord.ScanId);
+                flat.Add("ScanProduct", scanRecord.ScanProduct);
+                flat.Add("ScanType", scanRecord.ScanType);
+                flat.Add("ScanCompleted", scanRecord.FinishedStamp.ToString (DATE_FORMAT) );
+
+                // TODO: Incremental/full, Start, Preset, High, Med, Low
+                // TODO: Scan Risk, Scan Risk Severity, LoC, failed LoC, filesCount,
+                // TODO: CxVersion, languages
+
+                scan_summary_out.write(flat);
+            }
+
+        }
+
+        private static void OutputProjectInfoRecords(IEnumerable<ScanDescriptor> scansToProcess, IOutput project_info_out)
+        {
+            Dictionary<int, bool> processed = new Dictionary<int, bool>();
+            foreach (var scanRecord in scansToProcess)
+            {
+                if (!processed.TryAdd(scanRecord.Project.ProjectId, true))
+                    continue;
+
+                Dictionary<String, String> flat = new Dictionary<string, string>();
+                AddPrimaryKeyElements(scanRecord, flat);
+
+                flat.Add("PresetName", scanRecord.Project.PresetName);
+
+                foreach (var lastScanProduct in scanRecord.Project.LatestScanDateByProduct.Keys)
+                    flat.Add($"{lastScanProduct}_LastScanDate",
+                        scanRecord.Project.LatestScanDateByProduct[lastScanProduct].ToString(DATE_FORMAT));
+
+                foreach (var scanCountProduct in scanRecord.Project.ScanCountByProduct.Keys)
+                    flat.Add($"{scanCountProduct}_Scans",
+                        scanRecord.Project.ScanCountByProduct[scanCountProduct].ToString());
+
+                project_info_out.write(flat);
+
+            }
+        }
+
+        private static void AddPrimaryKeyElements(ScanDescriptor rec, Dictionary<string, string> flat)
+        {
+            flat.Add("ProjectId", rec.Project.ProjectId.ToString());
+            flat.Add("ProjectName", rec.Project.ProjectName);
+            flat.Add("TeamName", rec.Project.TeamName);
         }
 
         private static IEnumerable<ScanDescriptor> GetListOfScans(string previousStatePath, CxRestContext ctx)
