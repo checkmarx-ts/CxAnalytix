@@ -29,7 +29,7 @@ namespace CxAnalytics.TransformLogic
         /// <param name="token">A cancellation token that can be used to stop processing of data if
         /// the task needs to be interrupted.</param>
         public static void doTransform(int concurrentThreads, String previousStatePath,
-            CxRestContext ctx, IOutputFactory outFactory, RecordNames records,  CancellationToken token)
+            CxRestContext ctx, IOutputFactory outFactory, RecordNames records, CancellationToken token)
         {
             // TODO: Scan collection logic needs to use the CancellationToken.
 
@@ -40,28 +40,35 @@ namespace CxAnalytics.TransformLogic
 
             var scan_summary_out = outFactory.newInstance(records.SASTScanSummary);
 
-            foreach (var scanRecord in scansToProcess)
+            foreach (var scanRecord in scansToProcess.ScanDesciptors)
             {
                 Dictionary<String, String> flat = new Dictionary<string, string>();
                 AddPrimaryKeyElements(scanRecord, flat);
                 flat.Add("ScanId", scanRecord.ScanId);
                 flat.Add("ScanProduct", scanRecord.ScanProduct);
                 flat.Add("ScanType", scanRecord.ScanType);
-                flat.Add("ScanCompleted", scanRecord.FinishedStamp.ToString (DATE_FORMAT) );
+                flat.Add("FinishTime", scanRecord.FinishedStamp.ToString(DATE_FORMAT));
+                flat.Add("StartTime", scansToProcess.ScanDataDetails[scanRecord.ScanId].StartTime.ToString(DATE_FORMAT));
+                flat.Add("ScanRisk", scansToProcess.ScanDataDetails[scanRecord.ScanId].ScanRisk.ToString());
+                flat.Add("ScanRiskSeverity", scansToProcess.ScanDataDetails[scanRecord.ScanId].ScanRiskSeverity.ToString());
+                flat.Add("LinesOfCode", scansToProcess.ScanDataDetails[scanRecord.ScanId].LinesOfCode.ToString());
+                flat.Add("FailedLinesOfCode", scansToProcess.ScanDataDetails[scanRecord.ScanId].FailedLinesOfCode.ToString());
+                flat.Add("FileCount", scansToProcess.ScanDataDetails[scanRecord.ScanId].FileCount.ToString());
+                flat.Add("CxVersion", scansToProcess.ScanDataDetails[scanRecord.ScanId].CxVersion);
+                flat.Add("Languages", scansToProcess.ScanDataDetails[scanRecord.ScanId].Languages);
 
-                // TODO: Incremental/full, Start, Preset, High, Med, Low
-                // TODO: Scan Risk, Scan Risk Severity, LoC, failed LoC, filesCount,
-                // TODO: CxVersion, languages
+
+                // TODO: High, Med, Low, Preset (specific to scan, not project)
 
                 scan_summary_out.write(flat);
             }
 
         }
 
-        private static void OutputProjectInfoRecords(IEnumerable<ScanDescriptor> scansToProcess, IOutput project_info_out)
+        private static void OutputProjectInfoRecords(ScanData scansToProcess, IOutput project_info_out)
         {
             Dictionary<int, bool> processed = new Dictionary<int, bool>();
-            foreach (var scanRecord in scansToProcess)
+            foreach (var scanRecord in scansToProcess.ScanDesciptors)
             {
                 if (!processed.TryAdd(scanRecord.Project.ProjectId, true))
                     continue;
@@ -91,7 +98,18 @@ namespace CxAnalytics.TransformLogic
             flat.Add("TeamName", rec.Project.TeamName);
         }
 
-        private static IEnumerable<ScanDescriptor> GetListOfScans(string previousStatePath, CxRestContext ctx)
+        private class ScanData
+        {
+            public ScanData ()
+            {
+                ScanDataDetails = new Dictionary<string, CxSastScans.Scan>();
+            }
+
+            public IEnumerable<ScanDescriptor> ScanDesciptors { get; set; }
+            public Dictionary<String, CxSastScans.Scan> ScanDataDetails { get; private set; }
+        }
+
+        private static ScanData GetListOfScans(string previousStatePath, CxRestContext ctx)
         {
             DateTime checkStart = DateTime.Now;
 
@@ -119,17 +137,24 @@ namespace CxAnalytics.TransformLogic
             // Resolve projects to get the scan resolver.
             ScanResolver sr = pr.Resolve();
 
+            ScanData retVal = new ScanData();
+
             // Get SAST and SCA scans
             var sastScans = CxSastScans.GetScans(ctx, CxSastScans.ScanStatus.Finished);
 
             foreach (var sastScan in sastScans)
+            {
                 sr.addScan(sastScan.ProjectId, sastScan.ScanType, "SAST", sastScan.ScanId, sastScan.FinishTime);
+                retVal.ScanDataDetails.Add(sastScan.ScanId, sastScan);
+            }
 
             // TODO: SCA scans need to be loaded and added to the ScanResolver instance.
 
 
             // Get the scans to process, update the last check date in all projects.
-            return sr.Resolve(checkStart);
+            retVal.ScanDesciptors = sr.Resolve(checkStart);
+
+            return retVal;
         }
     }
 }

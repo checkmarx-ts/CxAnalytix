@@ -27,6 +27,16 @@ namespace CxRestClient
             public String ScanType { get; internal set; }
             public String ScanId { get; internal set; }
             public DateTime FinishTime { get; internal set; }
+            public DateTime StartTime { get; internal set; }
+            public long LinesOfCode { get; internal set; }
+            public long FailedLinesOfCode { get; internal set; }
+            public int FileCount { get; internal set; }
+            public String CxVersion { get; internal set; }
+            public int ScanRisk { get; internal set; }
+            public int ScanRiskSeverity { get; internal set; }
+            public String Languages { get; internal set; }
+
+
         }
 
 
@@ -76,6 +86,20 @@ namespace CxRestClient
                 return false;
             }
 
+
+            private String GetLanguages(JToken languageArray)
+            {
+                LinkedList<String> langs = new LinkedList<string>();
+
+                JArray array = ((JProperty)languageArray).Value as JArray;
+
+                foreach (JProperty token in array.Values())
+                    if (token.Name.CompareTo("languageName") == 0)
+                        langs.AddLast(token.Value.ToString());
+
+                return String.Join(';', langs);
+            }
+
             Scan _currentScan = new Scan();
 
             public bool MoveNext()
@@ -98,26 +122,69 @@ namespace CxRestClient
 
                         _currentScan.ProjectId = Convert.ToInt32(((JProperty)_reader.CurrentToken).Value.ToString());
 
-                        if (!MoveToNextProperty(_reader, "scanType"))
-                            return false;
-
-                        if (!MoveToNextProperty(_reader, "value"))
-                            return false;
-
-                        _currentScan.ScanType = ((JProperty)_reader.CurrentToken).Value.ToString();
-
                         if (!MoveToNextProperty(_reader, "dateAndTime"))
                             return false;
+
+                        if (!MoveToNextProperty(_reader, "startedOn"))
+                            return false;
+
+                        _currentScan.StartTime = DateTime.Parse(((JProperty)_reader.CurrentToken).Value.ToString());
 
                         if (!MoveToNextProperty(_reader, "finishedOn"))
                             return false;
 
                         _currentScan.FinishTime = DateTime.Parse(((JProperty)_reader.CurrentToken).Value.ToString());
 
+                        if (!MoveToNextProperty(_reader, "scanState"))
+                            return false;
+
+                        if (!MoveToNextProperty(_reader, "filesCount"))
+                            return false;
+                        _currentScan.FileCount = Convert.ToInt32 (((JProperty)_reader.CurrentToken).Value);
+
+                        if (!MoveToNextProperty(_reader, "linesOfCode"))
+                            return false;
+
+                        _currentScan.LinesOfCode = Convert.ToInt64(((JProperty)_reader.CurrentToken).Value);
+
+                        if (!MoveToNextProperty(_reader, "failedLinesOfCode"))
+                            return false;
+
+                        _currentScan.FailedLinesOfCode = Convert.ToInt64(((JProperty)_reader.CurrentToken).Value);
+
+                        if (!MoveToNextProperty(_reader, "cxVersion"))
+                            return false;
+
+                        _currentScan.CxVersion = ((JProperty)_reader.CurrentToken).Value.ToString ();
+
+                        if (!MoveToNextProperty(_reader, "languageStateCollection"))
+                            return false;
+
+                        _currentScan.Languages = GetLanguages(_reader.CurrentToken);
+
                         if (!MoveToNextProperty(_reader, "isPublic"))
                             return false;
 
                         bool isPublic = Convert.ToBoolean(((JProperty) _reader.CurrentToken).Value.ToString());
+
+                        if (!MoveToNextProperty(_reader, "isIncremental"))
+                            return false;
+
+                        if (Convert.ToBoolean(((JProperty)_reader.CurrentToken).Value.ToString()))
+                            _currentScan.ScanType = "Incremental";
+                        else
+                            _currentScan.ScanType = "Full";
+
+
+                        if (!MoveToNextProperty(_reader, "scanRisk"))
+                            return false;
+
+                        _currentScan.ScanRisk = Convert.ToInt32(((JProperty)_reader.CurrentToken).Value);
+
+                        if (!MoveToNextProperty(_reader, "scanRiskSeverity"))
+                            return false;
+
+                        _currentScan.ScanRiskSeverity = Convert.ToInt32(((JProperty)_reader.CurrentToken).Value);
 
                         if (!MoveToNextProperty(_reader, "partialScanReasons"))
                             return false;
