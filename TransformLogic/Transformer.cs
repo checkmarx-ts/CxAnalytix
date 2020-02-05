@@ -47,8 +47,8 @@ namespace CxAnalytics.TransformLogic
                 flat.Add("ScanId", scanRecord.ScanId);
                 flat.Add("ScanProduct", scanRecord.ScanProduct);
                 flat.Add("ScanType", scanRecord.ScanType);
-                flat.Add("FinishTime", scanRecord.FinishedStamp.ToString(DATE_FORMAT));
-                flat.Add("StartTime", scansToProcess.ScanDataDetails[scanRecord.ScanId].StartTime.ToString(DATE_FORMAT));
+                flat.Add("ScanFinished", scanRecord.FinishedStamp.ToString(DATE_FORMAT));
+                flat.Add("ScanStarted", scansToProcess.ScanDataDetails[scanRecord.ScanId].StartTime.ToString(DATE_FORMAT));
                 flat.Add("ScanRisk", scansToProcess.ScanDataDetails[scanRecord.ScanId].ScanRisk.ToString());
                 flat.Add("ScanRiskSeverity", scansToProcess.ScanDataDetails[scanRecord.ScanId].ScanRiskSeverity.ToString());
                 flat.Add("LinesOfCode", scansToProcess.ScanDataDetails[scanRecord.ScanId].LinesOfCode.ToString());
