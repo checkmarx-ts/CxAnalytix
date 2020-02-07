@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace CxRestClient
 {
@@ -12,6 +13,8 @@ namespace CxRestClient
     {
         private static String URL_SUFFIX = "cxrestapi/auth/teams";
 
+        private CxTeams ()
+        { }
 
         private class TeamReader : IEnumerable<Team>, IEnumerator<Team>
         {
@@ -70,9 +73,13 @@ namespace CxRestClient
             public String TeamName { get; internal set; }
         }
 
-        public static IEnumerable<Team> GetTeams(CxRestContext ctx)
+        public static IEnumerable<Team> GetTeams(CxRestContext ctx, CancellationToken token)
         {
-            var teams = ctx.GetJsonClient().GetAsync(CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)).Result;
+            var teams = ctx.Json.CreateClient ().GetAsync(
+                CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result;
+
+            if (token.IsCancellationRequested)
+                return null;
 
             if (!teams.IsSuccessStatusCode)
                 throw new InvalidOperationException(teams.ReasonPhrase);

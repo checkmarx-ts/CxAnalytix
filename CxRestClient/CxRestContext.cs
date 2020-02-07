@@ -4,42 +4,78 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 
 namespace CxRestClient
 {
-    public class CxRestContext : IDisposable
+    public class CxRestContext
     {
-        private static String URI_SUFFIX = "cxrestapi/auth/identity/connect/token";
+        private static String LOGIN_URI_SUFFIX = "cxrestapi/auth/identity/connect/token";
         private static String CLIENT_SECRET = "014DF517-39D1-4453-B7B3-9930C563627C";
 
+        public class ClientFactory
+        {
+            private ClientFactory ()
+            { }
+
+            internal ClientFactory (String mediaType, CxRestContext ctx)
+            {
+                Context = ctx;
+                MediaType = mediaType;
+            }
+
+            private CxRestContext Context { get; set; }
+            private  String MediaType { get; set; }
+
+            public HttpClient CreateClient()
+            {
+                HttpClient retVal = MakeClient(Context.ValidateSSL);
+
+                retVal.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue(Context.Token.TokenType, 
+                    Context.Token.Token);
+
+                retVal.DefaultRequestHeaders.Accept.Clear();
+
+                retVal.DefaultRequestHeaders.Accept.Add
+                    (new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json", 1.0));
+
+                return retVal;
+            }
+        }
 
         internal CxRestContext ()
         { }
 
-        internal LoginToken Token { get; set; }
+        public bool ValidateSSL { get; internal set; }
+        public String Url { get; internal set; }
+        public TimeSpan Timeout { get; internal set; }
+        public ClientFactory Json { get; internal set; }
 
-        private HttpClient _client;
-        private HttpClient Client
+
+        private Object _tokenLock = new object();
+        private LoginToken _token;
+        internal LoginToken Token
         {
             get
             {
-                if (DateTime.Now.CompareTo(Token.ExpireTime) >= 0)
-                    Token = GetLoginToken(Url, Token.ReauthContent);
+                lock(_tokenLock)
+                {
+                    if (DateTime.Now.CompareTo(Token.ExpireTime) >= 0)
+                        _token = GetLoginToken(Url, _token.ReauthContent, ValidateSSL);
+                }
 
-                _client.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue(Token.TokenType, Token.Token);
-                    
-                return _client;
+                return _token;
             }
 
             set
             {
-                _client = value;
+                _token = value;
             }
         }
 
-        public String Url { get; internal set; }
 
 
         internal struct LoginToken
@@ -50,17 +86,8 @@ namespace CxRestClient
             internal HttpContent ReauthContent { get; set; }
         }
 
-        public HttpClient GetJsonClient ()
-        {
-            var client = Client;
 
-            client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add
-                (new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json", 1.0));
-
-            return client;
-        }
-
+        #region Static methods
         public static String MakeUrl (String url, String suffix)
         {
             if (url.EndsWith('/'))
@@ -84,11 +111,11 @@ namespace CxRestClient
         => MakeUrl(url, suffix) + "?" + MakeQueryString (query);
 
 
-        private static LoginToken GetLoginToken(String url, HttpContent authContent)
+        private static LoginToken GetLoginToken(String url, HttpContent authContent, bool doSSLValidate)
         {
-            HttpClient c = new HttpClient();
+            HttpClient c = MakeClient(doSSLValidate);
 
-            var uri = new Uri(MakeUrl(url, URI_SUFFIX));
+            var uri = new Uri(MakeUrl(url, LOGIN_URI_SUFFIX));
 
             var response = c.PostAsync(uri, authContent).Result;
 
@@ -111,7 +138,8 @@ namespace CxRestClient
 
         }
 
-        private static LoginToken GetLoginToken (String url, String username, String password)
+        private static LoginToken GetLoginToken (String url, String username, String password, 
+            bool doSSLValidate)
         {
             var requestContent = new Dictionary<string, string>()
             {
@@ -125,13 +153,21 @@ namespace CxRestClient
 
             var payloadContent = new FormUrlEncodedContent(requestContent);
 
-            return GetLoginToken(url, payloadContent);
+            return GetLoginToken(url, payloadContent, doSSLValidate);
         }
 
-        public void Dispose()
+        private static HttpClient MakeClient (bool doSSLValidate)
         {
-            _client.Dispose();
+            HttpClientHandler h = new HttpClientHandler();
+            if (!doSSLValidate)
+                h.ServerCertificateCustomValidationCallback = (msg, cert, chain, errors) => true;
+
+            return new HttpClient(h, true);
         }
+
+        #endregion
+
+
 
         public class CxRestContextBuilder
         {
@@ -174,7 +210,7 @@ namespace CxRestClient
             }
 
 
-            public CxRestContext build ()
+            public CxRestContext build()
             {
                 if (_url == null)
                     throw new InvalidOperationException("Endpoint URL was not specified.");
@@ -185,18 +221,15 @@ namespace CxRestClient
                 if (_pass == null)
                     throw new InvalidOperationException("Password was not specified.");
 
-                CxRestContext retVal = new CxRestContext();
-                retVal.Token = GetLoginToken(_url, _user, _pass);
-                retVal.Url = _url;
+                CxRestContext retVal = new CxRestContext()
+                {
+                    Token = GetLoginToken(_url, _user, _pass, _validate),
+                    Url = _url,
+                    ValidateSSL = _validate,
+                    Timeout = new TimeSpan(0, 0, _timeout)
+                };
 
-                HttpClientHandler h = new HttpClientHandler();
-                if (!_validate)
-                    h.ServerCertificateCustomValidationCallback = (msg, cert, chain, errors) => true;
-
-                HttpClient c = new HttpClient(h, true);
-                c.Timeout = new TimeSpan(0, 0, _timeout);
-
-                retVal.Client = c;
+                retVal.Json = new ClientFactory("application/json", retVal);
 
                 return retVal;
             }

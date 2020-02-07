@@ -5,12 +5,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace CxRestClient
 {
     public class CxSastScans
     {
         private static String URL_SUFFIX = "cxrestapi/sast/scans";
+
+        private CxSastScans ()
+        { }
 
         public enum ScanStatus
         {
@@ -218,12 +222,13 @@ namespace CxRestClient
         }
 
 
-        public static IEnumerable<Scan> GetScans(CxRestContext ctx)
+        public static IEnumerable<Scan> GetScans(CxRestContext ctx, CancellationToken token)
         {
-            return GetScans(ctx, ScanStatus.All);
+            return GetScans(ctx, token, ScanStatus.All);
         }
 
-        public static IEnumerable<Scan> GetScans(CxRestContext ctx, ScanStatus specificStatus)
+        public static IEnumerable<Scan> GetScans(CxRestContext ctx, CancellationToken token, 
+            ScanStatus specificStatus)
         {
             String url = null; 
 
@@ -238,8 +243,10 @@ namespace CxRestClient
             else
                 url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX);
 
-            var scans = ctx.GetJsonClient().GetAsync(url).Result;
+            var scans = ctx.Json.CreateClient ().GetAsync(url, token).Result;
 
+            if (token.IsCancellationRequested)
+                return null;
 
             if (!scans.IsSuccessStatusCode)
                 throw new InvalidOperationException(scans.ReasonPhrase);

@@ -52,8 +52,8 @@ namespace ConsoleRunner
             .withPassword(Config.Credentials.Password);
 
             using (CancellationTokenSource t = new CancellationTokenSource())
-            using (CxRestContext ctx = builder.build())
             {
+                CxRestContext ctx = builder.build();
                 Transformer.doTransform(2, Config.Service.StateDataStoragePath, ctx, 
                     MakeFactory (),
                     new RecordNames()

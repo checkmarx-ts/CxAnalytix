@@ -5,12 +5,17 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace CxRestClient
 {
     public class CxPresets
     {
         private static String URL_SUFFIX = "cxrestapi/sast/presets";
+
+        private CxPresets()
+        { }
+
 
         public struct Preset
         {
@@ -75,9 +80,13 @@ namespace CxRestClient
             }
         }
 
-        public static IEnumerable<Preset> GetPresets(CxRestContext ctx)
+        public static IEnumerable<Preset> GetPresets(CxRestContext ctx, CancellationToken token)
         {
-            var presets = ctx.GetJsonClient ().GetAsync(CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)).Result;
+            var presets = ctx.Json.CreateClient().GetAsync(
+                CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result;
+
+            if (token.IsCancellationRequested)
+                return null;
 
             if (!presets.IsSuccessStatusCode)
                 throw new InvalidOperationException(presets.ReasonPhrase);

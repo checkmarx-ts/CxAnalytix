@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace CxRestClient
 {
@@ -11,6 +12,9 @@ namespace CxRestClient
     {
 
         private static String URL_SUFFIX = "cxrestapi/sast/scanSettings";
+
+        private CxProjectScanSettings ()
+        { }
 
         public class ScanSettings
         {
@@ -57,12 +61,15 @@ namespace CxRestClient
             }
         }
 
-        public static ScanSettings GetScanSettings(CxRestContext ctx, int projectId)
+        public static ScanSettings GetScanSettings(CxRestContext ctx, CancellationToken token, int projectId)
         {
             String restUrl = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX);
 
-            var settings = ctx.GetJsonClient().GetAsync(CxRestContext.MakeUrl(restUrl,
-                Convert.ToString(projectId))).Result;
+            var settings = ctx.Json.CreateClient ().GetAsync(CxRestContext.MakeUrl(restUrl,
+                Convert.ToString(projectId)), token).Result;
+
+            if (token.IsCancellationRequested)
+                return null;
 
             if (!settings.IsSuccessStatusCode)
                 throw new InvalidOperationException(settings.ReasonPhrase);

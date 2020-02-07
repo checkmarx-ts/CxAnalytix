@@ -5,12 +5,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace CxRestClient
 {
     public class CxProjects
     {
         private static String URL_SUFFIX = "cxrestapi/projects";
+
+        private CxProjects ()
+        { }
 
         public struct Project
         {
@@ -26,11 +30,13 @@ namespace CxRestClient
             private JToken _json;
             private JTokenReader _reader;
             private CxRestContext _ctx;
-            internal ProjectReader(JToken json, CxRestContext ctx)
+            private CancellationToken _token;
+            internal ProjectReader(JToken json, CxRestContext ctx, CancellationToken token)
             {
                 _json = json;
                 _ctx = ctx;
                 _reader = new JTokenReader(_json);
+                _token = token;
             }
 
             public Project Current => _curProject;
@@ -43,7 +49,7 @@ namespace CxRestClient
 
             public IEnumerator<Project> GetEnumerator()
             {
-                return new ProjectReader(_json, _ctx);
+                return new ProjectReader(_json, _ctx, _token);
             }
 
             Project _curProject = new Project();
@@ -61,7 +67,7 @@ namespace CxRestClient
 
             public bool MoveNext()
             {
-                while (_reader.Read())
+                while (_reader.Read() && !_token.IsCancellationRequested)
                     if (_reader.CurrentToken.Type == JTokenType.Property)
                         if (((JProperty)_reader.CurrentToken).Name.CompareTo("id") == 0)
                         {
@@ -92,7 +98,7 @@ namespace CxRestClient
                             }
 
                             _curProject.PresetId = CxProjectScanSettings.GetScanSettings
-                                (_ctx, _curProject.ProjectId).PresetId;
+                                (_ctx, _token, _curProject.ProjectId).PresetId;
 
                             return true;
                         }
@@ -107,15 +113,19 @@ namespace CxRestClient
 
             IEnumerator IEnumerable.GetEnumerator()
             {
-                return new ProjectReader(_json, _ctx);
+                return new ProjectReader(_json, _ctx, _token);
             }
 
         }
 
 
-        public static IEnumerable<Project> GetProjects(CxRestContext ctx)
+        public static IEnumerable<Project> GetProjects(CxRestContext ctx, CancellationToken token)
         {
-            var projects = ctx.GetJsonClient().GetAsync(CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)).Result;
+            var projects = ctx.Json.CreateClient ().GetAsync(
+                CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result;
+
+            if (token.IsCancellationRequested)
+                return null;
 
             if (!projects.IsSuccessStatusCode)
                 throw new InvalidOperationException(projects.ReasonPhrase);
@@ -123,7 +133,7 @@ namespace CxRestClient
             JToken jt = JToken.Load(new JsonTextReader(new StreamReader
                 (projects.Content.ReadAsStreamAsync().Result)));
 
-            return new ProjectReader(jt, ctx);
+            return new ProjectReader(jt, ctx, token);
         }
     }
 }

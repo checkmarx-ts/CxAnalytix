@@ -31,15 +31,20 @@ namespace CxAnalytics.TransformLogic
         public static void doTransform(int concurrentThreads, String previousStatePath,
             CxRestContext ctx, IOutputFactory outFactory, RecordNames records, CancellationToken token)
         {
-            // TODO: Scan collection logic needs to use the CancellationToken.
-
-            var scansToProcess = GetListOfScans(previousStatePath, ctx);
+            var scansToProcess = GetListOfScans(previousStatePath, ctx, token);
 
             var project_info_out = outFactory.newInstance(records.ProjectInfo);
             OutputProjectInfoRecords(scansToProcess, project_info_out);
 
             var scan_summary_out = outFactory.newInstance(records.SASTScanSummary);
+            OutputScanSummary(scansToProcess, scan_summary_out);
 
+
+
+        }
+
+        private static void OutputScanSummary(ScanData scansToProcess, IOutput scan_summary_out)
+        {
             foreach (var scanRecord in scansToProcess.ScanDesciptors)
             {
                 Dictionary<String, String> flat = new Dictionary<string, string>();
@@ -62,7 +67,6 @@ namespace CxAnalytics.TransformLogic
 
                 scan_summary_out.write(flat);
             }
-
         }
 
         private static void OutputProjectInfoRecords(ScanData scansToProcess, IOutput project_info_out)
@@ -109,19 +113,20 @@ namespace CxAnalytics.TransformLogic
             public Dictionary<String, CxSastScans.Scan> ScanDataDetails { get; private set; }
         }
 
-        private static ScanData GetListOfScans(string previousStatePath, CxRestContext ctx)
+        private static ScanData GetListOfScans(string previousStatePath, CxRestContext ctx, 
+            CancellationToken token)
         {
             DateTime checkStart = DateTime.Now;
 
             // Populate the data resolver with teams and presets
             DataResolver dr = new DataResolver();
 
-            var presetEnum = CxPresets.GetPresets(ctx);
+            var presetEnum = CxPresets.GetPresets(ctx, token);
 
             foreach (var preset in presetEnum)
                 dr.addPreset(preset.PresetId, preset.PresetName);
 
-            var teamEnum = CxTeams.GetTeams(ctx);
+            var teamEnum = CxTeams.GetTeams(ctx, token);
 
             foreach (var team in teamEnum)
                 dr.addTeam(team.TeamId, team.TeamName);
@@ -129,7 +134,7 @@ namespace CxAnalytics.TransformLogic
             // Now populate the project resolver with the projects
             ProjectResolver pr = dr.Resolve(previousStatePath);
 
-            var projects = CxProjects.GetProjects(ctx);
+            var projects = CxProjects.GetProjects(ctx, token);
 
             foreach (var p in projects)
                 pr.addProject(p.TeamId, p.PresetId, p.ProjectId, p.ProjectName);
@@ -140,7 +145,7 @@ namespace CxAnalytics.TransformLogic
             ScanData retVal = new ScanData();
 
             // Get SAST and SCA scans
-            var sastScans = CxSastScans.GetScans(ctx, CxSastScans.ScanStatus.Finished);
+            var sastScans = CxSastScans.GetScans(ctx, token, CxSastScans.ScanStatus.Finished);
 
             foreach (var sastScan in sastScans)
             {
