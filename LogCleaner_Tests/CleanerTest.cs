@@ -23,7 +23,7 @@ namespace Tests
             File.CreateText(_newFile).Close();
             File.CreateText(_outOfScopeFile).Close();
             File.CreateText(_oldFile).Close();
-            File.SetLastWriteTime(_oldFile, DateTime.UnixEpoch);
+            File.SetLastWriteTime(_oldFile, DateTime.UnixEpoch.AddDays(1));
         }
 
         [TearDown]
