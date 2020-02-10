@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -6,6 +7,9 @@ namespace LogCleaner
 {
     public class Cleaner
     {
+
+        private static ILog _log = LogManager.GetLogger(typeof(Cleaner));
+
         private Cleaner()
         { }
 
@@ -26,8 +30,11 @@ namespace LogCleaner
            {
                DateTime lastWrite = File.GetLastWriteTime(file);
 
-               if (lastWrite.CompareTo(deleteBefore) < 0)
+           if (lastWrite.CompareTo(deleteBefore) < 0)
+           {
+                   _log.Info($"Deleting file {file} that was last touched on {lastWrite}.");
                    File.Delete(file);
+               }
            });
         }
 
