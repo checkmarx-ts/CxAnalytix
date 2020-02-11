@@ -21,7 +21,7 @@ namespace CxAnalytics.Configuration
 
             _cfgManager = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.None);
 
-            Credentials = _cfgManager.Sections[CxCredentials.SECTION_NAME] as CxCredentials;
+            Credentials = GetConfig<CxCredentials>(CxCredentials.SECTION_NAME);
             if (Credentials != null && !Credentials.SectionInformation.IsProtected)
             {
                 Credentials.SectionInformation.ProtectSection("DataProtectionConfigurationProvider");
@@ -38,8 +38,8 @@ namespace CxAnalytics.Configuration
                 }
             }
 
-            Connection = _cfgManager.Sections[CxConnection.SECTION_NAME] as CxConnection;
-            Service = _cfgManager.Sections[CxAnalyticsService.SECTION_NAME] as CxAnalyticsService;
+            Connection = GetConfig<CxConnection>(CxConnection.SECTION_NAME);
+            Service = GetConfig<CxAnalyticsService>(CxAnalyticsService.SECTION_NAME);
         }
 
 
