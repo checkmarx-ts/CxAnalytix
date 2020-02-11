@@ -1,10 +1,13 @@
 ﻿using CxRestClient;
-using Newtonsoft.Json;
+using log4net;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
+using System.Xml;
+using System.Xml.Linq;
 
 namespace CxAnalytics.TransformLogic
 {
@@ -13,6 +16,8 @@ namespace CxAnalytics.TransformLogic
     /// </summary>
     public class Transformer
     {
+        private static ILog _log = LogManager.GetLogger(typeof (Transformer) );
+
         private static readonly String DATE_FORMAT = "yyyy-MM-ddTHH:mm:ss.fffzzz";
         /// <summary>
         /// The main logic for invoking a transformation.  It does not return until a sweep
@@ -31,68 +36,105 @@ namespace CxAnalytics.TransformLogic
         public static void doTransform(int concurrentThreads, String previousStatePath,
             CxRestContext ctx, IOutputFactory outFactory, RecordNames records, CancellationToken token)
         {
+            // TODO: Some reports may not be generated for some reason, so we skip compiling 
+            // details of that scan in instances where the report is not created.
+            
+            ParallelOptions threadOpts = new ParallelOptions()
+            {
+                CancellationToken = token,
+                MaxDegreeOfParallelism = concurrentThreads
+            };
+
             var scansToProcess = GetListOfScans(previousStatePath, ctx, token);
 
+            ConcurrentDictionary<int, bool> processedProjects = 
+                new ConcurrentDictionary<int, bool>();
+
             var project_info_out = outFactory.newInstance(records.ProjectInfo);
-            OutputProjectInfoRecords(scansToProcess, project_info_out);
-
             var scan_summary_out = outFactory.newInstance(records.SASTScanSummary);
-            OutputScanSummary(scansToProcess, scan_summary_out);
 
+            Parallel.ForEach<ScanDescriptor>(scansToProcess.ScanDesciptors, threadOpts,
+                (scan) =>
+                {
+                    var report = CxSastXmlReport.GetXmlReport(ctx, token, scan.ScanId);
+
+                    ProcessReport(scan, report);
+
+                    if (processedProjects.TryAdd(scan.Project.ProjectId, true))
+                        OutputProjectInfoRecords(scan, project_info_out);
+
+                    OutputScanSummary(scan, scansToProcess, scan_summary_out);
+                }
+
+                );
 
 
         }
 
-        private static void OutputScanSummary(ScanData scansToProcess, IOutput scan_summary_out)
+
+        private static void ProcessReport(ScanDescriptor scan, Stream report)
         {
-            foreach (var scanRecord in scansToProcess.ScanDesciptors)
-            {
-                Dictionary<String, String> flat = new Dictionary<string, string>();
-                AddPrimaryKeyElements(scanRecord, flat);
-                flat.Add("ScanId", scanRecord.ScanId);
-                flat.Add("ScanProduct", scanRecord.ScanProduct);
-                flat.Add("ScanType", scanRecord.ScanType);
-                flat.Add("ScanFinished", scanRecord.FinishedStamp.ToString(DATE_FORMAT));
-                flat.Add("ScanStarted", scansToProcess.ScanDataDetails[scanRecord.ScanId].StartTime.ToString(DATE_FORMAT));
-                flat.Add("ScanRisk", scansToProcess.ScanDataDetails[scanRecord.ScanId].ScanRisk.ToString());
-                flat.Add("ScanRiskSeverity", scansToProcess.ScanDataDetails[scanRecord.ScanId].ScanRiskSeverity.ToString());
-                flat.Add("LinesOfCode", scansToProcess.ScanDataDetails[scanRecord.ScanId].LinesOfCode.ToString());
-                flat.Add("FailedLinesOfCode", scansToProcess.ScanDataDetails[scanRecord.ScanId].FailedLinesOfCode.ToString());
-                flat.Add("FileCount", scansToProcess.ScanDataDetails[scanRecord.ScanId].FileCount.ToString());
-                flat.Add("CxVersion", scansToProcess.ScanDataDetails[scanRecord.ScanId].CxVersion);
-                flat.Add("Languages", scansToProcess.ScanDataDetails[scanRecord.ScanId].Languages);
 
+            using (XmlReader xr = XmlReader.Create(report))
+                while (xr.Read())
+                {
+                    if (xr.NodeType == XmlNodeType.Element)
+                    {
+                        if (xr.Name.CompareTo("CxXMLResults") == 0)
+                        {
+                            _log.Debug("Processing attributes in CxXMLResults.");
+                            scan.Preset = xr.GetAttribute("Preset");
+                        }
 
-                // TODO: High, Med, Low, Preset (specific to scan, not project)
+                        if (xr.Name.CompareTo("Result") == 0)
+                            scan.IncrementSeverity(xr.GetAttribute("Severity"));
 
-                scan_summary_out.write(flat);
-            }
+                    }
+
+                }
         }
 
-        private static void OutputProjectInfoRecords(ScanData scansToProcess, IOutput project_info_out)
+        private static void OutputScanSummary(ScanDescriptor scanRecord, ScanData scansToProcess, 
+            IOutput scan_summary_out)
         {
-            Dictionary<int, bool> processed = new Dictionary<int, bool>();
-            foreach (var scanRecord in scansToProcess.ScanDesciptors)
-            {
-                if (!processed.TryAdd(scanRecord.Project.ProjectId, true))
-                    continue;
+            Dictionary<String, String> flat = new Dictionary<string, string>();
+            AddPrimaryKeyElements(scanRecord, flat);
+            flat.Add("ScanId", scanRecord.ScanId);
+            flat.Add("ScanProduct", scanRecord.ScanProduct);
+            flat.Add("ScanType", scanRecord.ScanType);
+            flat.Add("ScanFinished", scanRecord.FinishedStamp.ToString(DATE_FORMAT));
+            flat.Add("ScanStarted", scansToProcess.ScanDataDetails[scanRecord.ScanId].StartTime.ToString(DATE_FORMAT));
+            flat.Add("ScanRisk", scansToProcess.ScanDataDetails[scanRecord.ScanId].ScanRisk.ToString());
+            flat.Add("ScanRiskSeverity", scansToProcess.ScanDataDetails[scanRecord.ScanId].ScanRiskSeverity.ToString());
+            flat.Add("LinesOfCode", scansToProcess.ScanDataDetails[scanRecord.ScanId].LinesOfCode.ToString());
+            flat.Add("FailedLinesOfCode", scansToProcess.ScanDataDetails[scanRecord.ScanId].FailedLinesOfCode.ToString());
+            flat.Add("FileCount", scansToProcess.ScanDataDetails[scanRecord.ScanId].FileCount.ToString());
+            flat.Add("CxVersion", scansToProcess.ScanDataDetails[scanRecord.ScanId].CxVersion);
+            flat.Add("Languages", scansToProcess.ScanDataDetails[scanRecord.ScanId].Languages);
+            flat.Add("Preset", scanRecord.Preset);
+            foreach (var sev in scanRecord.SeverityCounts.Keys)
+                flat.Add(sev, Convert.ToString(scanRecord.SeverityCounts[sev]));
 
-                Dictionary<String, String> flat = new Dictionary<string, string>();
-                AddPrimaryKeyElements(scanRecord, flat);
+            scan_summary_out.write(flat);
+        }
 
-                flat.Add("PresetName", scanRecord.Project.PresetName);
+        private static void OutputProjectInfoRecords(ScanDescriptor scanRecord, IOutput project_info_out)
+        {
+            Dictionary<String, String> flat = new Dictionary<string, string>();
+            AddPrimaryKeyElements(scanRecord, flat);
 
-                foreach (var lastScanProduct in scanRecord.Project.LatestScanDateByProduct.Keys)
-                    flat.Add($"{lastScanProduct}_LastScanDate",
-                        scanRecord.Project.LatestScanDateByProduct[lastScanProduct].ToString(DATE_FORMAT));
+            flat.Add("PresetName", scanRecord.Project.PresetName);
 
-                foreach (var scanCountProduct in scanRecord.Project.ScanCountByProduct.Keys)
-                    flat.Add($"{scanCountProduct}_Scans",
-                        scanRecord.Project.ScanCountByProduct[scanCountProduct].ToString());
+            foreach (var lastScanProduct in scanRecord.Project.LatestScanDateByProduct.Keys)
+                flat.Add($"{lastScanProduct}_LastScanDate",
+                    scanRecord.Project.LatestScanDateByProduct[lastScanProduct].ToString(DATE_FORMAT));
 
-                project_info_out.write(flat);
+            foreach (var scanCountProduct in scanRecord.Project.ScanCountByProduct.Keys)
+                flat.Add($"{scanCountProduct}_Scans",
+                    scanRecord.Project.ScanCountByProduct[scanCountProduct].ToString());
 
-            }
+            project_info_out.write(flat);
+
         }
 
         private static void AddPrimaryKeyElements(ScanDescriptor rec, Dictionary<string, string> flat)
@@ -104,7 +146,7 @@ namespace CxAnalytics.TransformLogic
 
         private class ScanData
         {
-            public ScanData ()
+            public ScanData()
             {
                 ScanDataDetails = new Dictionary<string, CxSastScans.Scan>();
             }
@@ -113,7 +155,7 @@ namespace CxAnalytics.TransformLogic
             public Dictionary<String, CxSastScans.Scan> ScanDataDetails { get; private set; }
         }
 
-        private static ScanData GetListOfScans(string previousStatePath, CxRestContext ctx, 
+        private static ScanData GetListOfScans(string previousStatePath, CxRestContext ctx,
             CancellationToken token)
         {
             DateTime checkStart = DateTime.Now;

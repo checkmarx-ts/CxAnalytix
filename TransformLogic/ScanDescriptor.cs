@@ -11,6 +11,7 @@ namespace CxAnalytics.TransformLogic
     {
         internal ScanDescriptor()
         {
+            SeverityCounts = new Dictionary<string, long>();
         }
 
         /// <summary>
@@ -33,6 +34,29 @@ namespace CxAnalytics.TransformLogic
         /// The timestamp of when the scan finished.
         /// </summary>
         public DateTime FinishedStamp { get; set; }
+        /// <summary>
+        /// The name of the preset used for this scan, which may differ from
+        /// the preset that is currently configured for the project.
+        /// </summary>
+        public String Preset { get; set; }
+        /// <summary>
+        /// Stores the counts for each severity.
+        /// </summary>
+        public Dictionary<String, long> SeverityCounts { get; private set; }
+
+        /// <summary>
+        /// Increases the count of a severity with a given name.
+        /// </summary>
+        /// <param name="sevName"></param>
+        public void IncrementSeverity (String sevName)
+        {
+            if (SeverityCounts.ContainsKey(sevName))
+            {
+                SeverityCounts[sevName] += 1;
+            }
+            else
+                SeverityCounts.Add(sevName, 1);
+        }
 
     }
 }

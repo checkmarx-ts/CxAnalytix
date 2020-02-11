@@ -68,29 +68,6 @@ namespace CxRestClient
                 return new ScansReader(_json);
             }
 
-            private static bool MoveToNextProperty(JTokenReader reader)
-            {
-                while (reader.Read())
-                {
-                    if (reader.CurrentToken.Type == JTokenType.Property)
-                        return true;
-                }
-
-                return false;
-            }
-
-            private static bool MoveToNextProperty(JTokenReader reader, String named)
-            {
-                while (MoveToNextProperty(reader))
-                {
-                    if (((JProperty)reader.CurrentToken).Name.CompareTo(named) == 0)
-                        return true;
-                }
-
-                return false;
-            }
-
-
             private String GetLanguages(JToken languageArray)
             {
                 LinkedList<String> langs = new LinkedList<string>();
@@ -108,7 +85,7 @@ namespace CxRestClient
 
             public bool MoveNext()
             {
-                while (MoveToNextProperty(_reader))
+                while (JsonUtils.MoveToNextProperty(_reader))
                 {
                     if (((JProperty)_reader.CurrentToken).Name.CompareTo("id") == 0)
                     {
@@ -118,60 +95,60 @@ namespace CxRestClient
                         };
 
 
-                        if (!MoveToNextProperty(_reader, "project"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "project"))
                             return false;
 
-                        if (!MoveToNextProperty(_reader, "id"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "id"))
                             return false;
 
                         _currentScan.ProjectId = Convert.ToInt32(((JProperty)_reader.CurrentToken).Value.ToString());
 
-                        if (!MoveToNextProperty(_reader, "dateAndTime"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "dateAndTime"))
                             return false;
 
-                        if (!MoveToNextProperty(_reader, "startedOn"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "startedOn"))
                             return false;
 
                         _currentScan.StartTime = DateTime.Parse(((JProperty)_reader.CurrentToken).Value.ToString());
 
-                        if (!MoveToNextProperty(_reader, "finishedOn"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "finishedOn"))
                             return false;
 
                         _currentScan.FinishTime = DateTime.Parse(((JProperty)_reader.CurrentToken).Value.ToString());
 
-                        if (!MoveToNextProperty(_reader, "scanState"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "scanState"))
                             return false;
 
-                        if (!MoveToNextProperty(_reader, "filesCount"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "filesCount"))
                             return false;
                         _currentScan.FileCount = Convert.ToInt32 (((JProperty)_reader.CurrentToken).Value);
 
-                        if (!MoveToNextProperty(_reader, "linesOfCode"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "linesOfCode"))
                             return false;
 
                         _currentScan.LinesOfCode = Convert.ToInt64(((JProperty)_reader.CurrentToken).Value);
 
-                        if (!MoveToNextProperty(_reader, "failedLinesOfCode"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "failedLinesOfCode"))
                             return false;
 
                         _currentScan.FailedLinesOfCode = Convert.ToInt64(((JProperty)_reader.CurrentToken).Value);
 
-                        if (!MoveToNextProperty(_reader, "cxVersion"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "cxVersion"))
                             return false;
 
                         _currentScan.CxVersion = ((JProperty)_reader.CurrentToken).Value.ToString ();
 
-                        if (!MoveToNextProperty(_reader, "languageStateCollection"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "languageStateCollection"))
                             return false;
 
                         _currentScan.Languages = GetLanguages(_reader.CurrentToken);
 
-                        if (!MoveToNextProperty(_reader, "isPublic"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "isPublic"))
                             return false;
 
                         bool isPublic = Convert.ToBoolean(((JProperty) _reader.CurrentToken).Value.ToString());
 
-                        if (!MoveToNextProperty(_reader, "isIncremental"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "isIncremental"))
                             return false;
 
                         if (Convert.ToBoolean(((JProperty)_reader.CurrentToken).Value.ToString()))
@@ -180,17 +157,17 @@ namespace CxRestClient
                             _currentScan.ScanType = "Full";
 
 
-                        if (!MoveToNextProperty(_reader, "scanRisk"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "scanRisk"))
                             return false;
 
                         _currentScan.ScanRisk = Convert.ToInt32(((JProperty)_reader.CurrentToken).Value);
 
-                        if (!MoveToNextProperty(_reader, "scanRiskSeverity"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "scanRiskSeverity"))
                             return false;
 
                         _currentScan.ScanRiskSeverity = Convert.ToInt32(((JProperty)_reader.CurrentToken).Value);
 
-                        if (!MoveToNextProperty(_reader, "partialScanReasons"))
+                        if (!JsonUtils.MoveToNextProperty(_reader, "partialScanReasons"))
                             return false;
 
                         // IsPublic?
@@ -203,9 +180,7 @@ namespace CxRestClient
 
                         return true;
                     }
-
                 }
-
                 return false;
             }
 

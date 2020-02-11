@@ -66,11 +66,11 @@ Some of the specified data records need to be modified given they don't have all
 * &#9745; Scan Risk Severity (added)
 * &#9745; Cx Version (added)
 * &#9745; Languages (added)
-* &#9744; Preset
-* &#9744; High Count
-* &#9744; Medium Count
-* &#9744; Low Count
-* &#9744; Information (added)
+* &#9745; Preset
+* &#9745; High
+* &#9745; Medium
+* &#9745; Low
+* &#9745; Information (added)
 
 ## SAST Vulnerability Details
 

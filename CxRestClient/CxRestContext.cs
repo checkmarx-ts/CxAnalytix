@@ -53,6 +53,7 @@ namespace CxRestClient
         public String Url { get; internal set; }
         public TimeSpan Timeout { get; internal set; }
         public ClientFactory Json { get; internal set; }
+        public ClientFactory Xml { get; internal set; }
 
 
         private Object _tokenLock = new object();
@@ -63,7 +64,7 @@ namespace CxRestClient
             {
                 lock(_tokenLock)
                 {
-                    if (DateTime.Now.CompareTo(Token.ExpireTime) >= 0)
+                    if (DateTime.Now.CompareTo(_token.ExpireTime) >= 0)
                         _token = GetLoginToken(Url, _token.ReauthContent, ValidateSSL);
                 }
 
@@ -230,6 +231,7 @@ namespace CxRestClient
                 };
 
                 retVal.Json = new ClientFactory("application/json", retVal);
+                retVal.Xml = new ClientFactory("application/xml", retVal);
 
                 return retVal;
             }
