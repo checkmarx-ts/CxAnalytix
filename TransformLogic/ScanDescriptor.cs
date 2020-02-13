@@ -44,6 +44,13 @@ namespace CxAnalytics.TransformLogic
         /// </summary>
         public Dictionary<String, long> SeverityCounts { get; private set; }
 
+        public String Initiator { get; set; }
+        public String DeepLink { get; set; }
+        public String ScanTime { get; set; }
+        public DateTime ReportCreateTime { get; set; }
+        public String Comments { get; set; }
+        public String SourceOrigin { get; set; }
+
         /// <summary>
         /// Increases the count of a severity with a given name.
         /// </summary>

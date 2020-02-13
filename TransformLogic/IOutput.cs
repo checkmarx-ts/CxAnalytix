@@ -15,6 +15,6 @@ namespace CxAnalytics.TransformLogic
         /// format.
         /// </summary>
         /// <param name="record">The record data.</param>
-        void write(Dictionary<String, String> record);
+        void write(IDictionary<String, String> record);
     }
 }

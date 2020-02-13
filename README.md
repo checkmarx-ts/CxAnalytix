@@ -51,52 +51,53 @@ Some of the specified data records need to be modified given they don't have all
 
 ## SAST Scan Summary Fields
 
-* &#9745; Project Id (added)
+* &#9745; Project Id
 * &#9745; Project Name
 * &#9745; Team Name
-* &#9745; Scan Id (added)
-* &#9745; Scan Type (added)
-* &#9745; Scan Product (added)
+* &#9745; Scan Id
+* &#9745; Scan Type
+* &#9745; Scan Product
 * &#9745; LoC
-* &#9745; Failed LoC (added)
-* &#9745; File Count (added)
+* &#9745; Failed LoC
+* &#9745; File Count
 * &#9745; Scan Start
 * &#9745; Scan Finish
 * &#9745; Scan Risk
-* &#9745; Scan Risk Severity (added)
-* &#9745; Cx Version (added)
-* &#9745; Languages (added)
+* &#9745; Scan Risk Severity
+* &#9745; Cx Version
+* &#9745; Languages
 * &#9745; Preset
 * &#9745; High
 * &#9745; Medium
 * &#9745; Low
-* &#9745; Information (added)
+* &#9745; Information
 
 ## SAST Vulnerability Details
 
-* &#9744; Project Name
-* &#9744; Team Name
-* &#9744; Scan ID
-* &#9744; Scan Type (added)
-* &#9744; Unique Vulnerability ID
-* &#9744; Status
-* &#9744; State
-* &#9744; Query Name
-* &#9744; Severity
-* &#9744; DeepLink
-* &#9744; File Name
-* &#9744; Line
-* &#9744; Column
-* &#9744; Node ID
-* &#9744; Name
-* &#9744; Type
-* &#9744; Length
-* &#9744; Snippet (must be escaped so it doesn't cause JSON problems)
-
+* &#9745; Project Name
+* &#9745; Project Id
+* &#9745; Team Name
+* &#9745; Scan ID
+* &#9745; Scan Product
+* &#9745; Scan Type
+* &#9745; Unique Vulnerability ID
+* &#9745; Status
+* &#9745; State
+* &#9745; Query Name
+* &#9745; Severity
+* &#9745; DeepLink
+* &#9745; FileName
+* &#9745; Line
+* &#9745; Column
+* &#9745; Node ID
+* &#9745; Name
+* &#9745; Type
+* &#9745; Length
+* &#9745; Snippet
 
 ## OSA Scan Summary
 
-* &#9744; Project Name
+* &#9745; Project Name
 * &#9744; Team Name (added)
 * &#9744; Scan ID (added)
 * &#9744; Scan Start

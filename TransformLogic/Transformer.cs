@@ -16,7 +16,24 @@ namespace CxAnalytics.TransformLogic
     /// </summary>
     public class Transformer
     {
-        private static ILog _log = LogManager.GetLogger(typeof (Transformer) );
+        private static readonly String KEY_SCANID = "ScanId";
+        private static readonly String KEY_SCANPRODUCT = "ScanProduct";
+        private static readonly String KEY_SCANTYPE = "ScanType";
+        private static readonly String KEY_SCANFINISH = "ScanFinished";
+        private static readonly String KEY_SCANSTART = "ScanStart";
+        private static readonly String KEY_SCANRISK = "ScanRisk";
+        private static readonly String KEY_SCANRISKSEV = "ScanRiskSeverity";
+        private static readonly String KEY_LOC = "LinesOfCode";
+        private static readonly String KEY_FLOC = "FailedLinesOfCode";
+        private static readonly String KEY_FILECOUNT = "FileCount";
+        private static readonly String KEY_VERSION = "CxVersion";
+        private static readonly String KEY_LANGS = "Languages";
+        private static readonly String KEY_PRESET = "Preset";
+        private static readonly String KEY_PROJECTID = "ProjectId";
+        private static readonly String KEY_PROJECTNAME = "ProjectName";
+        private static readonly String KEY_TEAMNAME = "TeamName";
+
+        private static ILog _log = LogManager.GetLogger(typeof(Transformer));
 
         private static readonly String DATE_FORMAT = "yyyy-MM-ddTHH:mm:ss.fffzzz";
         /// <summary>
@@ -36,9 +53,6 @@ namespace CxAnalytics.TransformLogic
         public static void doTransform(int concurrentThreads, String previousStatePath,
             CxRestContext ctx, IOutputFactory outFactory, RecordNames records, CancellationToken token)
         {
-            // TODO: Some reports may not be generated for some reason, so we skip compiling 
-            // details of that scan in instances where the report is not created.
-            
             ParallelOptions threadOpts = new ParallelOptions()
             {
                 CancellationToken = token,
@@ -47,18 +61,23 @@ namespace CxAnalytics.TransformLogic
 
             var scansToProcess = GetListOfScans(previousStatePath, ctx, token);
 
-            ConcurrentDictionary<int, bool> processedProjects = 
+            ConcurrentDictionary<int, bool> processedProjects =
                 new ConcurrentDictionary<int, bool>();
 
             var project_info_out = outFactory.newInstance(records.ProjectInfo);
             var scan_summary_out = outFactory.newInstance(records.SASTScanSummary);
+            var scan_detail_out = outFactory.newInstance(records.SASTScanDetail);
 
             Parallel.ForEach<ScanDescriptor>(scansToProcess.ScanDesciptors, threadOpts,
                 (scan) =>
                 {
+                    _log.Debug($"Retrieving XML Report for scan {scan.ScanId}");
                     var report = CxSastXmlReport.GetXmlReport(ctx, token, scan.ScanId);
+                    _log.Debug($"XML Report for scan {scan.ScanId} retrieved.");
 
-                    ProcessReport(scan, report);
+                    _log.Debug($"Processing XML report for scan {scan.ScanId}");
+                    ProcessReport(scan, report, scan_detail_out);
+                    _log.Debug($"XML Report for scan {scan.ScanId} processed.");
 
                     if (processedProjects.TryAdd(scan.Project.ProjectId, true))
                         OutputProjectInfoRecords(scan, project_info_out);
@@ -72,8 +91,21 @@ namespace CxAnalytics.TransformLogic
         }
 
 
-        private static void ProcessReport(ScanDescriptor scan, Stream report)
+        private static void ProcessReport(ScanDescriptor scan, Stream report,
+            IOutput scanDetailOut)
         {
+            SortedDictionary<String, String> reportRec = 
+                new SortedDictionary<string, string>();
+            AddPrimaryKeyElements(scan, reportRec);
+            reportRec.Add(KEY_SCANID, scan.ScanId);
+            reportRec.Add(KEY_SCANPRODUCT, scan.ScanProduct);
+            reportRec.Add(KEY_SCANTYPE, scan.ScanType);
+
+            SortedDictionary<String, String> curResultRec = null;
+            SortedDictionary<String, String> curQueryRec = null;
+            SortedDictionary<String, String> curPath = null;
+            SortedDictionary<String, String> curPathNode = null;
+            bool inSnippet = false;
 
             using (XmlReader xr = XmlReader.Create(report))
                 while (xr.Read())
@@ -82,36 +114,197 @@ namespace CxAnalytics.TransformLogic
                     {
                         if (xr.Name.CompareTo("CxXMLResults") == 0)
                         {
-                            _log.Debug("Processing attributes in CxXMLResults.");
+                            _log.Debug($"[Scan: {scan.ScanId}] Processing attributes in CxXMLResults.");
+
                             scan.Preset = xr.GetAttribute("Preset");
+                            scan.Initiator = xr.GetAttribute("InitiatorName");
+                            scan.DeepLink = xr.GetAttribute("DeepLink");
+                            scan.ScanTime = xr.GetAttribute("ScanTime");
+                            scan.ReportCreateTime = DateTime.Parse(xr.GetAttribute
+                                ("ReportCreationTime"));
+                            scan.Comments = xr.GetAttribute("ScanComments");
+                            scan.SourceOrigin = xr.GetAttribute("SourceOrigin");
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("Query") == 0)
+                        {
+                            _log.Debug($"[Scan: {scan.ScanId}] Processing attributes in Query " +
+                                $"[{xr.GetAttribute("id")} - {xr.GetAttribute("name")}].");
+
+                            curQueryRec = new SortedDictionary<string, string>
+                                (reportRec);
+
+                            curQueryRec.Add("QueryCategories", xr.GetAttribute("categories"));
+                            curQueryRec.Add("QueryId", xr.GetAttribute("id"));
+                            curQueryRec.Add("QueryCweId", xr.GetAttribute("cweId"));
+                            curQueryRec.Add("QueryName", xr.GetAttribute("name"));
+                            curQueryRec.Add("QueryGroup", xr.GetAttribute("group"));
+                            curQueryRec.Add("QuerySeverity", xr.GetAttribute("Severity"));
+                            curQueryRec.Add("QueryLanguage", xr.GetAttribute("Language"));
+                            curQueryRec.Add("QueryVersionCode", xr.GetAttribute("QueryVersionCode"));
+                            continue;
                         }
 
                         if (xr.Name.CompareTo("Result") == 0)
+                        {
+                            _log.Debug($"[Scan: {scan.ScanId}] Processing attributes in Result " +
+                                $"[{xr.GetAttribute("NodeId")}].");
+
                             scan.IncrementSeverity(xr.GetAttribute("Severity"));
 
+                            curResultRec = new SortedDictionary<string, string>(curQueryRec);
+                            curResultRec.Add("VulnerabilityId", xr.GetAttribute("NodeId"));
+                            curResultRec.Add("SinkFileName", xr.GetAttribute("FileName"));
+                            curResultRec.Add("Status", xr.GetAttribute("Status"));
+                            curResultRec.Add("SinkLine", xr.GetAttribute("Line"));
+                            curResultRec.Add("SinkColumn", xr.GetAttribute("Column"));
+                            curResultRec.Add("FalsePositive", xr.GetAttribute("FalsePositive"));
+                            curResultRec.Add("ResultSeverity", xr.GetAttribute("Severity"));
+                            curResultRec.Add("Remark", xr.GetAttribute("Remark"));
+                            curResultRec.Add("ResultDeepLink", xr.GetAttribute("DeepLink"));
+                            // TODO: Translate state number to an appropriate string
+                            curResultRec.Add("State", xr.GetAttribute("State"));
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("Path") == 0)
+                        {
+                            curPath = new SortedDictionary<string, string>(curResultRec);
+                            curPath.Add("ResultId", xr.GetAttribute("ResultId"));
+                            curPath.Add("PathId", xr.GetAttribute("PathId"));
+                            curPath.Add("SimilarityId", xr.GetAttribute("SimilarityId"));
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("PathNode") == 0)
+                        {
+                            curPathNode = new SortedDictionary<string, string>(curPath);
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("FileName") == 0 && curPathNode != null)
+                        {
+                            curPathNode.Add("NodeFileName", xr.ReadElementContentAsString());
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("Line") == 0 && curPathNode != null && !inSnippet)
+                        {
+                            curPathNode.Add("NodeLine", xr.ReadElementContentAsString());
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("Column") == 0 && curPathNode != null)
+                        {
+                            curPathNode.Add("NodeColumn", xr.ReadElementContentAsString());
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("NodeId") == 0 && curPathNode != null)
+                        {
+                            curPathNode.Add("NodeId", xr.ReadElementContentAsString());
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("Name") == 0 && curPathNode != null)
+                        {
+                            curPathNode.Add("NodeName", xr.ReadElementContentAsString());
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("Type") == 0 && curPathNode != null)
+                        {
+                            curPathNode.Add("NodeType", xr.ReadElementContentAsString());
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("Length") == 0 && curPathNode != null)
+                        {
+                            curPathNode.Add("NodeLength", xr.ReadElementContentAsString());
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("Snippet") == 0 && curPathNode != null)
+                        {
+                            inSnippet = true;
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("Code") == 0 && curPathNode != null)
+                        {
+                            curPathNode.Add("NodeCodeSnippet", xr.ReadElementContentAsString());
+                            continue;
+                        }
                     }
 
+
+                    if (xr.NodeType == XmlNodeType.EndElement)
+                    {
+                        if (xr.Name.CompareTo("CxXMLResults") == 0)
+                        {
+                            _log.Debug($"[Scan: {scan.ScanId}] Finished processing CxXMLResults");
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("Query") == 0)
+                        {
+                            curQueryRec = null;
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("Result") == 0)
+                        {
+                            curResultRec = null;
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("Path") == 0)
+                        {
+                            curPath = null;
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("PathNode") == 0)
+                        {
+                            scanDetailOut.write(curPathNode);
+                            curPathNode = null;
+                            continue;
+                        }
+
+                        if (xr.Name.CompareTo("PathNode") == 0)
+                        {
+                            inSnippet = false;
+                            continue;
+                        }
+                    }
                 }
         }
 
-        private static void OutputScanSummary(ScanDescriptor scanRecord, ScanData scansToProcess, 
+        private static void OutputScanSummary(ScanDescriptor scanRecord, ScanData scansToProcess,
             IOutput scan_summary_out)
         {
-            Dictionary<String, String> flat = new Dictionary<string, string>();
+            SortedDictionary<String, String> flat = new SortedDictionary<string, string>();
             AddPrimaryKeyElements(scanRecord, flat);
-            flat.Add("ScanId", scanRecord.ScanId);
-            flat.Add("ScanProduct", scanRecord.ScanProduct);
-            flat.Add("ScanType", scanRecord.ScanType);
-            flat.Add("ScanFinished", scanRecord.FinishedStamp.ToString(DATE_FORMAT));
-            flat.Add("ScanStarted", scansToProcess.ScanDataDetails[scanRecord.ScanId].StartTime.ToString(DATE_FORMAT));
-            flat.Add("ScanRisk", scansToProcess.ScanDataDetails[scanRecord.ScanId].ScanRisk.ToString());
-            flat.Add("ScanRiskSeverity", scansToProcess.ScanDataDetails[scanRecord.ScanId].ScanRiskSeverity.ToString());
-            flat.Add("LinesOfCode", scansToProcess.ScanDataDetails[scanRecord.ScanId].LinesOfCode.ToString());
-            flat.Add("FailedLinesOfCode", scansToProcess.ScanDataDetails[scanRecord.ScanId].FailedLinesOfCode.ToString());
-            flat.Add("FileCount", scansToProcess.ScanDataDetails[scanRecord.ScanId].FileCount.ToString());
-            flat.Add("CxVersion", scansToProcess.ScanDataDetails[scanRecord.ScanId].CxVersion);
-            flat.Add("Languages", scansToProcess.ScanDataDetails[scanRecord.ScanId].Languages);
-            flat.Add("Preset", scanRecord.Preset);
+            flat.Add(KEY_SCANID, scanRecord.ScanId);
+            flat.Add(KEY_SCANPRODUCT, scanRecord.ScanProduct);
+            flat.Add(KEY_SCANTYPE, scanRecord.ScanType);
+            flat.Add(KEY_SCANFINISH, scanRecord.FinishedStamp.ToString(DATE_FORMAT));
+            flat.Add(KEY_SCANSTART, scansToProcess.ScanDataDetails[scanRecord.ScanId].StartTime.ToString(DATE_FORMAT));
+            flat.Add(KEY_SCANRISK, scansToProcess.ScanDataDetails[scanRecord.ScanId].ScanRisk.ToString());
+            flat.Add(KEY_SCANRISKSEV, scansToProcess.ScanDataDetails[scanRecord.ScanId].ScanRiskSeverity.ToString());
+            flat.Add(KEY_LOC, scansToProcess.ScanDataDetails[scanRecord.ScanId].LinesOfCode.ToString());
+            flat.Add(KEY_FLOC, scansToProcess.ScanDataDetails[scanRecord.ScanId].FailedLinesOfCode.ToString());
+            flat.Add(KEY_FILECOUNT, scansToProcess.ScanDataDetails[scanRecord.ScanId].FileCount.ToString());
+            flat.Add(KEY_VERSION, scansToProcess.ScanDataDetails[scanRecord.ScanId].CxVersion);
+            flat.Add(KEY_LANGS, scansToProcess.ScanDataDetails[scanRecord.ScanId].Languages);
+            flat.Add(KEY_PRESET, scanRecord.Preset);
+            flat.Add("Initiator", scanRecord.Initiator);
+            flat.Add("DeepLink", scanRecord.DeepLink);
+            flat.Add("ScanTime", scanRecord.ScanTime);
+            flat.Add("ReportCreationTime", scanRecord.ReportCreateTime.ToString (DATE_FORMAT) );
+            flat.Add("ScanComments", scanRecord.Comments);
+            flat.Add("SourceOrigin", scanRecord.SourceOrigin);
             foreach (var sev in scanRecord.SeverityCounts.Keys)
                 flat.Add(sev, Convert.ToString(scanRecord.SeverityCounts[sev]));
 
@@ -120,10 +313,10 @@ namespace CxAnalytics.TransformLogic
 
         private static void OutputProjectInfoRecords(ScanDescriptor scanRecord, IOutput project_info_out)
         {
-            Dictionary<String, String> flat = new Dictionary<string, string>();
+            SortedDictionary<String, String> flat = new SortedDictionary<string, string>();
             AddPrimaryKeyElements(scanRecord, flat);
 
-            flat.Add("PresetName", scanRecord.Project.PresetName);
+            flat.Add(KEY_PRESET, scanRecord.Project.PresetName);
 
             foreach (var lastScanProduct in scanRecord.Project.LatestScanDateByProduct.Keys)
                 flat.Add($"{lastScanProduct}_LastScanDate",
@@ -137,11 +330,11 @@ namespace CxAnalytics.TransformLogic
 
         }
 
-        private static void AddPrimaryKeyElements(ScanDescriptor rec, Dictionary<string, string> flat)
+        private static void AddPrimaryKeyElements(ScanDescriptor rec, IDictionary<string, string> flat)
         {
-            flat.Add("ProjectId", rec.Project.ProjectId.ToString());
-            flat.Add("ProjectName", rec.Project.ProjectName);
-            flat.Add("TeamName", rec.Project.TeamName);
+            flat.Add(KEY_PROJECTID, rec.Project.ProjectId.ToString());
+            flat.Add(KEY_PROJECTNAME, rec.Project.ProjectName);
+            flat.Add(KEY_TEAMNAME, rec.Project.TeamName);
         }
 
         private class ScanData

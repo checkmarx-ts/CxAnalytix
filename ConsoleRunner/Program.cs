@@ -54,7 +54,8 @@ namespace ConsoleRunner
             using (CancellationTokenSource t = new CancellationTokenSource())
             {
                 CxRestContext ctx = builder.build();
-                Transformer.doTransform(2, Config.Service.StateDataStoragePath, ctx, 
+                Transformer.doTransform(Config.Service.ConcurrentThreads, 
+                    Config.Service.StateDataStoragePath, ctx, 
                     MakeFactory (),
                     new RecordNames()
                     {
