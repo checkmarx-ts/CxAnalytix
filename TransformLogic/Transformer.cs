@@ -161,10 +161,10 @@ namespace CxAnalytics.TransformLogic
                             curResultRec.Add("SinkColumn", xr.GetAttribute("Column"));
                             curResultRec.Add("FalsePositive", xr.GetAttribute("FalsePositive"));
                             curResultRec.Add("ResultSeverity", xr.GetAttribute("Severity"));
+                            // TODO: Translate state number to an appropriate string
+                            curResultRec.Add("State", xr.GetAttribute("state"));
                             curResultRec.Add("Remark", xr.GetAttribute("Remark"));
                             curResultRec.Add("ResultDeepLink", xr.GetAttribute("DeepLink"));
-                            // TODO: Translate state number to an appropriate string
-                            curResultRec.Add("State", xr.GetAttribute("State"));
                             continue;
                         }
 
