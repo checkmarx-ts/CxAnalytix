@@ -87,7 +87,7 @@ Note that at the first run of the program, this element is encrypted.  To change
 
 ### Execution Configuration
 
-An example of the unencryped credentials configuration element is shown below:
+An example of the execution configuration element is shown below:
 
 
 ```
