@@ -37,7 +37,6 @@ namespace CxAnalyticsExportService
             CanPauseAndContinue = false;
             CanShutdown = true;
             CanStop = true;
-            CanHandlePowerEvent = true;
         }
 
         private void stopService()
