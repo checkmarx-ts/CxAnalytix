@@ -20,7 +20,7 @@
       <loggerToMatch value="RECORD" />
     </filter>
 
-    <file type="log4net.Util.PatternString" value="logs/CxAnalyticsExportService.%date{yyyy_MM_dd}.log" />
+    <file type="log4net.Util.PatternString" value="logs/CxAnalytixService.%date{yyyy_MM_dd}.log" />
     <appendToFile value="true" />
     <maximumFileSize value="100MB" />
     <rollingStyle value="Size" />

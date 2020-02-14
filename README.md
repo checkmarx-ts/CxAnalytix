@@ -126,3 +126,38 @@ To execute CxAnalytix from the command line, open a command prompt or Powershell
 `dotnet CxAnalytixCLI.dll`
 
 On the initial execution, the state file is written into the configured state storage directory with the filename `CxAnalyticsExportState.json`.  Subsequent executions will only pick up scans that are new since the last execution of the program.  To reset the program and re-process all scans, delete `CxAnalyticsExportState.json` and execute the program again.
+
+
+# Forwarding to Splunk
+
+## Configuring the Universal Forwarder
+
+Follow the instructions supplied by Splunk for setting up the Universal Forwarder appropriate for your environment.  Once the forwarder is able to connect to your Splunk instance, create the `inputs.conf` file at `\etc\apps\splunkclouduf\default\inputs.conf`.  In the `inputs.conf` file, create monitoring stanzas appropriate for each type of record. An example of `inputs.conf`:
+
+
+```
+[monitor://{path to logs}/CxAnalytixService*log*]
+sourcetype=CxAnalytix_app
+
+[monitor://{path to logs}/sast_scan_summary*log*]
+sourcetype=CxAnalytix_sast_summary
+
+[monitor://{path to logs}/sast_scan_detail*log*]
+sourcetype=CxAnalytix_sast_detail
+
+[monitor://{path to logs}/sast_project_info*log*]
+sourcetype=CxAnalytix_sast_project_info
+
+```
+
+
+## Configuring the Source Types on the Server
+
+The source types on the Splunk server need to be configured to appropriately parse JSON.  This can be done using `props.conf` or through the Splunk UI.  (The use of `props.conf` on the server side is only supported in Splunk Enterprise.)  A source type should be created the matches each record output source types as defined in `inputs.conf`.  The following 2 configuration options need to be added to the sourcetype:
+
+```
+LINE_BREAKER=([\r\n]+)\
+KV_MODE=json
+```
+
+
