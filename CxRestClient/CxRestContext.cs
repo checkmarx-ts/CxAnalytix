@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using log4net;
 
 namespace CxRestClient
 {
@@ -14,6 +15,8 @@ namespace CxRestClient
     {
         private static String LOGIN_URI_SUFFIX = "cxrestapi/auth/identity/connect/token";
         private static String CLIENT_SECRET = "014DF517-39D1-4453-B7B3-9930C563627C";
+
+        private static ILog _log = LogManager.GetLogger (typeof (CxRestContext) );
 
         public class ClientFactory
         {
@@ -118,10 +121,17 @@ namespace CxRestClient
 
             var uri = new Uri(MakeUrl(url, LOGIN_URI_SUFFIX));
 
+            _log.Debug ($"Login URL: {uri}");
+
             var response = c.PostAsync(uri, authContent).Result;
 
             if (response.StatusCode != HttpStatusCode.OK)
+            {
+                if (_log.IsDebugEnabled)
+                    _log.Debug($"Response code [{response.StatusCode}]: " +
+                        $"{response.Content.ReadAsStringAsync ().Result}");
                 throw new InvalidOperationException(response.ReasonPhrase);
+            }
 
             JsonReader r = new JsonTextReader(new StreamReader
                 (response.Content.ReadAsStreamAsync().Result));
