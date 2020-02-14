@@ -15,7 +15,7 @@ namespace CxAnalytics.TransformLogic
     /// </remarks>
     public class ProjectResolver
     {
-        private static readonly String STORAGE_FILE = "CxAnalyticsExportState.json";
+        private static readonly String STORAGE_FILE = "CxAnalytixExportState.json";
 
         private static ILog _log = LogManager.GetLogger(typeof(ProjectResolver));
 

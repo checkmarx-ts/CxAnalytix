@@ -125,7 +125,7 @@ To execute CxAnalytix from the command line, open a command prompt or Powershell
 
 `dotnet CxAnalytixCLI.dll`
 
-On the initial execution, the state file is written into the configured state storage directory with the filename `CxAnalyticsExportState.json`.  Subsequent executions will only pick up scans that are new since the last execution of the program.  To reset the program and re-process all scans, delete `CxAnalyticsExportState.json` and execute the program again.
+On the initial execution, the state file is written into the configured state storage directory with the filename `CxAnalytixExportState.json`.  Subsequent executions will only pick up scans that are new since the last execution of the program.  To reset the program and re-process all scans, delete `CxAnalytixExportState.json` and execute the program again.
 
 
 # Forwarding to Splunk
