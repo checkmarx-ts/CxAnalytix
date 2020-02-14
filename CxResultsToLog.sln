@@ -3,11 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.438
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ConsoleRunner", "ConsoleRunner\ConsoleRunner.csproj", "{E32EF074-9A76-4BD3-92FF-36B5799661FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAnalytixCLI", "ConsoleRunner\CxAnalytixCLI.csproj", "{E32EF074-9A76-4BD3-92FF-36B5799661FF}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransformLogic", "TransformLogic\TransformLogic.csproj", "{B15BDE2F-D95F-4222-A47C-BF2FCC99F947}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAnalyticsExportService", "CxAnalyticsExportService\CxAnalyticsExportService.csproj", "{0BAE0589-90A5-4D6E-86F6-8A955CF02512}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAnalytixService", "CxAnalyticsExportService\CxAnalytixService.csproj", "{0BAE0589-90A5-4D6E-86F6-8A955CF02512}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Configuration", "Configuration\Configuration.csproj", "{DFB15F63-7086-4411-998F-729C02B8A5A9}"
 EndProject
@@ -17,9 +17,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransformLogic_Tests", "Tra
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxRestClient", "CxRestClient\CxRestClient.csproj", "{B7C59B51-5CD0-44CB-A7E3-C83FF72F1E2E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogCleaner", "LogCleaner\LogCleaner.csproj", "{25DE9605-CB9B-4F79-9D04-EDD2C5C5A85B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogCleaner", "LogCleaner\LogCleaner.csproj", "{25DE9605-CB9B-4F79-9D04-EDD2C5C5A85B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LogCleaner_Tests", "LogCleaner_Tests\LogCleaner_Tests.csproj", "{38F0F9A0-E1B3-45C9-BF2E-CE33AC3104E7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogCleaner_Tests", "LogCleaner_Tests\LogCleaner_Tests.csproj", "{38F0F9A0-E1B3-45C9-BF2E-CE33AC3104E7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

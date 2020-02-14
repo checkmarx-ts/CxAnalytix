@@ -5,7 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.ServiceProcess;
 
-namespace CxAnalyticsExportService
+namespace CxAnalytixService
 {
     class Program
     {

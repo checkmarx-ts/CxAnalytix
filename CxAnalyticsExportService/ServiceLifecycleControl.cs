@@ -6,10 +6,11 @@ using CxAnalytics.TransformLogic;
 using CxAnalytics.Configuration;
 using System.Reflection;
 using System;
+using CxRestClient;
 
-[assembly: log4net.Config.XmlConfigurator(ConfigFile = "CxAnalyticsExportService.log4net", Watch = true)]
+[assembly: log4net.Config.XmlConfigurator(ConfigFile = "CxAnalytixService.log4net", Watch = true)]
 
-namespace CxAnalyticsExportService
+namespace CxAnalytixService
 {
     class ServiceLifecycleControl : ServiceBase
     {
@@ -91,6 +92,16 @@ namespace CxAnalyticsExportService
 
             _cancelToken = new CancellationTokenSource();
 
+
+            var builder = new CxRestContext.CxRestContextBuilder();
+            builder.serviceUrl(Config.Connection.URL)
+            .withOpTimeout(Config.Connection.TimeoutSeconds)
+            .withSSLValidate(Config.Connection.ValidateCertificates)
+            .withUsername(Config.Credentials.Username)
+            .withPassword(Config.Credentials.Password);
+
+            var restCtx = builder.build();
+
             _serviceTask = Task.Run(async () =>
             {
                 do
@@ -98,11 +109,11 @@ namespace CxAnalyticsExportService
                     DateTime start = DateTime.Now;
                     _log.Info("Starting data transformation.");
 
-                    // TODO: Make the REST client context.
+
 
                     Transformer.doTransform(Config.Service.ConcurrentThreads, 
                         Config.Service.StateDataStoragePath,
-                        null, _outFactory, new RecordNames()
+                        restCtx, _outFactory, new RecordNames()
                         {
                             SASTScanSummary = Config.Service.SASTScanSummaryRecordName,
                             SASTScanDetail = Config.Service.SASTScanDetailRecordName,

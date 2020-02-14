@@ -8,10 +8,10 @@ using CxRestClient;
 using CxAnalytics.Configuration;
 using System;
 
-[assembly: log4net.Config.XmlConfigurator(ConfigFile="ConsoleRunner.log4net", Watch = true)]
+[assembly: log4net.Config.XmlConfigurator(ConfigFile= "CxAnalyticxCLI.log4net", Watch = true)]
 
 
-namespace ConsoleRunner
+namespace CxAnalytixCLI
 {
     class Program
     {
