@@ -94,11 +94,12 @@ namespace CxAnalytixService
 
 
             var builder = new CxRestContext.CxRestContextBuilder();
-            builder.serviceUrl(Config.Connection.URL)
-            .withOpTimeout(Config.Connection.TimeoutSeconds)
-            .withSSLValidate(Config.Connection.ValidateCertificates)
-            .withUsername(Config.Credentials.Username)
-            .withPassword(Config.Credentials.Password);
+            builder.WithSASTServiceURL(Config.Connection.URL).
+            WithMNOServiceURL(Config.Connection.MNOUrl)
+            .WithOpTimeout(Config.Connection.TimeoutSeconds)
+            .WithSSLValidate(Config.Connection.ValidateCertificates)
+            .WithUsername(Config.Credentials.Username)
+            .WithPassword(Config.Credentials.Password);
 
             var restCtx = builder.build();
 

@@ -46,7 +46,7 @@ namespace CxRestClient
         public static String GetGeneratedReportId(CxRestContext ctx, CancellationToken token, 
             String scanId, ReportTypes type)
         {
-            var client = ctx.Json.CreateClient();
+            var client = ctx.Json.CreateSastClient();
 
             var dict = new Dictionary<String, String>()
             {

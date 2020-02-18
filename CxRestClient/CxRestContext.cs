@@ -13,8 +13,12 @@ namespace CxRestClient
 {
     public class CxRestContext
     {
-        private static String LOGIN_URI_SUFFIX = "cxrestapi/auth/identity/connect/token";
-        private static String CLIENT_SECRET = "014DF517-39D1-4453-B7B3-9930C563627C";
+        private static readonly String LOGIN_URI_SUFFIX = "cxrestapi/auth/identity/connect/token";
+        private static readonly String CLIENT_SECRET = "014DF517-39D1-4453-B7B3-9930C563627C";
+
+        private static readonly String SAST_SCOPE = "sast_rest_api";
+        private static readonly String MNO_SCOPE = "cxarm_api";
+
 
         private static ILog _log = LogManager.GetLogger (typeof (CxRestContext) );
 
@@ -32,19 +36,34 @@ namespace CxRestClient
             private CxRestContext Context { get; set; }
             private  String MediaType { get; set; }
 
-            public HttpClient CreateClient()
+            public HttpClient CreateSastClient()
             {
-                HttpClient retVal = MakeClient(Context.ValidateSSL);
+                var retVal = CreateGenericClient();
 
                 retVal.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue(Context.Token.TokenType, 
-                    Context.Token.Token);
+                    new System.Net.Http.Headers.AuthenticationHeaderValue(Context.SastToken.TokenType, 
+                    Context.SastToken.Token);
 
+                return retVal;
+            }
+
+            public HttpClient CreateMnoClient()
+            {
+                var retVal = CreateGenericClient();
+
+                retVal.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue(Context.MNOToken.TokenType,
+                    Context.MNOToken.Token);
+
+                return retVal;
+            }
+
+            private HttpClient CreateGenericClient ()
+            {
+                HttpClient retVal = MakeClient(Context.ValidateSSL);
                 retVal.DefaultRequestHeaders.Accept.Clear();
-
                 retVal.DefaultRequestHeaders.Accept.Add
-                    (new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json", 1.0));
-
+                    (new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(MediaType));
                 return retVal;
             }
         }
@@ -54,33 +73,53 @@ namespace CxRestClient
 
         public bool ValidateSSL { get; internal set; }
         public String Url { get; internal set; }
+        public String MnoUrl { get; internal set; }
         public TimeSpan Timeout { get; internal set; }
         public ClientFactory Json { get; internal set; }
         public ClientFactory Xml { get; internal set; }
 
 
         private Object _tokenLock = new object();
-        private LoginToken _token;
-        internal LoginToken Token
+
+
+        private LoginToken _sastToken;
+        internal LoginToken SastToken
         {
             get
             {
-                lock(_tokenLock)
-                {
-                    if (DateTime.Now.CompareTo(_token.ExpireTime) >= 0)
-                        _token = GetLoginToken(Url, _token.ReauthContent, ValidateSSL);
-                }
-
-                return _token;
+                ValidateToken(ref _sastToken);
+                return _sastToken;
             }
 
             set
             {
-                _token = value;
+                _sastToken = value;
             }
         }
 
+        private LoginToken _mnoToken;
+        internal LoginToken MNOToken
+        {
+            get
+            {
+                ValidateToken(ref _mnoToken);
+                return _mnoToken;
+            }
 
+            set
+            {
+                _mnoToken = value;
+            }
+        }
+
+        private void ValidateToken(ref LoginToken token)
+        {
+            lock (_tokenLock)
+            {
+                if (DateTime.Now.CompareTo(token.ExpireTime) >= 0)
+                     token = GetLoginToken(Url, token.ReauthContent, ValidateSSL);
+            }
+        }
 
         internal struct LoginToken
         {
@@ -132,6 +171,9 @@ namespace CxRestClient
                         $"{response.Content.ReadAsStringAsync ().Result}");
                 throw new InvalidOperationException(response.ReasonPhrase);
             }
+            else
+                _log.Debug("Successful login.");
+
 
             JsonReader r = new JsonTextReader(new StreamReader
                 (response.Content.ReadAsStreamAsync().Result));
@@ -150,14 +192,16 @@ namespace CxRestClient
         }
 
         private static LoginToken GetLoginToken (String url, String username, String password, 
-            bool doSSLValidate)
+            String scope, bool doSSLValidate)
         {
+            _log.Debug($"Obtainting login token for scope [{scope}]");
+
             var requestContent = new Dictionary<string, string>()
             {
                 {"username", username},
                 {"password", password},
                 {"grant_type", "password"},
-                {"scope", "sast_rest_api"},
+                {"scope", scope},
                 {"client_id", "resource_owner_client"},
                 {"client_secret", CLIENT_SECRET}
             };
@@ -184,22 +228,29 @@ namespace CxRestClient
         {
 
             private String _url;
-            public CxRestContextBuilder serviceUrl (String url)
+            public CxRestContextBuilder WithSASTServiceURL (String url)
             {
                 _url = url;
                 return this;
             }
 
+            private String _mnoUrl;
+            public CxRestContextBuilder WithMNOServiceURL (String url)
+            {
+                _mnoUrl = url;
+                return this;
+            }
+
 
             private int _timeout = 600;
-            public CxRestContextBuilder withOpTimeout (int seconds)
+            public CxRestContextBuilder WithOpTimeout (int seconds)
             {
                 _timeout = seconds;
                 return this;
             }
 
             private bool _validate = true;
-            public CxRestContextBuilder withSSLValidate (bool validate)
+            public CxRestContextBuilder WithSSLValidate (bool validate)
             {
                 _validate = validate;
                 return this;
@@ -207,14 +258,14 @@ namespace CxRestClient
 
 
             private String _user;
-            public CxRestContextBuilder withUsername (String username)
+            public CxRestContextBuilder WithUsername (String username)
             {
                 _user = username;
                 return this;
             }
 
             private String _pass;
-            public CxRestContextBuilder withPassword(String pass)
+            public CxRestContextBuilder WithPassword(String pass)
             {
                 _pass = pass;
                 return this;
@@ -234,8 +285,10 @@ namespace CxRestClient
 
                 CxRestContext retVal = new CxRestContext()
                 {
-                    Token = GetLoginToken(_url, _user, _pass, _validate),
+                    SastToken = GetLoginToken(_url, _user, _pass, SAST_SCOPE, _validate),
+                    MNOToken = GetLoginToken(_url, _user, _pass, MNO_SCOPE, _validate),
                     Url = _url,
+                    MnoUrl = _mnoUrl == null ? _url : _mnoUrl,
                     ValidateSSL = _validate,
                     Timeout = new TimeSpan(0, 0, _timeout)
                 };

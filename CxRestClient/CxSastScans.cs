@@ -218,7 +218,7 @@ namespace CxRestClient
             else
                 url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX);
 
-            var scans = ctx.Json.CreateClient ().GetAsync(url, token).Result;
+            var scans = ctx.Json.CreateSastClient ().GetAsync(url, token).Result;
 
             if (token.IsCancellationRequested)
                 return null;

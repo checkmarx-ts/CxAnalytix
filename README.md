@@ -65,6 +65,7 @@ Each attribute can be configured as follows:
 | Attribute | Description |
 | --- | --- |
 |URL| The URL to the Checkmarx SAST server. |
+|mnoURL| The URL for M&O if different from SAST.  If empty, the SAST URL will be used.
 |TimeoutSeconds|The number of seconds to wait before assuming a call to the REST API times out.|
 |ValidateCertificates| Set to true to perform SSL certificate validation.  Set to false to disable certificate validation.
 

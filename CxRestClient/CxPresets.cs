@@ -82,7 +82,7 @@ namespace CxRestClient
 
         public static IEnumerable<Preset> GetPresets(CxRestContext ctx, CancellationToken token)
         {
-            var presets = ctx.Json.CreateClient().GetAsync(
+            var presets = ctx.Json.CreateSastClient().GetAsync(
                 CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result;
 
             if (token.IsCancellationRequested)

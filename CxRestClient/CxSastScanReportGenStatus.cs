@@ -34,7 +34,7 @@ namespace CxRestClient
 
         public static GenStatus GetReportGenerationStatus (CxRestContext ctx, String reportId)
         {
-            var client = ctx.Json.CreateClient();
+            var client = ctx.Json.CreateSastClient();
 
             var scanReportStatus = client.GetAsync(
                 CxRestContext.MakeUrl(ctx.Url, 

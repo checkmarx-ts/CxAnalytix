@@ -311,12 +311,14 @@ namespace CxAnalytics.TransformLogic
             scan_summary_out.write(flat);
         }
 
-        private static void OutputProjectInfoRecords(ScanDescriptor scanRecord, IOutput project_info_out)
+        private static void OutputProjectInfoRecords(ScanDescriptor scanRecord, 
+            IOutput project_info_out)
         {
             SortedDictionary<String, String> flat = new SortedDictionary<string, string>();
             AddPrimaryKeyElements(scanRecord, flat);
 
             flat.Add(KEY_PRESET, scanRecord.Project.PresetName);
+            flat.Add("Policies", scanRecord.Project.Policies);
 
             foreach (var lastScanProduct in scanRecord.Project.LatestScanDateByProduct.Keys)
                 flat.Add($"{lastScanProduct}_LastScanDate",
@@ -372,7 +374,22 @@ namespace CxAnalytics.TransformLogic
             var projects = CxProjects.GetProjects(ctx, token);
 
             foreach (var p in projects)
-                pr.addProject(p.TeamId, p.PresetId, p.ProjectId, p.ProjectName);
+            {
+                String policies = String.Empty;
+
+                try
+                {
+                    policies = CxMnoPolicies.GetProjectPoliciesSingleField(ctx, token, p.ProjectId);
+                }
+                catch (Exception ex)
+                {
+                    _log.Warn($"Could not get policies for project {p.ProjectId}: {p.ProjectName}", 
+                        ex);
+                }
+
+                pr.AddProject(p.TeamId, p.PresetId, p.ProjectId, p.ProjectName, policies);
+            }
+
 
             // Resolve projects to get the scan resolver.
             ScanResolver sr = pr.Resolve();

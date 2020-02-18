@@ -41,6 +41,10 @@ namespace CxAnalytics.TransformLogic
         /// </summary>
         public String PresetName { get; set; }
         /// <summary>
+        /// The M&O policies assigned to the project, if any.
+        /// </summary>
+        public String Policies { get; set; }
+        /// <summary>
         /// A dictionary showing the number of scans for the project by product.
         /// SAST and SCA scans (and maybe others in the future) are not restricted
         /// to a 1:1 match for each scan.

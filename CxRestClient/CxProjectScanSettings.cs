@@ -65,7 +65,7 @@ namespace CxRestClient
         {
             String restUrl = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX);
 
-            var settings = ctx.Json.CreateClient ().GetAsync(CxRestContext.MakeUrl(restUrl,
+            var settings = ctx.Json.CreateSastClient ().GetAsync(CxRestContext.MakeUrl(restUrl,
                 Convert.ToString(projectId)), token).Result;
 
             if (token.IsCancellationRequested)

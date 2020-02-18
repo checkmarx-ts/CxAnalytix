@@ -21,6 +21,13 @@ namespace CxAnalytics.Configuration
             set { this["URL"] = value; }
         }
 
+        [ConfigurationProperty("mnoURL", IsRequired = false)]
+        public String MNOUrl
+        {
+            get => (String)this["mnoURL"];
+            set { this["mnoURL"] = value; }
+        }
+
         [ConfigurationProperty("TimeoutSeconds", IsRequired = true)]
         public int TimeoutSeconds
         {

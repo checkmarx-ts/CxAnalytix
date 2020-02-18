@@ -53,11 +53,11 @@ namespace Test.TransformerLogic.ScanResolver
 
         private void populateProjectResolver (CxAnalytics.TransformLogic.ProjectResolver pr)
         {
-            pr.addProject(Team1, 1, 1, "\\Team1\\ProjectId1");
-            pr.addProject(Team1, 1, 2, "\\Team1\\ProjectId2");
+            pr.AddProject(Team1, 1, 1, "\\Team1\\ProjectId1", "");
+            pr.AddProject(Team1, 1, 2, "\\Team1\\ProjectId2", "");
 
-            pr.addProject(Team2, 1, 3, "\\Team2\\ProjectId3");
-            pr.addProject(Team2, 2, 4, "\\Team2\\ProjectId4");
+            pr.AddProject(Team2, 1, 3, "\\Team2\\ProjectId3", "");
+            pr.AddProject(Team2, 2, 4, "\\Team2\\ProjectId4", "");
 
         }
 

@@ -19,7 +19,7 @@ namespace CxRestClient
         public static Stream GetVulnerabilities(CxRestContext ctx, 
             CancellationToken token, String reportId)
         {
-            var client = ctx.Xml.CreateClient();
+            var client = ctx.Xml.CreateSastClient();
 
             var reportPayload = client.GetAsync(CxRestContext.MakeUrl (ctx.Url, 
                 String.Format (URL_SUFFIX, reportId) ) ).Result;

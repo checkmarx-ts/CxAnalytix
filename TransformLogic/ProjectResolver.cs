@@ -174,7 +174,8 @@ namespace CxAnalytics.TransformLogic
         /// <param name="projectId">The numeric project identifier.</param>
         /// <param name="projectName">The name of the project.</param>
         /// <returns>True of the project was added, false otherwise.</returns>
-        public bool addProject(Guid teamId, int presetId, int projectId, String projectName)
+        public bool AddProject(Guid teamId, int presetId, int projectId, String projectName, 
+            String policies)
         {
             if (projectName == null)
                 return false;
@@ -214,7 +215,8 @@ namespace CxAnalytics.TransformLogic
                             TeamName = teamName,
                             TeamId = teamId,
                             PresetId = presetId,
-                            PresetName = presetName
+                            PresetName = presetName,
+                            Policies = policies
                         }
                     );
 

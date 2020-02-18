@@ -17,6 +17,7 @@ namespace CxAnalytics.TransformLogic
                 ProjectName = src.ProjectName,
                 TeamId = src.TeamId,
                 TeamName = src.TeamName,
+                Policies = src.Policies,
                 LastScanCheckDate = DateTime.MinValue
             };
 

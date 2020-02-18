@@ -29,11 +29,11 @@ namespace Test.TransformerLogic.ProjectResolver
         [Test]
         public void CantAddProjectAfterResolve ()
         {
-            bool shouldBeTrue = pr.addProject(Team1, 1, 1, "Foo");
+            bool shouldBeTrue = pr.AddProject(Team1, 1, 1, "Foo", "");
 
             var sr = pr.Resolve();
 
-            bool shouldBeFalse = pr.addProject(Team1, 1, 2, "Bar");
+            bool shouldBeFalse = pr.AddProject(Team1, 1, 2, "Bar", "");
 
             Assert.True(shouldBeTrue && !shouldBeFalse);
         }
@@ -41,33 +41,33 @@ namespace Test.TransformerLogic.ProjectResolver
         [Test]
         public void CantAddDuplicateProject ()
         {
-            bool shouldBeTrue = pr.addProject(Team1, 1, 1, "Foo");
-            bool shouldBeFalse = pr.addProject(Team1, 1, 1, "Bar");
+            bool shouldBeTrue = pr.AddProject(Team1, 1, 1, "Foo", "");
+            bool shouldBeFalse = pr.AddProject(Team1, 1, 1, "Bar", "");
             Assert.True(shouldBeTrue && !shouldBeFalse);
         }
 
         [Test]
         public void CantAddProjectWithMissingPreset()
         {
-            Assert.False(pr.addProject (Team1, 100, 1, "Foo") );
+            Assert.False(pr.AddProject (Team1, 100, 1, "Foo", "") );
         }
 
         [Test]
         public void CantAddProjetWithNullProjectName()
         {
-            Assert.False(pr.addProject(Team1, 1, 1, null));
+            Assert.False(pr.AddProject(Team1, 1, 1, null, ""));
         }
 
         [Test]
         public void CantAddProjectWithMissingTeam()
         {
-            Assert.False(pr.addProject(Guid.NewGuid(), 1, 1, "Foo"));
+            Assert.False(pr.AddProject(Guid.NewGuid(), 1, 1, "Foo", ""));
         }
 
         [Test]
         public void CantAddProjectWithEmptyTeamGuid()
         {
-            Assert.False(pr.addProject(Guid.Empty, 1, 1, "Foo"));
+            Assert.False(pr.AddProject(Guid.Empty, 1, 1, "Foo", ""));
         }
 
         [Test]

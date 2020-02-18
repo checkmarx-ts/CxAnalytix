@@ -142,7 +142,7 @@ Some of the specified data records need to be modified given they don't have all
 * &#9745; SAST Total Scans
 * &#9744; OSA Last Scan Date
 * &#9744; OSA Total Scans 
-* &#9744; Policies
+* &#9745; Policies
 
 ## Policy Violations
 

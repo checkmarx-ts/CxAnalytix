@@ -75,7 +75,7 @@ namespace CxRestClient
 
         public static IEnumerable<Team> GetTeams(CxRestContext ctx, CancellationToken token)
         {
-            var teams = ctx.Json.CreateClient ().GetAsync(
+            var teams = ctx.Json.CreateSastClient ().GetAsync(
                 CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result;
 
             if (token.IsCancellationRequested)

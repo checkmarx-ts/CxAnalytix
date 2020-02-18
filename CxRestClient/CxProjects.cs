@@ -121,7 +121,7 @@ namespace CxRestClient
 
         public static IEnumerable<Project> GetProjects(CxRestContext ctx, CancellationToken token)
         {
-            var projects = ctx.Json.CreateClient ().GetAsync(
+            var projects = ctx.Json.CreateSastClient ().GetAsync(
                 CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result;
 
             if (token.IsCancellationRequested)
