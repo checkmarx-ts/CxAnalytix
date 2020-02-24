@@ -22,7 +22,7 @@ namespace CxRestClient
             var client = ctx.Xml.CreateSastClient();
 
             var reportPayload = client.GetAsync(CxRestContext.MakeUrl (ctx.Url, 
-                String.Format (URL_SUFFIX, reportId) ) ).Result;
+                String.Format (URL_SUFFIX, reportId) ), token).Result;
 
             if (!reportPayload.IsSuccessStatusCode)
                 throw new InvalidOperationException($"Unable to retrieve report {reportId}.");

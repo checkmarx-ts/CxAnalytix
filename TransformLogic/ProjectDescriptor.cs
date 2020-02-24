@@ -10,10 +10,10 @@ namespace CxAnalytics.TransformLogic
     /// </summary>
     public class ProjectDescriptor
     {
-        internal ProjectDescriptor ()
+        internal ProjectDescriptor()
         {
             ScanCountByProduct = new Dictionary<string, int>();
-            LatestScanDateByProduct = new Dictionary<string, DateTime> ();
+            LatestScanDateByProduct = new Dictionary<string, DateTime>();
         }
 
         /// <summary>
@@ -23,6 +23,7 @@ namespace CxAnalytics.TransformLogic
         /// <summary>
         /// The name of the project.
         /// </summary>
+        [JsonIgnore]
         public String ProjectName { get; set; }
         /// <summary>
         /// The GUID that identifies the team that owns the project.
@@ -31,6 +32,7 @@ namespace CxAnalytics.TransformLogic
         /// <summary>
         /// A human-readable name for the team.
         /// </summary>
+        [JsonIgnore]
         public String TeamName { get; set; }
         /// <summary>
         /// A numeric identifier of the preset configured for the project.
@@ -39,10 +41,12 @@ namespace CxAnalytics.TransformLogic
         /// <summary>
         /// A human-eadable name for the preset.
         /// </summary>
+        [JsonIgnore]
         public String PresetName { get; set; }
         /// <summary>
         /// The M&O policies assigned to the project, if any.
         /// </summary>
+        [JsonIgnore]
         public String Policies { get; set; }
         /// <summary>
         /// A dictionary showing the number of scans for the project by product.
@@ -50,21 +54,21 @@ namespace CxAnalytics.TransformLogic
         /// to a 1:1 match for each scan.
         /// </summary>
         [JsonIgnore]
-        public Dictionary<String, int> ScanCountByProduct { get; private set; }
+        public Dictionary<String, int> ScanCountByProduct { get; internal set; }
         /// <summary>
         /// The most recent scan date for the project by product.
         /// </summary>
         [JsonIgnore]
-        public Dictionary<String, DateTime> LatestScanDateByProduct { get; private set; }
+        public Dictionary<String, DateTime> LatestScanDateByProduct { get; internal set; }
 
         /// <summary>
         /// Increments the number of scans for the product name passed in 
         /// the <paramref name="scanProduct"/> parameter.
         /// </summary>
         /// <param name="scanProduct">The name of the product.</param>
-        public void IncrementScanCount (String scanProduct)
+        public void IncrementScanCount(String scanProduct)
         {
-            if (!ScanCountByProduct.ContainsKey(scanProduct) )
+            if (!ScanCountByProduct.ContainsKey(scanProduct))
             {
                 ScanCountByProduct.Add(scanProduct, 0);
             }
@@ -79,7 +83,7 @@ namespace CxAnalytics.TransformLogic
         /// </summary>
         /// <param name="scanTime">The time of a scan.</param>
         /// <param name="scanProduct">The product that performed the scan.</param>
-        public void UpdateLatestScanDate (String scanProduct, DateTime scanTime)
+        public void UpdateLatestScanDate(String scanProduct, DateTime scanTime)
         {
             if (!LatestScanDateByProduct.ContainsKey(scanProduct))
             {

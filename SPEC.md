@@ -143,6 +143,8 @@ Some of the specified data records need to be modified given they don't have all
 * &#9744; OSA Last Scan Date
 * &#9744; OSA Total Scans 
 * &#9745; Policies
+* &#9744; Number of policies violated 
+* &#9744; Number of rules violated 
 
 ## Policy Violations
 
@@ -150,8 +152,6 @@ Some of the specified data records need to be modified given they don't have all
 * &#9744; Team Name (added)
 * &#9744; Scan ID (added - may not apply if policy violations are not related to a scan)
 * &#9744; Sast Scan Type (added - may not apply)
-* &#9744; Number of policies violated 
-* &#9744; Number of rules violated 
 * &#9744; Names of policies 
 * &#9744; Description of rules 
 * &#9744; Number of occurrences 

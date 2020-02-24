@@ -27,7 +27,7 @@ namespace CxRestClient
             do
             {
                 Task.Delay(DELAY_MS, token);
-                status = CxSastScanReportGenStatus.GetReportGenerationStatus(ctx, reportId);
+                status = CxSastScanReportGenStatus.GetReportGenerationStatus(ctx, token, reportId);
                 if (DateTime.Now.CompareTo(quitTime) > 0)
                 {
                     _log.Warn($"Failed to retrive scan " +

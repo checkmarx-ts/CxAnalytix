@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace CxRestClient
 {
@@ -32,13 +33,14 @@ namespace CxRestClient
         }
 
 
-        public static GenStatus GetReportGenerationStatus (CxRestContext ctx, String reportId)
+        public static GenStatus GetReportGenerationStatus (CxRestContext ctx, 
+            CancellationToken token, String reportId)
         {
             var client = ctx.Json.CreateSastClient();
 
             var scanReportStatus = client.GetAsync(
                 CxRestContext.MakeUrl(ctx.Url, 
-                String.Format (URL_SUFFIX, reportId) )).Result;
+                String.Format (URL_SUFFIX, reportId) ), token).Result;
 
             if (!scanReportStatus.IsSuccessStatusCode)
                 return GenStatus.None;

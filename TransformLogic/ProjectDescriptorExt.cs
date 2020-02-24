@@ -18,6 +18,8 @@ namespace CxAnalytics.TransformLogic
                 TeamId = src.TeamId,
                 TeamName = src.TeamName,
                 Policies = src.Policies,
+                ScanCountByProduct = src.ScanCountByProduct,
+                LatestScanDateByProduct = src.LatestScanDateByProduct,
                 LastScanCheckDate = DateTime.MinValue
             };
 

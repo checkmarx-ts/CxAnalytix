@@ -7,7 +7,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
-using System.Xml.Linq;
+using System.Text;
 
 namespace CxAnalytics.TransformLogic
 {
@@ -59,7 +59,11 @@ namespace CxAnalytics.TransformLogic
                 MaxDegreeOfParallelism = concurrentThreads
             };
 
-            var scansToProcess = GetListOfScans(previousStatePath, ctx, token);
+            // Policies may not have data if M&O is not installed.
+            var policies = new ProjectPolicyIndex (CxMnoPolicies.GetAllPolicies(ctx, token));
+
+            var scansToProcess = GetListOfScansAndIndexPolicies(previousStatePath, ctx, 
+                token, policies);
 
             ConcurrentDictionary<int, bool> processedProjects =
                 new ConcurrentDictionary<int, bool>();
@@ -83,6 +87,21 @@ namespace CxAnalytics.TransformLogic
                         OutputProjectInfoRecords(scan, project_info_out);
 
                     OutputScanSummary(scan, scansToProcess, scan_summary_out);
+
+                    // TODO: Policy Violations record
+                    // 
+                    // Number of policies violated, Number of rules violated - goes in
+                    // project info.  Counts have to be collapsed based on findingId
+                    // so there are not duplicate counts.
+                    //
+                    // Policy violations are related to scan.  Project is already
+                    // correlated to scan based on the scan id.
+                    // 
+                    // Must get a list of policies and rules to be able to get the 
+                    // description.
+                    //
+
+
                 }
 
                 );
@@ -350,8 +369,26 @@ namespace CxAnalytics.TransformLogic
             public Dictionary<String, CxSastScans.Scan> ScanDataDetails { get; private set; }
         }
 
-        private static ScanData GetListOfScans(string previousStatePath, CxRestContext ctx,
-            CancellationToken token)
+
+        private static String GetFlatPolicyNames(PolicyCollection policies, 
+            IEnumerable<int> policyIds)
+        {
+            StringBuilder b = new StringBuilder();
+
+            foreach (var pid in policyIds)
+            {
+                if (b.Length > 0)
+                    b.Append(';');
+
+                b.Append(policies.GetPolicyById (pid).Name);
+            }
+
+            return b.ToString();
+        }
+
+
+        private static ScanData GetListOfScansAndIndexPolicies(string previousStatePath, CxRestContext ctx,
+            CancellationToken token, ProjectPolicyIndex index)
         {
             DateTime checkStart = DateTime.Now;
 
@@ -375,17 +412,12 @@ namespace CxAnalytics.TransformLogic
 
             foreach (var p in projects)
             {
-                String policies = String.Empty;
+                IEnumerable<int> projectPolicyList = CxMnoPolicies.GetPolicyIdsForProject
+                    (ctx, token, p.ProjectId);
 
-                try
-                {
-                    policies = CxMnoPolicies.GetProjectPoliciesSingleField(ctx, token, p.ProjectId);
-                }
-                catch (Exception ex)
-                {
-                    _log.Warn($"Could not get policies for project {p.ProjectId}: {p.ProjectName}", 
-                        ex);
-                }
+                index.CorrelateProjectToPolicies(p.ProjectId, projectPolicyList);
+
+                String policies = GetFlatPolicyNames(index, projectPolicyList);
 
                 pr.AddProject(p.TeamId, p.PresetId, p.ProjectId, p.ProjectName, policies);
             }
