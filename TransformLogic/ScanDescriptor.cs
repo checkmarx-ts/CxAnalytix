@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CxRestClient;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -63,6 +64,41 @@ namespace CxAnalytics.TransformLogic
             }
             else
                 SeverityCounts.Add(sevName, 1);
+        }
+
+        public int PoliciesViolated { get; private set; }
+        public int RulesViolated { get; private set; }
+        public int Violations { get; private set; }
+
+        private HashSet<int> _policyViolations = new HashSet<int>();
+        private HashSet<int> _ruleViolations = new HashSet<int>();
+
+        public bool HasPoliciesApplied { get; private set; }
+
+        public void IncrementPolicyViolations (IEnumerable<ViolatedRuleDescriptor> rules)
+        {
+            if (rules == null)
+                return;
+            else
+                HasPoliciesApplied = true;
+
+            foreach (var rule in rules)
+            {
+                Violations++;
+
+                if (!_policyViolations.Contains (rule.PolicyId))
+                {
+                    PoliciesViolated++;
+                    _policyViolations.Add(rule.PolicyId);
+                }
+
+                if (!_ruleViolations.Contains(rule.RuleId))
+                {
+                    RulesViolated++;
+                    _ruleViolations.Add(rule.RuleId);
+                }
+            }
+
         }
 
     }

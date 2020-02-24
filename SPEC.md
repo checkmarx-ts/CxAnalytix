@@ -71,6 +71,9 @@ Some of the specified data records need to be modified given they don't have all
 * &#9745; Medium
 * &#9745; Low
 * &#9745; Information
+* &#9745; Number of policies violated 
+* &#9745; Number of rules violated 
+
 
 ## SAST Vulnerability Details
 
@@ -110,6 +113,8 @@ Some of the specified data records need to be modified given they don't have all
 * &#9744; Legal High
 * &#9744; Legal Medium
 * &#9744; Legal Low
+* &#9744; Number of policies violated 
+* &#9744; Number of rules violated 
 
 
 ## OSA Vulnerability Details
@@ -143,10 +148,8 @@ Some of the specified data records need to be modified given they don't have all
 * &#9744; OSA Last Scan Date
 * &#9744; OSA Total Scans 
 * &#9745; Policies
-* &#9744; Number of policies violated 
-* &#9744; Number of rules violated 
 
-## Policy Violations
+## Policy Violations Details
 
 * &#9744; Project Name
 * &#9744; Team Name (added)

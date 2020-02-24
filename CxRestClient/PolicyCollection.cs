@@ -34,7 +34,7 @@ namespace CxRestClient
         {
             _policies.Add(policy.PolicyId, policy);
 
-            foreach (var rule in policy.Rules)
+            foreach (var rule in policy.Rules.Values)
                 _policiesByRule.Add(rule.RuleId, policy);
         }
     }

@@ -60,13 +60,13 @@ namespace CxAnalytics.TransformLogic
             };
 
             // Policies may not have data if M&O is not installed.
-            var policies = new ProjectPolicyIndex (CxMnoPolicies.GetAllPolicies(ctx, token));
+            var policies = new ProjectPolicyIndex(CxMnoPolicies.GetAllPolicies(ctx, token));
 
-            var scansToProcess = GetListOfScansAndIndexPolicies(previousStatePath, ctx, 
+            var scansToProcess = GetListOfScansAndIndexPolicies(previousStatePath, ctx,
                 token, policies);
 
-            ConcurrentDictionary<int, bool> processedProjects =
-                new ConcurrentDictionary<int, bool>();
+            ConcurrentDictionary<int, ViolatedPolicyCollection> projectViolations =
+                new ConcurrentDictionary<int, ViolatedPolicyCollection>();
 
             var project_info_out = outFactory.newInstance(records.ProjectInfo);
             var scan_summary_out = outFactory.newInstance(records.SASTScanSummary);
@@ -75,6 +75,7 @@ namespace CxAnalytics.TransformLogic
             Parallel.ForEach<ScanDescriptor>(scansToProcess.ScanDesciptors, threadOpts,
                 (scan) =>
                 {
+
                     _log.Debug($"Retrieving XML Report for scan {scan.ScanId}");
                     var report = CxSastXmlReport.GetXmlReport(ctx, token, scan.ScanId);
                     _log.Debug($"XML Report for scan {scan.ScanId} retrieved.");
@@ -83,37 +84,32 @@ namespace CxAnalytics.TransformLogic
                     ProcessReport(scan, report, scan_detail_out);
                     _log.Debug($"XML Report for scan {scan.ScanId} processed.");
 
-                    if (processedProjects.TryAdd(scan.Project.ProjectId, true))
+
+                    if (projectViolations.TryAdd(scan.Project.ProjectId,
+                        new ViolatedPolicyCollection()))
+                    {
+                        // Collect policy violations, only once per project
+                        projectViolations[scan.Project.ProjectId] = CxMnoRetreivePolicyViolations.
+                            GetViolations(ctx, token, scan.Project.ProjectId, policies);
+
                         OutputProjectInfoRecords(scan, project_info_out);
+                    }
 
+
+                    scan.IncrementPolicyViolations(projectViolations[scan.Project.ProjectId].
+                        GetViolatedRulesByScanId (scan.ScanId));
                     OutputScanSummary(scan, scansToProcess, scan_summary_out);
-
-                    // TODO: Policy Violations record
-                    // 
-                    // Number of policies violated, Number of rules violated - goes in
-                    // project info.  Counts have to be collapsed based on findingId
-                    // so there are not duplicate counts.
-                    //
-                    // Policy violations are related to scan.  Project is already
-                    // correlated to scan based on the scan id.
-                    // 
-                    // Must get a list of policies and rules to be able to get the 
-                    // description.
-                    //
-
 
                 }
 
                 );
-
-
         }
 
 
         private static void ProcessReport(ScanDescriptor scan, Stream report,
             IOutput scanDetailOut)
         {
-            SortedDictionary<String, String> reportRec = 
+            SortedDictionary<String, String> reportRec =
                 new SortedDictionary<string, string>();
             AddPrimaryKeyElements(scan, reportRec);
             reportRec.Add(KEY_SCANID, scan.ScanId);
@@ -321,16 +317,23 @@ namespace CxAnalytics.TransformLogic
             flat.Add("Initiator", scanRecord.Initiator);
             flat.Add("DeepLink", scanRecord.DeepLink);
             flat.Add("ScanTime", scanRecord.ScanTime);
-            flat.Add("ReportCreationTime", scanRecord.ReportCreateTime.ToString (DATE_FORMAT) );
+            flat.Add("ReportCreationTime", scanRecord.ReportCreateTime.ToString(DATE_FORMAT));
             flat.Add("ScanComments", scanRecord.Comments);
             flat.Add("SourceOrigin", scanRecord.SourceOrigin);
             foreach (var sev in scanRecord.SeverityCounts.Keys)
                 flat.Add(sev, Convert.ToString(scanRecord.SeverityCounts[sev]));
 
+            if (scanRecord.HasPoliciesApplied)
+            {
+                flat.Add("PoliciesViolated", Convert.ToString(scanRecord.PoliciesViolated));
+                flat.Add("RulesViolated", Convert.ToString(scanRecord.RulesViolated));
+                flat.Add("PolicyViolations", Convert.ToString(scanRecord.Violations));
+            }
+
             scan_summary_out.write(flat);
         }
 
-        private static void OutputProjectInfoRecords(ScanDescriptor scanRecord, 
+        private static void OutputProjectInfoRecords(ScanDescriptor scanRecord,
             IOutput project_info_out)
         {
             SortedDictionary<String, String> flat = new SortedDictionary<string, string>();
@@ -370,7 +373,7 @@ namespace CxAnalytics.TransformLogic
         }
 
 
-        private static String GetFlatPolicyNames(PolicyCollection policies, 
+        private static String GetFlatPolicyNames(PolicyCollection policies,
             IEnumerable<int> policyIds)
         {
             StringBuilder b = new StringBuilder();
@@ -380,7 +383,7 @@ namespace CxAnalytics.TransformLogic
                 if (b.Length > 0)
                     b.Append(';');
 
-                b.Append(policies.GetPolicyById (pid).Name);
+                b.Append(policies.GetPolicyById(pid).Name);
             }
 
             return b.ToString();

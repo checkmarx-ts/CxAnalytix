@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CxRestClient
 {
@@ -8,20 +7,35 @@ namespace CxRestClient
     {
         internal PolicyDescriptor ()
         {
-            Rules = new LinkedList<RuleDescriptor>();
         }
 
+        public PolicyDescriptor(PolicyDescriptor src)
+        {
+            this.PolicyId = src.PolicyId;
+            this.Name = src.Name;
+            this.Description = src.Description;
+            this.isActive = src.isActive;
+            this.CreatedOn = src.CreatedOn;
+        }
+
+
         public int PolicyId { get; set; }
-        public String Name {get; set;}
+        public String Name { get; set; }
         public String Description { get; set; }
         public Boolean isActive { get; set; }
         public DateTime CreatedOn { get; set; }
 
-        public LinkedList<RuleDescriptor> Rules { get; internal set; }
+
+        private Dictionary<int, RuleDescriptor> _rules = new Dictionary<int, RuleDescriptor>();
+        public IReadOnlyDictionary<int, RuleDescriptor> Rules
+        {
+            get => _rules;
+        }
+        
 
         public void AddRule (RuleDescriptor rule)
         {
-            Rules.AddLast(rule);
+            _rules.Add(rule.RuleId, rule);
         }
 
 
