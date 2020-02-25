@@ -18,6 +18,7 @@ namespace CxRestClient_Tests
             Assert.AreEqual(localEpochDate, convertedDate);
         }
 
+        [Test]
         public void TestZeroResultsInJan11970Utc()
         {
             var localEpochDate = new DateTime(1970, 1, 1, 0, 0, 0,
