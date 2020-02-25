@@ -71,6 +71,7 @@ namespace CxAnalytics.TransformLogic
             var project_info_out = outFactory.newInstance(records.ProjectInfo);
             var scan_summary_out = outFactory.newInstance(records.SASTScanSummary);
             var scan_detail_out = outFactory.newInstance(records.SASTScanDetail);
+            var policy_violation_detail_out = outFactory.newInstance(records.PolicyViolations);
 
             Parallel.ForEach<ScanDescriptor>(scansToProcess.ScanDesciptors, threadOpts,
                 (scan) =>
@@ -97,14 +98,57 @@ namespace CxAnalytics.TransformLogic
 
 
                     scan.IncrementPolicyViolations(projectViolations[scan.Project.ProjectId].
-                        GetViolatedRulesByScanId (scan.ScanId));
+                        GetViolatedRulesByScanId(scan.ScanId));
                     OutputScanSummary(scan, scansToProcess, scan_summary_out);
 
+                    OutputPolicyViolationDetails(scan, policies, projectViolations, policy_violation_detail_out);
                 }
 
                 );
         }
 
+        private static void OutputPolicyViolationDetails(ScanDescriptor scan, 
+            ProjectPolicyIndex policies, 
+            ConcurrentDictionary<int, ViolatedPolicyCollection> projectViolations, 
+            IOutput policy_violation_detail_out)
+        {
+            SortedDictionary<String, String> header = new SortedDictionary<string, string>();
+            AddPrimaryKeyElements(scan, header);
+            header.Add(KEY_SCANID, scan.ScanId);
+            header.Add(KEY_SCANPRODUCT, scan.ScanProduct);
+            header.Add(KEY_SCANTYPE, scan.ScanType);
+
+            var violatedRules = projectViolations[scan.Project.ProjectId].
+                GetViolatedRulesByScanId(scan.ScanId);
+
+            if (violatedRules != null)
+                foreach (var rule in violatedRules)
+                {
+                    SortedDictionary<String, String> flat = new SortedDictionary<string, string>(header);
+                    flat.Add("PolicyId", Convert.ToString(rule.PolicyId));
+                    flat.Add("PolicyName", policies.GetPolicyById(rule.PolicyId).Name);
+                    flat.Add("RuleId", Convert.ToString(rule.RuleId));
+                    flat.Add("RuleName", rule.Name);
+                    flat.Add("RuleDescription", rule.Description);
+                    flat.Add("RuleType", rule.RuleType);
+                    flat.Add("RuleCreateDate", rule.CreatedOn.ToString(DATE_FORMAT));
+                    flat.Add("FirstViolationDetectionDate", rule.FirstDetectionDate.ToString(DATE_FORMAT));
+                    flat.Add("ViolationName", rule.ViolationName);
+                    if (rule.ViolationOccured.HasValue)
+                        flat.Add("ViolationOccurredDate", rule.ViolationOccured.Value.ToString(DATE_FORMAT));
+                    if (rule.ViolationRiskScore.HasValue)
+                        flat.Add("ViolationRiskScore", Convert.ToString(rule.ViolationRiskScore.Value));
+                    flat.Add("ViolationSeverity", rule.ViolationSeverity);
+                    if (rule.ViolationSource != null)
+                        flat.Add("ViolationSource", rule.ViolationSource);
+                    flat.Add("ViolationState", rule.ViolationState);
+                    flat.Add("ViolationStatus", rule.ViolationStatus);
+                    if (rule.ViolationType != null)
+                        flat.Add("ViolationType", rule.ViolationType);
+
+                    policy_violation_detail_out.write(flat);
+                }
+        }
 
         private static void ProcessReport(ScanDescriptor scan, Stream report,
             IOutput scanDetailOut)

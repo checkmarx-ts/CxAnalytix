@@ -151,15 +151,15 @@ Some of the specified data records need to be modified given they don't have all
 
 ## Policy Violations Details
 
-* &#9744; Project Name
-* &#9744; Team Name (added)
-* &#9744; Scan ID (added - may not apply if policy violations are not related to a scan)
-* &#9744; Sast Scan Type (added - may not apply)
-* &#9744; Names of policies 
-* &#9744; Description of rules 
-* &#9744; Number of occurrences 
-* &#9744; Scan type 
-* &#9744; Rule type
+* &#9745; Project Name
+* &#9745; Team Name (added)
+* &#9745; Scan ID
+* &#9745; Scan Type
+* &#9745; Policy Name 
+* &#9745; Description of rules 
+* ~~&#9744; Number of occurrences~~ (removed: the number of occurrences does not make sense because each occurrence can have a different source)
+* &#9745; Scan Product 
+* &#9745; Rule type
 
 Note that they may not have M&O installed.  Data for scans may also take some time to reach the M&O database after the scan is complete.
 

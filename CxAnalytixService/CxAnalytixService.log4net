@@ -75,6 +75,18 @@
     </layout>
   </appender>
 
+  <appender name="SAST_PV" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Size" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/sast_policy_violations.%date{yyyy_MM_dd}.log" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%message%newline" />
+    </layout>
+  </appender>
 
   <!-- END: Record logging appender config -->
 
@@ -92,6 +104,11 @@
   <logger name="RECORD_Project_Info" aditivity="false">
     <level value="ALL" />
     <appender-ref ref="SAST_PI" />
+  </logger>
+
+  <logger name="RECORD_Policy_Violations" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="SAST_PV" />
   </logger>
 
   <root>
