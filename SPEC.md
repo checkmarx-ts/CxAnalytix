@@ -57,21 +57,34 @@ using OSA.)
 
 ## OSA Scan Summary
 
+* &#9745; Project Id
 * &#9745; Project Name
-* &#9744; Team Name (added)
-* &#9744; Scan ID (added)
-* &#9744; Scan Start
-* &#9744; Scan End
+* &#9745; Team Name
+* &#9745; Scan ID 
+* &#9745; Scan Start
+* &#9745; Scan End
+* &#9745; Number of policies violated 
+* &#9745; Number of rules violated 
+* &#9745; Total policy violations 
+* &#9745; HighVulnerabilityLibraries
+* &#9745; MediumVulnerabilityLibraries
+* &#9745; LowVulnerabilityLibraries
+* &#9745; NonVulnerableLibraries
+* &#9745; TotalLibraries
+* &#9745; TotalHighVulnerabilities
+* &#9745; TotalMediumVulnerabilities
+* &#9745; TotalLowVulnerabilities
+* &#9745; VulnerabilityScore
+* &#9745; VulnerableAndOutdated
+* &#9745; VulnerableAndUpdated
+* &#9745; Legal High
+* &#9745; Legal Medium
+* &#9745; Legal Low
+* &#9745; Legal Unknown
+
+
 * &#9744; Number of Open Source Detected
 * &#9744; Number of Unrecognized
-* &#9744; High
-* &#9744; Medium
-* &#9744; Low
-* &#9744; Legal High
-* &#9744; Legal Medium
-* &#9744; Legal Low
-* &#9744; Number of policies violated 
-* &#9744; Number of rules violated 
 
 
 ## OSA Vulnerability Details

@@ -88,6 +88,33 @@
     </layout>
   </appender>
 
+
+  <appender name="SCA_SS" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Size" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/sca_scan_summary.%date{yyyy_MM_dd}.log" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%message%newline" />
+    </layout>
+  </appender>
+
+  <appender name="SCA_SD" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Size" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/sca_scan_detail.%date{yyyy_MM_dd}.log" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%message%newline" />
+    </layout>
+  </appender>
+
   <!-- END: Record logging appender config -->
 
   <logger name="RECORD_SAST_Scan_Summary" aditivity="false">
@@ -109,6 +136,16 @@
   <logger name="RECORD_Policy_Violations" aditivity="false">
     <level value="ALL" />
     <appender-ref ref="SAST_PV" />
+  </logger>
+
+  <logger name="RECORD_SCA_Scan_Summary" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="SCA_SS" />
+  </logger>
+
+  <logger name="RECORD_SCA_Scan_Detail" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="SCA_SD" />
   </logger>
 
   <root>
