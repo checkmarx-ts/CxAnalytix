@@ -11,6 +11,15 @@ namespace Test.TransformerLogic.ScanResolver
 
         CxAnalytics.TransformLogic.ScanResolver sr;
 
+        private static Dictionary<String, Action<CxAnalytics.TransformLogic.ScanDescriptor,
+            CxAnalytics.TransformLogic.Transformer>> dummy =
+            new Dictionary<string, Action<CxAnalytics.TransformLogic.ScanDescriptor,
+                CxAnalytics.TransformLogic.Transformer>>()
+        {
+                { "SAST", (d, t) => {} }
+        };
+
+
         Guid Team1 = Guid.NewGuid();
         Guid Team2 = Guid.NewGuid();
 
@@ -25,7 +34,7 @@ namespace Test.TransformerLogic.ScanResolver
 
             var pr = makeDefaultProjectResolver(makeDefaultDataResolver());
 
-            sr = pr.Resolve();
+            sr = pr.Resolve(dummy);
         }
 
 
@@ -94,7 +103,7 @@ namespace Test.TransformerLogic.ScanResolver
             // Fill the resolver with the default projects
             populateProjectResolver(pr);
 
-            var nextsr = pr.Resolve();
+            var nextsr = pr.Resolve(dummy);
 
             // Similate the next check happening an hour from now
 

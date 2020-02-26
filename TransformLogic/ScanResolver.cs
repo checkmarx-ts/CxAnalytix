@@ -17,11 +17,14 @@ namespace CxAnalytics.TransformLogic
         private bool _disallowAdds = false;
 
         private ProjectResolver _state;
-        internal ScanResolver(ProjectResolver projectState)
+        internal ScanResolver(ProjectResolver projectState, 
+            Dictionary<String, Action<ScanDescriptor, Transformer>> productAction)
         {
             _state = projectState;
+            _productAction = productAction;
         }
 
+        private Dictionary<String, Action<ScanDescriptor, Transformer>> _productAction;
         private Dictionary<String, ScanDescriptor> _scans = new Dictionary<string, ScanDescriptor>();
         private Dictionary<int, int> _projectCount = new Dictionary<int, int>();
 
@@ -80,7 +83,8 @@ namespace CxAnalytics.TransformLogic
                         ScanType = scanType,
                         ScanProduct = scanProduct,
                         ScanId = scanId,
-                        FinishedStamp = finishTime
+                        FinishedStamp = finishTime,
+                        MapAction = _productAction[scanProduct]
                     });
                 }
             }

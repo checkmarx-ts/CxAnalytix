@@ -16,26 +16,185 @@ namespace CxAnalytics.TransformLogic
     /// </summary>
     public class Transformer
     {
-        private static readonly String KEY_SCANID = "ScanId";
-        private static readonly String KEY_SCANPRODUCT = "ScanProduct";
-        private static readonly String KEY_SCANTYPE = "ScanType";
-        private static readonly String KEY_SCANFINISH = "ScanFinished";
-        private static readonly String KEY_SCANSTART = "ScanStart";
-        private static readonly String KEY_SCANRISK = "ScanRisk";
-        private static readonly String KEY_SCANRISKSEV = "ScanRiskSeverity";
-        private static readonly String KEY_LOC = "LinesOfCode";
-        private static readonly String KEY_FLOC = "FailedLinesOfCode";
-        private static readonly String KEY_FILECOUNT = "FileCount";
-        private static readonly String KEY_VERSION = "CxVersion";
-        private static readonly String KEY_LANGS = "Languages";
-        private static readonly String KEY_PRESET = "Preset";
-        private static readonly String KEY_PROJECTID = "ProjectId";
-        private static readonly String KEY_PROJECTNAME = "ProjectName";
-        private static readonly String KEY_TEAMNAME = "TeamName";
-
         private static ILog _log = LogManager.GetLogger(typeof(Transformer));
 
+        private static readonly String SAST_PRODUCT_STRING = "SAST";
+        private static readonly String SCA_PRODUCT_STRING = "SCA";
+
         private static readonly String DATE_FORMAT = "yyyy-MM-ddTHH:mm:ss.fffzzz";
+        private static readonly Dictionary<String, Action<ScanDescriptor, Transformer>> _mapActions;
+
+        static Transformer()
+        {
+            _mapActions = new Dictionary<string, Action<ScanDescriptor, Transformer>>()
+            {
+                {SAST_PRODUCT_STRING,  SastReportOutput},
+                {SCA_PRODUCT_STRING,  ScaReportOutput}
+            };
+        }
+
+        public static void SastReportOutput (ScanDescriptor scan, Transformer inst)
+        {
+
+            _log.Debug($"Retrieving XML Report for scan {scan.ScanId}");
+            var report = CxSastXmlReport.GetXmlReport(inst.RestContext, inst.CancelToken, scan.ScanId);
+            _log.Debug($"XML Report for scan {scan.ScanId} retrieved.");
+
+            _log.Debug($"Processing XML report for scan {scan.ScanId}");
+            ProcessSASTReport(scan, report, inst.ScanDetailOut);
+            _log.Debug($"XML Report for scan {scan.ScanId} processed.");
+
+            inst.OutputSASTScanSummary(scan);
+        }
+
+        public static void ScaReportOutput(ScanDescriptor sd, Transformer inst)
+        {
+            _log.Debug($"*********SCA ACTION FOR SCAN {sd.ScanId}******");
+        }
+
+        private Transformer(CxRestContext ctx, CancellationToken token,
+            String previousStatePath)
+        {
+            RestContext = ctx;
+            CancelToken = token;
+
+            Policies = null;
+
+            // Policies may not have data if M&O is not installed.
+            try
+            {
+                Policies = new ProjectPolicyIndex(CxMnoPolicies.GetAllPolicies(ctx, token));
+            }
+            catch (Exception ex)
+            {
+                _log.Warn("Policy data is not available.", ex);
+            }
+
+
+            // Populate the data resolver with teams and presets
+            DataResolver dr = new DataResolver();
+
+            var presetEnum = CxPresets.GetPresets(RestContext, CancelToken);
+
+            foreach (var preset in presetEnum)
+                dr.addPreset(preset.PresetId, preset.PresetName);
+
+            var teamEnum = CxTeams.GetTeams(RestContext, CancelToken);
+
+            foreach (var team in teamEnum)
+                dr.addTeam(team.TeamId, team.TeamName);
+
+            // Now populate the project resolver with the projects
+            ProjectResolver pr = dr.Resolve(previousStatePath);
+
+            var projects = CxProjects.GetProjects(RestContext, CancelToken);
+
+            foreach (var p in projects)
+            {
+                IEnumerable<int> projectPolicyList = CxMnoPolicies.GetPolicyIdsForProject
+                    (ctx, token, p.ProjectId);
+
+                String combinedPolicyNames = String.Empty;
+
+                if (Policies != null)
+                {
+                    Policies.CorrelateProjectToPolicies(p.ProjectId, projectPolicyList);
+                    combinedPolicyNames = GetFlatPolicyNames(Policies, projectPolicyList);
+                }
+
+                pr.AddProject(p.TeamId, p.PresetId, p.ProjectId, p.ProjectName, combinedPolicyNames);
+            }
+
+            // Resolve projects to get the scan resolver.
+            ScanResolver sr = pr.Resolve(_mapActions);
+
+            var sastScans = CxSastScans.GetScans(RestContext, CancelToken, CxSastScans.ScanStatus.Finished);
+            foreach (var sastScan in sastScans)
+            {
+                sr.addScan(sastScan.ProjectId, sastScan.ScanType, SAST_PRODUCT_STRING,
+                    sastScan.ScanId, sastScan.FinishTime);
+
+                SastScanCache.Add(sastScan.ScanId, sastScan);
+            }
+
+
+            foreach (var p in projects)
+            {
+                var scaScans = CxScaScans.GetScans(ctx, token, p.ProjectId);
+                foreach (var scaScan in scaScans)
+                {
+                    sr.addScan(scaScan.ProjectId, "Composition", SCA_PRODUCT_STRING, scaScan.ScanId,
+                        scaScan.FinishTime);
+                    ScaScanCache.Add(scaScan.ScanId, scaScan);
+                }
+            }
+
+            ScanDescriptors = sr.Resolve(CheckTime);
+        }
+
+        private IEnumerable<ScanDescriptor> ScanDescriptors { get; set; }
+
+        private Dictionary<String, CxSastScans.Scan> SastScanCache { get; set; }
+            = new Dictionary<string, CxSastScans.Scan>();
+        private Dictionary<String, CxScaScans.Scan> ScaScanCache { get; set; }
+            = new Dictionary<string, CxScaScans.Scan>();
+
+        private ProjectPolicyIndex Policies { get; set; }
+        private DateTime CheckTime { get; set; } = DateTime.Now;
+
+        private CxRestContext RestContext { get; set; }
+        private CancellationToken CancelToken { get; set; }
+
+        ParallelOptions ThreadOpts { get; set; }
+
+        public IOutput ProjectInfoOut { get; internal set; }
+        public IOutput ScanSummaryOut { get; internal set; }
+        public IOutput ScanDetailOut { get; internal set; }
+        public IOutput PolicyViolationDetailOut { get; internal set; }
+
+        private ConcurrentDictionary<int, ViolatedPolicyCollection> PolicyViolations { get; set; } =
+            new ConcurrentDictionary<int, ViolatedPolicyCollection>();
+
+        private void ExecuteSweep()
+        {
+            // Lookup policy violations, report the project information records.
+            Parallel.ForEach<ScanDescriptor>(ScanDescriptors, ThreadOpts,
+            (scan) =>
+            {
+                if (PolicyViolations.TryAdd(scan.Project.ProjectId,
+                new ViolatedPolicyCollection()))
+                {
+                    if (Policies != null)
+                        try
+                        {
+                            // Collect policy violations, only once per project
+                            PolicyViolations[scan.Project.ProjectId] = CxMnoRetreivePolicyViolations.
+                            GetViolations(RestContext, CancelToken, scan.Project.ProjectId, Policies);
+                        }
+                        catch (Exception ex)
+                        {
+                            _log.Debug($"Policy violations for project {scan.Project.ProjectId}: " +
+                            $"{scan.Project.ProjectName} are unavailable.", ex);
+                        }
+
+                    OutputProjectInfoRecords(scan, ProjectInfoOut);
+                }
+
+                // Increment the policy violation stats for each scan.
+                scan.IncrementPolicyViolations(PolicyViolations[scan.Project.ProjectId].
+                GetViolatedRulesByScanId(scan.ScanId));
+
+                // Does something appropriate for the type of scan in the scan descriptor.
+                scan.MapAction(scan, this);
+
+                OutputPolicyViolationDetails(scan);
+            });
+
+
+        }
+
+
+
         /// <summary>
         /// The main logic for invoking a transformation.  It does not return until a sweep
         /// for new scans is performed across all projects.
@@ -50,75 +209,36 @@ namespace CxAnalytics.TransformLogic
         /// the IOutputFactory to create the correct output implementation instance.</param>
         /// <param name="token">A cancellation token that can be used to stop processing of data if
         /// the task needs to be interrupted.</param>
-        public static void doTransform(int concurrentThreads, String previousStatePath,
-            CxRestContext ctx, IOutputFactory outFactory, RecordNames records, CancellationToken token)
+        public static void DoTransform(int concurrentThreads, String previousStatePath,
+        CxRestContext ctx, IOutputFactory outFactory, RecordNames records, CancellationToken token)
         {
-            ParallelOptions threadOpts = new ParallelOptions()
+
+            Transformer xform = new Transformer(ctx, token, previousStatePath)
             {
-                CancellationToken = token,
-                MaxDegreeOfParallelism = concurrentThreads
+                ThreadOpts = new ParallelOptions()
+                {
+                    CancellationToken = token,
+                    MaxDegreeOfParallelism = concurrentThreads
+                },
+                ProjectInfoOut = outFactory.newInstance(records.ProjectInfo),
+                ScanSummaryOut = outFactory.newInstance(records.SASTScanSummary),
+                ScanDetailOut = outFactory.newInstance(records.SASTScanDetail),
+                PolicyViolationDetailOut = outFactory.newInstance(records.PolicyViolations)
+
             };
 
-            // Policies may not have data if M&O is not installed.
-            var policies = new ProjectPolicyIndex(CxMnoPolicies.GetAllPolicies(ctx, token));
-
-            var scansToProcess = GetListOfScansAndIndexPolicies(previousStatePath, ctx,
-                token, policies);
-
-            ConcurrentDictionary<int, ViolatedPolicyCollection> projectViolations =
-                new ConcurrentDictionary<int, ViolatedPolicyCollection>();
-
-            var project_info_out = outFactory.newInstance(records.ProjectInfo);
-            var scan_summary_out = outFactory.newInstance(records.SASTScanSummary);
-            var scan_detail_out = outFactory.newInstance(records.SASTScanDetail);
-            var policy_violation_detail_out = outFactory.newInstance(records.PolicyViolations);
-
-            Parallel.ForEach<ScanDescriptor>(scansToProcess.ScanDesciptors, threadOpts,
-                (scan) =>
-                {
-
-                    _log.Debug($"Retrieving XML Report for scan {scan.ScanId}");
-                    var report = CxSastXmlReport.GetXmlReport(ctx, token, scan.ScanId);
-                    _log.Debug($"XML Report for scan {scan.ScanId} retrieved.");
-
-                    _log.Debug($"Processing XML report for scan {scan.ScanId}");
-                    ProcessReport(scan, report, scan_detail_out);
-                    _log.Debug($"XML Report for scan {scan.ScanId} processed.");
-
-
-                    if (projectViolations.TryAdd(scan.Project.ProjectId,
-                        new ViolatedPolicyCollection()))
-                    {
-                        // Collect policy violations, only once per project
-                        projectViolations[scan.Project.ProjectId] = CxMnoRetreivePolicyViolations.
-                            GetViolations(ctx, token, scan.Project.ProjectId, policies);
-
-                        OutputProjectInfoRecords(scan, project_info_out);
-                    }
-
-
-                    scan.IncrementPolicyViolations(projectViolations[scan.Project.ProjectId].
-                        GetViolatedRulesByScanId(scan.ScanId));
-                    OutputScanSummary(scan, scansToProcess, scan_summary_out);
-
-                    OutputPolicyViolationDetails(scan, policies, projectViolations, policy_violation_detail_out);
-                }
-
-                );
+            xform.ExecuteSweep();
         }
 
-        private static void OutputPolicyViolationDetails(ScanDescriptor scan, 
-            ProjectPolicyIndex policies, 
-            ConcurrentDictionary<int, ViolatedPolicyCollection> projectViolations, 
-            IOutput policy_violation_detail_out)
+        private void OutputPolicyViolationDetails(ScanDescriptor scan)
         {
             SortedDictionary<String, String> header = new SortedDictionary<string, string>();
             AddPrimaryKeyElements(scan, header);
-            header.Add(KEY_SCANID, scan.ScanId);
-            header.Add(KEY_SCANPRODUCT, scan.ScanProduct);
-            header.Add(KEY_SCANTYPE, scan.ScanType);
+            header.Add(PropertyKeys.KEY_SCANID, scan.ScanId);
+            header.Add(PropertyKeys.KEY_SCANPRODUCT, scan.ScanProduct);
+            header.Add(PropertyKeys.KEY_SCANTYPE, scan.ScanType);
 
-            var violatedRules = projectViolations[scan.Project.ProjectId].
+            var violatedRules = PolicyViolations[scan.Project.ProjectId].
                 GetViolatedRulesByScanId(scan.ScanId);
 
             if (violatedRules != null)
@@ -126,7 +246,7 @@ namespace CxAnalytics.TransformLogic
                 {
                     SortedDictionary<String, String> flat = new SortedDictionary<string, string>(header);
                     flat.Add("PolicyId", Convert.ToString(rule.PolicyId));
-                    flat.Add("PolicyName", policies.GetPolicyById(rule.PolicyId).Name);
+                    flat.Add("PolicyName", Policies.GetPolicyById(rule.PolicyId).Name);
                     flat.Add("RuleId", Convert.ToString(rule.RuleId));
                     flat.Add("RuleName", rule.Name);
                     flat.Add("RuleDescription", rule.Description);
@@ -146,19 +266,19 @@ namespace CxAnalytics.TransformLogic
                     if (rule.ViolationType != null)
                         flat.Add("ViolationType", rule.ViolationType);
 
-                    policy_violation_detail_out.write(flat);
+                    PolicyViolationDetailOut.write(flat);
                 }
         }
 
-        private static void ProcessReport(ScanDescriptor scan, Stream report,
+        private static void ProcessSASTReport(ScanDescriptor scan, Stream report,
             IOutput scanDetailOut)
         {
             SortedDictionary<String, String> reportRec =
                 new SortedDictionary<string, string>();
             AddPrimaryKeyElements(scan, reportRec);
-            reportRec.Add(KEY_SCANID, scan.ScanId);
-            reportRec.Add(KEY_SCANPRODUCT, scan.ScanProduct);
-            reportRec.Add(KEY_SCANTYPE, scan.ScanType);
+            reportRec.Add(PropertyKeys.KEY_SCANID, scan.ScanId);
+            reportRec.Add(PropertyKeys.KEY_SCANPRODUCT, scan.ScanProduct);
+            reportRec.Add(PropertyKeys.KEY_SCANTYPE, scan.ScanType);
 
             SortedDictionary<String, String> curResultRec = null;
             SortedDictionary<String, String> curQueryRec = null;
@@ -340,24 +460,26 @@ namespace CxAnalytics.TransformLogic
                 }
         }
 
-        private static void OutputScanSummary(ScanDescriptor scanRecord, ScanData scansToProcess,
-            IOutput scan_summary_out)
+        private void OutputSASTScanSummary(ScanDescriptor scanRecord)
         {
+            if (ScanSummaryOut == null)
+                return;
+
             SortedDictionary<String, String> flat = new SortedDictionary<string, string>();
             AddPrimaryKeyElements(scanRecord, flat);
-            flat.Add(KEY_SCANID, scanRecord.ScanId);
-            flat.Add(KEY_SCANPRODUCT, scanRecord.ScanProduct);
-            flat.Add(KEY_SCANTYPE, scanRecord.ScanType);
-            flat.Add(KEY_SCANFINISH, scanRecord.FinishedStamp.ToString(DATE_FORMAT));
-            flat.Add(KEY_SCANSTART, scansToProcess.ScanDataDetails[scanRecord.ScanId].StartTime.ToString(DATE_FORMAT));
-            flat.Add(KEY_SCANRISK, scansToProcess.ScanDataDetails[scanRecord.ScanId].ScanRisk.ToString());
-            flat.Add(KEY_SCANRISKSEV, scansToProcess.ScanDataDetails[scanRecord.ScanId].ScanRiskSeverity.ToString());
-            flat.Add(KEY_LOC, scansToProcess.ScanDataDetails[scanRecord.ScanId].LinesOfCode.ToString());
-            flat.Add(KEY_FLOC, scansToProcess.ScanDataDetails[scanRecord.ScanId].FailedLinesOfCode.ToString());
-            flat.Add(KEY_FILECOUNT, scansToProcess.ScanDataDetails[scanRecord.ScanId].FileCount.ToString());
-            flat.Add(KEY_VERSION, scansToProcess.ScanDataDetails[scanRecord.ScanId].CxVersion);
-            flat.Add(KEY_LANGS, scansToProcess.ScanDataDetails[scanRecord.ScanId].Languages);
-            flat.Add(KEY_PRESET, scanRecord.Preset);
+            flat.Add(PropertyKeys.KEY_SCANID, scanRecord.ScanId);
+            flat.Add(PropertyKeys.KEY_SCANPRODUCT, scanRecord.ScanProduct);
+            flat.Add(PropertyKeys.KEY_SCANTYPE, scanRecord.ScanType);
+            flat.Add(PropertyKeys.KEY_SCANFINISH, scanRecord.FinishedStamp.ToString(DATE_FORMAT));
+            flat.Add(PropertyKeys.KEY_SCANSTART, SastScanCache[scanRecord.ScanId].StartTime.ToString(DATE_FORMAT));
+            flat.Add(PropertyKeys.KEY_SCANRISK, SastScanCache[scanRecord.ScanId].ScanRisk.ToString());
+            flat.Add(PropertyKeys.KEY_SCANRISKSEV, SastScanCache[scanRecord.ScanId].ScanRiskSeverity.ToString());
+            flat.Add(PropertyKeys.KEY_LOC, SastScanCache[scanRecord.ScanId].LinesOfCode.ToString());
+            flat.Add(PropertyKeys.KEY_FLOC, SastScanCache[scanRecord.ScanId].FailedLinesOfCode.ToString());
+            flat.Add(PropertyKeys.KEY_FILECOUNT, SastScanCache[scanRecord.ScanId].FileCount.ToString());
+            flat.Add(PropertyKeys.KEY_VERSION, SastScanCache[scanRecord.ScanId].CxVersion);
+            flat.Add(PropertyKeys.KEY_LANGS, SastScanCache[scanRecord.ScanId].Languages);
+            flat.Add(PropertyKeys.KEY_PRESET, scanRecord.Preset);
             flat.Add("Initiator", scanRecord.Initiator);
             flat.Add("DeepLink", scanRecord.DeepLink);
             flat.Add("ScanTime", scanRecord.ScanTime);
@@ -374,7 +496,7 @@ namespace CxAnalytics.TransformLogic
                 flat.Add("PolicyViolations", Convert.ToString(scanRecord.Violations));
             }
 
-            scan_summary_out.write(flat);
+            ScanSummaryOut.write(flat);
         }
 
         private static void OutputProjectInfoRecords(ScanDescriptor scanRecord,
@@ -383,7 +505,7 @@ namespace CxAnalytics.TransformLogic
             SortedDictionary<String, String> flat = new SortedDictionary<string, string>();
             AddPrimaryKeyElements(scanRecord, flat);
 
-            flat.Add(KEY_PRESET, scanRecord.Project.PresetName);
+            flat.Add(PropertyKeys.KEY_PRESET, scanRecord.Project.PresetName);
             flat.Add("Policies", scanRecord.Project.Policies);
 
             foreach (var lastScanProduct in scanRecord.Project.LatestScanDateByProduct.Keys)
@@ -400,22 +522,10 @@ namespace CxAnalytics.TransformLogic
 
         private static void AddPrimaryKeyElements(ScanDescriptor rec, IDictionary<string, string> flat)
         {
-            flat.Add(KEY_PROJECTID, rec.Project.ProjectId.ToString());
-            flat.Add(KEY_PROJECTNAME, rec.Project.ProjectName);
-            flat.Add(KEY_TEAMNAME, rec.Project.TeamName);
+            flat.Add(PropertyKeys.KEY_PROJECTID, rec.Project.ProjectId.ToString());
+            flat.Add(PropertyKeys.KEY_PROJECTNAME, rec.Project.ProjectName);
+            flat.Add(PropertyKeys.KEY_TEAMNAME, rec.Project.TeamName);
         }
-
-        private class ScanData
-        {
-            public ScanData()
-            {
-                ScanDataDetails = new Dictionary<string, CxSastScans.Scan>();
-            }
-
-            public IEnumerable<ScanDescriptor> ScanDesciptors { get; set; }
-            public Dictionary<String, CxSastScans.Scan> ScanDataDetails { get; private set; }
-        }
-
 
         private static String GetFlatPolicyNames(PolicyCollection policies,
             IEnumerable<int> policyIds)
@@ -431,66 +541,6 @@ namespace CxAnalytics.TransformLogic
             }
 
             return b.ToString();
-        }
-
-
-        private static ScanData GetListOfScansAndIndexPolicies(string previousStatePath, CxRestContext ctx,
-            CancellationToken token, ProjectPolicyIndex index)
-        {
-            DateTime checkStart = DateTime.Now;
-
-            // Populate the data resolver with teams and presets
-            DataResolver dr = new DataResolver();
-
-            var presetEnum = CxPresets.GetPresets(ctx, token);
-
-            foreach (var preset in presetEnum)
-                dr.addPreset(preset.PresetId, preset.PresetName);
-
-            var teamEnum = CxTeams.GetTeams(ctx, token);
-
-            foreach (var team in teamEnum)
-                dr.addTeam(team.TeamId, team.TeamName);
-
-            // Now populate the project resolver with the projects
-            ProjectResolver pr = dr.Resolve(previousStatePath);
-
-            var projects = CxProjects.GetProjects(ctx, token);
-
-            foreach (var p in projects)
-            {
-                IEnumerable<int> projectPolicyList = CxMnoPolicies.GetPolicyIdsForProject
-                    (ctx, token, p.ProjectId);
-
-                index.CorrelateProjectToPolicies(p.ProjectId, projectPolicyList);
-
-                String policies = GetFlatPolicyNames(index, projectPolicyList);
-
-                pr.AddProject(p.TeamId, p.PresetId, p.ProjectId, p.ProjectName, policies);
-            }
-
-
-            // Resolve projects to get the scan resolver.
-            ScanResolver sr = pr.Resolve();
-
-            ScanData retVal = new ScanData();
-
-            // Get SAST and SCA scans
-            var sastScans = CxSastScans.GetScans(ctx, token, CxSastScans.ScanStatus.Finished);
-
-            foreach (var sastScan in sastScans)
-            {
-                sr.addScan(sastScan.ProjectId, sastScan.ScanType, "SAST", sastScan.ScanId, sastScan.FinishTime);
-                retVal.ScanDataDetails.Add(sastScan.ScanId, sastScan);
-            }
-
-            // TODO: SCA scans need to be loaded and added to the ScanResolver instance.
-
-
-            // Get the scans to process, update the last check date in all projects.
-            retVal.ScanDesciptors = sr.Resolve(checkStart);
-
-            return retVal;
         }
     }
 }

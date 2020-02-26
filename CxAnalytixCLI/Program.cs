@@ -55,7 +55,7 @@ namespace CxAnalytixCLI
             using (CancellationTokenSource t = new CancellationTokenSource())
             {
                 CxRestContext ctx = builder.build();
-                Transformer.doTransform(Config.Service.ConcurrentThreads, 
+                Transformer.DoTransform(Config.Service.ConcurrentThreads, 
                     Config.Service.StateDataStoragePath, ctx, 
                     MakeFactory (),
                     new RecordNames()

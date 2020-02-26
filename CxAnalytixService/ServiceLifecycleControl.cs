@@ -112,7 +112,7 @@ namespace CxAnalytixService
 
 
 
-                    Transformer.doTransform(Config.Service.ConcurrentThreads, 
+                    Transformer.DoTransform(Config.Service.ConcurrentThreads, 
                         Config.Service.StateDataStoragePath,
                         restCtx, _outFactory, new RecordNames()
                         {

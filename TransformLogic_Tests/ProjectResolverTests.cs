@@ -7,7 +7,14 @@ namespace Test.TransformerLogic.ProjectResolver
 {
     class ProjectResolverTests
     {
-        CxAnalytics.TransformLogic.ProjectResolver pr;
+        private CxAnalytics.TransformLogic.ProjectResolver pr;
+        private static Dictionary<String, Action<CxAnalytics.TransformLogic.ScanDescriptor, 
+            CxAnalytics.TransformLogic.Transformer>> dummy = 
+            new Dictionary<string, Action<CxAnalytics.TransformLogic.ScanDescriptor, 
+                CxAnalytics.TransformLogic.Transformer>>()
+        {
+                { "dummy", (d, t) => {} }
+        };
 
         Guid Team1 = Guid.NewGuid();
         Guid Team2 = Guid.NewGuid();
@@ -31,7 +38,7 @@ namespace Test.TransformerLogic.ProjectResolver
         {
             bool shouldBeTrue = pr.AddProject(Team1, 1, 1, "Foo", "");
 
-            var sr = pr.Resolve();
+            var sr = pr.Resolve(dummy);
 
             bool shouldBeFalse = pr.AddProject(Team1, 1, 2, "Bar", "");
 
@@ -73,7 +80,7 @@ namespace Test.TransformerLogic.ProjectResolver
         [Test]
         public void MultiResolveReturnsSameObject ()
         {
-            Assert.That(pr.Resolve() == pr.Resolve());
+            Assert.That(pr.Resolve(dummy) == pr.Resolve(dummy));
         }
 
     }

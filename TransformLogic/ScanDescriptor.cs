@@ -52,6 +52,8 @@ namespace CxAnalytics.TransformLogic
         public String Comments { get; set; }
         public String SourceOrigin { get; set; }
 
+        public Action<ScanDescriptor, Transformer> MapAction;
+
         /// <summary>
         /// Increases the count of a severity with a given name.
         /// </summary>

@@ -110,9 +110,8 @@ namespace CxAnalytics.TransformLogic
         /// </remarks>
         /// <returns>An instance of <see cref="ScanResolver"/> that will assist with
         /// picking scans that need to be used in the transformation.</returns>
-        public ScanResolver Resolve ()
+        public ScanResolver Resolve (Dictionary<String, Action<ScanDescriptor, Transformer>> productAction)
         {
-
             if (_res == null && !_disallowAdd)
             {
                 _disallowAdd = true;
@@ -150,7 +149,7 @@ namespace CxAnalytics.TransformLogic
                         pid, _previousTargets[pid].ProjectName, _previousTargets[pid].TeamName);
                 }
 
-                _res = new ScanResolver(this);
+                _res = new ScanResolver(this, productAction);
             }
 
             return _res;

@@ -102,8 +102,8 @@ using OSA.)
 * &#9745; Preset Name 
 * &#9745; SAST Last Scan Date
 * &#9745; SAST Total Scans
-* &#9744; OSA Last Scan Date *(omitted if OSA is not used)*
-* &#9744; OSA Total Scans *(omitted if OSA is not used)*
+* &#9745; SCA Last Scan Date *(omitted if OSA is not used)*
+* &#9745; SCA Total Scans *(omitted if OSA is not used)*
 * &#9745; Policies *(M&O is required to support policy assignment)*
 
 ## Policy Violations Details
