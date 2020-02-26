@@ -145,7 +145,7 @@ namespace CxAnalytics.TransformLogic
 
                 foreach (int pid in _previousTargets.Keys)
                 {
-                    _log.InfoFormat("No longer tracking state for project {0}:[{1}] Team [{1}]",
+                    _log.InfoFormat("No longer tracking state for project {0}:[{1}] Team [{2}]",
                         pid, _previousTargets[pid].ProjectName, _previousTargets[pid].TeamName);
                 }
 

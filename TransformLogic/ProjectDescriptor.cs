@@ -23,7 +23,6 @@ namespace CxAnalytics.TransformLogic
         /// <summary>
         /// The name of the project.
         /// </summary>
-        [JsonIgnore]
         public String ProjectName { get; set; }
         /// <summary>
         /// The GUID that identifies the team that owns the project.
@@ -32,7 +31,6 @@ namespace CxAnalytics.TransformLogic
         /// <summary>
         /// A human-readable name for the team.
         /// </summary>
-        [JsonIgnore]
         public String TeamName { get; set; }
         /// <summary>
         /// A numeric identifier of the preset configured for the project.
