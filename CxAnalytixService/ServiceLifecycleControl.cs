@@ -28,7 +28,7 @@ namespace CxAnalytixService
             }
             catch (Exception ex)
             {
-                _log.Error("Error loading output factory.", ex);
+                _log.Error($"Error loading output factory [{Config.Service.OutputAssembly}].", ex);
             }
         }
 
