@@ -156,38 +156,52 @@ namespace CxRestClient
 
         private static LoginToken GetLoginToken(String url, HttpContent authContent, bool doSSLValidate)
         {
-            HttpClient c = MakeClient(doSSLValidate);
-
-            var uri = new Uri(MakeUrl(url, LOGIN_URI_SUFFIX));
-
-            _log.Debug ($"Login URL: {uri}");
-
-            var response = c.PostAsync(uri, authContent).Result;
-
-            if (response.StatusCode != HttpStatusCode.OK)
+            try
             {
-                if (_log.IsDebugEnabled)
-                    _log.Debug($"Response code [{response.StatusCode}]: " +
-                        $"{response.Content.ReadAsStringAsync ().Result}");
-                throw new InvalidOperationException(response.ReasonPhrase);
+                HttpClient c = MakeClient(doSSLValidate);
+
+                var uri = new Uri(MakeUrl(url, LOGIN_URI_SUFFIX));
+
+                _log.Debug($"Login URL: {uri}");
+
+                var response = c.PostAsync(uri, authContent).Result;
+
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    if (_log.IsDebugEnabled)
+                        _log.Debug($"Response code [{response.StatusCode}]: " +
+                            $"{response.Content.ReadAsStringAsync().Result}");
+                    throw new InvalidOperationException(response.ReasonPhrase);
+                }
+                else
+                    _log.Debug("Successful login.");
+
+
+                JsonReader r = new JsonTextReader(new StreamReader
+                    (response.Content.ReadAsStreamAsync().Result));
+
+                var results = JsonSerializer.Create().Deserialize(r,
+                    typeof(Dictionary<String, String>)) as Dictionary<String, String>;
+
+                return new LoginToken
+                {
+                    TokenType = results["token_type"],
+                    ExpireTime = DateTime.Now.AddSeconds(Convert.ToDouble(results["expires_in"])),
+                    Token = results["access_token"],
+                    ReauthContent = authContent
+                };
             }
-            else
-                _log.Debug("Successful login.");
-
-
-            JsonReader r = new JsonTextReader(new StreamReader
-                (response.Content.ReadAsStreamAsync().Result));
-
-            var results = JsonSerializer.Create().Deserialize(r,
-                typeof(Dictionary<String, String>)) as Dictionary<String, String>;
-
-            return new LoginToken
+            catch (Exception)
             {
-                TokenType = results["token_type"],
-                ExpireTime = DateTime.Now.AddSeconds(Convert.ToDouble(results["expires_in"])),
-                Token = results["access_token"],
-                ReauthContent = authContent
-            };
+                // Next operation will try to log in again due to expired token.
+                return new LoginToken
+                {
+                    TokenType = null,
+                    ExpireTime = DateTime.MinValue,
+                    Token = null,
+                    ReauthContent = authContent
+                };
+            }
 
         }
 
