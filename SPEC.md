@@ -81,29 +81,34 @@ using OSA.)
 * &#9745; Legal Medium
 * &#9745; Legal Low
 * &#9745; Legal Unknown
-* &#9744; Number of Open Source Detected
-* &#9744; Number of Unrecognized
+* ~~&#9744; Number of Open Source Detected~~ (removed, all libraries are open source, proprietary/commercial libraries are not recognized)
+* ~~&#9744; Number of Unrecognized~~ (removed, this may be "Legal Unknown")
 
 
 ## OSA Vulnerability Details
 
-* &#9744; Project Name
-* &#9744; Team Name
-* &#9744; Scan ID 
-* &#9744; CVE Name 
-* &#9744; CVE Score 
-* &#9744; CVE URL 
-* &#9744; Severity 
-* &#9744; CVE Description 
-* &#9744; Recommendation 
-* &#9744; Library Name 
-* &#9744; Library Current Version 
-* &#9744; Library Newest Version 
-* &#9744; Library Current Version Date 
-* &#9744; Library Newest Version Date 
-* &#9744; State 
-* &#9744; Legal License 
-* &#9744; LegalRisk
+* &#9745; Project Id
+* &#9745; Project Name
+* &#9745; Team Name
+* &#9745; Scan ID 
+* &#9745; Vulnerability ID 
+* &#9745; Similarity ID 
+* &#9745; CVE Name 
+* &#9745; CVE Description 
+* &#9745; CVE URL 
+* &#9745; CVE Publish Date 
+* &#9745; CVE Score 
+* &#9745; Recommendation 
+* &#9745; Severity 
+* &#9745; State 
+* &#9745; Library ID
+* &#9745; Library Name 
+* &#9745; Library Current Version 
+* &#9745; Library Current Version Release Date 
+* &#9745; Library Newest Version 
+* &#9745; Library Newest Version Release Date 
+* &#9745; Legal License 
+* &#9745; LegalRisk (repeated for each license)
 
 ## Project Information
 

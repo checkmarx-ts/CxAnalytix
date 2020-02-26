@@ -64,52 +64,157 @@ namespace CxAnalytics.TransformLogic
         {
 
             _log.Debug($"Retrieving XML Report for scan {scan.ScanId}");
-            var report = CxSastXmlReport.GetXmlReport(inst.RestContext, inst.CancelToken, scan.ScanId);
-            _log.Debug($"XML Report for scan {scan.ScanId} retrieved.");
+            try
+            {
+                var report = CxSastXmlReport.GetXmlReport(inst.RestContext, inst.CancelToken, scan.ScanId);
+                _log.Debug($"XML Report for scan {scan.ScanId} retrieved.");
 
-            _log.Debug($"Processing XML report for scan {scan.ScanId}");
-            inst.ProcessSASTReport(scan, report);
-            _log.Debug($"XML Report for scan {scan.ScanId} processed.");
+                _log.Debug($"Processing XML report for scan {scan.ScanId}");
+                inst.ProcessSASTReport(scan, report);
+                _log.Debug($"XML Report for scan {scan.ScanId} processed.");
 
-            inst.OutputSASTScanSummary(scan);
+                inst.OutputSASTScanSummary(scan);
+            }
+            catch (Exception ex)
+            {
+                _log.Warn($"Error attempting to retrieve the SAST XML report for {scan.ScanId}" +
+                    $" in project {scan.Project.ProjectId}: {scan.Project.ProjectName}. ", ex);
+            }
         }
 
         public static void ScaReportOutput(ScanDescriptor sd, Transformer inst)
         {
-
-
             Dictionary<String, CxScaLicenses.License> licenseIndex =
             new Dictionary<string, CxScaLicenses.License>();
 
             Dictionary<String, int> licenseCount =
             new Dictionary<string, int>();
 
-
-
-            var licenses = CxScaLicenses.GetLicenses(inst.RestContext, inst.CancelToken, sd.ScanId);
-
-            foreach (var l in licenses)
+            try
             {
-                licenseIndex.Add(l.LicenseId, l);
+                var licenses = CxScaLicenses.GetLicenses(inst.RestContext, inst.CancelToken, sd.ScanId);
 
-                if (licenseCount.ContainsKey(l.RiskLevel))
-                    licenseCount[l.RiskLevel]++;
-                else
-                    licenseCount.Add(l.RiskLevel, 1);
+                foreach (var l in licenses)
+                {
+                    licenseIndex.Add(l.LicenseId, l);
+
+                    if (licenseCount.ContainsKey(l.RiskLevel))
+                        licenseCount[l.RiskLevel]++;
+                    else
+                        licenseCount.Add(l.RiskLevel, 1);
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Warn($"Could not obtain license data for scan {sd.ScanId} in project " +
+                    $"{sd.Project.ProjectId}: {sd.Project.ProjectName}.  License data will not be" +
+                    $" available.", ex);
             }
 
+            Dictionary<String, CxScaLibraries.Library> libraryIndex =
+            new Dictionary<string, CxScaLibraries.Library>();
 
 
+            try
+            {
+                var libraries = CxScaLibraries.GetLibraries(inst.RestContext, inst.CancelToken, sd.ScanId);
+
+                foreach (var lib in libraries)
+                    libraryIndex.Add(lib.LibraryId, lib);
+            }
+            catch (Exception ex)
+            {
+                _log.Warn($"Could not obtain library data for scan {sd.ScanId} in project " +
+                    $"{sd.Project.ProjectId}: {sd.Project.ProjectName}.  Library data will not be" +
+                    $" available.", ex);
+            }
+
+            OutputScaScanSummary(sd, inst, licenseCount);
+
+            OutputScaScanDetails(sd, inst, licenseIndex, libraryIndex);
+
+        }
+
+        private static void OutputScaScanDetails(ScanDescriptor sd, Transformer inst, 
+            Dictionary<string, CxScaLicenses.License> licenseIndex, 
+            Dictionary<string, CxScaLibraries.Library> libraryIndex)
+        {
+            try
+            {
+                var vulns = CxScaVulnerabilities.GetVulnerabilities(inst.RestContext, 
+                    inst.CancelToken, sd.ScanId);
+
+                var header = new SortedDictionary<String, String>();
+                AddPrimaryKeyElements(sd, header);
+
+                foreach (var vuln in vulns)
+                {
+                    var flat = new SortedDictionary<String, String>(header);
+
+                    flat.Add(PropertyKeys.KEY_SCANID, sd.ScanId);
+
+                    flat.Add("VulnerabilityId", vuln.VulerabilityId);
+                    flat.Add(PropertyKeys.KEY_SIMILARITYID, vuln.SimilarityId);
+                    flat.Add("CVEName", vuln.CVEName);
+                    flat.Add("CVEDescription", vuln.CVEDescription);
+                    flat.Add("CVEUrl", vuln.CVEUrl);
+                    flat.Add("CVEPubDate", vuln.CVEPublishDate);
+                    flat.Add("CVEScore", Convert.ToString(vuln.CVEScore));
+                    flat.Add("Recommendation", vuln.Recommendations);
+                    flat.Add(PropertyKeys.KEY_SCANRISKSEV, vuln.Severity.Name);
+                    flat.Add("State", vuln.State.StateName);
+
+
+                    flat.Add("LibraryId", vuln.LibraryId);
+
+                    var lib = libraryIndex[vuln.LibraryId];
+                    if (lib != null)
+                    {
+                        flat.Add("LibraryName", lib.LibraryName);
+                        flat.Add("LibraryVersion", lib.LibraryVersion);
+                        flat.Add("LibraryReleaseDate", lib.ReleaseDate);
+                        flat.Add("LibraryLatestVersion", lib.LatestVersion);
+                        flat.Add("LibraryLatestReleaseDate", lib.LatestVersionReleased);
+                    }
+
+                    StringBuilder licenseStr = new StringBuilder();
+
+                    foreach (var license in lib.Licenses)
+                    {
+                        if (licenseStr.Length > 0)
+                            licenseStr.Append(";");
+                        licenseStr.Append(licenseIndex[license].LicenseName);
+
+                        flat.Add($"LibraryLegalRisk_{licenseIndex[license].LicenseName.Replace(" ", "")}",
+                            licenseIndex[license].RiskLevel);
+                    }
+
+                    flat.Add("LibraryLicenses", licenseStr.ToString());
+
+                    inst.ScaScanDetailOut.write(flat);
+                }
+            }
+            catch (Exception ex)
+            {
+                _log.Warn($"Could not obtain vulnerability data for scan {sd.ScanId} in project " +
+                $"{sd.Project.ProjectId}: {sd.Project.ProjectName}.  Vulnerability data will not be" +
+                $" available.", ex);
+            }
+        }
+
+        private static void OutputScaScanSummary(ScanDescriptor sd, Transformer inst, Dictionary<string, int> licenseCount)
+        {
             SortedDictionary<String, String> flat = new SortedDictionary<string, string>();
             AddPrimaryKeyElements(sd, flat);
             AddPolicyViolationProperties(sd, flat);
+            flat.Add(PropertyKeys.KEY_SCANID, sd.ScanId);
             flat.Add(PropertyKeys.KEY_SCANSTART, inst.ScaScanCache[sd.ScanId].StartTime.
-                ToString (DATE_FORMAT) );
+                ToString(DATE_FORMAT));
             flat.Add(PropertyKeys.KEY_SCANFINISH, inst.ScaScanCache[sd.ScanId].FinishTime.
-                ToString (DATE_FORMAT) );
+                ToString(DATE_FORMAT));
 
             foreach (var k in licenseCount.Keys)
-                flat.Add($"Legal{k}", Convert.ToString (licenseCount[k]));
+                flat.Add($"Legal{k}", Convert.ToString(licenseCount[k]));
 
 
             try
@@ -134,14 +239,8 @@ namespace CxAnalytics.TransformLogic
                     $"in project {sd.Project.ProjectName}", ex);
             }
 
-
-
             inst.ScaScanSummaryOut.write(flat);
-
         }
-
-
-
 
         private Transformer(CxRestContext ctx, CancellationToken token,
         String previousStatePath)
@@ -422,7 +521,7 @@ namespace CxAnalytics.TransformLogic
                             curPath = new SortedDictionary<string, string>(curResultRec);
                             curPath.Add("ResultId", xr.GetAttribute("ResultId"));
                             curPath.Add("PathId", xr.GetAttribute("PathId"));
-                            curPath.Add("SimilarityId", xr.GetAttribute("SimilarityId"));
+                            curPath.Add(PropertyKeys.KEY_SIMILARITYID, xr.GetAttribute("SimilarityId"));
                             continue;
                         }
 
@@ -544,11 +643,11 @@ namespace CxAnalytics.TransformLogic
             flat.Add(PropertyKeys.KEY_SCANSTART, SastScanCache[scanRecord.ScanId].StartTime.ToString(DATE_FORMAT));
             flat.Add(PropertyKeys.KEY_SCANRISK, SastScanCache[scanRecord.ScanId].ScanRisk.ToString());
             flat.Add(PropertyKeys.KEY_SCANRISKSEV, SastScanCache[scanRecord.ScanId].ScanRiskSeverity.ToString());
-            flat.Add(PropertyKeys.KEY_LOC, SastScanCache[scanRecord.ScanId].LinesOfCode.ToString());
-            flat.Add(PropertyKeys.KEY_FLOC, SastScanCache[scanRecord.ScanId].FailedLinesOfCode.ToString());
-            flat.Add(PropertyKeys.KEY_FILECOUNT, SastScanCache[scanRecord.ScanId].FileCount.ToString());
-            flat.Add(PropertyKeys.KEY_VERSION, SastScanCache[scanRecord.ScanId].CxVersion);
-            flat.Add(PropertyKeys.KEY_LANGS, SastScanCache[scanRecord.ScanId].Languages);
+            flat.Add("LinesOfCode", SastScanCache[scanRecord.ScanId].LinesOfCode.ToString());
+            flat.Add("FailedLinesOfCode", SastScanCache[scanRecord.ScanId].FailedLinesOfCode.ToString());
+            flat.Add("FileCount", SastScanCache[scanRecord.ScanId].FileCount.ToString());
+            flat.Add("CxVersion", SastScanCache[scanRecord.ScanId].CxVersion);
+            flat.Add("Languages", SastScanCache[scanRecord.ScanId].Languages);
             flat.Add(PropertyKeys.KEY_PRESET, scanRecord.Preset);
             flat.Add("Initiator", scanRecord.Initiator);
             flat.Add("DeepLink", scanRecord.DeepLink);
@@ -564,7 +663,7 @@ namespace CxAnalytics.TransformLogic
             SastScanSummaryOut.write(flat);
         }
 
-        private static void AddPolicyViolationProperties(ScanDescriptor scanRecord, 
+        private static void AddPolicyViolationProperties(ScanDescriptor scanRecord,
             IDictionary<string, string> rec)
         {
             if (scanRecord.HasPoliciesApplied)
