@@ -81,8 +81,6 @@ using OSA.)
 * &#9745; Legal Medium
 * &#9745; Legal Low
 * &#9745; Legal Unknown
-
-
 * &#9744; Number of Open Source Detected
 * &#9744; Number of Unrecognized
 
@@ -131,7 +129,6 @@ violation record.*
 * &#9745; Scan Type
 * &#9745; Policy Id
 * &#9745; Policy Name 
-
 * &#9745; Rule ID
 * &#9745; Rule Name 
 * &#9745; Rule Description
@@ -146,8 +143,8 @@ violation record.*
 * &#9745; Violation State
 * &#9745; Violation Status
 * &#9745; Violation Type
-
 * ~~&#9744; Number of occurrences~~ (removed: the number of occurrences does not make sense because each occurrence can have a different source)
+
 
 
 
