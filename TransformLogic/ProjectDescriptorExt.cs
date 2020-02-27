@@ -6,20 +6,27 @@ namespace CxAnalytics.TransformLogic
 {
     internal class ProjectDescriptorExt : ProjectDescriptor
     {
+        internal ProjectDescriptorExt (ProjectDescriptor src, ProjectDescriptorExt merge) : base (src)
+        {
+            this.LastScanCheckDate = merge.LastScanCheckDate;
+
+        }
+
+        public ProjectDescriptorExt ()
+        {
+
+        }
+
+        internal ProjectDescriptorExt(ProjectDescriptor src) : base(src)
+        {
+            LastScanCheckDate = DateTime.MinValue;
+        }
+
 
         internal static ProjectDescriptorExt newDetail(ProjectDescriptor src)
         {
-            return new ProjectDescriptorExt()
+            return new ProjectDescriptorExt(src)
             {
-                PresetId = src.PresetId,
-                PresetName = src.PresetName,
-                ProjectId = src.ProjectId,
-                ProjectName = src.ProjectName,
-                TeamId = src.TeamId,
-                TeamName = src.TeamName,
-                Policies = src.Policies,
-                ScanCountByProduct = src.ScanCountByProduct,
-                LatestScanDateByProduct = src.LatestScanDateByProduct,
                 LastScanCheckDate = DateTime.MinValue
             };
 

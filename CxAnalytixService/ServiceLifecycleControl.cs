@@ -103,6 +103,7 @@ namespace CxAnalytixService
 
             var restCtx = builder.build();
 
+
             _serviceTask = Task.Run(async () =>
             {
                 do
@@ -112,18 +113,26 @@ namespace CxAnalytixService
 
 
 
-                    Transformer.DoTransform(Config.Service.ConcurrentThreads, 
-                        Config.Service.StateDataStoragePath,
-                        restCtx, _outFactory, new RecordNames()
-                        {
-                            SASTScanSummary = Config.Service.SASTScanSummaryRecordName,
-                            SASTScanDetail = Config.Service.SASTScanDetailRecordName,
-                            SCAScanSummary = Config.Service.SCAScanSummaryRecordName,
-                            SCAScanDetail = Config.Service.SCAScanDetailRecordName,
-                            ProjectInfo = Config.Service.ProjectInfoRecordName,
-                            PolicyViolations = Config.Service.PolicyViolationsRecordName
-                        },
-                        _cancelToken.Token);
+                    try
+                    {
+                        Transformer.DoTransform(Config.Service.ConcurrentThreads,
+                            Config.Service.StateDataStoragePath,
+                            restCtx, _outFactory, new RecordNames()
+                            {
+                                SASTScanSummary = Config.Service.SASTScanSummaryRecordName,
+                                SASTScanDetail = Config.Service.SASTScanDetailRecordName,
+                                SCAScanSummary = Config.Service.SCAScanSummaryRecordName,
+                                SCAScanDetail = Config.Service.SCAScanDetailRecordName,
+                                ProjectInfo = Config.Service.ProjectInfoRecordName,
+                                PolicyViolations = Config.Service.PolicyViolationsRecordName
+                            },
+                            _cancelToken.Token);
+
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.Error("Transformation aborted due to unhandled exception.", ex);
+                    }
 
                     _log.InfoFormat("Data transformation finished in {0:0.00} minutes.", DateTime.Now.Subtract(start).TotalMinutes);
                     await Task.Delay(Config.Service.ProcessPeriodMinutes * 60 * 1000, _cancelToken.Token);

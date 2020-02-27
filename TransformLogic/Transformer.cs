@@ -281,15 +281,23 @@ namespace CxAnalytics.TransformLogic
 
             foreach (var p in projects)
             {
-                IEnumerable<int> projectPolicyList = CxMnoPolicies.GetPolicyIdsForProject
-                    (ctx, token, p.ProjectId);
-
                 String combinedPolicyNames = String.Empty;
 
                 if (Policies != null)
                 {
-                    Policies.CorrelateProjectToPolicies(p.ProjectId, projectPolicyList);
-                    combinedPolicyNames = GetFlatPolicyNames(Policies, projectPolicyList);
+                    try
+                    {
+                        IEnumerable<int> projectPolicyList = CxMnoPolicies.GetPolicyIdsForProject
+                            (ctx, token, p.ProjectId);
+
+                        Policies.CorrelateProjectToPolicies(p.ProjectId, projectPolicyList);
+                        combinedPolicyNames = GetFlatPolicyNames(Policies, projectPolicyList);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.Warn($"Unable to correlate policies to project {p.ProjectId}: {p.ProjectName}. " +
+                            $"Policy statistics will be unavalable.", ex);
+                    }
                 }
 
                 pr.AddProject(p.TeamId, p.PresetId, p.ProjectId, p.ProjectName, combinedPolicyNames);
@@ -298,28 +306,35 @@ namespace CxAnalytics.TransformLogic
             // Resolve projects to get the scan resolver.
             ScanResolver sr = pr.Resolve(_mapActions);
 
-            var sastScans = CxSastScans.GetScans(RestContext, CancelToken, CxSastScans.ScanStatus.Finished);
-            foreach (var sastScan in sastScans)
+            try
             {
-                sr.addScan(sastScan.ProjectId, sastScan.ScanType, SAST_PRODUCT_STRING,
-                    sastScan.ScanId, sastScan.FinishTime);
-
-                SastScanCache.Add(sastScan.ScanId, sastScan);
-            }
-
-
-            foreach (var p in projects)
-            {
-                var scaScans = CxScaScans.GetScans(ctx, token, p.ProjectId);
-                foreach (var scaScan in scaScans)
+                var sastScans = CxSastScans.GetScans(RestContext, CancelToken, CxSastScans.ScanStatus.Finished);
+                foreach (var sastScan in sastScans)
                 {
-                    sr.addScan(scaScan.ProjectId, "Composition", SCA_PRODUCT_STRING, scaScan.ScanId,
-                        scaScan.FinishTime);
-                    ScaScanCache.Add(scaScan.ScanId, scaScan);
-                }
-            }
+                    sr.addScan(sastScan.ProjectId, sastScan.ScanType, SAST_PRODUCT_STRING,
+                        sastScan.ScanId, sastScan.FinishTime);
 
-            ScanDescriptors = sr.Resolve(CheckTime);
+                    SastScanCache.Add(sastScan.ScanId, sastScan);
+                }
+
+
+                foreach (var p in projects)
+                {
+                    var scaScans = CxScaScans.GetScans(ctx, token, p.ProjectId);
+                    foreach (var scaScan in scaScans)
+                    {
+                        sr.addScan(scaScan.ProjectId, "Composition", SCA_PRODUCT_STRING, scaScan.ScanId,
+                            scaScan.FinishTime);
+                        ScaScanCache.Add(scaScan.ScanId, scaScan);
+                    }
+                }
+
+                ScanDescriptors = sr.Resolve(CheckTime);
+            }
+            catch (Exception ex)
+            {
+                _log.Error($"Error resolving scans, server may be unavailable.", ex);
+            }
         }
 
 

@@ -25,7 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="CxAnalytixService.config">
+    <None Update="CxAnalytixService.exe.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="CxAnalytixService.log4net">

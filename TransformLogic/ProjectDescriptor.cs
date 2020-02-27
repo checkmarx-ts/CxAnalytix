@@ -16,6 +16,19 @@ namespace CxAnalytics.TransformLogic
             LatestScanDateByProduct = new Dictionary<string, DateTime>();
         }
 
+        internal ProjectDescriptor (ProjectDescriptor src)
+        {
+            PresetId = src.PresetId;
+            PresetName = src.PresetName;
+            ProjectId = src.ProjectId;
+            ProjectName = src.ProjectName;
+            TeamId = src.TeamId;
+            TeamName = src.TeamName;
+            Policies = src.Policies;
+            ScanCountByProduct = src.ScanCountByProduct;
+            LatestScanDateByProduct = src.LatestScanDateByProduct;
+        }
+
         /// <summary>
         /// The project id as it is stored in the SAST system.
         /// </summary>

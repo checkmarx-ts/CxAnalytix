@@ -124,7 +124,10 @@ namespace CxAnalytics.TransformLogic
                     // the project a target for scan pulling.
                     if (_previousTargets.ContainsKey(pid))
                     {
-                        _targets.Add(pid, _previousTargets[pid]);
+                        // Make a new descriptor so that if there is a new preset/name/team/etc
+                        // it gets updated based on data pulled from the web service.
+                        _targets.Add(pid, new ProjectDescriptorExt (_newProjects[pid], 
+                            _previousTargets[pid]));
                         _previousTargets.Remove(pid);
                     }
                     else
