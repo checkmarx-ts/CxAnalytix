@@ -28,7 +28,7 @@ namespace CxRestClient
             public String RiskLevel { get; internal set; }
 
             [JsonProperty(PropertyName = "copyrightRiskScore")]
-            public String CopyrightRiskScore{ get; internal set; }
+            public String CopyrightRiskScore { get; internal set; }
 
             [JsonProperty(PropertyName = "patentRiskScore")]
             public String PatentRiskScore { get; internal set; }
@@ -54,7 +54,7 @@ namespace CxRestClient
             private JToken _json;
             private JTokenReader _reader;
 
-            internal LicensesReader (JToken json)
+            internal LicensesReader(JToken json)
             {
                 _json = json;
                 _reader = new JTokenReader(_json);
@@ -68,6 +68,7 @@ namespace CxRestClient
 
             public void Dispose()
             {
+                _reader = null;
             }
 
             public IEnumerator<License> GetEnumerator()
@@ -109,7 +110,7 @@ namespace CxRestClient
 
             IEnumerator IEnumerable.GetEnumerator()
             {
-                return GetEnumerator ();
+                return GetEnumerator();
             }
         }
 
@@ -121,18 +122,23 @@ namespace CxRestClient
                 {"scanId", Convert.ToString (scanId)  }
             });
 
-            var licenses = ctx.Json.CreateSastClient().GetAsync(url, token).Result;
+            using (var client = ctx.Json.CreateSastClient())
+            using (var licenses = client.GetAsync(url, token).Result)
+            {
+                if (token.IsCancellationRequested)
+                    return null;
 
-            if (token.IsCancellationRequested)
-                return null;
+                if (!licenses.IsSuccessStatusCode)
+                    throw new InvalidOperationException(licenses.ReasonPhrase);
 
-            if (!licenses.IsSuccessStatusCode)
-                throw new InvalidOperationException(licenses.ReasonPhrase);
-
-            JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                (licenses.Content.ReadAsStreamAsync().Result)));
-
-            return new LicensesReader(jt);
+                using (var sr = new StreamReader
+                    (licenses.Content.ReadAsStreamAsync().Result))
+                using (var jtr = new JsonTextReader(sr))
+                {
+                    JToken jt = JToken.Load(jtr);
+                    return new LicensesReader(jt);
+                }
+            }
         }
     }
 }

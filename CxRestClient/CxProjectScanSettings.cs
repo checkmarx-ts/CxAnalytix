@@ -13,7 +13,7 @@ namespace CxRestClient
 
         private static String URL_SUFFIX = "cxrestapi/sast/scanSettings";
 
-        private CxProjectScanSettings ()
+        private CxProjectScanSettings()
         { }
 
         public class ScanSettings
@@ -31,32 +31,31 @@ namespace CxRestClient
                 {
                     if (_presetId == null)
                     {
-                        var reader = new JTokenReader(_json);
-
-                        bool foundPreset = false;
-
-                        while (reader.Read () )
+                        using (var reader = new JTokenReader(_json))
                         {
-                            if (reader.CurrentToken.Type == JTokenType.Property)
+                            bool foundPreset = false;
+
+                            while (reader.Read())
                             {
-                                if (!foundPreset)
+                                if (reader.CurrentToken.Type == JTokenType.Property)
                                 {
-                                    if (((JProperty)reader.CurrentToken).Name.CompareTo("preset") == 0)
-                                        foundPreset = true;
-                                    continue;
-                                }
-                                else
-                                {
-                                    _presetId = Convert.ToInt32(((JProperty)reader.CurrentToken).Value);
-                                    break;
+                                    if (!foundPreset)
+                                    {
+                                        if (((JProperty)reader.CurrentToken).Name.CompareTo("preset") == 0)
+                                            foundPreset = true;
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        _presetId = Convert.ToInt32(((JProperty)reader.CurrentToken).Value);
+                                        break;
+                                    }
                                 }
                             }
-
                         }
                     }
 
                     return _presetId.Value;
-
                 }
             }
         }
@@ -65,20 +64,25 @@ namespace CxRestClient
         {
             String restUrl = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX);
 
-            var settings = ctx.Json.CreateSastClient ().GetAsync(CxRestContext.MakeUrl(restUrl,
-                Convert.ToString(projectId)), token).Result;
+            using (var client = ctx.Json.CreateSastClient())
+            using (var settings = client.GetAsync(CxRestContext.MakeUrl(restUrl,
+                Convert.ToString(projectId)), token).Result)
+            {
+                if (token.IsCancellationRequested)
+                    return null;
 
-            if (token.IsCancellationRequested)
-                return null;
+                if (!settings.IsSuccessStatusCode)
+                    throw new InvalidOperationException(settings.ReasonPhrase);
 
-            if (!settings.IsSuccessStatusCode)
-                throw new InvalidOperationException(settings.ReasonPhrase);
+                using (var sr = new StreamReader
+                        (settings.Content.ReadAsStreamAsync().Result))
+                using (var jtr = new JsonTextReader(sr))
+                {
+                    JToken jt = JToken.Load(jtr);
 
-            JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                (settings.Content.ReadAsStreamAsync().Result)));
-
-            return new ScanSettings(jt);
+                    return new ScanSettings(jt);
+                }
+            }
         }
-
     }
 }

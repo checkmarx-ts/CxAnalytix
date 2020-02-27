@@ -33,7 +33,7 @@ namespace CxRestClient
 
             private JToken _json;
             private JTokenReader _reader;
-            internal PresetReader (JToken json)
+            internal PresetReader(JToken json)
             {
                 _json = json;
                 _reader = new JTokenReader(_json);
@@ -42,14 +42,15 @@ namespace CxRestClient
 
             public Preset Current => new Preset()
             {
-                PresetId = Convert.ToInt32 (((JProperty)_reader.CurrentToken).Value.ToString ()),
-                PresetName = ((JProperty)_reader.CurrentToken.Next).Value.ToString ()
+                PresetId = Convert.ToInt32(((JProperty)_reader.CurrentToken).Value.ToString()),
+                PresetName = ((JProperty)_reader.CurrentToken.Next).Value.ToString()
             };
 
             object IEnumerator.Current => Current;
 
             public void Dispose()
             {
+                _reader = null;
             }
 
             public IEnumerator<Preset> GetEnumerator()
@@ -82,20 +83,24 @@ namespace CxRestClient
 
         public static IEnumerable<Preset> GetPresets(CxRestContext ctx, CancellationToken token)
         {
-            var presets = ctx.Json.CreateSastClient().GetAsync(
-                CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result;
+            using (var client = ctx.Json.CreateSastClient())
+            using (var presets = client.GetAsync(
+                CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result)
+            {
+                if (token.IsCancellationRequested)
+                    return null;
 
-            if (token.IsCancellationRequested)
-                return null;
+                if (!presets.IsSuccessStatusCode)
+                    throw new InvalidOperationException(presets.ReasonPhrase);
 
-            if (!presets.IsSuccessStatusCode)
-                throw new InvalidOperationException(presets.ReasonPhrase);
-
-            JToken jt = JToken.Load(new JsonTextReader(new StreamReader 
-                (presets.Content.ReadAsStreamAsync ().Result) ) );
-
-            return new PresetReader (jt);
+                using (var sr = new StreamReader
+                        (presets.Content.ReadAsStreamAsync().Result))
+                using (var jtr = new JsonTextReader(sr))
+                {
+                    JToken jt = JToken.Load(jtr);
+                    return new PresetReader(jt);
+                }
+            }
         }
-
     }
 }

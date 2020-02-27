@@ -22,33 +22,37 @@ namespace CxRestClient
 
         private static GenStatus ReadStatus(JToken responsePayload)
         {
-            var reader = new JTokenReader(responsePayload);
-
-            if (JsonUtils.MoveToNextProperty(reader, "value"))
-            {
-                return Enum.Parse<GenStatus>(((JProperty)reader.CurrentToken).Value.ToString());
-            }
-            else
-                throw new InvalidDataException("reportId missing in reponse payload");
+            using (var reader = new JTokenReader(responsePayload))
+                if (JsonUtils.MoveToNextProperty(reader, "value"))
+                {
+                    return Enum.Parse<GenStatus>(((JProperty)reader.CurrentToken).Value.ToString());
+                }
+                else
+                    throw new InvalidDataException("reportId missing in reponse payload");
         }
 
 
-        public static GenStatus GetReportGenerationStatus (CxRestContext ctx, 
+        public static GenStatus GetReportGenerationStatus(CxRestContext ctx,
             CancellationToken token, String reportId)
         {
-            var client = ctx.Json.CreateSastClient();
+            using (var client = ctx.Json.CreateSastClient())
+            {
+                using (var scanReportStatus = client.GetAsync(
+                    CxRestContext.MakeUrl(ctx.Url,
+                    String.Format(URL_SUFFIX, reportId)), token).Result)
+                {
+                    if (!scanReportStatus.IsSuccessStatusCode)
+                        return GenStatus.None;
 
-            var scanReportStatus = client.GetAsync(
-                CxRestContext.MakeUrl(ctx.Url, 
-                String.Format (URL_SUFFIX, reportId) ), token).Result;
-
-            if (!scanReportStatus.IsSuccessStatusCode)
-                return GenStatus.None;
-
-            JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                (scanReportStatus.Content.ReadAsStreamAsync().Result)));
-
-            return ReadStatus(jt);
+                    using (var sr = new StreamReader
+                            (scanReportStatus.Content.ReadAsStreamAsync().Result))
+                    using (var jtr = new JsonTextReader(sr))
+                    {
+                        JToken jt = JToken.Load(jtr);
+                        return ReadStatus(jt);
+                    }
+                }
+            }
         }
     }
 }

@@ -13,46 +13,47 @@ namespace CxRestClient
 
         private static readonly String URL_SUFFIX = "cxarm/policymanager/policies/{0}/rules";
 
-        private static IEnumerable<RuleDescriptor> ParseRules (CxRestContext ctx,
+        private static IEnumerable<RuleDescriptor> ParseRules(CxRestContext ctx,
         CancellationToken token, JToken rulePayload)
         {
-            var reader = new JTokenReader(rulePayload);
-
-            LinkedList<RuleDescriptor> rules = new LinkedList<RuleDescriptor>();
-
-            while (JsonUtils.MoveToNextProperty (reader, "ruleId") )
+            using (var reader = new JTokenReader(rulePayload))
             {
-                RuleDescriptor rule = new RuleDescriptor()
+                LinkedList<RuleDescriptor> rules = new LinkedList<RuleDescriptor>();
+
+                while (JsonUtils.MoveToNextProperty(reader, "ruleId"))
                 {
-                    RuleId = Convert.ToInt32(((JProperty)reader.CurrentToken).Value)
-                };
+                    RuleDescriptor rule = new RuleDescriptor()
+                    {
+                        RuleId = Convert.ToInt32(((JProperty)reader.CurrentToken).Value)
+                    };
 
 
-                if (!JsonUtils.MoveToNextProperty(reader, "name"))
-                    continue;
-                rule.Name = ((JProperty)reader.CurrentToken).Value.ToString();
+                    if (!JsonUtils.MoveToNextProperty(reader, "name"))
+                        continue;
+                    rule.Name = ((JProperty)reader.CurrentToken).Value.ToString();
 
-                if (!JsonUtils.MoveToNextProperty(reader, "description"))
-                    continue;
-                rule.Description = ((JProperty)reader.CurrentToken).Value.ToString();
+                    if (!JsonUtils.MoveToNextProperty(reader, "description"))
+                        continue;
+                    rule.Description = ((JProperty)reader.CurrentToken).Value.ToString();
 
-                if (!JsonUtils.MoveToNextProperty(reader, "scanType"))
-                    continue;
-                rule.ScanProduct = ((JProperty)reader.CurrentToken).Value.ToString();
+                    if (!JsonUtils.MoveToNextProperty(reader, "scanType"))
+                        continue;
+                    rule.ScanProduct = ((JProperty)reader.CurrentToken).Value.ToString();
 
-                if (!JsonUtils.MoveToNextProperty(reader, "ruleType"))
-                    continue;
-                rule.RuleType = ((JProperty)reader.CurrentToken).Value.ToString();
+                    if (!JsonUtils.MoveToNextProperty(reader, "ruleType"))
+                        continue;
+                    rule.RuleType = ((JProperty)reader.CurrentToken).Value.ToString();
 
-                if (!JsonUtils.MoveToNextProperty(reader, "createdOn"))
-                    continue;
-                rule.CreatedOn = JsonUtils.UtcEpochTimeToDateTime
-                    (Convert.ToInt64(((JProperty)reader.CurrentToken).Value) / 1000);
+                    if (!JsonUtils.MoveToNextProperty(reader, "createdOn"))
+                        continue;
+                    rule.CreatedOn = JsonUtils.UtcEpochTimeToDateTime
+                        (Convert.ToInt64(((JProperty)reader.CurrentToken).Value) / 1000);
 
-                rules.AddLast(rule);
+                    rules.AddLast(rule);
+                }
+
+                return rules;
             }
-
-            return rules;
         }
 
 
@@ -60,19 +61,23 @@ namespace CxRestClient
         CancellationToken token, int policyId)
         {
 
-            var client = ctx.Json.CreateMnoClient();
+            using (var client = ctx.Json.CreateMnoClient())
+            using (var rulePayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
+                String.Format(URL_SUFFIX, policyId)), token).Result)
+            {
 
-            var rulePayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
-                String.Format (URL_SUFFIX, policyId)), token).Result;
+                if (!rulePayload.IsSuccessStatusCode)
+                    throw new InvalidOperationException
+                        ($"Unable to retrieve rules for policy {policyId}.");
 
-            if (!rulePayload.IsSuccessStatusCode)
-                throw new InvalidOperationException
-                    ($"Unable to retrieve rules for policy {policyId}.");
-
-            JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                (rulePayload.Content.ReadAsStreamAsync().Result)));
-
-            return ParseRules (ctx, token, jt);
+                using (var sr = new StreamReader
+                    (rulePayload.Content.ReadAsStreamAsync().Result))
+                using (var jtr = new JsonTextReader(sr))
+                {
+                    JToken jt = JToken.Load(jtr);
+                    return ParseRules(ctx, token, jt);
+                }
+            }
         }
     }
 }

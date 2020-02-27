@@ -13,7 +13,7 @@ namespace CxRestClient
     {
         private static String URL_SUFFIX = "cxrestapi/auth/teams";
 
-        private CxTeams ()
+        private CxTeams()
         { }
 
         private class TeamReader : IEnumerable<Team>, IEnumerator<Team>
@@ -29,7 +29,7 @@ namespace CxRestClient
 
             public Team Current => new Team()
             {
-                TeamId = new Guid (((JProperty)_reader.CurrentToken).Value.ToString()),
+                TeamId = new Guid(((JProperty)_reader.CurrentToken).Value.ToString()),
                 TeamName = ((JProperty)_reader.CurrentToken.Next).Value.ToString()
             };
 
@@ -37,6 +37,7 @@ namespace CxRestClient
 
             public void Dispose()
             {
+                _reader = null;
             }
 
             public IEnumerator<Team> GetEnumerator()
@@ -75,21 +76,24 @@ namespace CxRestClient
 
         public static IEnumerable<Team> GetTeams(CxRestContext ctx, CancellationToken token)
         {
-            var teams = ctx.Json.CreateSastClient ().GetAsync(
-                CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result;
+            using (var client = ctx.Json.CreateSastClient())
+            using (var teams = client.GetAsync(
+                CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result)
+            {
+                if (token.IsCancellationRequested)
+                    return null;
 
-            if (token.IsCancellationRequested)
-                return null;
+                if (!teams.IsSuccessStatusCode)
+                    throw new InvalidOperationException(teams.ReasonPhrase);
 
-            if (!teams.IsSuccessStatusCode)
-                throw new InvalidOperationException(teams.ReasonPhrase);
-
-            JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                (teams.Content.ReadAsStreamAsync().Result)));
-
-            return new TeamReader (jt);
+                using (var sr = new StreamReader
+                    (teams.Content.ReadAsStreamAsync().Result))
+                using (var jtr = new JsonTextReader(sr))
+                {
+                    JToken jt = JToken.Load(jtr);
+                    return new TeamReader(jt);
+                }
+            }
         }
-
-
     }
 }

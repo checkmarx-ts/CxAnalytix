@@ -66,12 +66,15 @@ namespace CxAnalytics.TransformLogic
             _log.Debug($"Retrieving XML Report for scan {scan.ScanId}");
             try
             {
-                var report = CxSastXmlReport.GetXmlReport(inst.RestContext, inst.CancelToken, scan.ScanId);
-                _log.Debug($"XML Report for scan {scan.ScanId} retrieved.");
+                using (var report = CxSastXmlReport.GetXmlReport(inst.RestContext, 
+                    inst.CancelToken, scan.ScanId))
+                {
+                    _log.Debug($"XML Report for scan {scan.ScanId} retrieved.");
 
-                _log.Debug($"Processing XML report for scan {scan.ScanId}");
-                inst.ProcessSASTReport(scan, report);
-                _log.Debug($"XML Report for scan {scan.ScanId} processed.");
+                    _log.Debug($"Processing XML report for scan {scan.ScanId}");
+                    inst.ProcessSASTReport(scan, report);
+                    _log.Debug($"XML Report for scan {scan.ScanId} processed.");
+                }
 
                 inst.OutputSASTScanSummary(scan);
             }

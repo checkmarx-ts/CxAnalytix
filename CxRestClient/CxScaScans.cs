@@ -46,6 +46,7 @@ namespace CxRestClient
 
             public void Dispose()
             {
+                _reader = null;
             }
 
             public IEnumerator<Scan> GetEnumerator()
@@ -53,7 +54,7 @@ namespace CxRestClient
                 return new ScansReader(_json, _projectId);
             }
 
-           Scan _currentScan = new Scan();
+            Scan _currentScan = new Scan();
 
             public bool MoveNext()
             {
@@ -105,29 +106,33 @@ namespace CxRestClient
         }
 
 
-        public static IEnumerable<Scan> GetScans(CxRestContext ctx, CancellationToken token, 
+        public static IEnumerable<Scan> GetScans(CxRestContext ctx, CancellationToken token,
             int projectId)
         {
             String url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
             {
-                {"projectId", Convert.ToString (projectId)  }
+                {"projectId", Convert.ToString (projectId)  },
+                {"itemsPerPage", "5000" }
             });
 
-            var scans = ctx.Json.CreateSastClient().GetAsync(url, token).Result;
+            using (var client = ctx.Json.CreateSastClient())
+            using (var scans = client.GetAsync(url, token).Result)
+            {
 
-            if (token.IsCancellationRequested)
-                return null;
+                if (token.IsCancellationRequested)
+                    return null;
 
-            if (!scans.IsSuccessStatusCode)
-                throw new InvalidOperationException(scans.ReasonPhrase);
+                if (!scans.IsSuccessStatusCode)
+                    throw new InvalidOperationException(scans.ReasonPhrase);
 
-
-            JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                (scans.Content.ReadAsStreamAsync().Result)));
-
-            return new ScansReader(jt, projectId);
+                using (var sr = new StreamReader
+                        (scans.Content.ReadAsStreamAsync().Result))
+                using (var jtr = new JsonTextReader(sr))
+                {
+                    JToken jt = JToken.Load(jtr);
+                    return new ScansReader(jt, projectId);
+                }
+            }
         }
-
-
     }
 }

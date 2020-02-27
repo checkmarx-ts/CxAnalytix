@@ -44,7 +44,7 @@ namespace CxRestClient
         }
 
 
-        private static ScanSummary ParseScanSummary (JToken jt)
+        private static ScanSummary ParseScanSummary(JToken jt)
         {
             var reader = new JTokenReader(jt);
 
@@ -61,17 +61,21 @@ namespace CxRestClient
                 {"scanId", Convert.ToString (scanId)  }
             });
 
-            var scanSummary = ctx.Json.CreateSastClient().GetAsync(url, token).Result;
 
-            if (!scanSummary.IsSuccessStatusCode)
-                throw new InvalidOperationException(scanSummary.ReasonPhrase);
+            using (var client = ctx.Json.CreateSastClient())
+            using (var scanSummary = client.GetAsync(url, token).Result)
+            {
+                if (!scanSummary.IsSuccessStatusCode)
+                    throw new InvalidOperationException(scanSummary.ReasonPhrase);
 
-            JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                (scanSummary.Content.ReadAsStreamAsync().Result)));
-
-            return ParseScanSummary(jt);
-
+                using (var sr = new StreamReader
+                    (scanSummary.Content.ReadAsStreamAsync().Result))
+                using (var jtr = new JsonTextReader(sr))
+                {
+                    JToken jt = JToken.Load(jtr);
+                    return ParseScanSummary(jt);
+                }
+            }
         }
-
     }
 }

@@ -13,7 +13,7 @@ namespace CxRestClient
     {
         private static String URL_SUFFIX = "cxrestapi/projects";
 
-        private CxProjects ()
+        private CxProjects()
         { }
 
         public struct Project
@@ -45,6 +45,8 @@ namespace CxRestClient
 
             public void Dispose()
             {
+                _reader = null;
+                _ctx = null;
             }
 
             public IEnumerator<Project> GetEnumerator()
@@ -54,9 +56,9 @@ namespace CxRestClient
 
             Project _curProject = new Project();
 
-            private static bool MoveToNextProperty (JTokenReader reader)
+            private static bool MoveToNextProperty(JTokenReader reader)
             {
-                while (reader.Read ())
+                while (reader.Read())
                 {
                     if (reader.CurrentToken.Type == JTokenType.Property)
                         return true;
@@ -76,7 +78,7 @@ namespace CxRestClient
                                 ProjectId = Convert.ToInt32(((JProperty)_reader.CurrentToken).Value.ToString())
                             };
 
-                            if (!MoveToNextProperty (_reader))
+                            if (!MoveToNextProperty(_reader))
                                 return false;
 
                             _curProject.TeamId = new Guid(((JProperty)_reader.CurrentToken).Value.ToString());
@@ -121,19 +123,25 @@ namespace CxRestClient
 
         public static IEnumerable<Project> GetProjects(CxRestContext ctx, CancellationToken token)
         {
-            var projects = ctx.Json.CreateSastClient ().GetAsync(
-                CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result;
+            using (var client = ctx.Json.CreateSastClient())
+            using (var projects = client.GetAsync(
+                CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result)
+            {
+                if (token.IsCancellationRequested)
+                    return null;
 
-            if (token.IsCancellationRequested)
-                return null;
+                if (!projects.IsSuccessStatusCode)
+                    throw new InvalidOperationException(projects.ReasonPhrase);
 
-            if (!projects.IsSuccessStatusCode)
-                throw new InvalidOperationException(projects.ReasonPhrase);
+                using (var sr = new StreamReader
+                        (projects.Content.ReadAsStreamAsync().Result))
+                using (var jtr = new JsonTextReader(sr))
+                {
+                    JToken jt = JToken.Load(jtr);
 
-            JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                (projects.Content.ReadAsStreamAsync().Result)));
-
-            return new ProjectReader(jt, ctx, token);
+                    return new ProjectReader(jt, ctx, token);
+                }
+            }
         }
     }
 }

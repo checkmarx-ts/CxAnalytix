@@ -79,6 +79,7 @@ namespace CxRestClient
 
             public void Dispose()
             {
+                _reader = null;
             }
 
             public IEnumerator<Library> GetEnumerator()
@@ -127,24 +128,29 @@ namespace CxRestClient
         public static IEnumerable<Library> GetLibraries (CxRestContext ctx, CancellationToken token,
         String scanId)
         {
-
             String url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
             {
                 {"scanId", Convert.ToString (scanId)  }
             });
 
-            var libraries = ctx.Json.CreateSastClient().GetAsync(url, token).Result;
+            using (var client = ctx.Json.CreateSastClient())
+            {
+                var libraries = client.GetAsync(url, token).Result;
 
-            if (token.IsCancellationRequested)
-                return null;
+                if (token.IsCancellationRequested)
+                    return null;
 
-            if (!libraries.IsSuccessStatusCode)
-                throw new InvalidOperationException(libraries.ReasonPhrase);
+                if (!libraries.IsSuccessStatusCode)
+                    throw new InvalidOperationException(libraries.ReasonPhrase);
 
-            JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                (libraries.Content.ReadAsStreamAsync().Result)));
-
-            return new LibrariesReader(jt);
+                using (var sr = new StreamReader
+                    (libraries.Content.ReadAsStreamAsync().Result))
+                using (var jtr = new JsonTextReader(sr))
+                {
+                    JToken jt = JToken.Load(jtr);
+                    return new LibrariesReader(jt);
+                }
+            }
         }
 
     }

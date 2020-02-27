@@ -26,48 +26,54 @@ namespace CxRestClient
 
         private static String ReadReportId(JToken responsePayload)
         {
-            var reader = new JTokenReader(responsePayload);
-
-            if (JsonUtils.MoveToNextProperty(reader, "reportId"))
-            {
-                return ((JProperty)reader.CurrentToken).Value.ToString ();
-            }
-            else
-                throw new InvalidDataException("reportId missing in reponse payload");
+            using (var reader = new JTokenReader(responsePayload))
+                if (JsonUtils.MoveToNextProperty(reader, "reportId"))
+                {
+                    return ((JProperty)reader.CurrentToken).Value.ToString();
+                }
+                else
+                    throw new InvalidDataException("reportId missing in reponse payload");
 
         }
 
-        public static String GetGeneratedReportId (CxRestContext ctx, CancellationToken token, String scanId)
+        public static String GetGeneratedReportId(CxRestContext ctx, CancellationToken token, String scanId)
         {
             return GetGeneratedReportId(ctx, token, scanId, ReportTypes.XML);
         }
 
 
-        public static String GetGeneratedReportId(CxRestContext ctx, CancellationToken token, 
+        public static String GetGeneratedReportId(CxRestContext ctx, CancellationToken token,
             String scanId, ReportTypes type)
         {
-            var client = ctx.Json.CreateSastClient();
-
-            var dict = new Dictionary<String, String>()
+            using (var client = ctx.Json.CreateSastClient())
             {
-                { "reportType", type.ToString ()},
-                { "scanId", scanId }
-            };
 
-            var payload = new FormUrlEncodedContent(dict);
+                var dict = new Dictionary<String, String>()
+                {
+                    { "reportType", type.ToString ()},
+                    { "scanId", scanId }
+                };
 
-            var scanReportTicket = client.PostAsync(
-                CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), payload).Result;
+                using (var payload = new FormUrlEncodedContent(dict))
+                {
+                    using (var scanReportTicket = client.PostAsync(
+                        CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), payload).Result)
+                    {
+                        if (!scanReportTicket.IsSuccessStatusCode)
+                            throw new InvalidOperationException
+                                ($"Scan report generation request for scan {scanId} returned " +
+                                $"{scanReportTicket.StatusCode}");
 
-            if (!scanReportTicket.IsSuccessStatusCode)
-                throw new InvalidOperationException
-                    ($"Scan report generation request for scan {scanId} returned " +
-                    $"{scanReportTicket.StatusCode}");
-
-            JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                (scanReportTicket.Content.ReadAsStreamAsync().Result)));
-
-            return ReadReportId(jt);
+                        using (var sr = new StreamReader
+                                (scanReportTicket.Content.ReadAsStreamAsync().Result))
+                        using (var jtr = new JsonTextReader(sr))
+                        {
+                            JToken jt = JToken.Load(jtr);
+                            return ReadReportId(jt);
+                        }
+                    }
+                }
+            }
         }
 
     }

@@ -86,6 +86,7 @@ namespace CxRestClient
 
             void IDisposable.Dispose()
             {
+                _reader = null;
             }
 
             IEnumerator IEnumerable.GetEnumerator()
@@ -133,18 +134,24 @@ namespace CxRestClient
                 {"scanId", Convert.ToString (scanId)  }
             });
 
-            var vulns = ctx.Json.CreateSastClient().GetAsync(url, token).Result;
+            using (var client = ctx.Json.CreateSastClient())
+            using (var vulns = client.GetAsync(url, token).Result)
+            {
 
-            if (token.IsCancellationRequested)
-                return null;
+                if (token.IsCancellationRequested)
+                    return null;
 
-            if (!vulns.IsSuccessStatusCode)
-                throw new InvalidOperationException(vulns.ReasonPhrase);
+                if (!vulns.IsSuccessStatusCode)
+                    throw new InvalidOperationException(vulns.ReasonPhrase);
 
-            JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                (vulns.Content.ReadAsStreamAsync().Result)));
-
-            return new VulnerabilityReader(jt);
+                using (var sr = new StreamReader
+                    (vulns.Content.ReadAsStreamAsync().Result))
+                using (var jtr = new JsonTextReader(sr))
+                {
+                    JToken jt = JToken.Load(jtr);
+                    return new VulnerabilityReader(jt);
+                }
+            }
         }
 
     }

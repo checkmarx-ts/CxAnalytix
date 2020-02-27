@@ -21,51 +21,56 @@ namespace CxRestClient
         private CxMnoPolicies()
         { }
 
-        
+
         private static String GetFlatPolicyNames(JToken payload)
         {
-            var reader = new JTokenReader(payload);
-
-            StringBuilder b = new StringBuilder();
-
-            while (JsonUtils.MoveToNextProperty(reader, "name"))
+            using (var reader = new JTokenReader(payload))
             {
-                var policyName = ((JProperty)reader.CurrentToken).Value.ToString();
+                StringBuilder b = new StringBuilder();
 
-
-                if (JsonUtils.MoveToNextProperty(reader, "isActive"))
+                while (JsonUtils.MoveToNextProperty(reader, "name"))
                 {
-                    if (Boolean.Parse(((JProperty)reader.CurrentToken).Value.ToString()))
+                    var policyName = ((JProperty)reader.CurrentToken).Value.ToString();
+
+
+                    if (JsonUtils.MoveToNextProperty(reader, "isActive"))
                     {
-                        if (b.Length > 0)
-                            b.Append(';');
+                        if (Boolean.Parse(((JProperty)reader.CurrentToken).Value.ToString()))
+                        {
+                            if (b.Length > 0)
+                                b.Append(';');
 
-                        b.Append(policyName);
+                            b.Append(policyName);
+                        }
                     }
+                    else
+                        throw new InvalidDataException("Expected key 'isActive' but did not find it.");
                 }
-                else
-                    throw new InvalidDataException("Expected key 'isActive' but did not find it.");
-            }
 
-            return b.ToString();
+                return b.ToString();
+            }
         }
 
         public static String GetProjectPoliciesSingleField(CxRestContext ctx,
                 CancellationToken token, int projectId)
         {
-            var client = ctx.Json.CreateMnoClient();
+            using (var client = ctx.Json.CreateMnoClient())
+            {
 
-            var policyPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
-                String.Format(PROJECT_POLICY_URL_SUFFIX, projectId)), token).Result;
+                using (var policyPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
+                    String.Format(PROJECT_POLICY_URL_SUFFIX, projectId)), token).Result)
+                {
 
-            if (!policyPayload.IsSuccessStatusCode)
-                throw new InvalidOperationException
-                    ($"Unable to retrieve policies for project {projectId}.");
+                    if (!policyPayload.IsSuccessStatusCode)
+                        throw new InvalidOperationException
+                            ($"Unable to retrieve policies for project {projectId}.");
 
-            JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                (policyPayload.Content.ReadAsStreamAsync().Result)));
+                    JToken jt = JToken.Load(new JsonTextReader(new StreamReader
+                        (policyPayload.Content.ReadAsStreamAsync().Result)));
 
-            return GetFlatPolicyNames(jt);
+                    return GetFlatPolicyNames(jt);
+                }
+            }
         }
 
         private static PolicyCollection ParsePolicies(CxRestContext ctx,
@@ -74,38 +79,36 @@ namespace CxRestClient
 
             PolicyCollection result = new PolicyCollection();
 
-            JTokenReader reader = new JTokenReader(policyPayload);
-
-            while (JsonUtils.MoveToNextProperty(reader, "id"))
-            {
-                PolicyDescriptor policy = new PolicyDescriptor()
+            using (JTokenReader reader = new JTokenReader(policyPayload))
+                while (JsonUtils.MoveToNextProperty(reader, "id"))
                 {
-                    PolicyId = Convert.ToInt32(((JProperty)reader.CurrentToken).Value)
-                };
+                    PolicyDescriptor policy = new PolicyDescriptor()
+                    {
+                        PolicyId = Convert.ToInt32(((JProperty)reader.CurrentToken).Value)
+                    };
 
-                if (!JsonUtils.MoveToNextProperty(reader, "name"))
-                    continue;
-                policy.Name = ((JProperty)reader.CurrentToken).Value.ToString();
+                    if (!JsonUtils.MoveToNextProperty(reader, "name"))
+                        continue;
+                    policy.Name = ((JProperty)reader.CurrentToken).Value.ToString();
 
-                if (!JsonUtils.MoveToNextProperty(reader, "description"))
-                    continue;
-                policy.Description = ((JProperty)reader.CurrentToken).Value.ToString();
+                    if (!JsonUtils.MoveToNextProperty(reader, "description"))
+                        continue;
+                    policy.Description = ((JProperty)reader.CurrentToken).Value.ToString();
 
-                if (!JsonUtils.MoveToNextProperty(reader, "isActive"))
-                    continue;
-                policy.isActive = Convert.ToBoolean(((JProperty)reader.CurrentToken).Value);
+                    if (!JsonUtils.MoveToNextProperty(reader, "isActive"))
+                        continue;
+                    policy.isActive = Convert.ToBoolean(((JProperty)reader.CurrentToken).Value);
 
-                if (!JsonUtils.MoveToNextProperty(reader, "createdOn"))
-                    continue;
-                policy.CreatedOn = JsonUtils.UtcEpochTimeToDateTime
-                    (Convert.ToInt64(((JProperty)reader.CurrentToken).Value) / 1000);
+                    if (!JsonUtils.MoveToNextProperty(reader, "createdOn"))
+                        continue;
+                    policy.CreatedOn = JsonUtils.UtcEpochTimeToDateTime
+                        (Convert.ToInt64(((JProperty)reader.CurrentToken).Value) / 1000);
 
-                var rules = CxMnoPolicyRules.GetRulesForPolicy(ctx, token, policy.PolicyId);
-                policy.AddRule(rules);
+                    var rules = CxMnoPolicyRules.GetRulesForPolicy(ctx, token, policy.PolicyId);
+                    policy.AddRule(rules);
 
-                result.AddPolicy(policy);
-
-            }
+                    result.AddPolicy(policy);
+                }
 
             return result;
         }
@@ -113,47 +116,48 @@ namespace CxRestClient
         public static PolicyCollection GetAllPolicies(CxRestContext ctx,
                 CancellationToken token)
         {
-            var client = ctx.Json.CreateMnoClient();
+            using (var client = ctx.Json.CreateMnoClient())
+            using (var policyPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
+                POLICY_LIST_URL_SUFFIX), token).Result)
+            {
 
-            var policyPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
-                POLICY_LIST_URL_SUFFIX), token).Result;
+                if (!policyPayload.IsSuccessStatusCode)
+                    throw new InvalidOperationException
+                        ("Unable to retrieve policies.");
 
-            if (!policyPayload.IsSuccessStatusCode)
-                throw new InvalidOperationException
-                    ("Unable to retrieve policies.");
+                JToken jt = JToken.Load(new JsonTextReader(new StreamReader
+                    (policyPayload.Content.ReadAsStreamAsync().Result)));
 
-            JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                (policyPayload.Content.ReadAsStreamAsync().Result)));
-
-            return ParsePolicies(ctx, token, jt);
+                return ParsePolicies(ctx, token, jt);
+            }
         }
 
 
         public static IEnumerable<int> GetPolicyIdsForProject(CxRestContext ctx,
                 CancellationToken token, int projectId)
         {
-            var client = ctx.Json.CreateMnoClient();
-
-            var policyPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
-                String.Format(PROJECT_POLICY_URL_SUFFIX, projectId)), token).Result;
-
-            if (!policyPayload.IsSuccessStatusCode)
-                throw new InvalidOperationException
-                    ($"Unable to retrieve policies for project {projectId}.");
-
-            JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                (policyPayload.Content.ReadAsStreamAsync().Result)));
-
-            LinkedList<int> policyIds = new LinkedList<int>();
-
-            JTokenReader reader = new JTokenReader(jt);
-
-            while (JsonUtils.MoveToNextProperty(reader, "id"))
+            using (var client = ctx.Json.CreateMnoClient())
+            using (var policyPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
+                String.Format(PROJECT_POLICY_URL_SUFFIX, projectId)), token).Result)
             {
-                policyIds.AddLast(Convert.ToInt32(((JProperty)reader.CurrentToken).Value));
-            }
 
-            return policyIds;
+                if (!policyPayload.IsSuccessStatusCode)
+                    throw new InvalidOperationException
+                        ($"Unable to retrieve policies for project {projectId}.");
+
+                JToken jt = JToken.Load(new JsonTextReader(new StreamReader
+                    (policyPayload.Content.ReadAsStreamAsync().Result)));
+
+                LinkedList<int> policyIds = new LinkedList<int>();
+
+                using (JTokenReader reader = new JTokenReader(jt))
+                    while (JsonUtils.MoveToNextProperty(reader, "id"))
+                    {
+                        policyIds.AddLast(Convert.ToInt32(((JProperty)reader.CurrentToken).Value));
+                    }
+
+                return policyIds;
+            }
         }
     }
 }
