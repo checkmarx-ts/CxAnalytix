@@ -9,7 +9,6 @@ namespace CxAnalytics.TransformLogic
         internal ProjectDescriptorExt (ProjectDescriptor src, ProjectDescriptorExt merge) : base (src)
         {
             this.LastScanCheckDate = merge.LastScanCheckDate;
-
         }
 
         public ProjectDescriptorExt ()

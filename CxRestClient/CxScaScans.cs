@@ -70,12 +70,15 @@ namespace CxRestClient
                         if (!JsonUtils.MoveToNextProperty(_reader, "startAnalyzeTime"))
                             return false;
 
-                        _currentScan.StartTime = DateTime.Parse(((JProperty)_reader.CurrentToken).Value.ToString());
+                        // SCA stores times in UTC.  SAST stores them in local time.
+                        _currentScan.StartTime = DateTime.Parse(((JProperty)_reader.CurrentToken).
+                            Value.ToString()).ToLocalTime();
 
                         if (!JsonUtils.MoveToNextProperty(_reader, "endAnalyzeTime"))
                             return false;
 
-                        _currentScan.FinishTime = DateTime.Parse(((JProperty)_reader.CurrentToken).Value.ToString());
+                        _currentScan.FinishTime = DateTime.Parse(((JProperty)_reader.CurrentToken).
+                            Value.ToString()).ToLocalTime();
 
                         if (!JsonUtils.MoveToNextProperty(_reader, "state"))
                             return false;
