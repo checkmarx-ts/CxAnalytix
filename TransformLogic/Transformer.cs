@@ -311,7 +311,7 @@ namespace CxAnalytics.TransformLogic
                 var sastScans = CxSastScans.GetScans(RestContext, CancelToken, CxSastScans.ScanStatus.Finished);
                 foreach (var sastScan in sastScans)
                 {
-                    sr.addScan(sastScan.ProjectId, sastScan.ScanType, SAST_PRODUCT_STRING,
+                    sr.AddScan(sastScan.ProjectId, sastScan.ScanType, SAST_PRODUCT_STRING,
                         sastScan.ScanId, sastScan.FinishTime);
 
                     SastScanCache.Add(sastScan.ScanId, sastScan);
@@ -323,7 +323,7 @@ namespace CxAnalytics.TransformLogic
                     var scaScans = CxScaScans.GetScans(ctx, token, p.ProjectId);
                     foreach (var scaScan in scaScans)
                     {
-                        sr.addScan(scaScan.ProjectId, "Composition", SCA_PRODUCT_STRING, scaScan.ScanId,
+                        sr.AddScan(scaScan.ProjectId, "Composition", SCA_PRODUCT_STRING, scaScan.ScanId,
                             scaScan.FinishTime);
                         ScaScanCache.Add(scaScan.ScanId, scaScan);
                     }

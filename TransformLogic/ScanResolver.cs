@@ -47,7 +47,7 @@ namespace CxAnalytics.TransformLogic
         /// <param name="scanId"></param>
         /// <param name="finishTime"></param>
         /// <returns>Returns true if the project can be added, false otherwise.</returns>
-        public bool addScan(int projectId, String scanType, String scanProduct, String scanId, DateTime finishTime)
+        public bool AddScan(int projectId, String scanType, String scanProduct, String scanId, DateTime finishTime)
         {
             if (scanType == null || scanProduct == null || scanId == null)
                 return false;
@@ -71,9 +71,11 @@ namespace CxAnalytics.TransformLogic
                 if (_scans.ContainsKey(scanId))
                     return false;
 
+                // Always update the last scan time for a product if there was a scan for it.
+                _state.Targets[projectId].UpdateLatestScanDate(scanProduct, finishTime);
+
                 if (_state.Targets[projectId].LastScanCheckDate.CompareTo(finishTime) < 0)
                 {
-                    _state.Targets[projectId].UpdateLatestScanDate(scanProduct, finishTime);
                     _state.Targets[projectId].IncrementScanCount(scanProduct);
                     IncrementProjectCount(projectId);
 
@@ -125,7 +127,7 @@ namespace CxAnalytics.TransformLogic
         /// <summary>
         /// Resolves all the scans that need to be checked based on the
         /// state of the previous check and the scans the were added
-        /// using the method <see cref="addScan"/>.
+        /// using the method <see cref="AddScan"/>.
         /// </summary>
         /// <param name="lastCheckDate">The date to store with each project that is the last time the
         /// project was checked for new scans.</param>

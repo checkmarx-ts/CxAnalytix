@@ -80,13 +80,13 @@ namespace Test.TransformerLogic.ScanResolver
             // previous state.  This means all scans should be selected when added.
 
             // Add a scan that completed yesterday at this time.
-            bool Scan1 = sr.addScan(1, "Full", "SAST", "ScanId1", check.AddDays(-1));
+            bool Scan1 = sr.AddScan(1, "Full", "SAST", "ScanId1", check.AddDays(-1));
 
             // Add a scan that will have completed after the check
-            bool Scan2 = sr.addScan(1, "Full", "SAST", "ScanId2", check.AddDays(1));
+            bool Scan2 = sr.AddScan(1, "Full", "SAST", "ScanId2", check.AddDays(1));
 
             // A scan completed "now"
-            bool Scan3 = sr.addScan(4, "Full", "SAST", "ScanId3", check);
+            bool Scan3 = sr.AddScan(4, "Full", "SAST", "ScanId3", check);
 
             // Resolve should give us back scans, and now there is state written in
             // this.stateStorage
@@ -108,9 +108,9 @@ namespace Test.TransformerLogic.ScanResolver
             // Similate the next check happening an hour from now
 
             // Add the same scans, the one after the check date (1 day added) should be found
-            Scan1 = nextsr.addScan(1, "Full", "SAST", "ScanId1", check.AddDays(-1));
-            Scan2 = nextsr.addScan(1, "Full", "SAST", "ScanId2", check.AddDays(1));
-            Scan3 = nextsr.addScan(4, "Full", "SAST", "ScanId3", check);
+            Scan1 = nextsr.AddScan(1, "Full", "SAST", "ScanId1", check.AddDays(-1));
+            Scan2 = nextsr.AddScan(1, "Full", "SAST", "ScanId2", check.AddDays(1));
+            Scan3 = nextsr.AddScan(4, "Full", "SAST", "ScanId3", check);
 
             var nextscans = nextsr.Resolve(check.AddHours (1.0) );
 
@@ -125,11 +125,11 @@ namespace Test.TransformerLogic.ScanResolver
         {
             DateTime check = DateTime.Now;
 
-            bool Scan1 = sr.addScan(1, "Full", "SAST", "ScanId1", DateTime.Now.AddDays(-1));
+            bool Scan1 = sr.AddScan(1, "Full", "SAST", "ScanId1", DateTime.Now.AddDays(-1));
 
-            bool Scan2 = sr.addScan(1, "Full", "SAST", "ScanId2", DateTime.Now.AddDays(1));
+            bool Scan2 = sr.AddScan(1, "Full", "SAST", "ScanId2", DateTime.Now.AddDays(1));
 
-            bool Scan3 = sr.addScan(4, "Full", "SAST", "ScanId3", check);
+            bool Scan3 = sr.AddScan(4, "Full", "SAST", "ScanId3", check);
 
             bool isNull = sr.ResolvedScanCount == null;
 
@@ -145,11 +145,11 @@ namespace Test.TransformerLogic.ScanResolver
         {
             DateTime check = DateTime.Now;
 
-            bool Scan1 = sr.addScan(1, "Full", "SAST", "ScanId1", DateTime.Now.AddDays(-1));
+            bool Scan1 = sr.AddScan(1, "Full", "SAST", "ScanId1", DateTime.Now.AddDays(-1));
 
-            bool Scan2 = sr.addScan(1, "Full", "SAST", "ScanId2", DateTime.Now.AddDays(1));
+            bool Scan2 = sr.AddScan(1, "Full", "SAST", "ScanId2", DateTime.Now.AddDays(1));
 
-            bool Scan3 = sr.addScan(4, "Full", "SAST", "ScanId3", check);
+            bool Scan3 = sr.AddScan(4, "Full", "SAST", "ScanId3", check);
 
             bool isNull = sr.ResolvedProjectCount == null;
 
@@ -163,14 +163,14 @@ namespace Test.TransformerLogic.ScanResolver
         [Test]
         public void CantAddScanWithInvalidProjectId ()
         {
-            Assert.False (sr.addScan(0, "Full", "SAST", "ScanId1", DateTime.Now.AddDays(-1)));
+            Assert.False (sr.AddScan(0, "Full", "SAST", "ScanId1", DateTime.Now.AddDays(-1)));
         }
 
         [Test]
         public void CantAddDuplicateScanId()
         {
-            bool shouldBeTrue = sr.addScan(1, "Full", "SAST", "ScanId1", DateTime.Now.AddDays(-1));
-            bool shouldBeFalse = sr.addScan(1, "Full", "SAST", "ScanId1", DateTime.Now.AddDays(1));
+            bool shouldBeTrue = sr.AddScan(1, "Full", "SAST", "ScanId1", DateTime.Now.AddDays(-1));
+            bool shouldBeFalse = sr.AddScan(1, "Full", "SAST", "ScanId1", DateTime.Now.AddDays(1));
 
             Assert.True(shouldBeTrue && !shouldBeFalse);
         }
@@ -178,19 +178,19 @@ namespace Test.TransformerLogic.ScanResolver
         [Test]
         public void CantAddScanWithNullScanType()
         {
-            Assert.False(sr.addScan(1, null, "SAST", "ScanId1", DateTime.Now.AddDays(-1)));
+            Assert.False(sr.AddScan(1, null, "SAST", "ScanId1", DateTime.Now.AddDays(-1)));
         }
 
         [Test]
         public void CantAddScanWithNullScanProduct()
         {
-            Assert.False(sr.addScan(1, "Full", null, "ScanId1", DateTime.Now.AddDays(-1)));
+            Assert.False(sr.AddScan(1, "Full", null, "ScanId1", DateTime.Now.AddDays(-1)));
         }
 
         [Test]
         public void CantAddScanWithNullScanId()
         {
-            Assert.False(sr.addScan(1, "Full", "SCA", null, DateTime.Now.AddDays(-1)));
+            Assert.False(sr.AddScan(1, "Full", "SCA", null, DateTime.Now.AddDays(-1)));
         }
 
         [Test]
@@ -198,18 +198,18 @@ namespace Test.TransformerLogic.ScanResolver
         {
             var junk = sr.Resolve(DateTime.Now);
 
-            Assert.False(sr.addScan(1, "Full", "SCA", null, DateTime.Now.AddDays(-1)));
+            Assert.False(sr.AddScan(1, "Full", "SCA", null, DateTime.Now.AddDays(-1)));
         }
 
         [Test]
         public void NoScansReturnedWhenFinishTimesAreEqualToCheck()
         {
 
-            bool Scan1 = sr.addScan(1, "Full", "SAST", "ScanId1", DateTime.MinValue);
+            bool Scan1 = sr.AddScan(1, "Full", "SAST", "ScanId1", DateTime.MinValue);
 
-            bool Scan2 = sr.addScan(1, "Full", "SAST", "ScanId2", DateTime.MinValue);
+            bool Scan2 = sr.AddScan(1, "Full", "SAST", "ScanId2", DateTime.MinValue);
 
-            bool Scan3 = sr.addScan(4, "Full", "SAST", "ScanId3", DateTime.MinValue);
+            bool Scan3 = sr.AddScan(4, "Full", "SAST", "ScanId3", DateTime.MinValue);
 
             var scans = sr.Resolve(DateTime.Now);
 
