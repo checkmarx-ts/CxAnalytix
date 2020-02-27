@@ -88,7 +88,6 @@
     </layout>
   </appender>
 
-
   <appender name="SCA_SS" type="log4net.Appender.RollingFileAppender">
     <appendToFile value="true" />
     <maximumFileSize value="100MB" />
@@ -114,6 +113,7 @@
       <conversionPattern value="%message%newline" />
     </layout>
   </appender>
+
 
   <!-- END: Record logging appender config -->
 
@@ -147,6 +147,8 @@
     <level value="ALL" />
     <appender-ref ref="SCA_SD" />
   </logger>
+
+
 
   <root>
     <level value="INFO" />
