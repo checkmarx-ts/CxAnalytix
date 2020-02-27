@@ -37,7 +37,7 @@ namespace CxAnalytix.Out.Log4NetOutput
                     {
                         Cleaner.CleanOldFiles(cfg.OutputRoot, spec.MatchSpec, cfg.DataRetentionDays);
                     }
-                    await Task.Delay(15000, _token.Token);
+                    await Task.Delay(60000 * 60, _token.Token);
 
                     _token.Token.ThrowIfCancellationRequested();
                 }
