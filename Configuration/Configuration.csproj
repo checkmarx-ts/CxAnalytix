@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <RootNamespace>CxAnalytics.Configuration</RootNamespace>
+    <RootNamespace>CxAnalytix.Configuration</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

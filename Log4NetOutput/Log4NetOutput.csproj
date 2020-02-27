@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <RootNamespace>CxAnalytics.Out.Log4NetOutput</RootNamespace>
+    <RootNamespace>CxAnalytix.Out.Log4NetOutput</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
