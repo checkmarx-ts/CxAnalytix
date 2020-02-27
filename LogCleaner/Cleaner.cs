@@ -33,7 +33,14 @@ namespace LogCleaner
            if (lastWrite.CompareTo(deleteBefore) < 0)
            {
                    _log.Info($"Deleting file {file} that was last touched on {lastWrite}.");
-                   File.Delete(file);
+                   try
+                   {
+                       File.Delete(file);
+                   }
+                   catch (IOException ex)
+                   {
+                       _log.Error($"Exception caught deleting [{file}]", ex);
+                   }
                }
            });
         }

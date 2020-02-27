@@ -24,14 +24,22 @@ namespace CxAnalytix.Out.Log4NetOutput
         }
 
 
-        [ConfigurationProperty("OutputDirectory", IsRequired = true)]
-        public String OutputDirectory
+        [ConfigurationProperty("OutputRoot", IsRequired = true)]
+        public String OutputRoot
         {
-            get => (String)this["OutputDirectory"];
+            get => (String)this["OutputRoot"];
             set
             {
-                this["OutputDirectory"] = value;
+                this["OutputRoot"] = value;
             }
+        }
+
+
+        [ConfigurationProperty("PurgeSpecs")]
+        public FileSpecElementCollection PurgeSpecs
+        {
+            get { return ((FileSpecElementCollection)(base["PurgeSpecs"])); }
+            set { base["PurgeSpecs"] = value; }
         }
 
     }

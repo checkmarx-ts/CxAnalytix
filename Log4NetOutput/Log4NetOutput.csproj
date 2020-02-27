@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Configuration\Configuration.csproj" />
+    <ProjectReference Include="..\LogCleaner\LogCleaner.csproj" />
     <ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
   </ItemGroup>
 

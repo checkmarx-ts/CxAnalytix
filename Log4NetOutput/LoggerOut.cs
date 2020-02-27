@@ -1,9 +1,13 @@
-﻿using CxAnalytix.TransformLogic;
+﻿using CxAnalytix.Configuration;
+using CxAnalytix.TransformLogic;
 using log4net;
+using LogCleaner;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace CxAnalytix.Out.Log4NetOutput
 {
@@ -12,6 +16,46 @@ namespace CxAnalytix.Out.Log4NetOutput
         private readonly ILog _recordLog = null;
         private static readonly ILog _log = LogManager.GetLogger(typeof (LoggerOut));
         private readonly String _recordType;
+        private static readonly String CONFIG_SECTION = "CxLogOutput";
+        private static CancellationTokenSource _token;
+        private static Task _task = null;
+
+
+        static LoggerOut ()
+        {
+            _token = new CancellationTokenSource();
+            AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
+
+
+            _task = Task.Run(async () => 
+            {
+                var cfg = Config.GetConfig<LogOutputConfig>(CONFIG_SECTION);
+
+                while (!_token.IsCancellationRequested)
+                {
+                    foreach (FileSpecElement spec in cfg.PurgeSpecs)
+                    {
+                        Cleaner.CleanOldFiles(cfg.OutputRoot, spec.MatchSpec, cfg.DataRetentionDays);
+                    }
+                    await Task.Delay(15000, _token.Token);
+
+                    _token.Token.ThrowIfCancellationRequested();
+                }
+            }, _token.Token);
+        }
+
+        private static void OnProcessExit(object sender, EventArgs e)
+        {
+            _token.Cancel();
+
+            try
+            {
+                _task.Wait();
+            }
+            catch (AggregateException)
+            {
+            }
+        }
 
         internal LoggerOut (String recordType)
         {
