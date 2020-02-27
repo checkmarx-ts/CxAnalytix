@@ -8,12 +8,12 @@ namespace Test.TransformerLogic.DataResolver
 
     public class DataResolverTests
     {
-        CxAnalytics.TransformLogic.DataResolver d;
+        CxAnalytix.TransformLogic.DataResolver d;
 
         [SetUp]
         public void SetupTest ()
         {
-            d = new CxAnalytics.TransformLogic.DataResolver();
+            d = new CxAnalytix.TransformLogic.DataResolver();
         }
 
         [Test]

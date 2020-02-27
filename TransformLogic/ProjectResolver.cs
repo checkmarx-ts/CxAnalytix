@@ -3,9 +3,9 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
+using CxAnalytix.TransformLogic.Data;
 
-namespace CxAnalytics.TransformLogic
+namespace CxAnalytix.TransformLogic
 {
     /// <summary>
     /// A class that is used to correlate projects with the team and preset details.

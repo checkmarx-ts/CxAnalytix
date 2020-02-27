@@ -5,7 +5,7 @@ using System.Configuration;
 using System.Diagnostics;
 using System.Text;
 
-namespace CxAnalytics.Configuration
+namespace CxAnalytix.Configuration
 {
     public class Config
     {

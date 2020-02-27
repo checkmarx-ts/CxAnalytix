@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
-namespace CxAnalytics.TransformLogic
+namespace CxAnalytix.TransformLogic
 {
     /// <summary>
     /// The entrypoint class for resolving which projects/scans to export

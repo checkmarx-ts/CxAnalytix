@@ -9,12 +9,12 @@ namespace Test.TransformerLogic.ScanResolver
     class ScanResolverTests
     {
 
-        CxAnalytics.TransformLogic.ScanResolver sr;
+        CxAnalytix.TransformLogic.ScanResolver sr;
 
-        private static Dictionary<String, Action<CxAnalytics.TransformLogic.ScanDescriptor,
-            CxAnalytics.TransformLogic.Transformer>> dummy =
-            new Dictionary<string, Action<CxAnalytics.TransformLogic.ScanDescriptor,
-                CxAnalytics.TransformLogic.Transformer>>()
+        private static Dictionary<String, Action<CxAnalytix.TransformLogic.Data.ScanDescriptor,
+            CxAnalytix.TransformLogic.Transformer>> dummy =
+            new Dictionary<string, Action<CxAnalytix.TransformLogic.Data.ScanDescriptor,
+                CxAnalytix.TransformLogic.Transformer>>()
         {
                 { "SAST", (d, t) => {} }
         };
@@ -38,9 +38,9 @@ namespace Test.TransformerLogic.ScanResolver
         }
 
 
-        private CxAnalytics.TransformLogic.DataResolver makeDefaultDataResolver ()
+        private CxAnalytix.TransformLogic.DataResolver makeDefaultDataResolver ()
         {
-            CxAnalytics.TransformLogic.DataResolver d = new CxAnalytics.TransformLogic.DataResolver();
+            CxAnalytix.TransformLogic.DataResolver d = new CxAnalytix.TransformLogic.DataResolver();
             d.addPreset(1, "Preset1");
             d.addPreset(2, "Preset2");
 
@@ -50,8 +50,8 @@ namespace Test.TransformerLogic.ScanResolver
             return d;
         }
 
-        private CxAnalytics.TransformLogic.ProjectResolver 
-            makeDefaultProjectResolver (CxAnalytics.TransformLogic.DataResolver fromDR)
+        private CxAnalytix.TransformLogic.ProjectResolver 
+            makeDefaultProjectResolver (CxAnalytix.TransformLogic.DataResolver fromDR)
         {
             var retVal = fromDR.Resolve(null, stateWriter);
 
@@ -60,7 +60,7 @@ namespace Test.TransformerLogic.ScanResolver
             return retVal;
         }
 
-        private void populateProjectResolver (CxAnalytics.TransformLogic.ProjectResolver pr)
+        private void populateProjectResolver (CxAnalytix.TransformLogic.ProjectResolver pr)
         {
             pr.AddProject(Team1, 1, 1, "\\Team1\\ProjectId1", "");
             pr.AddProject(Team1, 1, 2, "\\Team1\\ProjectId2", "");

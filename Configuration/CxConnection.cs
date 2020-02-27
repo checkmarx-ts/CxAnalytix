@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Text;
 
-namespace CxAnalytics.Configuration
+namespace CxAnalytix.Configuration
 {
     public sealed class CxConnection : ConfigurationSection
     {

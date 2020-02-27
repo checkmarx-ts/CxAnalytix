@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CxAnalytics.TransformLogic
+namespace CxAnalytix.TransformLogic.Data
 {
     class ProjectPolicyIndex : PolicyCollection
     {

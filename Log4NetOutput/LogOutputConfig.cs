@@ -1,11 +1,11 @@
-﻿using CxAnalytics.Configuration;
+﻿using CxAnalytix.Configuration;
 using log4net;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Text;
 
-namespace CxAnalytics.Out.Log4NetOutput
+namespace CxAnalytix.Out.Log4NetOutput
 {
     public sealed class LogOutputConfig : ConfigurationSection
     {

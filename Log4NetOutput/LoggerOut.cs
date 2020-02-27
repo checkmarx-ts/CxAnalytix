@@ -1,11 +1,11 @@
-﻿using CxAnalytics.TransformLogic;
+﻿using CxAnalytix.TransformLogic;
 using log4net;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace CxAnalytics.Out.Log4NetOutput
+namespace CxAnalytix.Out.Log4NetOutput
 {
     internal sealed class LoggerOut : IOutput
     {

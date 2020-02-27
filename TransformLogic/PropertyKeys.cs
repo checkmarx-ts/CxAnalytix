@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CxAnalytics.TransformLogic
+namespace CxAnalytix.TransformLogic
 {
     /// <summary>
     /// Common property keys that can be re-used across record types

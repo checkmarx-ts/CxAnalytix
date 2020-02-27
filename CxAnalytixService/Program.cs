@@ -1,4 +1,4 @@
-﻿using CxAnalytics.Configuration;
+﻿using CxAnalytix.Configuration;
 using log4net;
 using System;
 using System.Diagnostics;

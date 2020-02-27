@@ -7,11 +7,11 @@ namespace Test.TransformerLogic.ProjectResolver
 {
     class ProjectResolverTests
     {
-        private CxAnalytics.TransformLogic.ProjectResolver pr;
-        private static Dictionary<String, Action<CxAnalytics.TransformLogic.ScanDescriptor, 
-            CxAnalytics.TransformLogic.Transformer>> dummy = 
-            new Dictionary<string, Action<CxAnalytics.TransformLogic.ScanDescriptor, 
-                CxAnalytics.TransformLogic.Transformer>>()
+        private CxAnalytix.TransformLogic.ProjectResolver pr;
+        private static Dictionary<String, Action<CxAnalytix.TransformLogic.Data.ScanDescriptor, 
+            CxAnalytix.TransformLogic.Transformer>> dummy = 
+            new Dictionary<string, Action<CxAnalytix.TransformLogic.Data.ScanDescriptor, 
+                CxAnalytix.TransformLogic.Transformer>>()
         {
                 { "dummy", (d, t) => {} }
         };
@@ -22,7 +22,7 @@ namespace Test.TransformerLogic.ProjectResolver
         [SetUp]
         public void SetupTest ()
         {
-            CxAnalytics.TransformLogic.DataResolver dr = new CxAnalytics.TransformLogic.DataResolver();
+            CxAnalytix.TransformLogic.DataResolver dr = new CxAnalytix.TransformLogic.DataResolver();
             dr.addPreset(1, "Preset1");
             dr.addPreset(2, "Preset2");
 

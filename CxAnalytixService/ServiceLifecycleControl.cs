@@ -2,8 +2,8 @@
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
-using CxAnalytics.TransformLogic;
-using CxAnalytics.Configuration;
+using CxAnalytix.TransformLogic;
+using CxAnalytix.Configuration;
 using System.Reflection;
 using System;
 using CxRestClient;

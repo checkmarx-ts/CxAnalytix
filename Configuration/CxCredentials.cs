@@ -5,7 +5,7 @@ using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace CxAnalytics.Configuration
+namespace CxAnalytix.Configuration
 {
     public sealed class CxCredentials : ConfigurationSection
     {

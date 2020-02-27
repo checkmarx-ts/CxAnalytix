@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CxAnalytics.TransformLogic
+namespace CxAnalytix.TransformLogic
 {
     /// <summary>
     /// A class that is used to provide the names of supported record types to the transformation logic.

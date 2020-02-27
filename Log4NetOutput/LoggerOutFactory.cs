@@ -1,9 +1,9 @@
-﻿using CxAnalytics.TransformLogic;
+﻿using CxAnalytix.TransformLogic;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace CxAnalytics.Out.Log4NetOutput
+namespace CxAnalytix.Out.Log4NetOutput
 {
     public sealed class LoggerOutFactory : IOutputFactory
     {

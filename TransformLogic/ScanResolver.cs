@@ -1,9 +1,9 @@
 ﻿using log4net;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using CxAnalytix.TransformLogic.Data;
 
-namespace CxAnalytics.TransformLogic
+namespace CxAnalytix.TransformLogic
 {
 
     /// <summary>

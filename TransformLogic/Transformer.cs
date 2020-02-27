@@ -8,8 +8,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Text;
+using CxAnalytix.TransformLogic.Data;
 
-namespace CxAnalytics.TransformLogic
+namespace CxAnalytix.TransformLogic
 {
     /// <summary>
     /// A class that implements the data transformation.

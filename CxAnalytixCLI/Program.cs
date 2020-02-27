@@ -1,11 +1,10 @@
 ﻿using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
 using log4net;
-using CxAnalytics.TransformLogic;
+using CxAnalytix.TransformLogic;
 using System.Threading;
 using CxRestClient;
-using CxAnalytics.Configuration;
+using CxAnalytix.Configuration;
 using System;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile= "CxAnalytixCLI.log4net", Watch = true)]
