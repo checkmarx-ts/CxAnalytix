@@ -3,31 +3,27 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <Authors>Nathan Leach</Authors>
-    <Company>Checkmarx</Company>
-    <Description>Exports static analysis and software composition results to a form suitable for use by data analytics platforms.</Description>
-	<RuntimeIdentifier>win7-x64</RuntimeIdentifier>
-	<RootNamespace>CxAnalytixService</RootNamespace>
+    <LangVersion>7.1</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.8" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="3.1.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="3.1.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.2" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Configuration\Configuration.csproj" />
-    <ProjectReference Include="..\CxRestClient\CxRestClient.csproj" />
     <ProjectReference Include="..\Log4NetOutput\Log4NetOutput.csproj" />
     <ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="CxAnalytixService.exe.config">
+    <None Update="CxAnalytixDaemon.log4net">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="CxAnalytixService.log4net">
+    <None Update="dotnet.exe.config">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

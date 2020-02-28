@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 
 namespace CxAnalytix.Configuration
@@ -19,6 +20,9 @@ namespace CxAnalytix.Configuration
             map.ExeConfigFilename = process.MainModule.ModuleName + ".config";
             _log.DebugFormat("Loading configuration from [{0}]", map.ExeConfigFilename);
 
+            if (!File.Exists(map.ExeConfigFilename))
+                throw new FileNotFoundException("Configuration file missing.", map.ExeConfigFilename);
+
             _cfgManager = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.None);
 
             Credentials = GetConfig<CxCredentials>(CxCredentials.SECTION_NAME);
@@ -34,7 +38,7 @@ namespace CxAnalytix.Configuration
                 }
                 catch (Exception ex)
                 {
-                    _log.Error("Exception trying to save application config.", ex);
+                    _log.Error("Exception trying to save application config, this is normal on Linux.", ex);
                 }
             }
 
