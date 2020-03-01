@@ -1,7 +1,6 @@
 ﻿[Unit]
 Description=CxAnalytix
 After=network.target
-StartLimitIntervalSec=0
 
 
 [Service]
@@ -10,7 +9,8 @@ Restart=always
 RestartSec=10
 User=nobody
 ExecStart=/bin/dotnet CxAnalytixDaemon.dll
-ExecStartPre=cd /opt/cxanalytix
+WorkingDirectory=/opt/cxanalytix
+Environment='HOME=/opt/cxanalytix'
 
 [Install]
 WantedBy=multi-user.target
