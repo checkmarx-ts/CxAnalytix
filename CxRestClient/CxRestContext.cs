@@ -20,28 +20,28 @@ namespace CxRestClient
         private static readonly String MNO_SCOPE = "cxarm_api";
 
 
-        private static ILog _log = LogManager.GetLogger (typeof (CxRestContext) );
+        private static ILog _log = LogManager.GetLogger(typeof(CxRestContext));
 
         public class ClientFactory
         {
-            private ClientFactory ()
+            private ClientFactory()
             { }
 
-            internal ClientFactory (String mediaType, CxRestContext ctx)
+            internal ClientFactory(String mediaType, CxRestContext ctx)
             {
                 Context = ctx;
                 MediaType = mediaType;
             }
 
             private CxRestContext Context { get; set; }
-            private  String MediaType { get; set; }
+            private String MediaType { get; set; }
 
             public HttpClient CreateSastClient()
             {
                 var retVal = CreateGenericClient();
 
                 retVal.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue(Context.SastToken.TokenType, 
+                    new System.Net.Http.Headers.AuthenticationHeaderValue(Context.SastToken.TokenType,
                     Context.SastToken.Token);
 
                 return retVal;
@@ -58,7 +58,7 @@ namespace CxRestClient
                 return retVal;
             }
 
-            private HttpClient CreateGenericClient ()
+            private HttpClient CreateGenericClient()
             {
                 HttpClient retVal = MakeClient(Context.ValidateSSL);
                 retVal.DefaultRequestHeaders.Accept.Clear();
@@ -68,8 +68,10 @@ namespace CxRestClient
             }
         }
 
-        internal CxRestContext ()
+        internal CxRestContext()
         { }
+
+        #region Public/Private Properties
 
         public bool ValidateSSL { get; internal set; }
         public String Url { get; internal set; }
@@ -112,12 +114,15 @@ namespace CxRestClient
             }
         }
 
+        #endregion
+
+
         private void ValidateToken(ref LoginToken token)
         {
             lock (_tokenLock)
             {
                 if (DateTime.Now.CompareTo(token.ExpireTime) >= 0)
-                     token = GetLoginToken(Url, token.ReauthContent, ValidateSSL);
+                    token = GetLoginToken(Url, token.ReauthContent, ValidateSSL);
             }
         }
 
@@ -131,7 +136,7 @@ namespace CxRestClient
 
 
         #region Static methods
-        public static String MakeUrl (String url, String suffix)
+        public static String MakeUrl(String url, String suffix)
         {
             if (url.EndsWith('/'))
                 return url + suffix;
@@ -140,7 +145,7 @@ namespace CxRestClient
 
         }
 
-        public static String MakeQueryString (Dictionary<String, String> query)
+        public static String MakeQueryString(Dictionary<String, String> query)
         {
             LinkedList<String> p = new LinkedList<string>();
 
@@ -151,7 +156,7 @@ namespace CxRestClient
         }
 
         public static String MakeUrl(String url, String suffix, Dictionary<String, String> query)
-        => MakeUrl(url, suffix) + "?" + MakeQueryString (query);
+        => MakeUrl(url, suffix) + "?" + MakeQueryString(query);
 
 
         private static LoginToken GetLoginToken(String url, HttpContent authContent, bool doSSLValidate)
@@ -194,21 +199,34 @@ namespace CxRestClient
                     }
                 }
             }
-            catch (Exception)
+            catch (HttpRequestException hex)
             {
                 // Next operation will try to log in again due to expired token.
-                return new LoginToken
-                {
-                    TokenType = null,
-                    ExpireTime = DateTime.MinValue,
-                    Token = null,
-                    ReauthContent = authContent
-                };
+                _log.Warn("Unable to obtain login token due to a communication problem. " +
+                    "Login will retry on next operation.", hex);
+                return GetNullToken(authContent);
+            }
+            catch (Exception ex)
+            {
+                _log.Warn("Unable to obtain login token due to an unexpected exception.  " +
+                    "Login will retry on the next operation.", ex);
+                return GetNullToken(authContent);
             }
 
         }
 
-        private static LoginToken GetLoginToken (String url, String username, String password, 
+        private static LoginToken GetNullToken(HttpContent authContent)
+        {
+            return new LoginToken
+            {
+                TokenType = null,
+                ExpireTime = DateTime.MinValue,
+                Token = null,
+                ReauthContent = authContent
+            };
+        }
+
+        private static LoginToken GetLoginToken(String url, String username, String password,
             String scope, bool doSSLValidate)
         {
             _log.Debug($"Obtainting login token for scope [{scope}]");
@@ -228,7 +246,7 @@ namespace CxRestClient
             return GetLoginToken(url, payloadContent, doSSLValidate);
         }
 
-        private static HttpClient MakeClient (bool doSSLValidate)
+        private static HttpClient MakeClient(bool doSSLValidate)
         {
             HttpClientHandler h = new HttpClientHandler();
             if (!doSSLValidate)
@@ -245,14 +263,14 @@ namespace CxRestClient
         {
 
             private String _url;
-            public CxRestContextBuilder WithSASTServiceURL (String url)
+            public CxRestContextBuilder WithSASTServiceURL(String url)
             {
                 _url = url;
                 return this;
             }
 
             private String _mnoUrl;
-            public CxRestContextBuilder WithMNOServiceURL (String url)
+            public CxRestContextBuilder WithMNOServiceURL(String url)
             {
                 _mnoUrl = url;
                 return this;
@@ -260,14 +278,14 @@ namespace CxRestClient
 
 
             private int _timeout = 600;
-            public CxRestContextBuilder WithOpTimeout (int seconds)
+            public CxRestContextBuilder WithOpTimeout(int seconds)
             {
                 _timeout = seconds;
                 return this;
             }
 
             private bool _validate = true;
-            public CxRestContextBuilder WithSSLValidate (bool validate)
+            public CxRestContextBuilder WithSSLValidate(bool validate)
             {
                 _validate = validate;
                 return this;
@@ -275,7 +293,7 @@ namespace CxRestClient
 
 
             private String _user;
-            public CxRestContextBuilder WithUsername (String username)
+            public CxRestContextBuilder WithUsername(String username)
             {
                 _user = username;
                 return this;
