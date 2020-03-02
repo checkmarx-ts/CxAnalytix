@@ -4,6 +4,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 
@@ -116,19 +117,27 @@ namespace CxRestClient
         public static PolicyCollection GetAllPolicies(CxRestContext ctx,
                 CancellationToken token)
         {
-            using (var client = ctx.Json.CreateMnoClient())
-            using (var policyPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
-                POLICY_LIST_URL_SUFFIX), token).Result)
+            try
             {
+                using (var client = ctx.Json.CreateMnoClient())
+                using (var policyPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
+                    POLICY_LIST_URL_SUFFIX), token).Result)
+                {
 
-                if (!policyPayload.IsSuccessStatusCode)
-                    throw new InvalidOperationException
-                        ("Unable to retrieve policies.");
+                    if (!policyPayload.IsSuccessStatusCode)
+                        throw new InvalidOperationException
+                            ("Unable to retrieve policies.");
 
-                JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                    (policyPayload.Content.ReadAsStreamAsync().Result)));
+                    JToken jt = JToken.Load(new JsonTextReader(new StreamReader
+                        (policyPayload.Content.ReadAsStreamAsync().Result)));
 
-                return ParsePolicies(ctx, token, jt);
+                    return ParsePolicies(ctx, token, jt);
+                }
+            }
+            catch (HttpRequestException hex)
+            {
+                _log.Error("Communication error.", hex);
+                throw hex;
             }
         }
 
@@ -136,27 +145,35 @@ namespace CxRestClient
         public static IEnumerable<int> GetPolicyIdsForProject(CxRestContext ctx,
                 CancellationToken token, int projectId)
         {
-            using (var client = ctx.Json.CreateMnoClient())
-            using (var policyPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
-                String.Format(PROJECT_POLICY_URL_SUFFIX, projectId)), token).Result)
+            try
             {
+                using (var client = ctx.Json.CreateMnoClient())
+                using (var policyPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
+                    String.Format(PROJECT_POLICY_URL_SUFFIX, projectId)), token).Result)
+                {
 
-                if (!policyPayload.IsSuccessStatusCode)
-                    throw new InvalidOperationException
-                        ($"Unable to retrieve policies for project {projectId}.");
+                    if (!policyPayload.IsSuccessStatusCode)
+                        throw new InvalidOperationException
+                            ($"Unable to retrieve policies for project {projectId}.");
 
-                JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                    (policyPayload.Content.ReadAsStreamAsync().Result)));
+                    JToken jt = JToken.Load(new JsonTextReader(new StreamReader
+                        (policyPayload.Content.ReadAsStreamAsync().Result)));
 
-                LinkedList<int> policyIds = new LinkedList<int>();
+                    LinkedList<int> policyIds = new LinkedList<int>();
 
-                using (JTokenReader reader = new JTokenReader(jt))
-                    while (JsonUtils.MoveToNextProperty(reader, "id"))
-                    {
-                        policyIds.AddLast(Convert.ToInt32(((JProperty)reader.CurrentToken).Value));
-                    }
+                    using (JTokenReader reader = new JTokenReader(jt))
+                        while (JsonUtils.MoveToNextProperty(reader, "id"))
+                        {
+                            policyIds.AddLast(Convert.ToInt32(((JProperty)reader.CurrentToken).Value));
+                        }
 
-                return policyIds;
+                    return policyIds;
+                }
+            }
+            catch (HttpRequestException hex)
+            {
+                _log.Error("Communication error.", hex);
+                throw hex;
             }
         }
     }

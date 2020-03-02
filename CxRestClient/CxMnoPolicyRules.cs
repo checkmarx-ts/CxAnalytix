@@ -1,8 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using log4net;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 
@@ -10,6 +12,7 @@ namespace CxRestClient
 {
     public class CxMnoPolicyRules
     {
+        private static ILog _log = LogManager.GetLogger(typeof(CxMnoPolicyRules));
 
         private static readonly String URL_SUFFIX = "cxarm/policymanager/policies/{0}/rules";
 
@@ -61,22 +64,30 @@ namespace CxRestClient
         CancellationToken token, int policyId)
         {
 
-            using (var client = ctx.Json.CreateMnoClient())
-            using (var rulePayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
-                String.Format(URL_SUFFIX, policyId)), token).Result)
+            try
             {
-
-                if (!rulePayload.IsSuccessStatusCode)
-                    throw new InvalidOperationException
-                        ($"Unable to retrieve rules for policy {policyId}.");
-
-                using (var sr = new StreamReader
-                    (rulePayload.Content.ReadAsStreamAsync().Result))
-                using (var jtr = new JsonTextReader(sr))
+                using (var client = ctx.Json.CreateMnoClient())
+                using (var rulePayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
+                    String.Format(URL_SUFFIX, policyId)), token).Result)
                 {
-                    JToken jt = JToken.Load(jtr);
-                    return ParseRules(ctx, token, jt);
+
+                    if (!rulePayload.IsSuccessStatusCode)
+                        throw new InvalidOperationException
+                            ($"Unable to retrieve rules for policy {policyId}.");
+
+                    using (var sr = new StreamReader
+                        (rulePayload.Content.ReadAsStreamAsync().Result))
+                    using (var jtr = new JsonTextReader(sr))
+                    {
+                        JToken jt = JToken.Load(jtr);
+                        return ParseRules(ctx, token, jt);
+                    }
                 }
+            }
+            catch (HttpRequestException hex)
+            {
+                _log.Error("Communication error.", hex);
+                throw hex;
             }
         }
     }

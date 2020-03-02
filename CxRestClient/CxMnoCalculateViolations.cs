@@ -1,6 +1,8 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -9,16 +11,26 @@ namespace CxRestClient
 {
     public class CxMnoCalculateViolations
     {
+        public static ILog _log = LogManager.GetLogger(typeof (CxMnoCalculateViolations) );
+
         private static readonly String URL_SUFFIX = "cxarm/policymanager/projects" +
             "/{0}/violationscalculation";
 
         public static bool CalculateViolations(CxRestContext ctx,
                 CancellationToken token, int projectId)
         {
-            using (var client = ctx.Json.CreateMnoClient())
-            using (var calculationResponse = client.PostAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
-                String.Format(URL_SUFFIX, projectId)), null, token).Result)
-                return calculationResponse.StatusCode == HttpStatusCode.Created;
+            try
+            {
+                using (var client = ctx.Json.CreateMnoClient())
+                using (var calculationResponse = client.PostAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
+                    String.Format(URL_SUFFIX, projectId)), null, token).Result)
+                    return calculationResponse.StatusCode == HttpStatusCode.Created;
+            }
+            catch (HttpRequestException hex)
+            {
+                _log.Error("Communication error.", hex);
+                throw hex;
+            }
         }
 
 

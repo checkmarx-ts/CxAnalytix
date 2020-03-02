@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using log4net;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 
@@ -11,6 +13,8 @@ namespace CxRestClient
 {
     public class CxTeams
     {
+        private static ILog _log = LogManager.GetLogger(typeof (CxTeams));
+
         private static String URL_SUFFIX = "cxrestapi/auth/teams";
 
         private CxTeams()
@@ -76,23 +80,31 @@ namespace CxRestClient
 
         public static IEnumerable<Team> GetTeams(CxRestContext ctx, CancellationToken token)
         {
-            using (var client = ctx.Json.CreateSastClient())
-            using (var teams = client.GetAsync(
-                CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result)
+            try
             {
-                if (token.IsCancellationRequested)
-                    return null;
-
-                if (!teams.IsSuccessStatusCode)
-                    throw new InvalidOperationException(teams.ReasonPhrase);
-
-                using (var sr = new StreamReader
-                    (teams.Content.ReadAsStreamAsync().Result))
-                using (var jtr = new JsonTextReader(sr))
+                using (var client = ctx.Json.CreateSastClient())
+                using (var teams = client.GetAsync(
+                    CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result)
                 {
-                    JToken jt = JToken.Load(jtr);
-                    return new TeamReader(jt);
+                    if (token.IsCancellationRequested)
+                        return null;
+
+                    if (!teams.IsSuccessStatusCode)
+                        throw new InvalidOperationException(teams.ReasonPhrase);
+
+                    using (var sr = new StreamReader
+                        (teams.Content.ReadAsStreamAsync().Result))
+                    using (var jtr = new JsonTextReader(sr))
+                    {
+                        JToken jt = JToken.Load(jtr);
+                        return new TeamReader(jt);
+                    }
                 }
+            }
+            catch (HttpRequestException hex)
+            {
+                _log.Error("Communication error.", hex);
+                throw hex;
             }
         }
     }

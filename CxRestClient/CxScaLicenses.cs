@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using log4net;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 
@@ -11,6 +13,8 @@ namespace CxRestClient
 {
     public class CxScaLicenses
     {
+        private static ILog _log = LogManager.GetLogger(typeof (CxScaLicenses));
+
         private static String URL_SUFFIX = "cxrestapi/osa/licenses";
 
         private CxScaLicenses()
@@ -117,27 +121,35 @@ namespace CxRestClient
         public static IEnumerable<License> GetLicenses(CxRestContext ctx, CancellationToken token,
         String scanId)
         {
-            String url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
+            try
+            {
+                String url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
             {
                 {"scanId", Convert.ToString (scanId)  }
             });
 
-            using (var client = ctx.Json.CreateSastClient())
-            using (var licenses = client.GetAsync(url, token).Result)
-            {
-                if (token.IsCancellationRequested)
-                    return null;
-
-                if (!licenses.IsSuccessStatusCode)
-                    throw new InvalidOperationException(licenses.ReasonPhrase);
-
-                using (var sr = new StreamReader
-                    (licenses.Content.ReadAsStreamAsync().Result))
-                using (var jtr = new JsonTextReader(sr))
+                using (var client = ctx.Json.CreateSastClient())
+                using (var licenses = client.GetAsync(url, token).Result)
                 {
-                    JToken jt = JToken.Load(jtr);
-                    return new LicensesReader(jt);
+                    if (token.IsCancellationRequested)
+                        return null;
+
+                    if (!licenses.IsSuccessStatusCode)
+                        throw new InvalidOperationException(licenses.ReasonPhrase);
+
+                    using (var sr = new StreamReader
+                        (licenses.Content.ReadAsStreamAsync().Result))
+                    using (var jtr = new JsonTextReader(sr))
+                    {
+                        JToken jt = JToken.Load(jtr);
+                        return new LicensesReader(jt);
+                    }
                 }
+            }
+            catch (HttpRequestException hex)
+            {
+                _log.Error("Communication error.", hex);
+                throw hex;
             }
         }
     }

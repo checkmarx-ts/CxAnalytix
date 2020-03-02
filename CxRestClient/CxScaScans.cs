@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using log4net;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 
@@ -11,6 +13,7 @@ namespace CxRestClient
 {
     public class CxScaScans
     {
+        private static ILog _log = LogManager.GetLogger(typeof (CxScaScans));
 
         private static String URL_SUFFIX = "cxrestapi/osa/scans";
 
@@ -109,29 +112,37 @@ namespace CxRestClient
         public static IEnumerable<Scan> GetScans(CxRestContext ctx, CancellationToken token,
             int projectId)
         {
-            String url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
+            try
+            {
+                String url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
             {
                 {"projectId", Convert.ToString (projectId)  },
                 {"itemsPerPage", "5000" }
             });
 
-            using (var client = ctx.Json.CreateSastClient())
-            using (var scans = client.GetAsync(url, token).Result)
-            {
-
-                if (token.IsCancellationRequested)
-                    return null;
-
-                if (!scans.IsSuccessStatusCode)
-                    throw new InvalidOperationException(scans.ReasonPhrase);
-
-                using (var sr = new StreamReader
-                        (scans.Content.ReadAsStreamAsync().Result))
-                using (var jtr = new JsonTextReader(sr))
+                using (var client = ctx.Json.CreateSastClient())
+                using (var scans = client.GetAsync(url, token).Result)
                 {
-                    JToken jt = JToken.Load(jtr);
-                    return new ScansReader(jt, projectId);
+
+                    if (token.IsCancellationRequested)
+                        return null;
+
+                    if (!scans.IsSuccessStatusCode)
+                        throw new InvalidOperationException(scans.ReasonPhrase);
+
+                    using (var sr = new StreamReader
+                            (scans.Content.ReadAsStreamAsync().Result))
+                    using (var jtr = new JsonTextReader(sr))
+                    {
+                        JToken jt = JToken.Load(jtr);
+                        return new ScansReader(jt, projectId);
+                    }
                 }
+            }
+            catch (HttpRequestException hex)
+            {
+                _log.Error("Communication error.", hex);
+                throw hex;
             }
         }
     }

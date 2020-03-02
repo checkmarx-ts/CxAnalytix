@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using log4net;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 
@@ -11,6 +13,8 @@ namespace CxRestClient
 {
     public class CxProjects
     {
+        private static ILog _log = LogManager.GetLogger(typeof(CxProjects));
+
         private static String URL_SUFFIX = "cxrestapi/projects";
 
         private CxProjects()
@@ -123,24 +127,32 @@ namespace CxRestClient
 
         public static IEnumerable<Project> GetProjects(CxRestContext ctx, CancellationToken token)
         {
-            using (var client = ctx.Json.CreateSastClient())
-            using (var projects = client.GetAsync(
-                CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result)
+            try
             {
-                if (token.IsCancellationRequested)
-                    return null;
-
-                if (!projects.IsSuccessStatusCode)
-                    throw new InvalidOperationException(projects.ReasonPhrase);
-
-                using (var sr = new StreamReader
-                        (projects.Content.ReadAsStreamAsync().Result))
-                using (var jtr = new JsonTextReader(sr))
+                using (var client = ctx.Json.CreateSastClient())
+                using (var projects = client.GetAsync(
+                    CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result)
                 {
-                    JToken jt = JToken.Load(jtr);
+                    if (token.IsCancellationRequested)
+                        return null;
 
-                    return new ProjectReader(jt, ctx, token);
+                    if (!projects.IsSuccessStatusCode)
+                        throw new InvalidOperationException(projects.ReasonPhrase);
+
+                    using (var sr = new StreamReader
+                            (projects.Content.ReadAsStreamAsync().Result))
+                    using (var jtr = new JsonTextReader(sr))
+                    {
+                        JToken jt = JToken.Load(jtr);
+
+                        return new ProjectReader(jt, ctx, token);
+                    }
                 }
+            }
+            catch (HttpRequestException hex)
+            {
+                _log.Error("Communication error.", hex);
+                throw hex;
             }
         }
     }

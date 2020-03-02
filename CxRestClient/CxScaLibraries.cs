@@ -1,9 +1,11 @@
-﻿using Newtonsoft.Json;
+﻿using log4net;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -12,6 +14,7 @@ namespace CxRestClient
 {
     public class CxScaLibraries
     {
+        private static ILog _log = LogManager.GetLogger(typeof (CxScaLibraries) );
         private static String URL_SUFFIX = "cxrestapi/osa/libraries";
 
 
@@ -128,30 +131,37 @@ namespace CxRestClient
         public static IEnumerable<Library> GetLibraries (CxRestContext ctx, CancellationToken token,
         String scanId)
         {
-            String url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
+            try
+            {
+                String url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
             {
                 {"scanId", Convert.ToString (scanId)  }
             });
 
-            using (var client = ctx.Json.CreateSastClient())
-            {
-                var libraries = client.GetAsync(url, token).Result;
-
-                if (token.IsCancellationRequested)
-                    return null;
-
-                if (!libraries.IsSuccessStatusCode)
-                    throw new InvalidOperationException(libraries.ReasonPhrase);
-
-                using (var sr = new StreamReader
-                    (libraries.Content.ReadAsStreamAsync().Result))
-                using (var jtr = new JsonTextReader(sr))
+                using (var client = ctx.Json.CreateSastClient())
                 {
-                    JToken jt = JToken.Load(jtr);
-                    return new LibrariesReader(jt);
+                    var libraries = client.GetAsync(url, token).Result;
+
+                    if (token.IsCancellationRequested)
+                        return null;
+
+                    if (!libraries.IsSuccessStatusCode)
+                        throw new InvalidOperationException(libraries.ReasonPhrase);
+
+                    using (var sr = new StreamReader
+                        (libraries.Content.ReadAsStreamAsync().Result))
+                    using (var jtr = new JsonTextReader(sr))
+                    {
+                        JToken jt = JToken.Load(jtr);
+                        return new LibrariesReader(jt);
+                    }
                 }
             }
+            catch (HttpRequestException hex)
+            {
+                _log.Error("Communication error.", hex);
+                throw hex;
+            }
         }
-
     }
 }

@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using log4net;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using System;
@@ -13,6 +14,8 @@ namespace CxRestClient
 {
     public class CxSastGenerateScanReport
     {
+
+        private static ILog _log = LogManager.GetLogger(typeof (CxSastGenerateScanReport));
 
         private static String URL_SUFFIX = "cxrestapi/reports/sastScan";
 
@@ -45,36 +48,44 @@ namespace CxRestClient
         public static String GetGeneratedReportId(CxRestContext ctx, CancellationToken token,
             String scanId, ReportTypes type)
         {
-            using (var client = ctx.Json.CreateSastClient())
-            {
 
-                var dict = new Dictionary<String, String>()
+            try
+            {
+                using (var client = ctx.Json.CreateSastClient())
+                {
+
+                    var dict = new Dictionary<String, String>()
                 {
                     { "reportType", type.ToString ()},
                     { "scanId", scanId }
                 };
 
-                using (var payload = new FormUrlEncodedContent(dict))
-                {
-                    using (var scanReportTicket = client.PostAsync(
-                        CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), payload).Result)
+                    using (var payload = new FormUrlEncodedContent(dict))
                     {
-                        if (!scanReportTicket.IsSuccessStatusCode)
-                            throw new InvalidOperationException
-                                ($"Scan report generation request for scan {scanId} returned " +
-                                $"{scanReportTicket.StatusCode}");
-
-                        using (var sr = new StreamReader
-                                (scanReportTicket.Content.ReadAsStreamAsync().Result))
-                        using (var jtr = new JsonTextReader(sr))
+                        using (var scanReportTicket = client.PostAsync(
+                            CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), payload).Result)
                         {
-                            JToken jt = JToken.Load(jtr);
-                            return ReadReportId(jt);
+                            if (!scanReportTicket.IsSuccessStatusCode)
+                                throw new InvalidOperationException
+                                    ($"Scan report generation request for scan {scanId} returned " +
+                                    $"{scanReportTicket.StatusCode}");
+
+                            using (var sr = new StreamReader
+                                    (scanReportTicket.Content.ReadAsStreamAsync().Result))
+                            using (var jtr = new JsonTextReader(sr))
+                            {
+                                JToken jt = JToken.Load(jtr);
+                                return ReadReportId(jt);
+                            }
                         }
                     }
                 }
             }
+            catch (HttpRequestException hex)
+            {
+                _log.Error("Communication error.", hex);
+                throw hex;
+            }
         }
-
     }
 }

@@ -1,8 +1,10 @@
-﻿using Newtonsoft.Json;
+﻿using log4net;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Text;
 using System.Threading;
 
@@ -10,6 +12,8 @@ namespace CxRestClient
 {
     public class CxSastScanReportGenStatus
     {
+        private static ILog _log = LogManager.GetLogger(typeof (CxSastScanReportGenStatus));
+
         private static String URL_SUFFIX = "cxrestapi/reports/sastScan/{0}/status";
 
         public enum GenStatus
@@ -35,23 +39,31 @@ namespace CxRestClient
         public static GenStatus GetReportGenerationStatus(CxRestContext ctx,
             CancellationToken token, String reportId)
         {
-            using (var client = ctx.Json.CreateSastClient())
+            try
             {
-                using (var scanReportStatus = client.GetAsync(
-                    CxRestContext.MakeUrl(ctx.Url,
-                    String.Format(URL_SUFFIX, reportId)), token).Result)
+                using (var client = ctx.Json.CreateSastClient())
                 {
-                    if (!scanReportStatus.IsSuccessStatusCode)
-                        return GenStatus.None;
-
-                    using (var sr = new StreamReader
-                            (scanReportStatus.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
+                    using (var scanReportStatus = client.GetAsync(
+                        CxRestContext.MakeUrl(ctx.Url,
+                        String.Format(URL_SUFFIX, reportId)), token).Result)
                     {
-                        JToken jt = JToken.Load(jtr);
-                        return ReadStatus(jt);
+                        if (!scanReportStatus.IsSuccessStatusCode)
+                            return GenStatus.None;
+
+                        using (var sr = new StreamReader
+                                (scanReportStatus.Content.ReadAsStreamAsync().Result))
+                        using (var jtr = new JsonTextReader(sr))
+                        {
+                            JToken jt = JToken.Load(jtr);
+                            return ReadStatus(jt);
+                        }
                     }
                 }
+            }
+            catch (HttpRequestException hex)
+            {
+                _log.Error("Communication error.", hex);
+                throw hex;
             }
         }
     }
