@@ -12,7 +12,7 @@ aggregators such as Splunk or any other platform that can use JSON collections o
 the flattened data is provided as messages to an output implementation, allowing for future implementations for use-cases such as writing 
 to document databases, message queuing, writing in columnar file formats (Parquet, ORC, etc) for Hadoop, etc.
 
-Please see the [CxAnalytix Wiki](wiki) for information related to obtaining, installing, and configuring CxAnalytix.
+Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki) for information related to obtaining, installing, and configuring CxAnalytix.
 
 
 
