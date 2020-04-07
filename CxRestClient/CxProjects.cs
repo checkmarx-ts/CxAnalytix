@@ -60,17 +60,6 @@ namespace CxRestClient
 
             Project _curProject = new Project();
 
-            private static bool MoveToNextProperty(JTokenReader reader)
-            {
-                while (reader.Read())
-                {
-                    if (reader.CurrentToken.Type == JTokenType.Property)
-                        return true;
-                }
-
-                return false;
-            }
-
             public bool MoveNext()
             {
                 while (_reader.Read() && !_token.IsCancellationRequested)
@@ -82,29 +71,33 @@ namespace CxRestClient
                                 ProjectId = Convert.ToInt32(((JProperty)_reader.CurrentToken).Value.ToString())
                             };
 
-                            if (!MoveToNextProperty(_reader))
+                            if (!JsonUtils.MoveToNextProperty(_reader, "teamId"))
                                 return false;
 
                             _curProject.TeamId = new Guid(((JProperty)_reader.CurrentToken).Value.ToString());
 
-                            if (!MoveToNextProperty(_reader))
+                            if (!JsonUtils.MoveToNextProperty(_reader, "name"))
                                 return false;
 
                             _curProject.ProjectName = ((JProperty)_reader.CurrentToken).Value.ToString();
 
-                            if (!MoveToNextProperty(_reader))
+                            if (!JsonUtils.MoveToNextProperty(_reader, "isPublic"))
                                 return false;
 
-                            // IsPublic?
-                            if (!Convert.ToBoolean(((JProperty)_reader.CurrentToken).Value.ToString()))
+                            bool isPublic = Convert.ToBoolean(((JProperty)_reader.CurrentToken).Value.ToString());
+
+                            if (!JsonUtils.MoveToNextProperty(_reader, "links"))
+                                return false;
+
+                            if (isPublic)
+                                _curProject.PresetId = CxProjectScanSettings.GetScanSettings
+                                    (_ctx, _token, _curProject.ProjectId).PresetId;
+                            else
                             {
                                 // Scan isn't public, move to the next scan.
                                 _curProject = new Project();
                                 continue;
                             }
-
-                            _curProject.PresetId = CxProjectScanSettings.GetScanSettings
-                                (_ctx, _token, _curProject.ProjectId).PresetId;
 
                             return true;
                         }

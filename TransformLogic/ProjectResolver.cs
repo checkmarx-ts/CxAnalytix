@@ -203,7 +203,8 @@ namespace CxAnalytix.TransformLogic
                     String presetName = _dependentData.Presets.ContainsKey(presetId) ? _dependentData.Presets[presetId] : String.Empty;
                     if (String.Empty == presetName)
                     {
-                        _log.ErrorFormat("Unable to find a preset name for preset id [{0}] when adding project {1}:{2}", presetId,
+                        _log.ErrorFormat("Unable to find a preset name for preset id [{0}] " +
+                            "when adding project {1}:{2}; project may be assigned an invalid preset.", presetId,
                             projectId, projectName);
 
                         return false;
