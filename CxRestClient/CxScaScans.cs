@@ -42,6 +42,10 @@ namespace CxRestClient
                 _reader = new JTokenReader(_json);
                 _projectId = projectId;
             }
+            internal ScansReader()
+            {
+                _json = null;
+            }
 
             public Scan Current => _currentScan;
 
@@ -54,6 +58,9 @@ namespace CxRestClient
 
             public IEnumerator<Scan> GetEnumerator()
             {
+                if (_json == null)
+                    return new ScansReader();
+
                 return new ScansReader(_json, _projectId);
             }
 
@@ -61,7 +68,7 @@ namespace CxRestClient
 
             public bool MoveNext()
             {
-                while (JsonUtils.MoveToNextProperty(_reader))
+                while (_reader != null && JsonUtils.MoveToNextProperty(_reader))
                 {
                     if (((JProperty)_reader.CurrentToken).Name.CompareTo("id") == 0)
                     {
@@ -115,10 +122,10 @@ namespace CxRestClient
             try
             {
                 String url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
-            {
-                {"projectId", Convert.ToString (projectId)  },
-                {"itemsPerPage", "5000" }
-            });
+                    {
+                        {"projectId", Convert.ToString (projectId)  },
+                        {"itemsPerPage", "5000" }
+                    });
 
                 using (var client = ctx.Json.CreateSastClient())
                 using (var scans = client.GetAsync(url, token).Result)
@@ -126,6 +133,10 @@ namespace CxRestClient
 
                     if (token.IsCancellationRequested)
                         return null;
+
+                    // If no OSA license, result is 403.  Return an empty set of scans.
+                    if (scans.StatusCode == System.Net.HttpStatusCode.Forbidden)
+                        return new ScansReader();
 
                     if (!scans.IsSuccessStatusCode)
                         throw new InvalidOperationException(scans.ReasonPhrase);
