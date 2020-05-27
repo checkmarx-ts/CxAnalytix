@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CxAnalytix.TransformLogic
+namespace CxRestClient
 {
-    public class FormattedDateTime
+    public class FormattedDateTime : IComparable, IComparable<FormattedDateTime>
     {
         private static readonly String DATE_FORMAT = "yyyy-MM-ddTHH:mm:ss.fffzzz";
 
@@ -13,6 +13,15 @@ namespace CxAnalytix.TransformLogic
         public FormattedDateTime (DateTime dt)
         {
             _theDateTime = dt;
+        }
+        public FormattedDateTime(String dt)
+        {
+            _theDateTime = DateTime.Parse (dt);
+        }
+        
+        public int CompareTo(FormattedDateTime other)
+        {
+            return ((IComparable)this).CompareTo(other);
         }
 
         public override bool Equals(object obj)
@@ -28,6 +37,11 @@ namespace CxAnalytix.TransformLogic
         public override string ToString()
         {
             return _theDateTime.ToString(DATE_FORMAT);
+        }
+
+        int IComparable.CompareTo(object obj)
+        {
+            return _theDateTime.CompareTo(obj);
         }
     }
 }
