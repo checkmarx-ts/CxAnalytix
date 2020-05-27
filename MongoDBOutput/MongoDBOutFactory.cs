@@ -14,6 +14,8 @@ namespace CxAnalytix.Out.MongoDBOutput
         static MongoClient _client;
         static IMongoDatabase _db;
 
+
+
         static MongoDBOutFactory()
         {
             _cfg = Config.GetConfig<MongoOutConfig>(MongoOutConfig.SECTION_NAME);
