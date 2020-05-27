@@ -60,8 +60,8 @@ namespace CxRestClient
 
                         if (!JsonUtils.MoveToNextProperty(reader, "firstDetectionDateByArm"))
                             break;
-                        curRule.FirstDetectionDate = new FormattedDateTime (JsonUtils.UtcEpochTimeToDateTime
-                            (Convert.ToInt64(((JProperty)reader.CurrentToken).Value) / 1000));
+                        curRule.FirstDetectionDate = JsonUtils.UtcEpochTimeToDateTime
+                            (Convert.ToInt64(((JProperty)reader.CurrentToken).Value) / 1000);
 
                         if (!JsonUtils.MoveToNextProperty(reader, "scanId"))
                             break;
@@ -78,8 +78,8 @@ namespace CxRestClient
                         if (!JsonUtils.MoveToNextProperty(reader, "date"))
                             break;
                         if (((JProperty)reader.CurrentToken).Value.Type != JTokenType.Null)
-                            curRule.ViolationOccured = new FormattedDateTime (JsonUtils.UtcEpochTimeToDateTime
-                                (Convert.ToInt64(((JProperty)reader.CurrentToken).Value)));
+                            curRule.ViolationOccured = JsonUtils.UtcEpochTimeToDateTime
+                                (Convert.ToInt64(((JProperty)reader.CurrentToken).Value));
 
                         if (!JsonUtils.MoveToNextProperty(reader, "riskScore"))
                             break;

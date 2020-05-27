@@ -23,7 +23,7 @@ namespace CxRestClient
         public String Name { get; set; }
         public String Description { get; set; }
         public Boolean isActive { get; set; }
-        public FormattedDateTime CreatedOn { get; set; }
+        public DateTime CreatedOn { get; set; }
 
 
         private Dictionary<int, RuleDescriptor> _rules = new Dictionary<int, RuleDescriptor>();

@@ -14,7 +14,7 @@ namespace CxAnalytix.TransformLogic.Data
         internal ProjectDescriptor()
         {
             ScanCountByProduct = new Dictionary<string, int>();
-            LatestScanDateByProduct = new Dictionary<String, FormattedDateTime>();
+            LatestScanDateByProduct = new Dictionary<String, DateTime>();
         }
 
         internal ProjectDescriptor (ProjectDescriptor src)
@@ -71,7 +71,7 @@ namespace CxAnalytix.TransformLogic.Data
         /// The most recent scan date for the project by product.
         /// </summary>
         [JsonIgnore]
-        public Dictionary<String, FormattedDateTime> LatestScanDateByProduct { get; internal set; }
+        public Dictionary<String, DateTime> LatestScanDateByProduct { get; internal set; }
 
         /// <summary>
         /// Increments the number of scans for the product name passed in 
@@ -99,11 +99,11 @@ namespace CxAnalytix.TransformLogic.Data
         {
             if (!LatestScanDateByProduct.ContainsKey(scanProduct))
             {
-                LatestScanDateByProduct.Add(scanProduct, new FormattedDateTime (DateTime.MinValue) );
+                LatestScanDateByProduct.Add(scanProduct, DateTime.MinValue);
             }
 
-            if (LatestScanDateByProduct[scanProduct].CompareTo(new FormattedDateTime (scanTime) ) < 0)
-                LatestScanDateByProduct[scanProduct] = new FormattedDateTime (scanTime);
+            if (LatestScanDateByProduct[scanProduct].CompareTo(scanTime) < 0)
+                LatestScanDateByProduct[scanProduct] = scanTime;
         }
 
     }

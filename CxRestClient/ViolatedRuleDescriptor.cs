@@ -22,13 +22,13 @@ namespace CxRestClient
         public int PolicyId { get; internal set; }
         public int ProjectId { get; internal set; }
 
-        public FormattedDateTime FirstDetectionDate { get; internal set; }
+        public DateTime FirstDetectionDate { get; internal set; }
         public String ScanId { get; internal set; }
         public String ViolationType { get; internal set; }
         public String ViolationName { get; internal set; }
         public String ViolationSource { get; internal set; }
         public String ViolationSeverity { get; internal set; }
-        public FormattedDateTime? ViolationOccured { get; internal set; }
+        public DateTime? ViolationOccured { get; internal set; }
         public double? ViolationRiskScore { get; internal set; }
         public String ViolationStatus { get; internal set; }
         public String ViolationState { get; internal set; }

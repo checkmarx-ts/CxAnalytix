@@ -39,8 +39,8 @@ namespace CxRestClient
             internal Dictionary<String, Object> project { get; set; }
             [JsonProperty(PropertyName = "dateAndTime")]
             internal Dictionary<String, String> date_times { get; set; }
-            public FormattedDateTime StartTime { get => new FormattedDateTime (date_times["startedOn"]); }
-            public FormattedDateTime FinishTime { get => new FormattedDateTime(date_times["finishedOn"]); }
+            public DateTime StartTime { get => DateTime.Parse(date_times["startedOn"]); }
+            public DateTime FinishTime { get => DateTime.Parse(date_times["finishedOn"]); }
             [JsonProperty(PropertyName = "scanState")]
             internal Dictionary<String, Object> scan_state { get; set; }
             public int FileCount { get => Convert.ToInt32(scan_state["filesCount"]); }

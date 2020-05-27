@@ -86,7 +86,7 @@ namespace CxAnalytix.TransformLogic
                         ScanType = scanType,
                         ScanProduct = scanProduct,
                         ScanId = scanId,
-                        FinishedStamp = new FormattedDateTime (finishTime),
+                        FinishedStamp = finishTime,
                         MapAction = _productAction[scanProduct]
                     });
                 }

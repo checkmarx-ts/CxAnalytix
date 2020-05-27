@@ -313,7 +313,7 @@ namespace CxAnalytix.TransformLogic
                 foreach (var sastScan in sastScans)
                 {
                     sr.AddScan(sastScan.ProjectId, sastScan.ScanType, SAST_PRODUCT_STRING,
-                        sastScan.ScanId, sastScan.FinishTime.Value);
+                        sastScan.ScanId, sastScan.FinishTime);
 
                     SastScanCache.Add(sastScan.ScanId, sastScan);
                 }
@@ -325,7 +325,7 @@ namespace CxAnalytix.TransformLogic
                     foreach (var scaScan in scaScans)
                     {
                         sr.AddScan(scaScan.ProjectId, "Composition", SCA_PRODUCT_STRING, scaScan.ScanId,
-                            scaScan.FinishTime.Value);
+                            scaScan.FinishTime);
                         ScaScanCache.Add(scaScan.ScanId, scaScan);
                     }
                 }
@@ -483,8 +483,7 @@ namespace CxAnalytix.TransformLogic
                             scan.Initiator = xr.GetAttribute("InitiatorName");
                             scan.DeepLink = xr.GetAttribute("DeepLink");
                             scan.ScanTime = xr.GetAttribute("ScanTime");
-                            scan.ReportCreateTime = new FormattedDateTime (xr.GetAttribute
-                                ("ReportCreationTime"));
+                            scan.ReportCreateTime = DateTime.Parse (xr.GetAttribute ("ReportCreationTime"));
                             scan.Comments = xr.GetAttribute("ScanComments");
                             scan.SourceOrigin = xr.GetAttribute("SourceOrigin");
                             continue;

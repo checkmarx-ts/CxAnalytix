@@ -14,6 +14,6 @@ namespace CxRestClient
         public String Description { get; set; }
         public String ScanProduct { get; set; }
         public String RuleType { get; set; }
-        public FormattedDateTime CreatedOn { get; set; }
+        public DateTime CreatedOn { get; set; }
     }
 }
