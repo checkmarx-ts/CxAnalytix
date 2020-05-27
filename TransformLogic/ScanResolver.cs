@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using CxAnalytix.TransformLogic.Data;
+using CxRestClient;
 
 namespace CxAnalytix.TransformLogic
 {
@@ -85,7 +86,7 @@ namespace CxAnalytix.TransformLogic
                         ScanType = scanType,
                         ScanProduct = scanProduct,
                         ScanId = scanId,
-                        FinishedStamp = finishTime,
+                        FinishedStamp = new FormattedDateTime (finishTime),
                         MapAction = _productAction[scanProduct]
                     });
                 }

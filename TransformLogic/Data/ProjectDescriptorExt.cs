@@ -1,6 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using CxRestClient;
+using System;
+
 
 namespace CxAnalytix.TransformLogic.Data
 {

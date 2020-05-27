@@ -24,8 +24,8 @@ namespace CxRestClient
         {
             public int ProjectId { get; internal set; }
             public String ScanId { get; internal set; }
-            public DateTime FinishTime { get; internal set; }
-            public DateTime StartTime { get; internal set; }
+            public FormattedDateTime FinishTime { get; internal set; }
+            public FormattedDateTime StartTime { get; internal set; }
 
         }
 
@@ -82,14 +82,14 @@ namespace CxRestClient
                             return false;
 
                         // SCA stores times in UTC.  SAST stores them in local time.
-                        _currentScan.StartTime = DateTime.Parse(((JProperty)_reader.CurrentToken).
-                            Value.ToString()).ToLocalTime();
+                        _currentScan.StartTime = new FormattedDateTime (DateTime.Parse(((JProperty)_reader.CurrentToken).
+                            Value.ToString()).ToLocalTime());
 
                         if (!JsonUtils.MoveToNextProperty(_reader, "endAnalyzeTime"))
                             return false;
 
-                        _currentScan.FinishTime = DateTime.Parse(((JProperty)_reader.CurrentToken).
-                            Value.ToString()).ToLocalTime();
+                        _currentScan.FinishTime = new FormattedDateTime (DateTime.Parse(((JProperty)_reader.CurrentToken).
+                            Value.ToString()).ToLocalTime());
 
                         if (!JsonUtils.MoveToNextProperty(_reader, "state"))
                             return false;

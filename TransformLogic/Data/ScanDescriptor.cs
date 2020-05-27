@@ -34,7 +34,7 @@ namespace CxAnalytix.TransformLogic.Data
         /// <summary>
         /// The timestamp of when the scan finished.
         /// </summary>
-        public DateTime FinishedStamp { get; set; }
+        public FormattedDateTime FinishedStamp { get; set; }
         /// <summary>
         /// The name of the preset used for this scan, which may differ from
         /// the preset that is currently configured for the project.
@@ -48,7 +48,7 @@ namespace CxAnalytix.TransformLogic.Data
         public String Initiator { get; set; }
         public String DeepLink { get; set; }
         public String ScanTime { get; set; }
-        public DateTime ReportCreateTime { get; set; }
+        public FormattedDateTime ReportCreateTime { get; set; }
         public String Comments { get; set; }
         public String SourceOrigin { get; set; }
 

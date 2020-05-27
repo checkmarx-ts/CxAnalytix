@@ -4,44 +4,46 @@ using System.Text;
 
 namespace CxRestClient
 {
-    public class FormattedDateTime : IComparable, IComparable<FormattedDateTime>
+    public struct FormattedDateTime : IComparable, IComparable<FormattedDateTime>
     {
         private static readonly String DATE_FORMAT = "yyyy-MM-ddTHH:mm:ss.fffzzz";
 
-        private DateTime _theDateTime;
+        public DateTime Value { get; private set; }
 
         public FormattedDateTime (DateTime dt)
         {
-            _theDateTime = dt;
+            Value = dt;
         }
         public FormattedDateTime(String dt)
         {
-            _theDateTime = DateTime.Parse (dt);
+            Value = DateTime.Parse (dt);
         }
         
         public int CompareTo(FormattedDateTime other)
         {
-            return ((IComparable)this).CompareTo(other);
+            return ((IComparable)this).CompareTo(other.Value);
         }
 
         public override bool Equals(object obj)
         {
-            return _theDateTime.Equals(obj);
+            return Value.Equals(((FormattedDateTime)obj).Value);
         }
 
         public override int GetHashCode()
         {
-            return _theDateTime.GetHashCode();
+            return Value.GetHashCode();
         }
 
         public override string ToString()
         {
-            return _theDateTime.ToString(DATE_FORMAT);
+            return Value.ToString(DATE_FORMAT);
         }
 
         int IComparable.CompareTo(object obj)
         {
-            return _theDateTime.CompareTo(obj);
+            var comp = (obj is FormattedDateTime) ? (((FormattedDateTime)obj).Value) : obj;
+
+            return Value.CompareTo(obj);
         }
     }
 }

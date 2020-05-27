@@ -17,7 +17,7 @@ namespace CxAnalytix.Out.MongoDBOutput
             CollectionName = collectionName;
         }
 
-        public void write(IDictionary<string, string> record)
+        public void write(IDictionary<string, object> record)
         {
 
             var cfg = Config.GetConfig<MongoOutConfig>(MongoOutConfig.SECTION_NAME);

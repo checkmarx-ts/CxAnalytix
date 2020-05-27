@@ -102,8 +102,8 @@ namespace CxRestClient
 
                     if (!JsonUtils.MoveToNextProperty(reader, "createdOn"))
                         continue;
-                    policy.CreatedOn = JsonUtils.UtcEpochTimeToDateTime
-                        (Convert.ToInt64(((JProperty)reader.CurrentToken).Value) / 1000);
+                    policy.CreatedOn = new FormattedDateTime (JsonUtils.UtcEpochTimeToDateTime
+                        (Convert.ToInt64(((JProperty)reader.CurrentToken).Value) / 1000));
 
                     var rules = CxMnoPolicyRules.GetRulesForPolicy(ctx, token, policy.PolicyId);
                     policy.AddRule(rules);

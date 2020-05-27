@@ -1,7 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using CxRestClient;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Text;
+
 
 namespace CxAnalytix.TransformLogic.Data
 {
@@ -13,7 +14,7 @@ namespace CxAnalytix.TransformLogic.Data
         internal ProjectDescriptor()
         {
             ScanCountByProduct = new Dictionary<string, int>();
-            LatestScanDateByProduct = new Dictionary<string, DateTime>();
+            LatestScanDateByProduct = new Dictionary<String, FormattedDateTime>();
         }
 
         internal ProjectDescriptor (ProjectDescriptor src)
@@ -70,7 +71,7 @@ namespace CxAnalytix.TransformLogic.Data
         /// The most recent scan date for the project by product.
         /// </summary>
         [JsonIgnore]
-        public Dictionary<String, DateTime> LatestScanDateByProduct { get; internal set; }
+        public Dictionary<String, FormattedDateTime> LatestScanDateByProduct { get; internal set; }
 
         /// <summary>
         /// Increments the number of scans for the product name passed in 
@@ -98,11 +99,11 @@ namespace CxAnalytix.TransformLogic.Data
         {
             if (!LatestScanDateByProduct.ContainsKey(scanProduct))
             {
-                LatestScanDateByProduct.Add(scanProduct, DateTime.MinValue);
+                LatestScanDateByProduct.Add(scanProduct, new FormattedDateTime (DateTime.MinValue) );
             }
 
-            if (LatestScanDateByProduct[scanProduct].CompareTo(scanTime) < 0)
-                LatestScanDateByProduct[scanProduct] = scanTime;
+            if (LatestScanDateByProduct[scanProduct].CompareTo(new FormattedDateTime (scanTime) ) < 0)
+                LatestScanDateByProduct[scanProduct] = new FormattedDateTime (scanTime);
         }
 
     }

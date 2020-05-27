@@ -64,7 +64,7 @@ namespace CxAnalytix.Out.Log4NetOutput
             _log.DebugFormat("Created LoggerOut with record type {0}", recordType);
         }
 
-        public void write(IDictionary<string, string> record)
+        public void write(IDictionary<string, object> record)
         {
             _log.DebugFormat("Logger for record type [{0}] writing record with {1} elements.", _recordType, record.Keys.Count);
             if (_recordLog == null)

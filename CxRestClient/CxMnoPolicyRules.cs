@@ -49,8 +49,8 @@ namespace CxRestClient
 
                     if (!JsonUtils.MoveToNextProperty(reader, "createdOn"))
                         continue;
-                    rule.CreatedOn = JsonUtils.UtcEpochTimeToDateTime
-                        (Convert.ToInt64(((JProperty)reader.CurrentToken).Value) / 1000);
+                    rule.CreatedOn = new FormattedDateTime (JsonUtils.UtcEpochTimeToDateTime
+                        (Convert.ToInt64(((JProperty)reader.CurrentToken).Value) / 1000));
 
                     rules.AddLast(rule);
                 }
