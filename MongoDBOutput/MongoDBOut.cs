@@ -14,8 +14,9 @@ namespace CxAnalytix.Out.MongoDBOutput
 
         private static ILog _log = LogManager.GetLogger(typeof(MongoDBOut));
 
+        private IMongoDatabase _db;
 
-        public MongoDBOut(String collectionName)
+        public MongoDBOut(IMongoDatabase db, String collectionName)
         {
             CollectionName = collectionName;
         }
@@ -25,23 +26,14 @@ namespace CxAnalytix.Out.MongoDBOutput
             BsonDocument retVal = new BsonDocument();
 
             foreach (var key in record.Keys)
-            {
                 retVal.Add(key.Replace ('.', '-'), BsonValue.Create(record[key]));
-            }
-
 
             return retVal;
         }
 
-
-
         public void write(IDictionary<string, object> record)
         {
-            var cfg = Config.GetConfig<MongoOutConfig>(MongoOutConfig.SECTION_NAME);
-
-            var client = new MongoClient(cfg.ConnectionString);
-            var database = client.GetDatabase("test");
-            var collection = database.GetCollection<BsonDocument>(CollectionName);
+            var collection = _db.GetCollection<BsonDocument>(CollectionName);
 
             collection.InsertOne(BsonSerialize(record));
         }

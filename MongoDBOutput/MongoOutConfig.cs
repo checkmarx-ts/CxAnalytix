@@ -19,5 +19,15 @@ namespace CxAnalytix.Out.MongoDBOutput
             }
         }
 
+        [ConfigurationProperty("DatabaseName", IsRequired = true)]
+        public String DBName
+        {
+            get => (String)this["DatabaseName"];
+            set
+            {
+                this["DatabaseName"] = value;
+            }
+        }
+
     }
 }
