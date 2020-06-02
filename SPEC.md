@@ -77,7 +77,32 @@ using OSA.)
 * TeamName
 * VulnerabilityId
 
-## OSA Scan Summary
+## SCA Scan Summary
+
+* HighVulnerabilityLibraries
+* LegalHigh
+* LegalLow
+* LegalMedium
+* LowVulnerabilityLibraries
+* MediumVulnerabilityLibraries
+* NonVulnerableLibraries
+* PoliciesViolated
+* PolicyViolations
+* ProjectId
+* ProjectName
+* RulesViolated
+* ScanFinished
+* ScanId
+* ScanStart
+* TeamName
+* TotalHighVulnerabilities
+* TotalLibraries
+* TotalLowVulnerabilities
+* TotalMediumVulnerabilities
+* VulnerabilityScore
+* VulnerableAndOutdated
+* VulnerableAndUpdated
+
 
 * &#9745; Project Id
 * &#9745; Project Name

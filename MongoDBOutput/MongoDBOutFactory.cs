@@ -38,6 +38,10 @@ namespace CxAnalytix.Out.MongoDBOutput
 
             _schemas.Add(Config.Service.SASTScanDetailRecordName, new SastDetailSchema());
             _schemas.Add(Config.Service.SASTScanSummaryRecordName, new SastSummarySchema());
+            _schemas.Add(Config.Service.SCAScanSummaryRecordName, new SCASummarySchema () );
+            //_schemas.Add(Config.Service.SCAScanDetailRecordName, );
+            //_schemas.Add(Config.Service.ProjectInfoRecordName, );
+            //_schemas.Add(Config.Service.PolicyViolationsRecordName, );
         }
 
 
