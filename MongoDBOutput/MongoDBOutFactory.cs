@@ -37,6 +37,7 @@ namespace CxAnalytix.Out.MongoDBOutput
             _db = _client.GetDatabase(_cfg.DBName);
 
             _schemas.Add(Config.Service.SASTScanDetailRecordName, new SastDetailSchema());
+            _schemas.Add(Config.Service.SASTScanSummaryRecordName, new SastSummarySchema());
         }
 
 

@@ -24,14 +24,14 @@ namespace CxAnalytix.Out.MongoDBOutput
             if (!MongoUtil.IndexExists (_coll, opts.Name) )
             _coll.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys
                 .Ascending(new StringFieldDefinition<BsonDocument, String>("ProjectName"))
-                .Descending(new StringFieldDefinition<BsonDocument, Int32>("ScanId"))
+                .Descending(new StringFieldDefinition<BsonDocument, String>("ScanId"))
                 , opts));
 
             opts.Name = "ScanId-D+PathId-A";
             if (!MongoUtil.IndexExists(_coll, opts.Name))
                 _coll.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys
-                .Descending(new StringFieldDefinition<BsonDocument, Int32>("ScanId"))
-                .Ascending(new StringFieldDefinition<BsonDocument, Int32>("PathId"))
+                .Descending(new StringFieldDefinition<BsonDocument, String>("ScanId"))
+                .Ascending(new StringFieldDefinition<BsonDocument, String>("PathId"))
                 , opts));
 
             opts.Name = "SimilarityId-D+ProjectName-A";
@@ -64,6 +64,12 @@ namespace CxAnalytix.Out.MongoDBOutput
                 _coll.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys
                 .Ascending(new StringFieldDefinition<BsonDocument, String>("QueryLanguage"))
                 , opts));
+
+            opts.Name = "ScanFinished-A";
+            if (!MongoUtil.IndexExists(_coll, opts.Name))
+                _coll.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys
+                    .Ascending(new StringFieldDefinition<BsonDocument, DateTime>("ScanFinished"))
+                    , opts));
 
 
             return true;

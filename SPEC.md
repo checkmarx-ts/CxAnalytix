@@ -8,28 +8,34 @@ using OSA.)
 
 ## SAST Scan Summary Fields
 
-* &#9745; Project Id
-* &#9745; Project Name
-* &#9745; Team Name
-* &#9745; Scan Id
-* &#9745; Scan Type
-* &#9745; Scan Product
-* &#9745; LoC
-* &#9745; Failed LoC
-* &#9745; File Count
-* &#9745; Scan Start
-* &#9745; Scan Finish
-* &#9745; Scan Risk
-* &#9745; Scan Risk Severity
-* &#9745; Cx Version
-* &#9745; Languages
-* &#9745; Preset
-* &#9745; High
-* &#9745; Medium
-* &#9745; Low
-* &#9745; Information
-* &#9745; Number of policies violated *(Requires M&O to be running and policies assigned to have any meansing)*
-* &#9745; Number of rules violated *(Requires M&O to be running and policies assigned to have any meansing)*
+
+* CxVersion
+* DeepLink
+* FailedLinesOfCode
+* FileCount
+* Information
+* Initiator
+* Languages
+* LinesOfCode
+* Low
+* PoliciesViolated *(Requires M&O to be running and policies assigned to have any meansing)*
+* PolicyViolations *(Requires M&O to be running and policies assigned to have any meansing)*
+* Preset
+* ProjectId
+* ProjectName
+* ReportCreationTime
+* RulesViolated
+* ScanComments
+* ScanFinished
+* ScanId
+* ScanProduct
+* ScanRisk
+* ScanRiskSeverity
+* ScanStart
+* ScanTime
+* ScanType
+* SourceOrigin
+* TeamName
 
 
 ## SAST Vulnerability Details
