@@ -34,26 +34,42 @@ using OSA.)
 
 ## SAST Vulnerability Details
 
-* &#9745; Project Name
-* &#9745; Project Id
-* &#9745; Team Name
-* &#9745; Scan ID
-* &#9745; Scan Product
-* &#9745; Scan Type
-* &#9745; Unique Vulnerability ID
-* &#9745; Status
-* &#9745; State
-* &#9745; Query Name
-* &#9745; Severity
-* &#9745; DeepLink
-* &#9745; FileName
-* &#9745; Line
-* &#9745; Column
-* &#9745; Node ID
-* &#9745; Name
-* &#9745; Type
-* &#9745; Length
-* &#9745; Snippet
+* FalsePositive
+* NodeCodeSnippet
+* NodeColumn
+* NodeFileName
+* NodeId
+* NodeLength
+* NodeLine
+* NodeName
+* NodeType
+* PathId
+* ProjectId
+* ProjectName
+* QueryCategories
+* QueryCweId
+* QueryGroup
+* QueryId
+* QueryLanguage
+* QueryName
+* QuerySeverity
+* QueryVersionCode
+* Remark
+* ResultDeepLink
+* ResultId
+* ResultSeverity
+* ScanFinished
+* ScanId
+* ScanProduct
+* ScanType
+* SimilarityId
+* SinkColumn
+* SinkFileName
+* SinkLine
+* State
+* Status
+* TeamName
+* VulnerabilityId
 
 ## OSA Scan Summary
 
