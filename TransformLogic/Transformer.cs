@@ -88,10 +88,10 @@ namespace CxAnalytix.TransformLogic
         public static void ScaReportOutput(ScanDescriptor sd, Transformer inst)
         {
             Dictionary<String, CxScaLicenses.License> licenseIndex =
-            new Dictionary<string, CxScaLicenses.License>();
+                new Dictionary<string, CxScaLicenses.License>();
 
             Dictionary<String, int> licenseCount =
-            new Dictionary<string, int>();
+                new Dictionary<string, int>();
 
             try
             {
@@ -149,6 +149,7 @@ namespace CxAnalytix.TransformLogic
 
                 var header = new SortedDictionary<String, Object>();
                 AddPrimaryKeyElements(sd, header);
+                header.Add(PropertyKeys.KEY_SCANFINISH, sd.FinishedStamp);
 
                 foreach (var vuln in vulns)
                 {
@@ -463,6 +464,7 @@ namespace CxAnalytix.TransformLogic
             reportRec.Add(PropertyKeys.KEY_SCANID, scan.ScanId);
             reportRec.Add(PropertyKeys.KEY_SCANPRODUCT, scan.ScanProduct);
             reportRec.Add(PropertyKeys.KEY_SCANTYPE, scan.ScanType);
+            reportRec.Add(PropertyKeys.KEY_SCANFINISH, scan.FinishedStamp);
 
             SortedDictionary<String, Object> curResultRec = null;
             SortedDictionary<String, Object> curQueryRec = null;
