@@ -32,7 +32,7 @@ namespace CxAnalytix.Out.MongoDBOutput
             _client = new MongoClient(_cfg.ConnectionString);
 
             if (!_client.ListDatabaseNames().ToList().Contains(_cfg.DBName))
-                _log.Warn($"Database {_cfg.DBName} does not exists, it will be created.");
+                _log.Warn($"Database {_cfg.DBName} does not exist, it will be created.");
 
             _db = _client.GetDatabase(_cfg.DBName);
 
@@ -41,7 +41,7 @@ namespace CxAnalytix.Out.MongoDBOutput
             _schemas.Add(Config.Service.SCAScanSummaryRecordName, MongoDBOut.CreateInstance <SCASummarySchema> (_db, Config.Service.SCAScanSummaryRecordName) );
             _schemas.Add(Config.Service.SCAScanDetailRecordName, MongoDBOut.CreateInstance <SCADetailSchema>(_db, Config.Service.SCAScanDetailRecordName) );
             _schemas.Add(Config.Service.ProjectInfoRecordName, MongoDBOut.CreateInstance<ProjectInfoSchema>(_db, Config.Service.ProjectInfoRecordName));
-            //_schemas.Add(Config.Service.PolicyViolationsRecordName, );
+            _schemas.Add(Config.Service.PolicyViolationsRecordName, MongoDBOut.CreateInstance<PolicyViolationsSchema>(_db, Config.Service.PolicyViolationsRecordName));
         }
 
 
@@ -58,7 +58,10 @@ namespace CxAnalytix.Out.MongoDBOutput
                 var dest = _schemas[recordType];
 
                 if (!dest.VerifyOrCreateSchema())
+                {
                     _log.Warn($"Schema for {recordType} could not be verified or created, no data will be output for this record type.");
+                    return new Dummy();
+                }
 
                 return dest;
             }

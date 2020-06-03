@@ -8,7 +8,6 @@ using OSA.)
 
 ## SAST Scan Summary Fields
 
-
 * CxVersion
 * DeepLink
 * FailedLinesOfCode
@@ -78,7 +77,7 @@ using OSA.)
 * VulnerabilityId
 
 
-## SCA Scan Summary
+## SCA/OSA Scan Summary
 
 * HighVulnerabilityLibraries
 * LegalHigh
@@ -105,7 +104,7 @@ using OSA.)
 * VulnerableAndUpdated
 
 
-## SCA Vulnerability Details
+## SCA/OSA Vulnerability Details
 
 * CVEDescription
 * CVEName
@@ -132,46 +131,44 @@ using OSA.)
 * VulnerabilityId
 
 
-
 ## Project Information
 
-* &#9745; Project Id
-* &#9745; Project Name 
-* &#9745; Team Name 
-* &#9745; Preset Name 
-* &#9745; SAST Last Scan Date
-* &#9745; SAST Total Scans
-* &#9745; SCA Last Scan Date *(omitted if OSA is not used)*
-* &#9745; SCA Total Scans *(omitted if OSA is not used)*
-* &#9745; Policies *(M&O is required to support policy assignment)*
+* Policies *(M&O is required to support policy assignment)*
+* Preset
+* ProjectId
+* ProjectName
+* SAST_LastScanDate
+* SAST_Scans
+* SCA_LastScanDate *(omitted if OSA is not used)*
+* SCA_Scans *(omitted if OSA is not used)*
+* TeamName
 
 ## Policy Violations Details
 
 *This record requires M&O to be installed and policies assigned to projects prior to scans.  Scans performed without a policy assigned will not have a policy
 violation record.*
 
-* &#9745; Project Name
-* &#9745; Team Name (added)
-* &#9745; Scan ID
-* &#9745; Scan Product 
-* &#9745; Scan Type
-* &#9745; Policy Id
-* &#9745; Policy Name 
-* &#9745; Rule ID
-* &#9745; Rule Name 
-* &#9745; Rule Description
-* &#9745; Rule Type
-* &#9745; Rule Create Date
-* &#9745; First Violation Detection Date
-* &#9745; Violation Name
-* &#9745; Violation Occurrence Date
-* &#9745; Violation Risk Score
-* &#9745; Violation Severity
-* &#9745; Violation Source
-* &#9745; Violation State
-* &#9745; Violation Status
-* &#9745; Violation Type
-* ~~&#9744; Number of occurrences~~ (removed: the number of occurrences does not make sense because each occurrence can have a different source)
+* FirstViolationDetectionDate
+* PolicyId
+* PolicyName
+* ProjectId
+* ProjectName
+* RuleCreateDate
+* RuleDescription
+* RuleId
+* RuleName
+* RuleType
+* ScanId
+* ScanProduct
+* ScanType
+* TeamName
+* ViolationName
+* ViolationOccurredDate
+* ViolationRiskScore
+* ViolationSeverity
+* ViolationState
+* ViolationStatus
+
 
 
 

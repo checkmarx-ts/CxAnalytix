@@ -18,11 +18,11 @@ namespace CxAnalytix.Out.MongoDBOutput
                 Background = true
             };
 
-            opts.Name = "ProjectName-A+ScanId-D";
+            opts.Name = "ProjectName-A+ScanId-A";
             if (!MongoUtil.IndexExists(Collection, opts.Name))
                 Collection.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys
                     .Ascending(new StringFieldDefinition<BsonDocument, String>("ProjectName"))
-                    .Descending(new StringFieldDefinition<BsonDocument, String>("ScanId"))
+                    .Ascending(new StringFieldDefinition<BsonDocument, String>("ScanId"))
                     , opts));
 
 
