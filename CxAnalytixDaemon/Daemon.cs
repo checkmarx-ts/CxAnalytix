@@ -70,7 +70,7 @@ namespace CxAnalytixDaemon
                     try
                     {
                         Transformer.DoTransform(Config.Service.ConcurrentThreads,
-                            Config.Service.StateDataStoragePath,
+                            Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
                             restCtx, _outFactory, new RecordNames()
                             {
                                 SASTScanSummary = Config.Service.SASTScanSummaryRecordName,

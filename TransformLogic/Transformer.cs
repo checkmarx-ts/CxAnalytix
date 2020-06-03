@@ -40,6 +40,8 @@ namespace CxAnalytix.TransformLogic
 
         ParallelOptions ThreadOpts { get; set; }
 
+        public String InstanceId { get; set; }
+
         public IOutput ProjectInfoOut { get; internal set; }
         public IOutput SastScanSummaryOut { get; internal set; }
         public IOutput SastScanDetailOut { get; internal set; }
@@ -148,7 +150,7 @@ namespace CxAnalytix.TransformLogic
                     inst.CancelToken, sd.ScanId);
 
                 var header = new SortedDictionary<String, Object>();
-                AddPrimaryKeyElements(sd, header);
+                inst.AddPrimaryKeyElements(sd, header);
                 header.Add(PropertyKeys.KEY_SCANFINISH, sd.FinishedStamp);
 
                 foreach (var vuln in vulns)
@@ -209,7 +211,7 @@ namespace CxAnalytix.TransformLogic
         private static void OutputScaScanSummary(ScanDescriptor sd, Transformer inst, Dictionary<string, int> licenseCount)
         {
             var flat = new SortedDictionary<String, Object>();
-            AddPrimaryKeyElements(sd, flat);
+            inst.AddPrimaryKeyElements(sd, flat);
             AddPolicyViolationProperties(sd, flat);
             flat.Add(PropertyKeys.KEY_SCANID, sd.ScanId);
             flat.Add(PropertyKeys.KEY_SCANSTART, inst.ScaScanCache[sd.ScanId].StartTime);
@@ -394,7 +396,7 @@ namespace CxAnalytix.TransformLogic
         /// the IOutputFactory to create the correct output implementation instance.</param>
         /// <param name="token">A cancellation token that can be used to stop processing of data if
         /// the task needs to be interrupted.</param>
-        public static void DoTransform(int concurrentThreads, String previousStatePath,
+        public static void DoTransform(int concurrentThreads, String previousStatePath, String instanceId,
         CxRestContext ctx, IOutputFactory outFactory, RecordNames records, CancellationToken token)
         {
 
@@ -410,7 +412,8 @@ namespace CxAnalytix.TransformLogic
                 SastScanDetailOut = outFactory.newInstance(records.SASTScanDetail),
                 PolicyViolationDetailOut = outFactory.newInstance(records.PolicyViolations),
                 ScaScanSummaryOut = outFactory.newInstance(records.SCAScanSummary),
-                ScaScanDetailOut = outFactory.newInstance(records.SCAScanDetail)
+                ScaScanDetailOut = outFactory.newInstance(records.SCAScanDetail),
+                InstanceId = instanceId
 
             };
 
@@ -710,11 +713,13 @@ namespace CxAnalytix.TransformLogic
 
         }
 
-        private static void AddPrimaryKeyElements(ScanDescriptor rec, IDictionary<String, Object> flat)
+        private void AddPrimaryKeyElements(ScanDescriptor rec, IDictionary<String, Object> flat)
         {
             flat.Add(PropertyKeys.KEY_PROJECTID, rec.Project.ProjectId);
             flat.Add(PropertyKeys.KEY_PROJECTNAME, rec.Project.ProjectName);
             flat.Add(PropertyKeys.KEY_TEAMNAME, rec.Project.TeamName);
+            if (!String.IsNullOrEmpty(InstanceId))
+                flat.Add(PropertyKeys.KEY_INSTANCEID, InstanceId);
         }
 
         private static String GetFlatPolicyNames(PolicyCollection policies,

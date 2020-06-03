@@ -14,6 +14,7 @@ using OSA.)
 * FileCount
 * Information
 * Initiator
+* InstanceId *(Only included if an instance id is configured)*
 * Languages
 * LinesOfCode
 * Low
@@ -40,6 +41,7 @@ using OSA.)
 ## SAST Vulnerability Details
 
 * FalsePositive
+* InstanceId *(Only included if an instance id is configured)*
 * NodeCodeSnippet
 * NodeColumn
 * NodeFileName
@@ -80,6 +82,7 @@ using OSA.)
 ## SCA/OSA Scan Summary
 
 * HighVulnerabilityLibraries
+* InstanceId *(Only included if an instance id is configured)*
 * LegalHigh
 * LegalLow
 * LegalMedium
@@ -111,6 +114,7 @@ using OSA.)
 * CVEPubDate
 * CVEScore
 * CVEUrl
+* InstanceId *(Only included if an instance id is configured)*
 * LibraryId
 * LibraryLatestReleaseDate
 * LibraryLatestVersion
@@ -133,6 +137,7 @@ using OSA.)
 
 ## Project Information
 
+* InstanceId *(Only included if an instance id is configured)*
 * Policies *(M&O is required to support policy assignment)*
 * Preset
 * ProjectId
@@ -149,6 +154,7 @@ using OSA.)
 violation record.*
 
 * FirstViolationDetectionDate
+* InstanceId *(Only included if an instance id is configured)*
 * PolicyId
 * PolicyName
 * ProjectId
