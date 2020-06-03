@@ -77,6 +77,7 @@ using OSA.)
 * TeamName
 * VulnerabilityId
 
+
 ## SCA Scan Summary
 
 * HighVulnerabilityLibraries
@@ -104,58 +105,33 @@ using OSA.)
 * VulnerableAndUpdated
 
 
-* &#9745; Project Id
-* &#9745; Project Name
-* &#9745; Team Name
-* &#9745; Scan ID 
-* &#9745; Scan Start
-* &#9745; Scan End
-* &#9745; Number of policies violated 
-* &#9745; Number of rules violated 
-* &#9745; Total policy violations 
-* &#9745; HighVulnerabilityLibraries
-* &#9745; MediumVulnerabilityLibraries
-* &#9745; LowVulnerabilityLibraries
-* &#9745; NonVulnerableLibraries
-* &#9745; TotalLibraries
-* &#9745; TotalHighVulnerabilities
-* &#9745; TotalMediumVulnerabilities
-* &#9745; TotalLowVulnerabilities
-* &#9745; VulnerabilityScore
-* &#9745; VulnerableAndOutdated
-* &#9745; VulnerableAndUpdated
-* &#9745; Legal High
-* &#9745; Legal Medium
-* &#9745; Legal Low
-* &#9745; Legal Unknown
-* ~~&#9744; Number of Open Source Detected~~ (removed, all libraries are open source, proprietary/commercial libraries are not recognized)
-* ~~&#9744; Number of Unrecognized~~ (removed, this may be "Legal Unknown")
+## SCA Vulnerability Details
+
+* CVEDescription
+* CVEName
+* CVEPubDate
+* CVEScore
+* CVEUrl
+* LibraryId
+* LibraryLatestReleaseDate
+* LibraryLatestVersion
+* LibraryLegalRisk_{License & Version} *(Field name is dynamically generated)*
+* LibraryLicenses
+* LibraryName
+* LibraryReleaseDate
+* LibraryVersion
+* ProjectId
+* ProjectName
+* Recommendation
+* ScanFinished
+* ScanId
+* ScanRiskSeverity
+* SimilarityId
+* State
+* TeamName
+* VulnerabilityId
 
 
-## OSA Vulnerability Details
-
-* &#9745; Project Id
-* &#9745; Project Name
-* &#9745; Team Name
-* &#9745; Scan ID 
-* &#9745; Vulnerability ID 
-* &#9745; Similarity ID 
-* &#9745; CVE Name 
-* &#9745; CVE Description 
-* &#9745; CVE URL 
-* &#9745; CVE Publish Date 
-* &#9745; CVE Score 
-* &#9745; Recommendation 
-* &#9745; Severity 
-* &#9745; State 
-* &#9745; Library ID
-* &#9745; Library Name 
-* &#9745; Library Current Version 
-* &#9745; Library Current Version Release Date 
-* &#9745; Library Newest Version 
-* &#9745; Library Newest Version Release Date 
-* &#9745; Legal License 
-* &#9745; LegalRisk (repeated for each license)
 
 ## Project Information
 

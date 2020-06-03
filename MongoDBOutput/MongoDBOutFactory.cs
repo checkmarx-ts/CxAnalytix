@@ -36,10 +36,10 @@ namespace CxAnalytix.Out.MongoDBOutput
 
             _db = _client.GetDatabase(_cfg.DBName);
 
-            _schemas.Add(Config.Service.SASTScanDetailRecordName, new SastDetailSchema());
-            _schemas.Add(Config.Service.SASTScanSummaryRecordName, new SastSummarySchema());
-            _schemas.Add(Config.Service.SCAScanSummaryRecordName, new SCASummarySchema () );
-            //_schemas.Add(Config.Service.SCAScanDetailRecordName, );
+            _schemas.Add(Config.Service.SASTScanDetailRecordName, MongoDBOut.CreateInstance<SastDetailSchema>(_db, Config.Service.SASTScanDetailRecordName) );
+            _schemas.Add(Config.Service.SASTScanSummaryRecordName, MongoDBOut.CreateInstance<SastSummarySchema>(_db, Config.Service.SASTScanSummaryRecordName) );
+            _schemas.Add(Config.Service.SCAScanSummaryRecordName, MongoDBOut.CreateInstance <SCASummarySchema> (_db, Config.Service.SCAScanSummaryRecordName) );
+            _schemas.Add(Config.Service.SCAScanDetailRecordName, MongoDBOut.CreateInstance <SCADetailSchema>(_db, Config.Service.SCAScanDetailRecordName) );
             //_schemas.Add(Config.Service.ProjectInfoRecordName, );
             //_schemas.Add(Config.Service.PolicyViolationsRecordName, );
         }
@@ -57,7 +57,7 @@ namespace CxAnalytix.Out.MongoDBOutput
             {
                 var dest = _schemas[recordType];
 
-                if (!dest.VerifyOrCreateSchema(_db, recordType))
+                if (!dest.VerifyOrCreateSchema())
                     _log.Warn($"Schema for {recordType} could not be verified or created, no data will be output for this record type.");
 
                 return dest;

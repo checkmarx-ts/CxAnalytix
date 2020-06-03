@@ -1,10 +1,10 @@
-﻿using CxAnalytix.TransformLogic;
-using System;
+﻿using System;
+using CxAnalytix.TransformLogic;
 using System.Collections.Generic;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using CxAnalytix.Configuration;
 using log4net;
+
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
@@ -12,7 +12,21 @@ namespace CxAnalytix.Out.MongoDBOutput
     {
         private static ILog _log = LogManager.GetLogger(typeof(MongoDBOut));
 
-        protected abstract IMongoCollection<BsonDocument> GetCollection();
+        protected IMongoCollection<BsonDocument> Collection { get; private set; }
+        protected IMongoDatabase DB { get; private set; }
+
+
+        protected MongoDBOut ()
+        { }
+
+        public static T CreateInstance<T>(IMongoDatabase db, String collectionName) where T : MongoDBOut, new()
+        {
+            T retVal = new T();
+            retVal.DB = db;
+            retVal.Collection = MongoUtil.MakeCollection(db, collectionName);
+
+            return retVal;
+        }
 
         private BsonDocument BsonSerialize (IDictionary<string, object> record)
         {
@@ -26,7 +40,7 @@ namespace CxAnalytix.Out.MongoDBOutput
 
         public void write(IDictionary<string, object> record)
         {
-            GetCollection ().InsertOne(BsonSerialize(record));
+            Collection.InsertOne(BsonSerialize(record));
         }
     }
 }

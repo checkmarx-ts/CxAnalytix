@@ -8,6 +8,6 @@ namespace CxAnalytix.Out.MongoDBOutput
 {
     internal interface ISchema : IOutput
     {
-        bool VerifyOrCreateSchema(IMongoDatabase db, String collectionName);
+        bool VerifyOrCreateSchema();
     }
 }
