@@ -304,7 +304,10 @@ namespace CxAnalytix.TransformLogic
                     }
                 }
 
-                pr.AddProject(p.TeamId, p.PresetId, p.ProjectId, p.ProjectName, combinedPolicyNames);
+                var cfDict = new SortedDictionary<String, String>();
+                p.CustomFields.ForEach((cf) => cfDict.Add (cf.FieldName, cf.FieldValue) );
+
+                pr.AddProject(p.TeamId, p.PresetId, p.ProjectId, p.ProjectName, combinedPolicyNames, cfDict);
             }
 
             // Resolve projects to get the scan resolver.
@@ -708,6 +711,9 @@ namespace CxAnalytix.TransformLogic
             foreach (var scanCountProduct in scanRecord.Project.ScanCountByProduct.Keys)
                 flat.Add($"{scanCountProduct}_Scans",
                     scanRecord.Project.ScanCountByProduct[scanCountProduct]);
+
+            if (scanRecord.Project.CustomFields != null && scanRecord.Project.CustomFields.Count > 0)
+                flat.Add(PropertyKeys.KEY_CUSTOMFIELDS, scanRecord.Project.CustomFields);
 
             ProjectInfoOut.write(flat);
 

@@ -28,8 +28,14 @@ namespace CxAnalytix.TransformLogic.Data
             Policies = src.Policies;
             ScanCountByProduct = src.ScanCountByProduct;
             LatestScanDateByProduct = src.LatestScanDateByProduct;
+            CustomFields = src.CustomFields;
         }
 
+        /// <summary>
+        /// Custom fields assigned to the project.
+        /// </summary>
+        [JsonIgnore]
+        public IDictionary<String, String> CustomFields { get; set; }
         /// <summary>
         /// The project id as it is stored in the SAST system.
         /// </summary>

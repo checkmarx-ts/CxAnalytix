@@ -137,6 +137,7 @@ using OSA.)
 
 ## Project Information
 
+* CustomFields *(Only included if custom fields are defined for the project.  Structure is dynamically generated using custom field name/value elements.)*
 * InstanceId *(Only included if an instance id is configured)*
 * Policies *(M&O is required to support policy assignment)*
 * Preset
