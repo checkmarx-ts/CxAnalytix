@@ -4,7 +4,6 @@ using log4net;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
@@ -28,20 +27,29 @@ namespace CxAnalytix.Out.MongoDBOutput
 
         static MongoDBOutFactory()
         {
-            _cfg = Config.GetConfig<MongoOutConfig>(MongoOutConfig.SECTION_NAME);
-            _client = new MongoClient(_cfg.ConnectionString);
+            try
+            {
+                _cfg = Config.GetConfig<MongoOutConfig>(MongoOutConfig.SECTION_NAME);
+                var mu = new MongoUrl(_cfg.ConnectionString);
+                _client = new MongoClient(mu);
 
-            if (!_client.ListDatabaseNames().ToList().Contains(_cfg.DBName))
-                _log.Warn($"Database {_cfg.DBName} does not exist, it will be created.");
 
-            _db = _client.GetDatabase(_cfg.DBName);
+                if (!_client.ListDatabaseNames().ToList().Contains(mu.DatabaseName))
+                    _log.Warn($"Database {mu.DatabaseName} does not exist, it will be created.");
+                
+                _db = _client.GetDatabase(mu.DatabaseName);
 
-            _schemas.Add(Config.Service.SASTScanDetailRecordName, MongoDBOut.CreateInstance<SastDetailSchema>(_db, Config.Service.SASTScanDetailRecordName) );
-            _schemas.Add(Config.Service.SASTScanSummaryRecordName, MongoDBOut.CreateInstance<SastSummarySchema>(_db, Config.Service.SASTScanSummaryRecordName) );
-            _schemas.Add(Config.Service.SCAScanSummaryRecordName, MongoDBOut.CreateInstance <SCASummarySchema> (_db, Config.Service.SCAScanSummaryRecordName) );
-            _schemas.Add(Config.Service.SCAScanDetailRecordName, MongoDBOut.CreateInstance <SCADetailSchema>(_db, Config.Service.SCAScanDetailRecordName) );
-            _schemas.Add(Config.Service.ProjectInfoRecordName, MongoDBOut.CreateInstance<ProjectInfoSchema>(_db, Config.Service.ProjectInfoRecordName));
-            _schemas.Add(Config.Service.PolicyViolationsRecordName, MongoDBOut.CreateInstance<PolicyViolationsSchema>(_db, Config.Service.PolicyViolationsRecordName));
+                _schemas.Add(Config.Service.SASTScanDetailRecordName, MongoDBOut.CreateInstance<SastDetailSchema>(_db, Config.Service.SASTScanDetailRecordName));
+                _schemas.Add(Config.Service.SASTScanSummaryRecordName, MongoDBOut.CreateInstance<SastSummarySchema>(_db, Config.Service.SASTScanSummaryRecordName));
+                _schemas.Add(Config.Service.SCAScanSummaryRecordName, MongoDBOut.CreateInstance<SCASummarySchema>(_db, Config.Service.SCAScanSummaryRecordName));
+                _schemas.Add(Config.Service.SCAScanDetailRecordName, MongoDBOut.CreateInstance<SCADetailSchema>(_db, Config.Service.SCAScanDetailRecordName));
+                _schemas.Add(Config.Service.ProjectInfoRecordName, MongoDBOut.CreateInstance<ProjectInfoSchema>(_db, Config.Service.ProjectInfoRecordName));
+                _schemas.Add(Config.Service.PolicyViolationsRecordName, MongoDBOut.CreateInstance<PolicyViolationsSchema>(_db, Config.Service.PolicyViolationsRecordName));
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Error initializing database connectivity.", ex);
+            }
         }
 
 
