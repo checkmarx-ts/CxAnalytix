@@ -40,7 +40,7 @@ namespace CxAnalytix.Out.MongoDBOutput
             _schemas.Add(Config.Service.SASTScanSummaryRecordName, MongoDBOut.CreateInstance<SastSummarySchema>(_db, Config.Service.SASTScanSummaryRecordName) );
             _schemas.Add(Config.Service.SCAScanSummaryRecordName, MongoDBOut.CreateInstance <SCASummarySchema> (_db, Config.Service.SCAScanSummaryRecordName) );
             _schemas.Add(Config.Service.SCAScanDetailRecordName, MongoDBOut.CreateInstance <SCADetailSchema>(_db, Config.Service.SCAScanDetailRecordName) );
-            //_schemas.Add(Config.Service.ProjectInfoRecordName, );
+            _schemas.Add(Config.Service.ProjectInfoRecordName, MongoDBOut.CreateInstance<ProjectInfoSchema>(_db, Config.Service.ProjectInfoRecordName));
             //_schemas.Add(Config.Service.PolicyViolationsRecordName, );
         }
 

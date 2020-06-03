@@ -5,9 +5,9 @@ using System;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
-    internal class SCADetailSchema : MongoDBOut, ISchema
+    internal class ProjectInfoSchema : MongoDBOut, ISchema
     {
-        private static ILog _log = LogManager.GetLogger(typeof(SCADetailSchema));
+        private static ILog _log = LogManager.GetLogger(typeof(ProjectInfoSchema));
 
         public bool VerifyOrCreateSchema()
         {
@@ -17,29 +17,27 @@ namespace CxAnalytix.Out.MongoDBOutput
                 Background = true
             };
 
-            opts.Name = "ProjectName-A+ScanId-A";
+            opts.Name = "ProjectName-A";
             if (!MongoUtil.IndexExists(Collection, opts.Name))
                 Collection.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys
                     .Ascending(new StringFieldDefinition<BsonDocument, String>("ProjectName"))
-                    .Ascending(new StringFieldDefinition<BsonDocument, String>("ScanId"))
                     , opts));
 
-            opts.Name = "LibraryName-A+LibraryVersion-A";
+            opts.Name = "SAST_LastScanDate-A";
             if (!MongoUtil.IndexExists(Collection, opts.Name))
                 Collection.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys
-                    .Ascending(new StringFieldDefinition<BsonDocument, String>("LibraryName"))
-                    .Ascending(new StringFieldDefinition<BsonDocument, String>("LibraryVersion"))
+                    .Ascending(new StringFieldDefinition<BsonDocument, DateTime>("SAST_LastScanDate"))
                     , opts));
 
-
-            opts.Name = "ScanFinished-A";
+            opts.Name = "SCA_LastScanDate-A";
             if (!MongoUtil.IndexExists(Collection, opts.Name))
                 Collection.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(Builders<BsonDocument>.IndexKeys
-                    .Ascending(new StringFieldDefinition<BsonDocument, DateTime>("ScanFinished"))
+                    .Ascending(new StringFieldDefinition<BsonDocument, DateTime>("SCA_LastScanDate"))
                     , opts));
 
 
             return true;
         }
+
     }
 }
