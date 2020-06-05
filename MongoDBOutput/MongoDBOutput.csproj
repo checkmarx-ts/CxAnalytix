@@ -14,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Configuration\Configuration.csproj" />
+    <ProjectReference Include="..\Extensions\Extensions.csproj" />
     <ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
   </ItemGroup>
 

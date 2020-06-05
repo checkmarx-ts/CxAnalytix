@@ -46,12 +46,23 @@ namespace CxAnalytix.Out.MongoDBOutput
                 
                 _db = _client.GetDatabase(mu.DatabaseName);
 
-                _schemas.Add(Config.Service.SASTScanDetailRecordName, MongoDBOut.CreateInstance<SastDetailSchema>(_db, Config.Service.SASTScanDetailRecordName));
-                _schemas.Add(Config.Service.SASTScanSummaryRecordName, MongoDBOut.CreateInstance<SastSummarySchema>(_db, Config.Service.SASTScanSummaryRecordName));
-                _schemas.Add(Config.Service.SCAScanSummaryRecordName, MongoDBOut.CreateInstance<SCASummarySchema>(_db, Config.Service.SCAScanSummaryRecordName));
-                _schemas.Add(Config.Service.SCAScanDetailRecordName, MongoDBOut.CreateInstance<SCADetailSchema>(_db, Config.Service.SCAScanDetailRecordName));
-                _schemas.Add(Config.Service.ProjectInfoRecordName, MongoDBOut.CreateInstance<ProjectInfoSchema>(_db, Config.Service.ProjectInfoRecordName));
-                _schemas.Add(Config.Service.PolicyViolationsRecordName, MongoDBOut.CreateInstance<PolicyViolationsSchema>(_db, Config.Service.PolicyViolationsRecordName));
+                _schemas.Add(Config.Service.SASTScanDetailRecordName, 
+                    MongoDBOut.CreateInstance<SastDetailSchema>(_db, Config.Service.SASTScanDetailRecordName, _cfg.ShardKeys[Config.Service.SASTScanDetailRecordName] ));
+
+                _schemas.Add(Config.Service.SASTScanSummaryRecordName, MongoDBOut.CreateInstance<SastSummarySchema>(_db, Config.Service.SASTScanSummaryRecordName,
+                    _cfg.ShardKeys[Config.Service.SASTScanSummaryRecordName] ));
+
+                _schemas.Add(Config.Service.SCAScanSummaryRecordName, MongoDBOut.CreateInstance<SCASummarySchema>(_db, Config.Service.SCAScanSummaryRecordName,
+                    _cfg.ShardKeys[Config.Service.SCAScanSummaryRecordName] ));
+
+                _schemas.Add(Config.Service.SCAScanDetailRecordName, MongoDBOut.CreateInstance<SCADetailSchema>(_db, Config.Service.SCAScanDetailRecordName,
+                    _cfg.ShardKeys[Config.Service.SCAScanDetailRecordName]));
+
+                _schemas.Add(Config.Service.ProjectInfoRecordName, MongoDBOut.CreateInstance<ProjectInfoSchema>(_db, Config.Service.ProjectInfoRecordName,
+                    _cfg.ShardKeys[Config.Service.ProjectInfoRecordName]));
+
+                _schemas.Add(Config.Service.PolicyViolationsRecordName, MongoDBOut.CreateInstance<PolicyViolationsSchema>(_db, Config.Service.PolicyViolationsRecordName,
+                    _cfg.ShardKeys[Config.Service.PolicyViolationsRecordName]));
             }
             catch (Exception ex)
             {
