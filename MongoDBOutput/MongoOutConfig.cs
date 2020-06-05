@@ -18,5 +18,25 @@ namespace CxAnalytix.Out.MongoDBOutput
                 this["ConnectionString"] = value;
             }
         }
+
+
+        [ConfigurationProperty("GeneratedShardKeys", IsDefaultCollection = false, IsRequired = false)]
+        [ConfigurationCollection(typeof(ShardKeySpecConfig),
+            AddItemName = "add",
+            ClearItemsName = "clear",
+            RemoveItemName = "remove")]
+        public ShardKeySpecConfig ShardKeys
+        {
+            get
+            {
+                return (ShardKeySpecConfig)base["GeneratedShardKeys"];
+            }
+
+            set
+            {
+                base["GeneratedShardKeys"] = value;
+            }
+        }
+
     }
 }

@@ -30,6 +30,13 @@ namespace CxAnalytix.Out.MongoDBOutput
             try
             {
                 _cfg = Config.GetConfig<MongoOutConfig>(MongoOutConfig.SECTION_NAME);
+
+                foreach (var spec in _cfg.ShardKeys)
+                    _log.DebugFormat("Shard Key: {0}", spec);
+
+                if (_cfg.ShardKeys.Count > 0)
+                    _log.InfoFormat ("{0} calculated shard keys have been defined.", _cfg.ShardKeys.Count);
+
                 var mu = new MongoUrl(_cfg.ConnectionString);
                 _client = new MongoClient(mu);
 
