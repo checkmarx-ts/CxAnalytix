@@ -22,9 +22,7 @@ namespace CxAnalytix.Out.MongoDBOutput
 
         [ConfigurationProperty("GeneratedShardKeys", IsDefaultCollection = false, IsRequired = false)]
         [ConfigurationCollection(typeof(ShardKeySpecConfig),
-            AddItemName = "add",
-            ClearItemsName = "clear",
-            RemoveItemName = "remove")]
+            AddItemName = "Spec")]
         public ShardKeySpecConfig ShardKeys
         {
             get
