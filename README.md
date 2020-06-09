@@ -8,6 +8,8 @@ platform for analysis.  Analysis can be performed on the data alone or in aggreg
 
 Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki) for information related to obtaining, installing, and configuring CxAnalytix.
 
+The fields available in generated documents can be found in the [specification](SPEC.md).
+
 
 ## Currently Supported Outputs
 
