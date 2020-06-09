@@ -20,6 +20,20 @@ namespace CxAnalytix.Out.Log4NetOutput
         private static CancellationTokenSource _token;
         private static Task _task = null;
 
+        private static readonly String DATE_FORMAT = "yyyy-MM-ddTHH:mm:ss.fffzzz";
+
+        private JsonSerializerSettings _serSettings = new JsonSerializerSettings()
+        {
+            DateFormatString = DATE_FORMAT,
+            NullValueHandling = NullValueHandling.Ignore,
+            StringEscapeHandling = StringEscapeHandling.EscapeHtml,
+            Converters = new List<JsonConverter>()
+            {
+                new PrimitiveJsonConverter ()
+            }
+
+        };
+
 
         static LoggerOut ()
         {
@@ -64,7 +78,7 @@ namespace CxAnalytix.Out.Log4NetOutput
             _log.DebugFormat("Created LoggerOut with record type {0}", recordType);
         }
 
-        public void write(IDictionary<string, string> record)
+        public void write(IDictionary<string, object> record)
         {
             _log.DebugFormat("Logger for record type [{0}] writing record with {1} elements.", _recordType, record.Keys.Count);
             if (_recordLog == null)
@@ -73,7 +87,7 @@ namespace CxAnalytix.Out.Log4NetOutput
                 return;
             }
 
-            _recordLog.Info(JsonConvert.SerializeObject (record));
+            _recordLog.Info(JsonConvert.SerializeObject (record, _serSettings));
         }
     }
 }

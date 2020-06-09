@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using CxAnalytix.TransformLogic.Data;
+using CxRestClient;
 
 namespace CxAnalytix.TransformLogic
 {

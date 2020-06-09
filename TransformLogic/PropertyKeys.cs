@@ -21,5 +21,7 @@ namespace CxAnalytix.TransformLogic
         public static readonly String KEY_PROJECTNAME = "ProjectName";
         public static readonly String KEY_TEAMNAME = "TeamName";
         public static readonly String KEY_SIMILARITYID = "SimilarityId";
+        public static readonly String KEY_INSTANCEID = "InstanceId";
+        public static readonly String KEY_CUSTOMFIELDS = "CustomFields";
     }
 }

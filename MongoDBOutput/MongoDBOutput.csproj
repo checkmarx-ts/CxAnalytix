@@ -2,18 +2,19 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
-    <RootNamespace>CxAnalytix.Out.Log4NetOutput</RootNamespace>
+    <RootNamespace>CxAnalytix.Out.MongoDBOutput</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.8" />
-    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.3" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="MongoDB.Bson" Version="2.10.4" />
+    <PackageReference Include="MongoDB.Driver" Version="2.10.4" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.10.4" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Configuration\Configuration.csproj" />
-    <ProjectReference Include="..\LogCleaner\LogCleaner.csproj" />
+    <ProjectReference Include="..\Extensions\Extensions.csproj" />
     <ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
   </ItemGroup>
 

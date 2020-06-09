@@ -1,4 +1,5 @@
-﻿using NUnit.Framework;
+﻿using CxRestClient;
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -62,11 +63,11 @@ namespace Test.TransformerLogic.ScanResolver
 
         private void populateProjectResolver (CxAnalytix.TransformLogic.ProjectResolver pr)
         {
-            pr.AddProject(Team1, 1, 1, "\\Team1\\ProjectId1", "");
-            pr.AddProject(Team1, 1, 2, "\\Team1\\ProjectId2", "");
+            pr.AddProject(Team1, 1, 1, "\\Team1\\ProjectId1", "", new Dictionary<String, String>());
+            pr.AddProject(Team1, 1, 2, "\\Team1\\ProjectId2", "", new Dictionary<String, String>());
 
-            pr.AddProject(Team2, 1, 3, "\\Team2\\ProjectId3", "");
-            pr.AddProject(Team2, 2, 4, "\\Team2\\ProjectId4", "");
+            pr.AddProject(Team2, 1, 3, "\\Team2\\ProjectId3", "", new Dictionary<String, String>());
+            pr.AddProject(Team2, 2, 4, "\\Team2\\ProjectId4", "", new Dictionary<String, String>());
 
         }
 

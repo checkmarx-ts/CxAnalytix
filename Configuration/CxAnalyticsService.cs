@@ -14,6 +14,14 @@ namespace CxAnalytix.Configuration
 
         public static readonly String SECTION_NAME = "CxAnalyticsService";
 
+        [ConfigurationProperty("InstanceId", IsRequired = false)]
+        public String InstanceIdentifier
+        {
+            get => (String)this["InstanceId"];
+            set { this["InstanceId"] = value; }
+        }
+
+
         [ConfigurationProperty("ConcurrentThreads", IsRequired = true)]
         public int ConcurrentThreads
         {
