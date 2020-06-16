@@ -35,6 +35,7 @@ elseif (Get-Command "docker.exe" -ErrorAction SilentlyContinue)
 		New-Item -Path $OutLoc -Type "dir" | Out-Null
 	}
 	
+	docker pull mcr.microsoft.com/dotnet/core/sdk
 	docker run --mount type=bind,src=${OutLoc},target=/artifacts --mount type=bind,src=${pwd},target=/mnt -it mcr.microsoft.com/dotnet/core/sdk bash -c "cd /mnt && dotnet publish CxAnalytix.sln -o /artifacts -c ${BuildConfig}"
 	
 	
