@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CxAnalytix.Configuration
 {
-    public sealed class CxAnalyticsService : ConfigurationSection
+    public sealed class CxAnalyticsService : EnvAwareConfigurationSection
     {
         internal CxAnalyticsService ()
         {
