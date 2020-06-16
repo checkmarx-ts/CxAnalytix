@@ -58,6 +58,6 @@ Include information on how to get support. Consider adding:
 
 ## License
 
-Project Lisense can be found [here](LICENSE)
+Project License can be found [here](LICENSE)
 
 
