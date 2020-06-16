@@ -6,10 +6,6 @@ platform for analysis.  Analysis can be performed on the data alone or in aggreg
 
 The fields available in generated documents can be found in the [specification](SPEC.md).
 
-## Description
-
-Details description of the solution and usage overview.
-
 ## Getting Started
 
 ### Dependencies
@@ -57,6 +53,7 @@ We appreciate feedback and contribution to this repo! Before you get started, pl
 Include information on how to get support. Consider adding:
 
 - Use [Issues](https://github.com/checkmarx-ts/CxAnalytix/issues) for code-level support
+- For installation assistance, schedule time with the Checkmarx Professional Services team
 
 
 ## License
