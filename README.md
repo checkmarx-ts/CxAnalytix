@@ -19,7 +19,7 @@ CxAnalytix is built on .Net Core and is therefore capable of running on Windows 
 There are several installation variations:
 
 * A Windows service
-* A Linux daemin
+* A Linux daemon
 * A command line executable
 
 ### Installation
