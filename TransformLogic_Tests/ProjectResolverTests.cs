@@ -16,8 +16,8 @@ namespace Test.TransformerLogic.ProjectResolver
                 { "dummy", (d, t) => {} }
         };
 
-        Guid Team1 = Guid.NewGuid();
-        Guid Team2 = Guid.NewGuid();
+        String Team1 = "1";
+        String Team2 = "2";
 
         [SetUp]
         public void SetupTest ()
@@ -68,13 +68,13 @@ namespace Test.TransformerLogic.ProjectResolver
         [Test]
         public void CantAddProjectWithMissingTeam()
         {
-            Assert.False(pr.AddProject(Guid.NewGuid(), 1, 1, "Foo", "", new Dictionary<String, String>()));
+            Assert.False(pr.AddProject(Guid.NewGuid().ToString(), 1, 1, "Foo", "", new Dictionary<String, String>()));
         }
 
         [Test]
         public void CantAddProjectWithEmptyTeamGuid()
         {
-            Assert.False(pr.AddProject(Guid.Empty, 1, 1, "Foo", "", new Dictionary<String, String>()));
+            Assert.False(pr.AddProject(Guid.Empty.ToString(), 1, 1, "Foo", "", new Dictionary<String, String>()));
         }
 
         [Test]
