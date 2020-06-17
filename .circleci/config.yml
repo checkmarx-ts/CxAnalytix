@@ -22,9 +22,13 @@ jobs:
       - run: set
       - run:
           name: Get Version from Tag
-          command: export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
+          command: |
+            echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g'
+            export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
+            echo ${VERSION}
+
       - run: set
-      - run: echo ${CIRCLE_BRANCH}
+      - run: echo ${CIRCLE_TAG}
       - run: echo ${VERSION}
       - run:
           name: Dotnet publish
