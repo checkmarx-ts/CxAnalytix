@@ -19,17 +19,13 @@ jobs:
       - image: mcr.microsoft.com/dotnet/core/sdk
     steps:
       - checkout
-      - run: set
       - run:
           name: Build & Package
           command: |
-            echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g'
             export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
-            echo ${VERSION}
             dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts
-            ls -lR artifacts
             mkdir tmp
-            tar -czf tmp/CxAnalytix-${VERSION}-${CIRCLE_BUILD_NUM}.tar.gz -C artifacts/Release .
+            tar -czf tmp/CxAnalytix-${VERSION}-${CIRCLE_BUILD_NUM}.tar.gz -C artifacts .
       - store_artifacts:
           path: tmp
 workflows:
