@@ -13,19 +13,21 @@ jobs:
       - image: mcr.microsoft.com/dotnet/core/sdk
     steps:
       - checkout
-      - run: dotnet build --version-suffix $CIRCLE_BUILD_NUM -c Release -o artifacts
+      - run: dotnet build --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts
   package:
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk
     steps:
       - checkout
+      - run: set
       - run:
           name: Build & package
           command: |
-            export VERSION=$(echo $CIRCLE_TAG | sed -E 's/v(.+)/\1/g')
-            dotnet publish -p:VersionPrefix=$VERSION --version-suffix $CIRCLE_BUILD_NUM -c Release -o artifacts
+            export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
+            dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts
             mkdir tmp
-            tar -czf tmp/CxAnalytix-$VERSION-$CIRCLE_BUILD_NUM.tar.gz -C artifacts/Release .
+            tar -czf tmp/CxAnalytix-${VERSION}-${CIRCLE_BUILD_NUM}.tar.gz -C artifacts/Release .
+      - run: set
       - store_artifacts:
           path: tmp
 workflows:
