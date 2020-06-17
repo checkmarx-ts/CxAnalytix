@@ -16,8 +16,8 @@ workflows:
   version: 2
   ci:
     jobs:
-      - unit-test
-      - publish:
-          requires:
-            - unit-test
+      # - unit-test
+      - publish
+          # requires:
+          #   - unit-test
 
