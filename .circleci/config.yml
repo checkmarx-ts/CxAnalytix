@@ -1,6 +1,6 @@
 version: 2.1
 jobs:
-  unit-test:
+  test:
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk
     steps:
@@ -12,5 +12,5 @@ jobs:
       - image: mcr.microsoft.com/dotnet/core/sdk
     steps:
       - checkout
-      - run: dotnet publish .\CxAnalytix.sln -c Release -o artifacts
+      - run: dotnet publish CxAnalytix.sln -c Release -o artifacts
       
