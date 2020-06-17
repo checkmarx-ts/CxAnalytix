@@ -21,21 +21,12 @@ jobs:
       - checkout
       - run: set
       - run:
-          name: Get Version from Tag
+          name: Build & Package
           command: |
             echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g'
             export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
             echo ${VERSION}
-
-      - run: set
-      - run: echo ${CIRCLE_TAG}
-      - run: echo ${VERSION}
-      - run:
-          name: Dotnet publish
-          command: dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts
-      - run:
-          name: Tarball
-          command: |
+            dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts
             mkdir tmp
             tar -czf tmp/CxAnalytix-${VERSION}-${CIRCLE_BUILD_NUM}.tar.gz -C artifacts/Release .
       - store_artifacts:
