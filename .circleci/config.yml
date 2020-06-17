@@ -5,14 +5,13 @@ jobs:
       - image: mcr.microsoft.com/dotnet/core/sdk:2.1
     steps:
       - checkout
-      - run: set
-      - run: dotnet test CxAnalytix.sln
+      - run: dotnet test -v q -l "console;verbosity=detailed"
   publish:
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk
     steps:
       - checkout
-      - run: dotnet publish -c Release -o artifacts
+      - run: dotnet publish --version-suffix $CIRCLE_BUILD_NUM -c Release -o artifacts
 workflows:
   version: 2
   ci:
