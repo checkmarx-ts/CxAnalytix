@@ -176,7 +176,7 @@ namespace CxAnalytix.TransformLogic
         /// <param name="projectId">The numeric project identifier.</param>
         /// <param name="projectName">The name of the project.</param>
         /// <returns>True of the project was added, false otherwise.</returns>
-        public bool AddProject(Guid teamId, int presetId, int projectId, String projectName, 
+        public bool AddProject(String teamId, int presetId, int projectId, String projectName, 
             String policies, IDictionary<String, String> customFields)
         {
             if (projectName == null)

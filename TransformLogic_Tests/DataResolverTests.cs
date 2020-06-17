@@ -19,11 +19,11 @@ namespace Test.TransformerLogic.DataResolver
         [Test]
         public void CantAddTeamPostResolve ()
         {
-            bool shouldBeTrue = d.addTeam(Guid.NewGuid(), "Foo");
+            bool shouldBeTrue = d.addTeam(Guid.NewGuid().ToString (), "Foo");
 
             var r = d.Resolve(null);
 
-            bool shouldBeFalse = d.addTeam(Guid.NewGuid(), "Bar");
+            bool shouldBeFalse = d.addTeam(Guid.NewGuid().ToString(), "Bar");
 
             Assert.True(shouldBeTrue && !shouldBeFalse);
 
@@ -53,13 +53,13 @@ namespace Test.TransformerLogic.DataResolver
         [Test]
         public void CantAddTeamWithNullName ()
         {
-            Assert.False(d.addTeam(Guid.NewGuid (), null));
+            Assert.False(d.addTeam(Guid.NewGuid ().ToString(), null));
         }
 
         [Test]
         public void CantAddTeamWithEmptyGuid ()
         {
-            Assert.False(d.addTeam(Guid.Empty, String.Empty));
+            Assert.False(d.addTeam(String.Empty, String.Empty));
         }
 
         [Test]

@@ -7,7 +7,7 @@ using System.Xml.Serialization;
 
 namespace CxAnalytix.Configuration
 {
-    public sealed class CxCredentials : ConfigurationSection
+    public sealed class CxCredentials : EnvAwareConfigurationSection
     {
         internal CxCredentials ()
         {

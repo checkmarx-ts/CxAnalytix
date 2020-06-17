@@ -29,13 +29,17 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 
 ## Version History
-
-* [1.1](https://github.com/checkmarx-ts/CxAnalytix/releases/tag/v1.1.0)
+* 1.1.1
+   * FEATURES
+      * Issue #9: Resolve config values from environment variables (see the Wiki for [CxConnection](https://github.com/checkmarx-ts/CxAnalytix/wiki/CxConnection), [CxCredentials](https://github.com/checkmarx-ts/CxAnalytix/wiki/CxCredentials), and [CxAnalyticsService](https://github.com/checkmarx-ts/CxAnalytix/wiki/CxAnalyticsService))
+    * BUG FIXES
+      * Issue #6: Now compatible with SAST 9.0
+* 1.1.0
     * FEATURES
       * Issue #4: MongoDB is now available as an output destination.
       * Issue #5: Add instance identifier to each record.
       * Issue #7: Add project custom fields to the output.
-* 1.0
+* 1.0.0
     * Initial Release
     * FEATURES
         * Output to flat log files

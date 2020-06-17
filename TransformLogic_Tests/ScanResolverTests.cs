@@ -21,8 +21,8 @@ namespace Test.TransformerLogic.ScanResolver
         };
 
 
-        Guid Team1 = Guid.NewGuid();
-        Guid Team2 = Guid.NewGuid();
+        String Team1 = "1";
+        String Team2 = "2";
 
         MemoryStream stateStorage;
         StreamWriter stateWriter;

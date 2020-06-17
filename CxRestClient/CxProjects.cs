@@ -33,7 +33,7 @@ namespace CxRestClient
         public class Project
         {
             [JsonProperty(PropertyName = "teamId")]
-            public Guid TeamId { get; internal set; }
+            public String TeamId { get; internal set; }
             public int PresetId { get; internal set; }
             [JsonProperty(PropertyName = "id")]
             public int ProjectId { get; internal set; }
