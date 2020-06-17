@@ -5,7 +5,7 @@ jobs:
       - image: mcr.microsoft.com/dotnet/core/sdk:2.1
     steps:
       - checkout
-      - run: dotnet test -v q -l "console;verbosity=detailed"
+      - run: dotnet test -v n -l "console;verbosity=detailed"
   publish:
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk
