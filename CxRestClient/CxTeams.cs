@@ -33,7 +33,7 @@ namespace CxRestClient
 
             public Team Current => new Team()
             {
-                TeamId = new Guid(((JProperty)_reader.CurrentToken).Value.ToString()),
+                TeamId = ((JProperty)_reader.CurrentToken).Value.ToString(),
                 TeamName = ((JProperty)_reader.CurrentToken.Next).Value.ToString()
             };
 
@@ -74,7 +74,7 @@ namespace CxRestClient
 
         public struct Team
         {
-            public Guid TeamId { get; internal set; }
+            public String TeamId { get; internal set; }
             public String TeamName { get; internal set; }
         }
 

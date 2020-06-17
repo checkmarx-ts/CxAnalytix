@@ -45,9 +45,9 @@ namespace CxAnalytix.TransformLogic.Data
         /// </summary>
         public String ProjectName { get; set; }
         /// <summary>
-        /// The GUID that identifies the team that owns the project.
+        /// The GUID or integer that identifies the team that owns the project.
         /// </summary>
-        public Guid TeamId { get; set; }
+        public String TeamId { get; set; }
         /// <summary>
         /// A human-readable name for the team.
         /// </summary>
