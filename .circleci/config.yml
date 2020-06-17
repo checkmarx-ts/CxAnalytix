@@ -27,6 +27,7 @@ jobs:
             export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
             echo ${VERSION}
             dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts
+            ls -lR artifacts
             mkdir tmp
             tar -czf tmp/CxAnalytix-${VERSION}-${CIRCLE_BUILD_NUM}.tar.gz -C artifacts/Release .
       - store_artifacts:
