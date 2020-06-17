@@ -1,23 +1,43 @@
 version: 2.1
+orbs:
+  orb-tools: circleci/orb-tools@9.1.0
 jobs:
   unit-test:
-    docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk:2.1
-    steps:
-      - checkout
-      - run: dotnet test -v n -l "console;verbosity=detailed" 2>&1
-  publish:
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk
     steps:
       - checkout
-      - run: dotnet publish --version-suffix $CIRCLE_BUILD_NUM -c Release -o artifacts
+      - run: dotnet test -v n -l "console;verbosity=detailed"
+  build:
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk
+    steps:
+      - checkout
+      - run: dotnet build --version-suffix $CIRCLE_BUILD_NUM -c Release -o artifacts
+  package:
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk
+    steps:
+      - checkout
+      - run: |
+        export VERSION=$(echo $CIRCLE_TAG | sed -E 's/v(.+)/\1/g')
+        dotnet publish -p:VersionPrefix=$VERSION --version-suffix $CIRCLE_BUILD_NUM -c Release -o artifacts
+        tar -czf CxAnalytix-$VERSION-$CIRCLE_BUILD_NUM.tar.gz -C artifacts/Release .
+      - store_artifacts:
+          path: *.tar.gz
 workflows:
   version: 2
   ci:
     jobs:
+      # Unit tests need to execute on .net core 3.1, commented until they do
       # - unit-test
-      - publish
+      - build
           # requires:
           #   - unit-test
+      - package:
+          filters:
+              tags:
+                only: /^v.*/
+
+   
 
