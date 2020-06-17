@@ -19,7 +19,7 @@ jobs:
       - image: mcr.microsoft.com/dotnet/core/sdk
     steps:
       - checkout
-      - run: |
+      - run: >
         export VERSION=$(echo $CIRCLE_TAG | sed -E 's/v(.+)/\1/g')
         dotnet publish -p:VersionPrefix=$VERSION --version-suffix $CIRCLE_BUILD_NUM -c Release -o artifacts
         tar -czf CxAnalytix-$VERSION-$CIRCLE_BUILD_NUM.tar.gz -C artifacts/Release .
