@@ -1,3 +1,5 @@
+![Build Badge](https://circleci.com/gh/checkmarx-ts/CxAnalytix.svg?style=shield)
+
 # CxAnalytix
 
 CxAnalytix is a background process that crawls Checkmarx SAST, OSA, and Management & Orchestration APIs to 
