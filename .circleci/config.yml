@@ -27,7 +27,7 @@ jobs:
       - persist_to_workspace:
           root: tmp
           paths:
-              - CxAnalytix-${VERSION}-${CIRCLE_BUILD_NUM}.zip
+            - ./*
 
   publish-github-release:
       docker:
