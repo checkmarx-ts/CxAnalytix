@@ -17,7 +17,7 @@ if ($Version -eq "")
 
 if ($Build -eq "")
 {
-	$Build = '{0:HHmmss}' -f $dt
+	$Build = '{0:Hms}' -f $dt
 }
 
 $dir = Split-Path $OutLoc
