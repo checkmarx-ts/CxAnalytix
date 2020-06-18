@@ -25,7 +25,7 @@ jobs:
             export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
             dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts
             mkdir tmp
-            tar -czf tmp/CxAnalytix-${VERSION}-${CIRCLE_BUILD_NUM}.tar.gz -C artifacts .
+            python .circleci/zip.py --output "tmp/CxAnalytix-${VERSION}-${CIRCLE_BUILD_NUM}.zip" --input artifacts
       - store_artifacts:
           path: tmp
 workflows:
