@@ -39,7 +39,7 @@ jobs:
             name: "Publish Release on GitHub"
             command: |
               go get github.com/tcnksm/ghr
-              ghr -t ${GITHUB_TOKEN} -u ${GITHUB_USER} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete ${CIRCLE_TAG} tmp/
+              ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -replace ${CIRCLE_TAG} tmp/
 
 workflows:
   version: 2
