@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <Authors>Nathan Leach</Authors>
     <Company>Checkmarx</Company>
     <Description>Exports static analysis and software composition results to a form suitable for use by data analytics platforms.</Description>

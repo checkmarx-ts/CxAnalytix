@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <ApplicationIcon />
     <StartupObject>CxAnalytixCLI.Program</StartupObject>
     <RootNamespace>CxAnalytixCLI</RootNamespace>
@@ -18,12 +18,6 @@
     <ProjectReference Include="..\Log4NetOutput\Log4NetOutput.csproj" />
     <ProjectReference Include="..\MongoDBOutput\MongoDBOutput.csproj" />
     <ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Reference Include="System">
-      <HintPath>System</HintPath>
-    </Reference>
   </ItemGroup>
 
   <ItemGroup>

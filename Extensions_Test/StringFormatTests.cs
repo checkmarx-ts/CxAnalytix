@@ -181,7 +181,7 @@ namespace Extensions_Test
                 _dict.ComposeString(formatSpec);
 
             }
-            catch (StringFormat.InvalidFormatStringException ex)
+            catch (StringFormat.InvalidFormatStringException)
             {
                 Assert.Pass();
                 return;
@@ -198,7 +198,7 @@ namespace Extensions_Test
                 _dict.ComposeString(formatSpec);
 
             }
-            catch (StringFormat.InvalidFormatStringException ex)
+            catch (StringFormat.InvalidFormatStringException)
             {
                 Assert.Pass();
                 return;
