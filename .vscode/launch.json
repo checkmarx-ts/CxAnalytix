@@ -1,0 +1,20 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Debug CxAnalytixCLI",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "Build Solution (Debug)",
+            "program": "${workspaceFolder}/bin/Debug/CxAnalytixCLI.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/bin/Debug/",
+            "stopAtEntry": false,
+            "console": "internalConsole"
+        }
+
+    ]
+}
