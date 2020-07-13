@@ -50,14 +50,15 @@ jobs:
         environment:
           DOCKER_REPO: docker.io/checkmarxts/cxanalytix
     steps:
+      - setup_remote_docker:
       - attach_workspace:
           at: tmp
       - run:
-          name: "Publish Release on GitHub"
+          name: "Publish Images On Dockerhub"
           command: |
             cd tmp
             docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io
-            docker build -t ${DOCKER_REPO}:${CIRCLE_TAG} -t ${DOCKER_REPO}:${CIRCLE_SHA1} -t ${DOCKER_REP} .
+            docker build -t ${DOCKER_REPO}:${CIRCLE_TAG} -t ${DOCKER_REPO}:${CIRCLE_SHA1} -t ${DOCKER_REPO} .
             docker push ${DOCKER_REPO}
 
 workflows:
