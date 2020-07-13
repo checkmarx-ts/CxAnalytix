@@ -54,7 +54,7 @@ jobs:
           at: tmp
       - run:
           name: "Publish Release on GitHub"
-          command:
+          command: |
             cd tmp
             docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io
             docker build -t ${DOCKER_REPO}:${CIRCLE_TAG} -t ${DOCKER_REPO}:${CIRCLE_SHA1} -t ${DOCKER_REP} .
