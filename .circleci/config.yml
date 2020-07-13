@@ -24,24 +24,41 @@ jobs:
             dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts
             mkdir tmp
             python .circleci/zip.py --output "tmp/CxAnalytix-${VERSION}-${CIRCLE_BUILD_NUM}.zip" --input artifacts
+            cp Dockerfile tmp/Dockerfile
       - persist_to_workspace:
           root: tmp
           paths:
             - ./*
 
   publish-github-release:
-      docker:
-        - image: circleci/golang:1.9
-      steps:
-        - attach_workspace:
-            at: tmp
-        - run:
-            name: "Publish Release on GitHub"
-            command: |
-              go get github.com/tcnksm/ghr
-              cd tmp
-              BODY=$(sha256sum *)
-              ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete -body "SHA256: ${BODY}" ${CIRCLE_TAG} .
+    docker:
+      - image: circleci/golang:1.9
+    steps:
+      - attach_workspace:
+          at: tmp
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            go get github.com/tcnksm/ghr
+            cd tmp
+            BODY=$(sha256sum *)
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete -body "SHA256: ${BODY}" ${CIRCLE_TAG} .
+
+  docker-push:
+    docker:
+      - image: docker:18.06.3-ce-git
+        environment:
+          DOCKER_REPO: docker.io/checkmarxts/cxanalytix
+    steps:
+      - attach_workspace:
+          at: tmp
+      - run:
+          name: "Publish Release on GitHub"
+          command:
+            cd tmp
+            docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io
+            docker build -t ${DOCKER_REPO}:${CIRCLE_TAG} -t ${DOCKER_REPO}:${CIRCLE_SHA1} -t ${DOCKER_REP} .
+            docker push ${DOCKER_REPO}
 
 workflows:
   version: 2
@@ -61,6 +78,14 @@ workflows:
                 ignore: /.*/
           requires:
               - package
+      - docker-push:
+          filters:
+              tags:
+                only: /^v.*/
+              branches:
+                ignore: /.*/
+          requires:
+              - package      
   ci:
     jobs:
       # Unit tests need to execute on .net core 3.1, commented until they do
