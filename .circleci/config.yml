@@ -50,7 +50,7 @@ jobs:
         environment:
           DOCKER_REPO: docker.io/checkmarxts/cxanalytix
     steps:
-      - setup_remote_docker:
+      - setup_remote_docker
       - attach_workspace:
           at: tmp
       - run:
