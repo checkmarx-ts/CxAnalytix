@@ -16,8 +16,8 @@ namespace Test.TransformerLogic.ProjectResolver
                 { "dummy", (d, t) => {} }
         };
 
-        Guid Team1 = Guid.NewGuid();
-        Guid Team2 = Guid.NewGuid();
+        String Team1 = "1";
+        String Team2 = "2";
 
         [SetUp]
         public void SetupTest ()
@@ -36,11 +36,11 @@ namespace Test.TransformerLogic.ProjectResolver
         [Test]
         public void CantAddProjectAfterResolve ()
         {
-            bool shouldBeTrue = pr.AddProject(Team1, 1, 1, "Foo", "");
+            bool shouldBeTrue = pr.AddProject(Team1, 1, 1, "Foo", "", new Dictionary<String, String>());
 
             var sr = pr.Resolve(dummy);
 
-            bool shouldBeFalse = pr.AddProject(Team1, 1, 2, "Bar", "");
+            bool shouldBeFalse = pr.AddProject(Team1, 1, 2, "Bar", "", new Dictionary<String, String>());
 
             Assert.True(shouldBeTrue && !shouldBeFalse);
         }
@@ -48,33 +48,33 @@ namespace Test.TransformerLogic.ProjectResolver
         [Test]
         public void CantAddDuplicateProject ()
         {
-            bool shouldBeTrue = pr.AddProject(Team1, 1, 1, "Foo", "");
-            bool shouldBeFalse = pr.AddProject(Team1, 1, 1, "Bar", "");
+            bool shouldBeTrue = pr.AddProject(Team1, 1, 1, "Foo", "", new Dictionary<String, String>());
+            bool shouldBeFalse = pr.AddProject(Team1, 1, 1, "Bar", "", new Dictionary<String, String>());
             Assert.True(shouldBeTrue && !shouldBeFalse);
         }
 
         [Test]
         public void CantAddProjectWithMissingPreset()
         {
-            Assert.False(pr.AddProject (Team1, 100, 1, "Foo", "") );
+            Assert.False(pr.AddProject (Team1, 100, 1, "Foo", "", new Dictionary<String, String>()) );
         }
 
         [Test]
         public void CantAddProjetWithNullProjectName()
         {
-            Assert.False(pr.AddProject(Team1, 1, 1, null, ""));
+            Assert.False(pr.AddProject(Team1, 1, 1, null, "", new Dictionary<String, String>()));
         }
 
         [Test]
         public void CantAddProjectWithMissingTeam()
         {
-            Assert.False(pr.AddProject(Guid.NewGuid(), 1, 1, "Foo", ""));
+            Assert.False(pr.AddProject(Guid.NewGuid().ToString(), 1, 1, "Foo", "", new Dictionary<String, String>()));
         }
 
         [Test]
         public void CantAddProjectWithEmptyTeamGuid()
         {
-            Assert.False(pr.AddProject(Guid.Empty, 1, 1, "Foo", ""));
+            Assert.False(pr.AddProject(Guid.Empty.ToString(), 1, 1, "Foo", "", new Dictionary<String, String>()));
         }
 
         [Test]

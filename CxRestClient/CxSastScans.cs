@@ -29,21 +29,51 @@ namespace CxRestClient
             Failed
         }
 
-        public struct Scan
+        [JsonObject(MemberSerialization.OptIn)]
+        public class Scan
         {
-            public int ProjectId { get; internal set; }
-            public String ScanType { get; internal set; }
+            [JsonProperty(PropertyName = "id")]
             public String ScanId { get; internal set; }
-            public DateTime FinishTime { get; internal set; }
-            public DateTime StartTime { get; internal set; }
-            public long LinesOfCode { get; internal set; }
-            public long FailedLinesOfCode { get; internal set; }
-            public int FileCount { get; internal set; }
-            public String CxVersion { get; internal set; }
-            public int ScanRisk { get; internal set; }
-            public int ScanRiskSeverity { get; internal set; }
-            public String Languages { get; internal set; }
+            public int ProjectId { get => Convert.ToInt32(project["id"]); }
+            [JsonProperty(PropertyName = "project")]
+            internal Dictionary<String, Object> project { get; set; }
+            [JsonProperty(PropertyName = "dateAndTime")]
+            internal Dictionary<String, String> date_times { get; set; }
+            public DateTime StartTime { get => DateTime.Parse(date_times["startedOn"]); }
+            public DateTime FinishTime { get => DateTime.Parse(date_times["finishedOn"]); }
+            [JsonProperty(PropertyName = "scanState")]
+            internal Dictionary<String, Object> scan_state { get; set; }
+            public int FileCount { get => Convert.ToInt32(scan_state["filesCount"]); }
+            public long LinesOfCode { get => Convert.ToInt64(scan_state["linesOfCode"]); }
+            public long FailedLinesOfCode { get => Convert.ToInt64(scan_state["failedLinesOfCode"]); }
+            public String CxVersion { get => Convert.ToString(scan_state["cxVersion"]); }
+            public String Languages
+            {
+                get
+                {
+                    LinkedList<String> langs = new LinkedList<string>();
 
+                    var langDicts = (List<Dictionary<String, String>>)new JsonSerializer().
+                        Deserialize(new JTokenReader(scan_state["languageStateCollection"] as JArray), typeof(List<Dictionary<String, String>>));
+
+                    foreach (var langDict in langDicts)
+                        langs.AddLast(langDict["languageName"]);
+
+                    return String.Join(';', langs);
+                }
+            }
+
+            [JsonProperty(PropertyName = "isPublic")]
+            internal bool IsPublic { get; set; }
+
+            [JsonProperty(PropertyName = "isIncremental")]
+            internal bool IsIncremental { get; set; }
+            public String ScanType { get => IsIncremental ? "Incremental" : "Full"; }
+
+            [JsonProperty(PropertyName = "scanRisk")]
+            public int ScanRisk { get; internal set; }
+            [JsonProperty(PropertyName = "scanRiskSeverity")]
+            public int ScanRiskSeverity { get; internal set; }
 
         }
 
@@ -73,120 +103,39 @@ namespace CxRestClient
                 return new ScansReader(_json);
             }
 
-            private String GetLanguages(JToken languageArray)
-            {
-                LinkedList<String> langs = new LinkedList<string>();
+            private Scan _currentScan;
 
-                JArray array = ((JProperty)languageArray).Value as JArray;
+            int _arrayPos = 0;
+            JArray _scanArray;
 
-                foreach (JProperty token in array.Values())
-                    if (token.Name.CompareTo("languageName") == 0)
-                        langs.AddLast(token.Value.ToString());
-
-                return String.Join(';', langs);
-            }
-
-            Scan _currentScan = new Scan();
 
             public bool MoveNext()
             {
-                while (JsonUtils.MoveToNextProperty(_reader))
+
+                while (true)
                 {
-                    if (((JProperty)_reader.CurrentToken).Name.CompareTo("id") == 0)
+                    if (_reader.CurrentToken == null)
                     {
-                        _currentScan = new Scan()
-                        {
-                            ScanId = ((JProperty)_reader.CurrentToken).Value.ToString()
-                        };
-
-
-                        if (!JsonUtils.MoveToNextProperty(_reader, "project"))
+                        while (_reader.Read() && _reader.CurrentToken.Type != JTokenType.Array) ;
+                        if (_reader.CurrentToken == null || _reader.CurrentToken.Type != JTokenType.Array)
                             return false;
 
-                        if (!JsonUtils.MoveToNextProperty(_reader, "id"))
-                            return false;
-
-                        _currentScan.ProjectId = Convert.ToInt32(((JProperty)_reader.CurrentToken).Value.ToString());
-
-                        if (!JsonUtils.MoveToNextProperty(_reader, "dateAndTime"))
-                            return false;
-
-                        if (!JsonUtils.MoveToNextProperty(_reader, "startedOn"))
-                            return false;
-
-                        _currentScan.StartTime = DateTime.Parse(((JProperty)_reader.CurrentToken).Value.ToString());
-
-                        if (!JsonUtils.MoveToNextProperty(_reader, "finishedOn"))
-                            return false;
-
-                        _currentScan.FinishTime = DateTime.Parse(((JProperty)_reader.CurrentToken).Value.ToString());
-
-                        if (!JsonUtils.MoveToNextProperty(_reader, "scanState"))
-                            return false;
-
-                        if (!JsonUtils.MoveToNextProperty(_reader, "filesCount"))
-                            return false;
-                        _currentScan.FileCount = Convert.ToInt32 (((JProperty)_reader.CurrentToken).Value);
-
-                        if (!JsonUtils.MoveToNextProperty(_reader, "linesOfCode"))
-                            return false;
-
-                        _currentScan.LinesOfCode = Convert.ToInt64(((JProperty)_reader.CurrentToken).Value);
-
-                        if (!JsonUtils.MoveToNextProperty(_reader, "failedLinesOfCode"))
-                            return false;
-
-                        _currentScan.FailedLinesOfCode = Convert.ToInt64(((JProperty)_reader.CurrentToken).Value);
-
-                        if (!JsonUtils.MoveToNextProperty(_reader, "cxVersion"))
-                            return false;
-
-                        _currentScan.CxVersion = ((JProperty)_reader.CurrentToken).Value.ToString ();
-
-                        if (!JsonUtils.MoveToNextProperty(_reader, "languageStateCollection"))
-                            return false;
-
-                        _currentScan.Languages = GetLanguages(_reader.CurrentToken);
-
-                        if (!JsonUtils.MoveToNextProperty(_reader, "isPublic"))
-                            return false;
-
-                        bool isPublic = Convert.ToBoolean(((JProperty) _reader.CurrentToken).Value.ToString());
-
-                        if (!JsonUtils.MoveToNextProperty(_reader, "isIncremental"))
-                            return false;
-
-                        if (Convert.ToBoolean(((JProperty)_reader.CurrentToken).Value.ToString()))
-                            _currentScan.ScanType = "Incremental";
-                        else
-                            _currentScan.ScanType = "Full";
-
-
-                        if (!JsonUtils.MoveToNextProperty(_reader, "scanRisk"))
-                            return false;
-
-                        _currentScan.ScanRisk = Convert.ToInt32(((JProperty)_reader.CurrentToken).Value);
-
-                        if (!JsonUtils.MoveToNextProperty(_reader, "scanRiskSeverity"))
-                            return false;
-
-                        _currentScan.ScanRiskSeverity = Convert.ToInt32(((JProperty)_reader.CurrentToken).Value);
-
-                        if (!JsonUtils.MoveToNextProperty(_reader, "partialScanReasons"))
-                            return false;
-
-                        // IsPublic?
-                        if (!isPublic)
-                        {
-                            // Scan isn't public, move to the next scan.
-                            _currentScan = new Scan();
-                            continue;
-                        }
-
-                        return true;
+                        _scanArray = (JArray)_reader.CurrentToken;
                     }
+                    else
+                        _arrayPos++;
+
+                    if (!(_arrayPos < _scanArray.Count))
+                        return false;
+
+                    _currentScan = (Scan)new JsonSerializer().
+                        Deserialize(new JTokenReader(_scanArray[_arrayPos]), typeof(Scan));
+
+                    if (_currentScan.IsPublic)
+                        break;
                 }
-                return false;
+
+                return true;
             }
 
             public void Reset()

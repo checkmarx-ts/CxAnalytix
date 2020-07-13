@@ -41,21 +41,21 @@ namespace CxAnalytix.TransformLogic
             return !_disallowAdd;
         }
 
-        internal Dictionary<Guid, String> Teams { get => _teams; }
+        internal Dictionary<String, String> Teams { get => _teams; }
 
-        private Dictionary<Guid, String> _teams = new Dictionary<Guid, string>();
+        private Dictionary<String, String> _teams = new Dictionary<String, String>();
         /// <summary>
         /// The method use to load the list of teams into memory for resolution
         /// when the Resolve method is called.
         /// </summary>
-        /// <param name="teamId">The GUID team identifier.</param>
+        /// <param name="teamId">The GUID or integer team identifier.</param>
         /// <param name="teamName">The name of the team.</param>
         /// <returns>True if the team was added, false otherwise.</returns>
         /// <see cref="DataResolver.Resolve(StreamReader, StreamWriter)"/>
         /// <see cref="DataResolver.Resolve(string)"/>
-        public bool addTeam (Guid teamId, String teamName)
+        public bool addTeam (String teamId, String teamName)
         {
-            if (teamId == Guid.Empty || teamName == null)
+            if (String.IsNullOrEmpty (teamId) || String.IsNullOrEmpty(teamName) )
                 return false;
 
             if (!_disallowAdd)

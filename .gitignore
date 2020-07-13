@@ -4,3 +4,4 @@
 TransformLogic/TransformLogic.xml
 artifacts/
 **/*- Copy*
+.vscode

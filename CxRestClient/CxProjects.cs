@@ -20,12 +20,29 @@ namespace CxRestClient
         private CxProjects()
         { }
 
-        public struct Project
+        [JsonObject(MemberSerialization.OptIn)]
+        public class ProjectCustomFields
         {
-            public Guid TeamId { get; internal set; }
+            [JsonProperty(PropertyName = "name")]
+            public String FieldName { get; internal set; }
+            [JsonProperty(PropertyName = "value")]
+            public String FieldValue { get; internal set; }
+        }
+
+        [JsonObject(MemberSerialization.OptIn)]
+        public class Project
+        {
+            [JsonProperty(PropertyName = "teamId")]
+            public String TeamId { get; internal set; }
             public int PresetId { get; internal set; }
+            [JsonProperty(PropertyName = "id")]
             public int ProjectId { get; internal set; }
+            [JsonProperty(PropertyName = "name")]
             public String ProjectName { get; internal set; }
+            [JsonProperty(PropertyName = "isPublic")]
+            public bool IsPublic { get; internal set; }
+            [JsonProperty(PropertyName = "customFields")]
+            public List<ProjectCustomFields> CustomFields { get; internal set; }
         }
 
         private class ProjectReader : IEnumerable<Project>, IEnumerator<Project>
@@ -58,59 +75,50 @@ namespace CxRestClient
                 return new ProjectReader(_json, _ctx, _token);
             }
 
-            Project _curProject = new Project();
+            private Project _curProject;
 
-            private static bool MoveToNextProperty(JTokenReader reader)
-            {
-                while (reader.Read())
-                {
-                    if (reader.CurrentToken.Type == JTokenType.Property)
-                        return true;
-                }
+            int _arrayPos = 0;
+            JArray _projectArray;
 
-                return false;
-            }
 
             public bool MoveNext()
             {
-                while (_reader.Read() && !_token.IsCancellationRequested)
-                    if (_reader.CurrentToken.Type == JTokenType.Property)
-                        if (((JProperty)_reader.CurrentToken).Name.CompareTo("id") == 0)
-                        {
-                            _curProject = new Project()
-                            {
-                                ProjectId = Convert.ToInt32(((JProperty)_reader.CurrentToken).Value.ToString())
-                            };
 
-                            if (!MoveToNextProperty(_reader))
-                                return false;
+                while (true)
+                {
+                    if (_reader.CurrentToken == null)
+                    {
+                        while (_reader.Read() && _reader.CurrentToken.Type != JTokenType.Array);
+                        if (_reader.CurrentToken == null || _reader.CurrentToken.Type != JTokenType.Array)
+                            return false;
 
-                            _curProject.TeamId = new Guid(((JProperty)_reader.CurrentToken).Value.ToString());
+                        _projectArray = (JArray)_reader.CurrentToken;
+                    }
+                    else
+                        _arrayPos++;
 
-                            if (!MoveToNextProperty(_reader))
-                                return false;
+                    if (!(_arrayPos < _projectArray.Count))
+                        return false;
 
-                            _curProject.ProjectName = ((JProperty)_reader.CurrentToken).Value.ToString();
+                    _curProject = (Project)new JsonSerializer().
+                        Deserialize(new JTokenReader(_projectArray[_arrayPos]), typeof(Project));
 
-                            if (!MoveToNextProperty(_reader))
-                                return false;
+                    if (!_curProject.IsPublic)
+                    {
+                        _curProject = null;
+                        continue;
+                    }
+                    else
+                    {
+                        _curProject.PresetId = CxProjectScanSettings.GetScanSettings
+                        (_ctx, _token, _curProject.ProjectId).PresetId;
+                        break;
+                    }
+                }
 
-                            // IsPublic?
-                            if (!Convert.ToBoolean(((JProperty)_reader.CurrentToken).Value.ToString()))
-                            {
-                                // Scan isn't public, move to the next scan.
-                                _curProject = new Project();
-                                continue;
-                            }
-
-                            _curProject.PresetId = CxProjectScanSettings.GetScanSettings
-                                (_ctx, _token, _curProject.ProjectId).PresetId;
-
-                            return true;
-                        }
-
-                return false;
+                return true;
             }
+
 
             public void Reset()
             {

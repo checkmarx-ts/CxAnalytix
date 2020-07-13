@@ -1,0 +1,75 @@
+version: 2.1
+jobs:
+  unit-test:
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk
+    steps:
+      - checkout
+      - run: dotnet test -v n -l "console;verbosity=detailed"
+  build:
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk
+    steps:
+      - checkout
+      - run: dotnet build --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts
+  package:
+    docker:
+      - image: mcr.microsoft.com/dotnet/core/sdk
+    steps:
+      - checkout
+      - run:
+          name: Build & Package
+          command: |
+            export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
+            dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts
+            mkdir tmp
+            python .circleci/zip.py --output "tmp/CxAnalytix-${VERSION}-${CIRCLE_BUILD_NUM}.zip" --input artifacts
+      - persist_to_workspace:
+          root: tmp
+          paths:
+            - ./*
+
+  publish-github-release:
+      docker:
+        - image: circleci/golang:1.9
+      steps:
+        - attach_workspace:
+            at: tmp
+        - run:
+            name: "Publish Release on GitHub"
+            command: |
+              go get github.com/tcnksm/ghr
+              cd tmp
+              BODY=$(sha256sum *)
+              ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete -body "SHA256: ${BODY}" ${CIRCLE_TAG} .
+
+workflows:
+  version: 2
+  package-release:
+    jobs:
+      - package:
+          filters:
+              tags:
+                only: /^v.*/
+              branches:
+                ignore: /.*/
+      - publish-github-release:
+          filters:
+              tags:
+                only: /^v.*/
+              branches:
+                ignore: /.*/
+          requires:
+              - package
+  ci:
+    jobs:
+      # Unit tests need to execute on .net core 3.1, commented until they do
+      # - unit-test
+      - build
+          # requires:
+          #   - unit-test
+
+
+
+   
+

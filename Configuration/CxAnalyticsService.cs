@@ -5,7 +5,7 @@ using System.Text;
 
 namespace CxAnalytix.Configuration
 {
-    public sealed class CxAnalyticsService : ConfigurationSection
+    public sealed class CxAnalyticsService : EnvAwareConfigurationSection
     {
         internal CxAnalyticsService ()
         {
@@ -13,6 +13,14 @@ namespace CxAnalytix.Configuration
         }
 
         public static readonly String SECTION_NAME = "CxAnalyticsService";
+
+        [ConfigurationProperty("InstanceId", IsRequired = false)]
+        public String InstanceIdentifier
+        {
+            get => (String)this["InstanceId"];
+            set { this["InstanceId"] = value; }
+        }
+
 
         [ConfigurationProperty("ConcurrentThreads", IsRequired = true)]
         public int ConcurrentThreads

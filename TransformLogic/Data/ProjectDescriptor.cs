@@ -1,7 +1,8 @@
-﻿using Newtonsoft.Json;
+﻿using CxRestClient;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Text;
+
 
 namespace CxAnalytix.TransformLogic.Data
 {
@@ -13,7 +14,7 @@ namespace CxAnalytix.TransformLogic.Data
         internal ProjectDescriptor()
         {
             ScanCountByProduct = new Dictionary<string, int>();
-            LatestScanDateByProduct = new Dictionary<string, DateTime>();
+            LatestScanDateByProduct = new Dictionary<String, DateTime>();
         }
 
         internal ProjectDescriptor (ProjectDescriptor src)
@@ -27,8 +28,14 @@ namespace CxAnalytix.TransformLogic.Data
             Policies = src.Policies;
             ScanCountByProduct = src.ScanCountByProduct;
             LatestScanDateByProduct = src.LatestScanDateByProduct;
+            CustomFields = src.CustomFields;
         }
 
+        /// <summary>
+        /// Custom fields assigned to the project.
+        /// </summary>
+        [JsonIgnore]
+        public IDictionary<String, String> CustomFields { get; set; }
         /// <summary>
         /// The project id as it is stored in the SAST system.
         /// </summary>
@@ -38,9 +45,9 @@ namespace CxAnalytix.TransformLogic.Data
         /// </summary>
         public String ProjectName { get; set; }
         /// <summary>
-        /// The GUID that identifies the team that owns the project.
+        /// The GUID or integer that identifies the team that owns the project.
         /// </summary>
-        public Guid TeamId { get; set; }
+        public String TeamId { get; set; }
         /// <summary>
         /// A human-readable name for the team.
         /// </summary>

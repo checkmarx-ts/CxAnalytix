@@ -55,7 +55,8 @@ namespace CxAnalytixCLI
             {
                 CxRestContext ctx = builder.build();
                 Transformer.DoTransform(Config.Service.ConcurrentThreads, 
-                    Config.Service.StateDataStoragePath, ctx, 
+                    Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
+                    ctx, 
                     MakeFactory (),
                     new RecordNames()
                     {

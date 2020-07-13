@@ -176,8 +176,8 @@ namespace CxAnalytix.TransformLogic
         /// <param name="projectId">The numeric project identifier.</param>
         /// <param name="projectName">The name of the project.</param>
         /// <returns>True of the project was added, false otherwise.</returns>
-        public bool AddProject(Guid teamId, int presetId, int projectId, String projectName, 
-            String policies)
+        public bool AddProject(String teamId, int presetId, int projectId, String projectName, 
+            String policies, IDictionary<String, String> customFields)
         {
             if (projectName == null)
                 return false;
@@ -203,7 +203,8 @@ namespace CxAnalytix.TransformLogic
                     String presetName = _dependentData.Presets.ContainsKey(presetId) ? _dependentData.Presets[presetId] : String.Empty;
                     if (String.Empty == presetName)
                     {
-                        _log.ErrorFormat("Unable to find a preset name for preset id [{0}] when adding project {1}:{2}", presetId,
+                        _log.ErrorFormat("Unable to find a preset name for preset id [{0}] " +
+                            "when adding project {1}:{2}; project may be assigned an invalid preset.", presetId,
                             projectId, projectName);
 
                         return false;
@@ -218,7 +219,8 @@ namespace CxAnalytix.TransformLogic
                             TeamId = teamId,
                             PresetId = presetId,
                             PresetName = presetName,
-                            Policies = policies
+                            Policies = policies,
+                            CustomFields = customFields
                         }
                     );
 
