@@ -31,6 +31,10 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 
 ## Version History
+* 1.1.2
+  * FEATURES
+    * Dockerfile now available as a release artifact
+    * [Docker base image](https://hub.docker.com/r/checkmarxts/cxanalytix) pushed to Docker Hub as part of the build 
 * 1.1.1
    * FEATURES
       * Issue #9: Resolve config values from environment variables (see the Wiki for [CxConnection](https://github.com/checkmarx-ts/CxAnalytix/wiki/CxConnection), [CxCredentials](https://github.com/checkmarx-ts/CxAnalytix/wiki/CxCredentials), and [CxAnalyticsService](https://github.com/checkmarx-ts/CxAnalytix/wiki/CxAnalyticsService))
