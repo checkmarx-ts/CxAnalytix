@@ -321,7 +321,8 @@ namespace CxRestClient
                 CxRestContext retVal = new CxRestContext()
                 {
                     SastToken = GetLoginToken(_url, _user, _pass, SAST_SCOPE, _validate),
-                    MNOToken = GetLoginToken(_url, _user, _pass, MNO_SCOPE, _validate),
+                    // TODO: Test on 8.9, 8.9 no ose, 9.0 no osa
+                    MNOToken = GetLoginToken(_url, _user, _pass, $"{MNO_SCOPE} {SAST_SCOPE}", _validate),
                     Url = _url,
                     MnoUrl = _mnoUrl == null ? _url : _mnoUrl,
                     ValidateSSL = _validate,
