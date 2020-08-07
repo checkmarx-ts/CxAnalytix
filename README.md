@@ -31,6 +31,9 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 
 ## Version History
+* 1.1.3
+ * BUG FIXES
+  * Issue #18: Error when attempting to retrieve policy violation data from SAST 9.0
 * 1.1.2
   * FEATURES
     * Dockerfile now available as a release artifact
