@@ -321,9 +321,9 @@ namespace CxRestClient
                 CxRestContext retVal = new CxRestContext()
                 {
                     SastToken = GetLoginToken(_url, _user, _pass, SAST_SCOPE, _validate),
-                    MNOToken = GetLoginToken(_url, _user, _pass, MNO_SCOPE, _validate),
+                    MNOToken = GetLoginToken(_url, _user, _pass, $"{MNO_SCOPE} {SAST_SCOPE}", _validate),
                     Url = _url,
-                    MnoUrl = _mnoUrl == null ? _url : _mnoUrl,
+                    MnoUrl = String.IsNullOrEmpty (_mnoUrl) ? _url : _mnoUrl,
                     ValidateSSL = _validate,
                     Timeout = new TimeSpan(0, 0, _timeout)
                 };
