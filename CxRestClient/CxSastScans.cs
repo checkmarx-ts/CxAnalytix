@@ -29,6 +29,14 @@ namespace CxRestClient
             Failed
         }
 
+        public static DateTime NormalizeDateParse (String isoDate)
+        {
+            if (String.IsNullOrEmpty(isoDate))
+                return DateTime.MinValue;
+            else
+                return DateTime.Parse(isoDate);
+        }
+
         [JsonObject(MemberSerialization.OptIn)]
         public class Scan
         {
@@ -39,8 +47,10 @@ namespace CxRestClient
             internal Dictionary<String, Object> project { get; set; }
             [JsonProperty(PropertyName = "dateAndTime")]
             internal Dictionary<String, String> date_times { get; set; }
-            public DateTime StartTime { get => DateTime.Parse(date_times["startedOn"]); }
-            public DateTime FinishTime { get => DateTime.Parse(date_times["finishedOn"]); }
+            public DateTime StartTime { get => NormalizeDateParse (date_times["startedOn"]); }
+            public DateTime FinishTime { get => NormalizeDateParse (date_times["finishedOn"]); }
+            public DateTime EngineStartTime { get => NormalizeDateParse (date_times["engineStartedOn"]); }
+            public DateTime EngineFinishTime { get => NormalizeDateParse (date_times["engineFinishedOn"]); }
             [JsonProperty(PropertyName = "scanState")]
             internal Dictionary<String, Object> scan_state { get; set; }
             public int FileCount { get => Convert.ToInt32(scan_state["filesCount"]); }
@@ -128,8 +138,8 @@ namespace CxRestClient
                     if (!(_arrayPos < _scanArray.Count))
                         return false;
 
-                    _currentScan = (Scan)new JsonSerializer().
-                        Deserialize(new JTokenReader(_scanArray[_arrayPos]), typeof(Scan));
+                    _currentScan = (Scan)new JsonSerializer()
+                        .Deserialize(new JTokenReader(_scanArray[_arrayPos]), typeof(Scan));
 
                     if (_currentScan.IsPublic)
                         break;
@@ -187,6 +197,7 @@ namespace CxRestClient
                             (scans.Content.ReadAsStreamAsync().Result))
                         using (var jtr = new JsonTextReader(sr))
                         {
+                            jtr.DateParseHandling = DateParseHandling.None;
                             JToken jt = JToken.Load(jtr);
                             return new ScansReader(jt);
                         }
