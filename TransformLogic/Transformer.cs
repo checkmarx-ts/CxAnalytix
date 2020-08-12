@@ -338,6 +338,18 @@ namespace CxAnalytix.TransformLogic
 
                 ScanDescriptors = sr.Resolve(CheckTime);
             }
+            catch (AggregateException aex)
+            {
+                _log.Error($"Multiple errors caught resolving scans.");
+
+                int count = 0;
+                aex.Handle(
+                (ex) =>
+                {
+                    _log.Error($"Exception {++count}: ", ex);
+                    return true;
+                });
+            }
             catch (Exception ex)
             {
                 _log.Error($"Error resolving scans, server may be unavailable.", ex);
