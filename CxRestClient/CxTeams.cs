@@ -82,24 +82,23 @@ namespace CxRestClient
         {
             try
             {
-                using (var client = ctx.Json.CreateSastClient())
-                using (var teams = client.GetAsync(
-                    CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result)
-                {
-                    if (token.IsCancellationRequested)
-                        return null;
+                var client = ctx.Json.CreateSastClient();
+                var teams = client.GetAsync(
+                    CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result;
+                
+				if (token.IsCancellationRequested)
+					return null;
 
-                    if (!teams.IsSuccessStatusCode)
-                        throw new InvalidOperationException(teams.ReasonPhrase);
+				if (!teams.IsSuccessStatusCode)
+					throw new InvalidOperationException(teams.ReasonPhrase);
 
-                    using (var sr = new StreamReader
-                        (teams.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
-                    {
-                        JToken jt = JToken.Load(jtr);
-                        return new TeamReader(jt);
-                    }
-                }
+				using (var sr = new StreamReader
+					(teams.Content.ReadAsStreamAsync().Result))
+				using (var jtr = new JsonTextReader(sr))
+				{
+					JToken jt = JToken.Load(jtr);
+					return new TeamReader(jt);
+				}                
             }
             catch (HttpRequestException hex)
             {

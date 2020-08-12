@@ -127,28 +127,26 @@ namespace CxRestClient
                         {"itemsPerPage", "5000" }
                     });
 
-                using (var client = ctx.Json.CreateSastClient())
-                using (var scans = client.GetAsync(url, token).Result)
-                {
+                var client = ctx.Json.CreateSastClient();
+                var scans = client.GetAsync(url, token).Result;
+                
+				if (token.IsCancellationRequested)
+					return null;
 
-                    if (token.IsCancellationRequested)
-                        return null;
+				// If no OSA license, result is 403.  Return an empty set of scans.
+				if (scans.StatusCode == System.Net.HttpStatusCode.Forbidden)
+					return new ScansReader();
 
-                    // If no OSA license, result is 403.  Return an empty set of scans.
-                    if (scans.StatusCode == System.Net.HttpStatusCode.Forbidden)
-                        return new ScansReader();
+				if (!scans.IsSuccessStatusCode)
+					throw new InvalidOperationException(scans.ReasonPhrase);
 
-                    if (!scans.IsSuccessStatusCode)
-                        throw new InvalidOperationException(scans.ReasonPhrase);
-
-                    using (var sr = new StreamReader
-                            (scans.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
-                    {
-                        JToken jt = JToken.Load(jtr);
-                        return new ScansReader(jt, projectId);
-                    }
-                }
+				using (var sr = new StreamReader
+						(scans.Content.ReadAsStreamAsync().Result))
+				using (var jtr = new JsonTextReader(sr))
+				{
+					JToken jt = JToken.Load(jtr);
+					return new ScansReader(jt, projectId);
+				}
             }
             catch (HttpRequestException hex)
             {

@@ -89,24 +89,23 @@ namespace CxRestClient
         {
             try
             {
-                using (var client = ctx.Json.CreateSastClient())
-                using (var presets = client.GetAsync(
-                    CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result)
-                {
-                    if (token.IsCancellationRequested)
-                        return null;
+                var client = ctx.Json.CreateSastClient();
+                var presets = client.GetAsync(CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result;
+                
+				if (token.IsCancellationRequested)
+					return null;
 
-                    if (!presets.IsSuccessStatusCode)
-                        throw new InvalidOperationException(presets.ReasonPhrase);
+				if (!presets.IsSuccessStatusCode)
+					throw new InvalidOperationException(presets.ReasonPhrase);
 
-                    using (var sr = new StreamReader
-                            (presets.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
-                    {
-                        JToken jt = JToken.Load(jtr);
-                        return new PresetReader(jt);
-                    }
-                }
+				using (var sr = new StreamReader
+						(presets.Content.ReadAsStreamAsync().Result))
+				using (var jtr = new JsonTextReader(sr))
+				{
+					JToken jt = JToken.Load(jtr);
+					return new PresetReader(jt);
+				}
+                
             }
             catch (HttpRequestException hex)
             {

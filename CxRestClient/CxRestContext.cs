@@ -21,6 +21,19 @@ namespace CxRestClient
 
 
         private static ILog _log = LogManager.GetLogger(typeof(CxRestContext));
+	
+		public static HttpClient httpClient;
+		public static HttpClient sslLessHttpClient;
+		public static int httpClientRequestCount = 0;
+		
+		static CxRestContext()
+		{
+			httpClient = new HttpClient();
+			
+			HttpClientHandler h = new HttpClientHandler();
+			h.ServerCertificateCustomValidationCallback = (msg, cert, chain, errors) => true;
+			HttpClient sslLessHttpClient = new HttpClient(h, true);
+		}
 
         public class ClientFactory
         {
@@ -162,42 +175,42 @@ namespace CxRestClient
         private static LoginToken GetLoginToken(String url, HttpContent authContent, bool doSSLValidate)
         {
             try
-            {
-                using (HttpClient c = MakeClient(doSSLValidate))
-                {
-                    var uri = new Uri(MakeUrl(url, LOGIN_URI_SUFFIX));
+            {				
+                HttpClient c = MakeClient(doSSLValidate);
+                
+				var uri = new Uri(MakeUrl(url, LOGIN_URI_SUFFIX));
 
-                    _log.Debug($"Login URL: {uri}");
+				_log.Debug($"Login URL: {uri}");
 
-                    var response = c.PostAsync(uri, authContent).Result;
+				var response = c.PostAsync(uri, authContent).Result;
 
-                    if (response.StatusCode != HttpStatusCode.OK)
-                    {
-                        if (_log.IsDebugEnabled)
-                            _log.Debug($"Response code [{response.StatusCode}]: " +
-                                $"{response.Content.ReadAsStringAsync().Result}");
-                        throw new InvalidOperationException(response.ReasonPhrase);
-                    }
-                    else
-                        _log.Debug("Successful login.");
+				if (response.StatusCode != HttpStatusCode.OK)
+				{
+					if (_log.IsDebugEnabled)
+						_log.Debug($"Response code [{response.StatusCode}]: " +
+							$"{response.Content.ReadAsStringAsync().Result}");
+					throw new InvalidOperationException(response.ReasonPhrase);
+				}
+				else
+					_log.Debug("Successful login.");
 
 
-                    using (JsonReader r = new JsonTextReader(new StreamReader
-                        (response.Content.ReadAsStreamAsync().Result)))
-                    {
+				using (JsonReader r = new JsonTextReader(new StreamReader
+					(response.Content.ReadAsStreamAsync().Result)))
+				{
 
-                        var results = JsonSerializer.Create().Deserialize(r,
-                            typeof(Dictionary<String, String>)) as Dictionary<String, String>;
+					var results = JsonSerializer.Create().Deserialize(r,
+						typeof(Dictionary<String, String>)) as Dictionary<String, String>;
 
-                        return new LoginToken
-                        {
-                            TokenType = results["token_type"],
-                            ExpireTime = DateTime.Now.AddSeconds(Convert.ToDouble(results["expires_in"])),
-                            Token = results["access_token"],
-                            ReauthContent = authContent
-                        };
-                    }
-                }
+					return new LoginToken
+					{
+						TokenType = results["token_type"],
+						ExpireTime = DateTime.Now.AddSeconds(Convert.ToDouble(results["expires_in"])),
+						Token = results["access_token"],
+						ReauthContent = authContent
+					};
+				}
+                
             }
             catch (HttpRequestException hex)
             {
@@ -248,11 +261,13 @@ namespace CxRestClient
 
         private static HttpClient MakeClient(bool doSSLValidate)
         {
-            HttpClientHandler h = new HttpClientHandler();
-            if (!doSSLValidate)
-                h.ServerCertificateCustomValidationCallback = (msg, cert, chain, errors) => true;
+			httpClientRequestCount++;
 
-            return new HttpClient(h, true);
+			if (!doSSLValidate)
+				return sslLessHttpClient;
+						
+			return httpClient;
+            
         }
 
         #endregion

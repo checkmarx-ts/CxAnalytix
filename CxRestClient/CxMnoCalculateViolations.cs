@@ -21,10 +21,10 @@ namespace CxRestClient
         {
             try
             {
-                using (var client = ctx.Json.CreateMnoClient())
-                using (var calculationResponse = client.PostAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
-                    String.Format(URL_SUFFIX, projectId)), null, token).Result)
-                    return calculationResponse.StatusCode == HttpStatusCode.Created;
+                var client = ctx.Json.CreateMnoClient();
+                var calculationResponse = client.PostAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
+                    String.Format(URL_SUFFIX, projectId)), null, token).Result;
+				return calculationResponse.StatusCode == HttpStatusCode.Created;
             }
             catch (HttpRequestException hex)
             {

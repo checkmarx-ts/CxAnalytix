@@ -69,8 +69,8 @@ namespace CxAnalytixCLI
                     },
                     t.Token);
             }
-
-
+			appLog.Info("Rest client requested: " + CxRestContext.httpClientRequestCount.ToString());
+			
             appLog.Info("End");
         }
     }

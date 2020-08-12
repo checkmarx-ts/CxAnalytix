@@ -41,24 +41,22 @@ namespace CxRestClient
         {
             try
             {
-                using (var client = ctx.Json.CreateSastClient())
-                {
-                    using (var scanReportStatus = client.GetAsync(
-                        CxRestContext.MakeUrl(ctx.Url,
-                        String.Format(URL_SUFFIX, reportId)), token).Result)
-                    {
-                        if (!scanReportStatus.IsSuccessStatusCode)
-                            return GenStatus.None;
+                var client = ctx.Json.CreateSastClient();
+                
+				var scanReportStatus = client.GetAsync(
+					CxRestContext.MakeUrl(ctx.Url,
+					String.Format(URL_SUFFIX, reportId)), token).Result;
+				
+				if (!scanReportStatus.IsSuccessStatusCode)
+					return GenStatus.None;
 
-                        using (var sr = new StreamReader
-                                (scanReportStatus.Content.ReadAsStreamAsync().Result))
-                        using (var jtr = new JsonTextReader(sr))
-                        {
-                            JToken jt = JToken.Load(jtr);
-                            return ReadStatus(jt);
-                        }
-                    }
-                }
+				using (var sr = new StreamReader
+						(scanReportStatus.Content.ReadAsStreamAsync().Result))
+				using (var jtr = new JsonTextReader(sr))
+				{
+					JToken jt = JToken.Load(jtr);
+					return ReadStatus(jt);
+				}
             }
             catch (HttpRequestException hex)
             {

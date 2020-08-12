@@ -109,23 +109,21 @@ namespace CxRestClient
         {
             try
             {
-                using (var client = ctx.Json.CreateMnoClient())
-                using (var violationsPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
-                    String.Format(URL_SUFFIX, projectId)), token).Result)
-                {
+                var client = ctx.Json.CreateMnoClient();
+                var violationsPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
+                    String.Format(URL_SUFFIX, projectId)), token).Result;
+                
+				if (!violationsPayload.IsSuccessStatusCode)
+					throw new InvalidOperationException
+						($"Unable to retrieve rule violations for project {projectId}.");
 
-                    if (!violationsPayload.IsSuccessStatusCode)
-                        throw new InvalidOperationException
-                            ($"Unable to retrieve rule violations for project {projectId}.");
-
-                    using (var sr = new StreamReader
-                            (violationsPayload.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
-                    {
-                        JToken jt = JToken.Load(jtr);
-                        return ParseViolatedRules(policies, projectId, jt);
-                    }
-                }
+				using (var sr = new StreamReader
+						(violationsPayload.Content.ReadAsStreamAsync().Result))
+				using (var jtr = new JsonTextReader(sr))
+				{
+					JToken jt = JToken.Load(jtr);
+					return ParseViolatedRules(policies, projectId, jt);
+				}                
             }
             catch (HttpRequestException hex)
             {

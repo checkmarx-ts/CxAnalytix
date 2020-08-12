@@ -51,35 +51,33 @@ namespace CxRestClient
 
             try
             {
-                using (var client = ctx.Json.CreateSastClient())
-                {
+                var client = ctx.Json.CreateSastClient();                
 
-                    var dict = new Dictionary<String, String>()
-                {
-                    { "reportType", type.ToString ()},
-                    { "scanId", scanId }
-                };
+				var dict = new Dictionary<String, String>()
+			{
+				{ "reportType", type.ToString ()},
+				{ "scanId", scanId }
+			};
 
-                    using (var payload = new FormUrlEncodedContent(dict))
-                    {
-                        using (var scanReportTicket = client.PostAsync(
-                            CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), payload).Result)
-                        {
-                            if (!scanReportTicket.IsSuccessStatusCode)
-                                throw new InvalidOperationException
-                                    ($"Scan report generation request for scan {scanId} returned " +
-                                    $"{scanReportTicket.StatusCode}");
+				using (var payload = new FormUrlEncodedContent(dict))
+				{
+					using (var scanReportTicket = client.PostAsync(
+						CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), payload).Result)
+					{
+						if (!scanReportTicket.IsSuccessStatusCode)
+							throw new InvalidOperationException
+								($"Scan report generation request for scan {scanId} returned " +
+								$"{scanReportTicket.StatusCode}");
 
-                            using (var sr = new StreamReader
-                                    (scanReportTicket.Content.ReadAsStreamAsync().Result))
-                            using (var jtr = new JsonTextReader(sr))
-                            {
-                                JToken jt = JToken.Load(jtr);
-                                return ReadReportId(jt);
-                            }
-                        }
-                    }
-                }
+						using (var sr = new StreamReader
+								(scanReportTicket.Content.ReadAsStreamAsync().Result))
+						using (var jtr = new JsonTextReader(sr))
+						{
+							JToken jt = JToken.Load(jtr);
+							return ReadReportId(jt);
+						}
+					}
+				}                
             }
             catch (HttpRequestException hex)
             {

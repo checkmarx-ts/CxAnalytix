@@ -22,17 +22,17 @@ namespace CxRestClient
         {
             try
             {
-                using (var client = ctx.Xml.CreateSastClient())
-                {
-                    var reportPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.Url,
-                        String.Format(URL_SUFFIX, reportId)), token).Result;
+                var client = ctx.Xml.CreateSastClient();
+                
+				var reportPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.Url,
+					String.Format(URL_SUFFIX, reportId)), token).Result;
 
-                    if (!reportPayload.IsSuccessStatusCode)
-                        throw new InvalidOperationException($"Unable to retrieve report {reportId}." +
-                            $" Response reason is {reportPayload.ReasonPhrase}.");
+				if (!reportPayload.IsSuccessStatusCode)
+					throw new InvalidOperationException($"Unable to retrieve report {reportId}." +
+						$" Response reason is {reportPayload.ReasonPhrase}.");
 
-                    return reportPayload.Content.ReadAsStreamAsync().Result;
-                }
+				return reportPayload.Content.ReadAsStreamAsync().Result;
+                
             }
             catch (HttpRequestException hex)
             {

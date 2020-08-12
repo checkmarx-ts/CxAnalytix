@@ -138,24 +138,23 @@ namespace CxRestClient
                 {"scanId", Convert.ToString (scanId)  }
             });
 
-                using (var client = ctx.Json.CreateSastClient())
-                {
-                    var libraries = client.GetAsync(url, token).Result;
+                var client = ctx.Json.CreateSastClient();
+                
+				var libraries = client.GetAsync(url, token).Result;
 
-                    if (token.IsCancellationRequested)
-                        return null;
+				if (token.IsCancellationRequested)
+					return null;
 
-                    if (!libraries.IsSuccessStatusCode)
-                        throw new InvalidOperationException(libraries.ReasonPhrase);
+				if (!libraries.IsSuccessStatusCode)
+					throw new InvalidOperationException(libraries.ReasonPhrase);
 
-                    using (var sr = new StreamReader
-                        (libraries.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
-                    {
-                        JToken jt = JToken.Load(jtr);
-                        return new LibrariesReader(jt);
-                    }
-                }
+				using (var sr = new StreamReader
+					(libraries.Content.ReadAsStreamAsync().Result))
+				using (var jtr = new JsonTextReader(sr))
+				{
+					JToken jt = JToken.Load(jtr);
+					return new LibrariesReader(jt);
+				}                
             }
             catch (HttpRequestException hex)
             {

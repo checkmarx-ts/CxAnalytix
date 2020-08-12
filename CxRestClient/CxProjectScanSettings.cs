@@ -68,26 +68,24 @@ namespace CxRestClient
             {
                 String restUrl = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX);
 
-                using (var client = ctx.Json.CreateSastClient())
-                using (var settings = client.GetAsync(CxRestContext.MakeUrl(restUrl,
-                    Convert.ToString(projectId)), token).Result)
-                {
-                    if (token.IsCancellationRequested)
-                        return null;
+                var client = ctx.Json.CreateSastClient();
+                var settings = client.GetAsync(CxRestContext.MakeUrl(restUrl,
+                    Convert.ToString(projectId)), token).Result;
+                
+				if (token.IsCancellationRequested)
+					return null;
 
-                    if (!settings.IsSuccessStatusCode)
-                        throw new InvalidOperationException(settings.ReasonPhrase);
+				if (!settings.IsSuccessStatusCode)
+					throw new InvalidOperationException(settings.ReasonPhrase);
 
-                    using (var sr = new StreamReader
-                            (settings.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
-                    {
-                        JToken jt = JToken.Load(jtr);
+				using (var sr = new StreamReader
+						(settings.Content.ReadAsStreamAsync().Result))
+				using (var jtr = new JsonTextReader(sr))
+				{
+					JToken jt = JToken.Load(jtr);
 
-                        return new ScanSettings(jt);
-                    }
-                }
-
+					return new ScanSettings(jt);
+				}
             }
             catch (HttpRequestException hex)
             {

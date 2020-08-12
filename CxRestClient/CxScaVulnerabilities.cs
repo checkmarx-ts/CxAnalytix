@@ -140,24 +140,23 @@ namespace CxRestClient
                 {"scanId", Convert.ToString (scanId)  }
             });
 
-                using (var client = ctx.Json.CreateSastClient())
-                using (var vulns = client.GetAsync(url, token).Result)
-                {
+                var client = ctx.Json.CreateSastClient();
+                var vulns = client.GetAsync(url, token).Result;
+                
+				if (token.IsCancellationRequested)
+					return null;
 
-                    if (token.IsCancellationRequested)
-                        return null;
+				if (!vulns.IsSuccessStatusCode)
+					throw new InvalidOperationException(vulns.ReasonPhrase);
 
-                    if (!vulns.IsSuccessStatusCode)
-                        throw new InvalidOperationException(vulns.ReasonPhrase);
-
-                    using (var sr = new StreamReader
-                        (vulns.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
-                    {
-                        JToken jt = JToken.Load(jtr);
-                        return new VulnerabilityReader(jt);
-                    }
-                }
+				using (var sr = new StreamReader
+					(vulns.Content.ReadAsStreamAsync().Result))
+				using (var jtr = new JsonTextReader(sr))
+				{
+					JToken jt = JToken.Load(jtr);
+					return new VulnerabilityReader(jt);
+				}
+                
             }
             catch (HttpRequestException hex)
             {

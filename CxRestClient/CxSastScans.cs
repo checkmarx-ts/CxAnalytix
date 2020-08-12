@@ -173,25 +173,23 @@ namespace CxRestClient
                 }
                 else
                     url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX);
-                using (var client = ctx.Json.CreateSastClient())
-                {
-                    using (var scans = client.GetAsync(url, token).Result)
-                    {
-                        if (token.IsCancellationRequested)
-                            return null;
+                
+				var client = ctx.Json.CreateSastClient();                
+				var scans = client.GetAsync(url, token).Result;
+				
+				if (token.IsCancellationRequested)
+					return null;
 
-                        if (!scans.IsSuccessStatusCode)
-                            throw new InvalidOperationException(scans.ReasonPhrase);
+				if (!scans.IsSuccessStatusCode)
+					throw new InvalidOperationException(scans.ReasonPhrase);
 
-                        using (var sr = new StreamReader
-                            (scans.Content.ReadAsStreamAsync().Result))
-                        using (var jtr = new JsonTextReader(sr))
-                        {
-                            JToken jt = JToken.Load(jtr);
-                            return new ScansReader(jt);
-                        }
-                    }
-                }
+				using (var sr = new StreamReader
+					(scans.Content.ReadAsStreamAsync().Result))
+				using (var jtr = new JsonTextReader(sr))
+				{
+					JToken jt = JToken.Load(jtr);
+					return new ScansReader(jt);
+				}
             }
             catch (HttpRequestException hex)
             {

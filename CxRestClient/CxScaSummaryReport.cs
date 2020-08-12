@@ -67,20 +67,19 @@ namespace CxRestClient
             });
 
 
-                using (var client = ctx.Json.CreateSastClient())
-                using (var scanSummary = client.GetAsync(url, token).Result)
-                {
-                    if (!scanSummary.IsSuccessStatusCode)
-                        throw new InvalidOperationException(scanSummary.ReasonPhrase);
+                var client = ctx.Json.CreateSastClient();
+                var scanSummary = client.GetAsync(url, token).Result;
+                
+				if (!scanSummary.IsSuccessStatusCode)
+					throw new InvalidOperationException(scanSummary.ReasonPhrase);
 
-                    using (var sr = new StreamReader
-                        (scanSummary.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
-                    {
-                        JToken jt = JToken.Load(jtr);
-                        return ParseScanSummary(jt);
-                    }
-                }
+				using (var sr = new StreamReader
+					(scanSummary.Content.ReadAsStreamAsync().Result))
+				using (var jtr = new JsonTextReader(sr))
+				{
+					JToken jt = JToken.Load(jtr);
+					return ParseScanSummary(jt);
+				}                
             }
             catch (HttpRequestException hex)
             {

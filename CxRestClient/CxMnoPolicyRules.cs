@@ -66,23 +66,21 @@ namespace CxRestClient
 
             try
             {
-                using (var client = ctx.Json.CreateMnoClient())
-                using (var rulePayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
-                    String.Format(URL_SUFFIX, policyId)), token).Result)
-                {
+                var client = ctx.Json.CreateMnoClient();
+                var rulePayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
+                    String.Format(URL_SUFFIX, policyId)), token).Result;
 
-                    if (!rulePayload.IsSuccessStatusCode)
-                        throw new InvalidOperationException
-                            ($"Unable to retrieve rules for policy {policyId}.");
+				if (!rulePayload.IsSuccessStatusCode)
+					throw new InvalidOperationException
+						($"Unable to retrieve rules for policy {policyId}.");
 
-                    using (var sr = new StreamReader
-                        (rulePayload.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
-                    {
-                        JToken jt = JToken.Load(jtr);
-                        return ParseRules(ctx, token, jt);
-                    }
-                }
+				using (var sr = new StreamReader
+					(rulePayload.Content.ReadAsStreamAsync().Result))
+				using (var jtr = new JsonTextReader(sr))
+				{
+					JToken jt = JToken.Load(jtr);
+					return ParseRules(ctx, token, jt);
+				}
             }
             catch (HttpRequestException hex)
             {
