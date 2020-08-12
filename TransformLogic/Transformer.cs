@@ -663,6 +663,8 @@ namespace CxAnalytix.TransformLogic
             flat.Add(PropertyKeys.KEY_SCANTYPE, scanRecord.ScanType);
             flat.Add(PropertyKeys.KEY_SCANFINISH, scanRecord.FinishedStamp);
             flat.Add(PropertyKeys.KEY_SCANSTART, SastScanCache[scanRecord.ScanId].StartTime);
+            flat.Add(PropertyKeys.KEY_ENGINESTART, SastScanCache[scanRecord.ScanId].EngineStartTime);
+            flat.Add(PropertyKeys.KEY_ENGINEFINISH, SastScanCache[scanRecord.ScanId].EngineFinishTime);
             flat.Add(PropertyKeys.KEY_SCANRISK, SastScanCache[scanRecord.ScanId].ScanRisk);
             flat.Add(PropertyKeys.KEY_SCANRISKSEV, SastScanCache[scanRecord.ScanId].ScanRiskSeverity);
             flat.Add("LinesOfCode", SastScanCache[scanRecord.ScanId].LinesOfCode);

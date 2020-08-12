@@ -10,6 +10,8 @@ using OSA.)
 
 * CxVersion
 * DeepLink
+* EngineFinished
+* EngineStart
 * FailedLinesOfCode
 * FileCount
 * Information

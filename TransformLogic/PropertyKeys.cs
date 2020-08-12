@@ -23,5 +23,7 @@ namespace CxAnalytix.TransformLogic
         public static readonly String KEY_SIMILARITYID = "SimilarityId";
         public static readonly String KEY_INSTANCEID = "InstanceId";
         public static readonly String KEY_CUSTOMFIELDS = "CustomFields";
+        public static readonly String KEY_ENGINESTART = "EngineStart";
+        public static readonly String KEY_ENGINEFINISH = "EngineFinished";
     }
 }
