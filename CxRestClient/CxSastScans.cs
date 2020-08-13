@@ -85,6 +85,10 @@ namespace CxRestClient
             [JsonProperty(PropertyName = "scanRiskSeverity")]
             public int ScanRiskSeverity { get; internal set; }
 
+            public override string ToString()
+            {
+                return JsonConvert.SerializeObject(this, Formatting.None);
+            }
         }
 
 

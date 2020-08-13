@@ -254,6 +254,8 @@ namespace CxAnalytix.TransformLogic
 
             Policies = null;
 
+            _log.Debug("Retrieving policies, if available.");
+
             // Policies may not have data if M&O is not installed.
             try
             {
@@ -268,15 +270,21 @@ namespace CxAnalytix.TransformLogic
             // Populate the data resolver with teams and presets
             DataResolver dr = new DataResolver();
 
+            _log.Debug("Retrieving presets.");
+
             var presetEnum = CxPresets.GetPresets(RestContext, CancelToken);
 
             foreach (var preset in presetEnum)
                 dr.addPreset(preset.PresetId, preset.PresetName);
 
+            _log.Debug("Retrieving teams.");
+
             var teamEnum = CxTeams.GetTeams(RestContext, CancelToken);
 
             foreach (var team in teamEnum)
                 dr.addTeam(team.TeamId, team.TeamName);
+
+            _log.Debug("Resolving projects.");
 
             // Now populate the project resolver with the projects
             ProjectResolver pr = dr.Resolve(previousStatePath);
@@ -315,9 +323,14 @@ namespace CxAnalytix.TransformLogic
 
             try
             {
+                _log.Debug("Retrieving SAST scans.");
+                
                 var sastScans = CxSastScans.GetScans(RestContext, CancelToken, CxSastScans.ScanStatus.Finished);
+
                 foreach (var sastScan in sastScans)
                 {
+                    _log.Debug($"SAST scan record: {sastScan}");
+
                     sr.AddScan(sastScan.ProjectId, sastScan.ScanType, SAST_PRODUCT_STRING,
                         sastScan.ScanId, sastScan.FinishTime);
 
@@ -325,11 +338,15 @@ namespace CxAnalytix.TransformLogic
                 }
 
 
+                _log.Debug("Retrieving OSA scans.");
+
                 foreach (var p in projects)
                 {
                     var scaScans = CxScaScans.GetScans(ctx, token, p.ProjectId);
                     foreach (var scaScan in scaScans)
                     {
+                        _log.Debug($"OSA scan record: {scaScan}");
+
                         sr.AddScan(scaScan.ProjectId, "Composition", SCA_PRODUCT_STRING, scaScan.ScanId,
                             scaScan.FinishTime);
                         ScaScanCache.Add(scaScan.ScanId, scaScan);
@@ -359,6 +376,15 @@ namespace CxAnalytix.TransformLogic
 
         private void ExecuteSweep()
         {
+            if (ScanDescriptors == null)
+            {
+                _log.Error("Scans to crawl do not appear to be resolved, unable to crawl scan data.");
+                return;
+            }
+            else
+                _log.Debug("Crawling scans.");
+
+
             // Lookup policy violations, report the project information records.
             Parallel.ForEach<ScanDescriptor>(ScanDescriptors, ThreadOpts,
             (scan) =>
@@ -414,25 +440,32 @@ namespace CxAnalytix.TransformLogic
         public static void DoTransform(int concurrentThreads, String previousStatePath, String instanceId,
         CxRestContext ctx, IOutputFactory outFactory, RecordNames records, CancellationToken token)
         {
-
-            Transformer xform = new Transformer(ctx, token, previousStatePath)
+            try
             {
-                ThreadOpts = new ParallelOptions()
+
+                Transformer xform = new Transformer(ctx, token, previousStatePath)
                 {
-                    CancellationToken = token,
-                    MaxDegreeOfParallelism = concurrentThreads
-                },
-                ProjectInfoOut = outFactory.newInstance(records.ProjectInfo),
-                SastScanSummaryOut = outFactory.newInstance(records.SASTScanSummary),
-                SastScanDetailOut = outFactory.newInstance(records.SASTScanDetail),
-                PolicyViolationDetailOut = outFactory.newInstance(records.PolicyViolations),
-                ScaScanSummaryOut = outFactory.newInstance(records.SCAScanSummary),
-                ScaScanDetailOut = outFactory.newInstance(records.SCAScanDetail),
-                InstanceId = instanceId
+                    ThreadOpts = new ParallelOptions()
+                    {
+                        CancellationToken = token,
+                        MaxDegreeOfParallelism = concurrentThreads
+                    },
+                    ProjectInfoOut = outFactory.newInstance(records.ProjectInfo),
+                    SastScanSummaryOut = outFactory.newInstance(records.SASTScanSummary),
+                    SastScanDetailOut = outFactory.newInstance(records.SASTScanDetail),
+                    PolicyViolationDetailOut = outFactory.newInstance(records.PolicyViolations),
+                    ScaScanSummaryOut = outFactory.newInstance(records.SCAScanSummary),
+                    ScaScanDetailOut = outFactory.newInstance(records.SCAScanDetail),
+                    InstanceId = instanceId
 
-            };
+                };
 
-            xform.ExecuteSweep();
+                xform.ExecuteSweep();
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Unhandled exception caught.", ex);
+            }
         }
 
         private void OutputPolicyViolationDetails(ScanDescriptor scan)

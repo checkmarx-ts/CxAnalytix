@@ -143,7 +143,7 @@ namespace CxAnalytix.TransformLogic
 
                 // _previousProjects now has projects that have likely been deleted, so throw some INFO in the log
                 // that these aren't going to be scanned.
-                _log.InfoFormat("{0} projects are targets for check for new scans. Since last scan: {1} projects removed, {2} new projects.",
+                _log.InfoFormat("{0} projects are targets to check for new scans. Since last scan: {1} projects removed, {2} new projects.",
                     _targets.Keys.Count, _previousTargets.Keys.Count, newProjects);
 
                 foreach (int pid in _previousTargets.Keys)

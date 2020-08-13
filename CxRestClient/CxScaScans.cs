@@ -27,6 +27,10 @@ namespace CxRestClient
             public DateTime FinishTime { get; internal set; }
             public DateTime StartTime { get; internal set; }
 
+            public override string ToString()
+            {
+                return JsonConvert.SerializeObject(this, Formatting.None);
+            }
         }
 
 
