@@ -195,7 +195,10 @@ namespace CxRestClient
                             return null;
 
                         if (!scans.IsSuccessStatusCode)
+                        {
+                            _log.Error($"Error retrieving scans with status {specificStatus}: {scans.StatusCode} - {scans.ReasonPhrase}");
                             throw new InvalidOperationException(scans.ReasonPhrase);
+                        }
 
                         using (var sr = new StreamReader
                             (scans.Content.ReadAsStreamAsync().Result))
