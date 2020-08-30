@@ -8,6 +8,7 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using log4net;
+using CxRestClient.Utility;
 
 namespace CxRestClient
 {
@@ -22,51 +23,9 @@ namespace CxRestClient
 
         private static ILog _log = LogManager.GetLogger(typeof(CxRestContext));
 
-        public class ClientFactory
-        {
-            private ClientFactory()
-            { }
 
-            internal ClientFactory(String mediaType, CxRestContext ctx)
-            {
-                Context = ctx;
-                MediaType = mediaType;
-            }
+        // ####
 
-            private CxRestContext Context { get; set; }
-            private String MediaType { get; set; }
-
-            public HttpClient CreateSastClient()
-            {
-                var retVal = CreateGenericClient();
-
-                retVal.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue(Context.SastToken.TokenType,
-                    Context.SastToken.Token);
-
-                return retVal;
-            }
-
-            public HttpClient CreateMnoClient()
-            {
-                var retVal = CreateGenericClient();
-
-                retVal.DefaultRequestHeaders.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue(Context.MNOToken.TokenType,
-                    Context.MNOToken.Token);
-
-                return retVal;
-            }
-
-            private HttpClient CreateGenericClient()
-            {
-                HttpClient retVal = MakeClient(Context.ValidateSSL);
-                retVal.DefaultRequestHeaders.Accept.Clear();
-                retVal.DefaultRequestHeaders.Accept.Add
-                    (new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue(MediaType));
-                return retVal;
-            }
-        }
 
         internal CxRestContext()
         { }
@@ -77,8 +36,8 @@ namespace CxRestClient
         public String Url { get; internal set; }
         public String MnoUrl { get; internal set; }
         public TimeSpan Timeout { get; internal set; }
-        public ClientFactory Json { get; internal set; }
-        public ClientFactory Xml { get; internal set; }
+        public CxClientFactory Json { get; internal set; }
+        public CxClientFactory Xml { get; internal set; }
 
 
         private Object _tokenLock = new object();
@@ -122,7 +81,7 @@ namespace CxRestClient
             lock (_tokenLock)
             {
                 if (DateTime.Now.CompareTo(token.ExpireTime) >= 0)
-                    token = GetLoginToken(Url, token.ReauthContent, ValidateSSL);
+                    token = GetLoginToken(Url, token.ReauthContent);
             }
         }
 
@@ -159,44 +118,43 @@ namespace CxRestClient
         => MakeUrl(url, suffix) + "?" + MakeQueryString(query);
 
 
-        private static LoginToken GetLoginToken(String url, HttpContent authContent, bool doSSLValidate)
+        private static LoginToken GetLoginToken(String url, HttpContent authContent)
         {
             try
             {
-                using (HttpClient c = MakeClient(doSSLValidate))
+                HttpClient c = HttpClientSingleton.GetClient();
+
+                var uri = new Uri(MakeUrl(url, LOGIN_URI_SUFFIX));
+
+                _log.Debug($"Login URL: {uri}");
+
+                var response = c.PostAsync(uri, authContent).Result;
+
+                if (response.StatusCode != HttpStatusCode.OK)
                 {
-                    var uri = new Uri(MakeUrl(url, LOGIN_URI_SUFFIX));
+                    if (_log.IsDebugEnabled)
+                        _log.Debug($"Response code [{response.StatusCode}]: " +
+                            $"{response.Content.ReadAsStringAsync().Result}");
+                    throw new InvalidOperationException(response.ReasonPhrase);
+                }
+                else
+                    _log.Debug("Successful login.");
 
-                    _log.Debug($"Login URL: {uri}");
 
-                    var response = c.PostAsync(uri, authContent).Result;
+                using (JsonReader r = new JsonTextReader(new StreamReader
+                    (response.Content.ReadAsStreamAsync().Result)))
+                {
 
-                    if (response.StatusCode != HttpStatusCode.OK)
+                    var results = JsonSerializer.Create().Deserialize(r,
+                        typeof(Dictionary<String, String>)) as Dictionary<String, String>;
+
+                    return new LoginToken
                     {
-                        if (_log.IsDebugEnabled)
-                            _log.Debug($"Response code [{response.StatusCode}]: " +
-                                $"{response.Content.ReadAsStringAsync().Result}");
-                        throw new InvalidOperationException(response.ReasonPhrase);
-                    }
-                    else
-                        _log.Debug("Successful login.");
-
-
-                    using (JsonReader r = new JsonTextReader(new StreamReader
-                        (response.Content.ReadAsStreamAsync().Result)))
-                    {
-
-                        var results = JsonSerializer.Create().Deserialize(r,
-                            typeof(Dictionary<String, String>)) as Dictionary<String, String>;
-
-                        return new LoginToken
-                        {
-                            TokenType = results["token_type"],
-                            ExpireTime = DateTime.Now.AddSeconds(Convert.ToDouble(results["expires_in"])),
-                            Token = results["access_token"],
-                            ReauthContent = authContent
-                        };
-                    }
+                        TokenType = results["token_type"],
+                        ExpireTime = DateTime.Now.AddSeconds(Convert.ToDouble(results["expires_in"])),
+                        Token = results["access_token"],
+                        ReauthContent = authContent
+                    };
                 }
             }
             catch (HttpRequestException hex)
@@ -227,7 +185,7 @@ namespace CxRestClient
         }
 
         private static LoginToken GetLoginToken(String url, String username, String password,
-            String scope, bool doSSLValidate)
+            String scope)
         {
             _log.Debug($"Obtainting login token for scope [{scope}]");
 
@@ -243,16 +201,7 @@ namespace CxRestClient
 
             var payloadContent = new FormUrlEncodedContent(requestContent);
 
-            return GetLoginToken(url, payloadContent, doSSLValidate);
-        }
-
-        private static HttpClient MakeClient(bool doSSLValidate)
-        {
-            HttpClientHandler h = new HttpClientHandler();
-            if (!doSSLValidate)
-                h.ServerCertificateCustomValidationCallback = (msg, cert, chain, errors) => true;
-
-            return new HttpClient(h, true);
+            return GetLoginToken(url, payloadContent);
         }
 
         #endregion
@@ -318,18 +267,21 @@ namespace CxRestClient
                 if (_pass == null)
                     throw new InvalidOperationException("Password was not specified.");
 
+
+                HttpClientSingleton.Initialize(_validate);
+
                 CxRestContext retVal = new CxRestContext()
                 {
-                    SastToken = GetLoginToken(_url, _user, _pass, SAST_SCOPE, _validate),
-                    MNOToken = GetLoginToken(_url, _user, _pass, $"{MNO_SCOPE} {SAST_SCOPE}", _validate),
+                    SastToken = GetLoginToken(_url, _user, _pass, SAST_SCOPE),
+                    MNOToken = GetLoginToken(_url, _user, _pass, $"{MNO_SCOPE} {SAST_SCOPE}"),
                     Url = _url,
                     MnoUrl = String.IsNullOrEmpty (_mnoUrl) ? _url : _mnoUrl,
                     ValidateSSL = _validate,
                     Timeout = new TimeSpan(0, 0, _timeout)
                 };
 
-                retVal.Json = new ClientFactory("application/json", retVal);
-                retVal.Xml = new ClientFactory("application/xml", retVal);
+                retVal.Json = new CxClientFactory("application/json", retVal);
+                retVal.Xml = new CxClientFactory("application/xml", retVal);
 
                 return retVal;
             }

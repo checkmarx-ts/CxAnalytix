@@ -187,6 +187,8 @@ namespace CxRestClient
                 }
                 else
                     url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX);
+
+
                 using (var client = ctx.Json.CreateSastClient())
                 {
                     using (var scans = client.GetAsync(url, token).Result)

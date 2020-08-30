@@ -63,7 +63,7 @@ namespace CxRestClient
                     using (var payload = new FormUrlEncodedContent(dict))
                     {
                         using (var scanReportTicket = client.PostAsync(
-                            CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), payload).Result)
+                            CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), payload, token).Result)
                         {
                             if (!scanReportTicket.IsSuccessStatusCode)
                                 throw new InvalidOperationException
