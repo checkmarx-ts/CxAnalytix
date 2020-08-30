@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
@@ -11,6 +12,8 @@ namespace CxRestClient.Utility
     {
         private static HttpClient _client = null;
         private static Object _lock = new object();
+
+        private static ILog _log = LogManager.GetLogger(typeof(HttpClientSingleton));
 
         private HttpClientSingleton()
         { }

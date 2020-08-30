@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -11,6 +12,8 @@ namespace CxRestClient.Utility
     public class CxRestClient : IDisposable
     {
         private HttpRequestMessage _msg;
+
+        private static ILog _log = LogManager.GetLogger(typeof(CxRestClient));
 
         internal CxRestClient(AuthenticationHeaderValue authHeader, String acceptMediaType)
         {

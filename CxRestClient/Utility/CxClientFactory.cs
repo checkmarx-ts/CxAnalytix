@@ -1,4 +1,5 @@
-﻿using System;
+﻿using log4net;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -6,6 +7,9 @@ namespace CxRestClient.Utility
 {
     public class CxClientFactory
     {
+
+        private static ILog _log = LogManager.GetLogger(typeof(CxClientFactory));
+
         private CxClientFactory()
         { }
 
