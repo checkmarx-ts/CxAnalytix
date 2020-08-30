@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CxRestClient.Utility
+namespace CxRestClient.IO
 {
     public class CxRestClient : IDisposable
     {

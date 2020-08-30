@@ -8,6 +8,7 @@ using System.Reflection;
 using System;
 using CxRestClient;
 
+[assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "CxAnalytixService.log4net", Watch = true)]
 
 namespace CxAnalytixService

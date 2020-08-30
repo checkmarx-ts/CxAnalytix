@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text;
 
 [assembly: InternalsVisibleTo("CxRestClient_Tests")]
-namespace CxRestClient.Utility
+namespace CxRestClient.IO
 {
     internal class HttpClientSingleton
     {
@@ -31,19 +31,29 @@ namespace CxRestClient.Utility
 
         public static void Initialize(bool doSSLValidate)
         {
-            // TODO: Flag for trace so that the HttpClientHandler can dump request/response payloads
-            // If log4net is in debug mode, intercept the traffic and dump it to the log output.
             lock (_lock)
             {
                 if (_client != null)
                     throw new InvalidOperationException("HttpClient is already initialized.");
 
-                HttpClientHandler h = new HttpClientHandler();
+                HttpClientHandler h = GetClientHandler();
                 if (!doSSLValidate)
                     h.ServerCertificateCustomValidationCallback = (msg, cert, chain, errors) => true;
 
+
                 _client = new HttpClient(h, true);
             }
+        }
+
+        private static HttpClientHandler GetClientHandler ()
+        {
+            if (!_log.IsNetworkTrace())
+                return new HttpClientHandler();
+            else
+                return new LoggingClientHandler();
+
+
+
         }
 
         public static HttpClient GetClient()

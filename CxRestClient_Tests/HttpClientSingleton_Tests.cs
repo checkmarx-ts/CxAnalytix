@@ -1,6 +1,6 @@
 ﻿using System;
 using NUnit.Framework;
-using CxRestClient.Utility;
+using CxRestClient.IO;
 
 namespace CxRestClient_Tests
 {

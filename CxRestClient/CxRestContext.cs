@@ -8,7 +8,7 @@ using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using log4net;
-using CxRestClient.Utility;
+using CxRestClient.IO;
 
 namespace CxRestClient
 {
