@@ -1,4 +1,5 @@
 ﻿using CxRestClient;
+using CxRestClient.Utility;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using NUnit.Framework;
