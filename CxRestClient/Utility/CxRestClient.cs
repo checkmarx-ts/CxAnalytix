@@ -28,14 +28,18 @@ namespace CxRestClient.Utility
         public Task<HttpResponseMessage> PostAsync(Uri dest, HttpContent content, CancellationToken cancelToken)
         {
             _msg.Content = content;
+            _msg.RequestUri = dest;
             return DoAsyncOp(HttpMethod.Post, cancelToken);
         }
 
         public Task<HttpResponseMessage> PostAsync(String dest, HttpContent content, CancellationToken cancelToken) =>
             PostAsync(new Uri(dest), content, cancelToken);
-        
-        public Task<HttpResponseMessage> GetAsync(Uri dest, CancellationToken cancelToken) =>
-            DoAsyncOp(HttpMethod.Get, cancelToken);
+
+        public Task<HttpResponseMessage> GetAsync(Uri dest, CancellationToken cancelToken)
+        {
+            _msg.RequestUri = dest;
+            return DoAsyncOp(HttpMethod.Get, cancelToken);
+        }
 
         public Task<HttpResponseMessage> GetAsync(String dest, CancellationToken cancelToken) =>
             GetAsync(new Uri (dest), cancelToken);
