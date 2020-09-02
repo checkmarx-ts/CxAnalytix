@@ -23,10 +23,6 @@ namespace CxRestClient
 
         private static ILog _log = LogManager.GetLogger(typeof(CxRestContext));
 
-
-        // ####
-
-
         internal CxRestContext()
         { }
 
@@ -40,7 +36,7 @@ namespace CxRestClient
         public CxClientFactory Xml { get; internal set; }
 
 
-        private Object _tokenLock = new object();
+        private readonly Object _tokenLock = new object();
 
 
         private LoginToken _sastToken;
@@ -256,7 +252,7 @@ namespace CxRestClient
             }
 
 
-            public CxRestContext build()
+            public CxRestContext Build()
             {
                 if (_url == null)
                     throw new InvalidOperationException("Endpoint URL was not specified.");

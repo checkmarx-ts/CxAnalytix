@@ -11,7 +11,7 @@ namespace CxRestClient.IO
     internal class HttpClientSingleton
     {
         private static HttpClient _client = null;
-        private static Object _lock = new object();
+        private static readonly Object _lock = new object();
 
         private static ILog _log = LogManager.GetLogger(typeof(HttpClientSingleton));
 
