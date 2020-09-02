@@ -58,7 +58,7 @@ namespace CxAnalytixDaemon
             .WithUsername(Config.Credentials.Username)
             .WithPassword(Config.Credentials.Password);
 
-            var restCtx = builder.build();
+            var restCtx = builder.Build();
 
             _serviceTask = Task.Run(async () =>
             {
