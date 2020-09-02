@@ -263,8 +263,9 @@ namespace CxRestClient
                 if (_pass == null)
                     throw new InvalidOperationException("Password was not specified.");
 
+                var timeoutSpan = new TimeSpan(0, 0, _timeout);
 
-                HttpClientSingleton.Initialize(_validate);
+                HttpClientSingleton.Initialize(_validate, timeoutSpan);
 
                 CxRestContext retVal = new CxRestContext()
                 {
@@ -273,7 +274,7 @@ namespace CxRestClient
                     Url = _url,
                     MnoUrl = String.IsNullOrEmpty (_mnoUrl) ? _url : _mnoUrl,
                     ValidateSSL = _validate,
-                    Timeout = new TimeSpan(0, 0, _timeout)
+                    Timeout = timeoutSpan
                 };
 
                 retVal.Json = new CxClientFactory("application/json", retVal);

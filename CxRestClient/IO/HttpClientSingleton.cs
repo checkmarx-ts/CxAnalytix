@@ -29,7 +29,7 @@ namespace CxRestClient.IO
         }
 
 
-        public static void Initialize(bool doSSLValidate)
+        public static void Initialize(bool doSSLValidate, TimeSpan opTimeout)
         {
             lock (_lock)
             {
@@ -42,6 +42,7 @@ namespace CxRestClient.IO
 
 
                 _client = new HttpClient(h, true);
+                _client.Timeout = opTimeout;
             }
         }
 

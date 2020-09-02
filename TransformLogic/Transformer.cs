@@ -80,6 +80,24 @@ namespace CxAnalytix.TransformLogic
 
                 inst.OutputSASTScanSummary(scan);
             }
+            catch (AggregateException aex)
+            {
+                _log.Warn($"Multiple exceptions caught attempting to retrieve the SAST XML report for {scan.ScanId}" +
+                    $" in project {scan.Project.ProjectId}: {scan.Project.ProjectName}. ");
+
+                _log.Warn("BEGIN exception report");
+
+                int exCount = 0;
+
+                aex.Handle((x) =>
+                {
+                    _log.Warn($"Exception #{++exCount}", x);
+
+                    return true;
+                });
+
+                _log.Warn("END exception report");
+            }
             catch (Exception ex)
             {
                 _log.Warn($"Error attempting to retrieve the SAST XML report for {scan.ScanId}" +

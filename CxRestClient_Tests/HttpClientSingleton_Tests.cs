@@ -9,11 +9,11 @@ namespace CxRestClient_Tests
         [Test]
         public void TestDoubleInitializeThrowsError ()
         {
-            HttpClientSingleton.Initialize(true);
+            HttpClientSingleton.Initialize(true, TimeSpan.FromSeconds(600));
 
             try
             {
-                HttpClientSingleton.Initialize(true);
+                HttpClientSingleton.Initialize(true, TimeSpan.FromSeconds(600));
             }
             catch (InvalidOperationException)
             {
@@ -51,7 +51,7 @@ namespace CxRestClient_Tests
         [Test]
         public void TestInitializedAccessGivesResult()
         {
-            HttpClientSingleton.Initialize(true);
+            HttpClientSingleton.Initialize(true, TimeSpan.FromSeconds(600));
 
             var h = HttpClientSingleton.GetClient();
             bool result = h != null;

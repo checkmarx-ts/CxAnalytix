@@ -43,7 +43,8 @@ namespace CxAnalytix.TransformLogic
                 using (var sr = new StreamReader(_stateStorageFilePath))
                     loadProjectCheckState(sr);
             }
-            else
+
+            if (_previousTargets == null)
                 _previousTargets = new Dictionary<int, ProjectDescriptorExt>();
         }
 
