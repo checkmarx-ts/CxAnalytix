@@ -34,6 +34,7 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 * 1.1.5
   * FEATURES
     * Added the ability to dump all network I/O to the application log.
+    * Improved error handling and exception logging for troubleshooting purposes.
   * BUG FIXES
     * Issues #21, 22 - Networking implementation caused issues on some versions of Windows server.
 * 1.1.4
