@@ -6,8 +6,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
+using CxRestClient.Utility;
 
 namespace CxRestClient
 {
@@ -27,6 +27,10 @@ namespace CxRestClient
             public DateTime FinishTime { get; internal set; }
             public DateTime StartTime { get; internal set; }
 
+            public override string ToString()
+            {
+                return JsonConvert.SerializeObject(this, Formatting.None);
+            }
         }
 
 

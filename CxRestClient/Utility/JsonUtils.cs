@@ -6,7 +6,7 @@ using System.Text;
 
 
 [assembly: InternalsVisibleTo("CxRestClient_Tests")]
-namespace CxRestClient
+namespace CxRestClient.Utility
 {
     internal class JsonUtils
     {

@@ -85,6 +85,10 @@ namespace CxRestClient
             [JsonProperty(PropertyName = "scanRiskSeverity")]
             public int ScanRiskSeverity { get; internal set; }
 
+            public override string ToString()
+            {
+                return JsonConvert.SerializeObject(this, Formatting.None);
+            }
         }
 
 
@@ -183,6 +187,8 @@ namespace CxRestClient
                 }
                 else
                     url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX);
+
+
                 using (var client = ctx.Json.CreateSastClient())
                 {
                     using (var scans = client.GetAsync(url, token).Result)
@@ -191,7 +197,10 @@ namespace CxRestClient
                             return null;
 
                         if (!scans.IsSuccessStatusCode)
+                        {
+                            _log.Error($"Error retrieving scans with status {specificStatus}: {scans.StatusCode} - {scans.ReasonPhrase}");
                             throw new InvalidOperationException(scans.ReasonPhrase);
+                        }
 
                         using (var sr = new StreamReader
                             (scans.Content.ReadAsStreamAsync().Result))

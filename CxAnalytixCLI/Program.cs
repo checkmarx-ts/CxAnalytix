@@ -7,6 +7,7 @@ using CxRestClient;
 using CxAnalytix.Configuration;
 using System;
 
+[assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile= "CxAnalytixCLI.log4net", Watch = true)]
 
 
@@ -53,7 +54,7 @@ namespace CxAnalytixCLI
 
             using (CancellationTokenSource t = new CancellationTokenSource())
             {
-                CxRestContext ctx = builder.build();
+                CxRestContext ctx = builder.Build();
                 Transformer.DoTransform(Config.Service.ConcurrentThreads, 
                     Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
                     ctx, 
