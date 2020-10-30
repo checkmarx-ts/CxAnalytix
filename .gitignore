@@ -12,3 +12,6 @@ artifacts/
 # persisting credentials in the Git repository.
 **/*.exe.config
 
+
+.build_tools/
+**/TestResults

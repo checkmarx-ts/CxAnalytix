@@ -5,7 +5,12 @@ jobs:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1
     steps:
       - checkout
-      - run: dotnet test -v n -l "console;verbosity=detailed"
+      - run: dotnet tool install trx2junit --tool-path ./.build_tools/trx2junit
+      - run: dotnet test -v q -l "trx"
+      - run: ./.buildtools/trx2junit *_Test*/TestResults/*.trx
+      - store_test_results:
+          path: *_Test*/TestResults/*.xml
+          
       
   build:
     docker:
