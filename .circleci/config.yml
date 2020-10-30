@@ -94,7 +94,7 @@ workflows:
   ci:
     jobs:
       - unit-test
-      - build
+      - build:
           requires:
               - unit-test
 
