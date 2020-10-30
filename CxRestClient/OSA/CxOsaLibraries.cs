@@ -6,6 +6,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace CxRestClient.OSA
@@ -13,7 +14,8 @@ namespace CxRestClient.OSA
     public class CxOsaLibraries
     {
         private static ILog _log = LogManager.GetLogger(typeof (CxOsaLibraries) );
-        private static String URL_SUFFIX = "cxrestapi/osa/libraries";
+        private static readonly String URL_SUFFIX = "cxrestapi/osa/libraries";
+        private static readonly String PAGE_SIZE = "250";
 
 
         private CxOsaLibraries ()
@@ -129,31 +131,45 @@ namespace CxRestClient.OSA
         public static IEnumerable<Library> GetLibraries (CxRestContext ctx, CancellationToken token,
         String scanId)
         {
+            int curPage = 1;
+
+            List<Library> returnLibs = new List<Library>();
+
             try
             {
-                String url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
-            {
-                {"scanId", Convert.ToString (scanId)  }
-            });
-
-                using (var client = ctx.Json.CreateSastClient())
+                Func<int, String> url = (pg) => CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
                 {
-                    var libraries = client.GetAsync(url, token).Result;
+                    {"scanId", Convert.ToString (scanId)  },
+                    { "page", Convert.ToString (pg) },
+                    { "itemsPerPage", PAGE_SIZE}
+                });
 
-                    if (token.IsCancellationRequested)
-                        return null;
-
-                    if (!libraries.IsSuccessStatusCode)
-                        throw new InvalidOperationException(libraries.ReasonPhrase);
-
-                    using (var sr = new StreamReader
-                        (libraries.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
+                while (true)
+                {
+                    using (var client = ctx.Json.CreateSastClient())
+                    using (var libraryResponse = client.GetAsync(url(curPage++), token).Result)
                     {
-                        JToken jt = JToken.Load(jtr);
-                        return new LibrariesReader(jt);
+
+                        if (token.IsCancellationRequested)
+                            return null;
+
+                        if (!libraryResponse.IsSuccessStatusCode)
+                            throw new InvalidOperationException(libraryResponse.ReasonPhrase);
+
+                        using (var sr = new StreamReader
+                            (libraryResponse.Content.ReadAsStreamAsync().Result))
+                        using (var jtr = new JsonTextReader(sr))
+                        {
+                            JToken jt = JToken.Load(jtr);
+                            var beforeCount = returnLibs.Count;
+                            returnLibs.AddRange(new LibrariesReader(jt));
+                            if (returnLibs.Count == beforeCount)
+                                break;
+                        }
                     }
                 }
+
+                return returnLibs;
             }
             catch (HttpRequestException hex)
             {

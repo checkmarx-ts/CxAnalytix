@@ -1,7 +1,9 @@
 {
   "profiles": {
     "CxAnalytixCLI": {
-      "commandName": "Project"
+      "commandName": "Executable",
+      "executablePath": "dotnet.exe",
+      "commandLineArgs": "CxAnalytixCLI.dll"
     }
   }
 }

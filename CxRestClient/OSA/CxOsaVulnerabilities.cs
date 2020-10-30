@@ -14,8 +14,8 @@ namespace CxRestClient.OSA
     public class CxOsaVulnerabilities
     {
         private static ILog _log = LogManager.GetLogger(typeof (CxOsaVulnerabilities));
-
-        private static String URL_SUFFIX = "cxrestapi/osa/vulnerabilities";
+        private static readonly String URL_SUFFIX = "cxrestapi/osa/vulnerabilities";
+        private static readonly String PAGE_SIZE = "1000";
 
 
         private CxOsaVulnerabilities()
@@ -133,31 +133,45 @@ namespace CxRestClient.OSA
         public static IEnumerable<Vulnerability> GetVulnerabilities
             (CxRestContext ctx, CancellationToken token, String scanId)
         {
+            int curPage = 1;
+            List<Vulnerability> returnVulns = new List<Vulnerability>();
+
             try
             {
-                String url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
-            {
-                {"scanId", Convert.ToString (scanId)  }
-            });
-
-                using (var client = ctx.Json.CreateSastClient())
-                using (var vulns = client.GetAsync(url, token).Result)
+                Func<int, String> url = (pg) => CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
                 {
+                    {"scanId", Convert.ToString (scanId)  },
+                    { "page", Convert.ToString (pg) },
+                    { "itemsPerPage", PAGE_SIZE}
+                });
 
-                    if (token.IsCancellationRequested)
-                        return null;
-
-                    if (!vulns.IsSuccessStatusCode)
-                        throw new InvalidOperationException(vulns.ReasonPhrase);
-
-                    using (var sr = new StreamReader
-                        (vulns.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
+                while (true)
+                {
+                    using (var client = ctx.Json.CreateSastClient())
+                    using (var vulns = client.GetAsync(url(curPage++), token).Result)
                     {
-                        JToken jt = JToken.Load(jtr);
-                        return new VulnerabilityReader(jt);
+
+                        if (token.IsCancellationRequested)
+                            return null;
+
+                        if (!vulns.IsSuccessStatusCode)
+                            throw new InvalidOperationException(vulns.ReasonPhrase);
+
+                        using (var sr = new StreamReader
+                            (vulns.Content.ReadAsStreamAsync().Result))
+                        using (var jtr = new JsonTextReader(sr))
+                        {
+                            JToken jt = JToken.Load(jtr);
+                            var beforeCount = returnVulns.Count;
+                            returnVulns.AddRange(new VulnerabilityReader(jt));
+                            if (returnVulns.Count == beforeCount)
+                                break;
+
+                        }
                     }
                 }
+
+                return returnVulns;
             }
             catch (HttpRequestException hex)
             {
