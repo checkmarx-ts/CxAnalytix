@@ -31,6 +31,24 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 
 ## Version History
+* 1.1.5
+  * FEATURES
+    * Added the ability to dump all network I/O to the application log.
+    * Improved error handling and exception logging for troubleshooting purposes.
+  * BUG FIXES
+    * Issues #21, 22 - Networking implementation caused issues on some versions of Windows server.
+* 1.1.4
+  * FEATURES
+    * Added EngineStart/EngineFinished fields to the scan summary; no-change scans will be indicated with DateTime.MinValue
+  * BUG FIXES
+    * Issue #20: Date parsing error in non-US locale
+* 1.1.3
+  * BUG FIXES
+    * Issue #18: Error when attempting to retrieve policy violation data from SAST 9.0
+* 1.1.2
+  * FEATURES
+    * Dockerfile now available as a release artifact
+    * [Docker base image](https://hub.docker.com/r/checkmarxts/cxanalytix) pushed to Docker Hub as part of the build 
 * 1.1.1
    * FEATURES
       * Issue #9: Resolve config values from environment variables (see the Wiki for [CxConnection](https://github.com/checkmarx-ts/CxAnalytix/wiki/CxConnection), [CxCredentials](https://github.com/checkmarx-ts/CxAnalytix/wiki/CxCredentials), and [CxAnalyticsService](https://github.com/checkmarx-ts/CxAnalytix/wiki/CxAnalyticsService))

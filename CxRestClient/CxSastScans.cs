@@ -29,6 +29,14 @@ namespace CxRestClient
             Failed
         }
 
+        public static DateTime NormalizeDateParse (String isoDate)
+        {
+            if (String.IsNullOrEmpty(isoDate))
+                return DateTime.MinValue;
+            else
+                return DateTime.Parse(isoDate);
+        }
+
         [JsonObject(MemberSerialization.OptIn)]
         public class Scan
         {
@@ -39,8 +47,10 @@ namespace CxRestClient
             internal Dictionary<String, Object> project { get; set; }
             [JsonProperty(PropertyName = "dateAndTime")]
             internal Dictionary<String, String> date_times { get; set; }
-            public DateTime StartTime { get => DateTime.Parse(date_times["startedOn"]); }
-            public DateTime FinishTime { get => DateTime.Parse(date_times["finishedOn"]); }
+            public DateTime StartTime { get => NormalizeDateParse (date_times["startedOn"]); }
+            public DateTime FinishTime { get => NormalizeDateParse (date_times["finishedOn"]); }
+            public DateTime EngineStartTime { get => NormalizeDateParse (date_times["engineStartedOn"]); }
+            public DateTime EngineFinishTime { get => NormalizeDateParse (date_times["engineFinishedOn"]); }
             [JsonProperty(PropertyName = "scanState")]
             internal Dictionary<String, Object> scan_state { get; set; }
             public int FileCount { get => Convert.ToInt32(scan_state["filesCount"]); }
@@ -75,6 +85,10 @@ namespace CxRestClient
             [JsonProperty(PropertyName = "scanRiskSeverity")]
             public int ScanRiskSeverity { get; internal set; }
 
+            public override string ToString()
+            {
+                return JsonConvert.SerializeObject(this, Formatting.None);
+            }
         }
 
 
@@ -128,8 +142,8 @@ namespace CxRestClient
                     if (!(_arrayPos < _scanArray.Count))
                         return false;
 
-                    _currentScan = (Scan)new JsonSerializer().
-                        Deserialize(new JTokenReader(_scanArray[_arrayPos]), typeof(Scan));
+                    _currentScan = (Scan)new JsonSerializer()
+                        .Deserialize(new JTokenReader(_scanArray[_arrayPos]), typeof(Scan));
 
                     if (_currentScan.IsPublic)
                         break;
@@ -173,6 +187,8 @@ namespace CxRestClient
                 }
                 else
                     url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX);
+
+
                 using (var client = ctx.Json.CreateSastClient())
                 {
                     using (var scans = client.GetAsync(url, token).Result)
@@ -181,12 +197,16 @@ namespace CxRestClient
                             return null;
 
                         if (!scans.IsSuccessStatusCode)
+                        {
+                            _log.Error($"Error retrieving scans with status {specificStatus}: {scans.StatusCode} - {scans.ReasonPhrase}");
                             throw new InvalidOperationException(scans.ReasonPhrase);
+                        }
 
                         using (var sr = new StreamReader
                             (scans.Content.ReadAsStreamAsync().Result))
                         using (var jtr = new JsonTextReader(sr))
                         {
+                            jtr.DateParseHandling = DateParseHandling.None;
                             JToken jt = JToken.Load(jtr);
                             return new ScansReader(jt);
                         }

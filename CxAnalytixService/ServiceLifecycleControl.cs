@@ -8,6 +8,7 @@ using System.Reflection;
 using System;
 using CxRestClient;
 
+[assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "CxAnalytixService.log4net", Watch = true)]
 
 namespace CxAnalytixService
@@ -101,7 +102,7 @@ namespace CxAnalytixService
             .WithUsername(Config.Credentials.Username)
             .WithPassword(Config.Credentials.Password);
 
-            var restCtx = builder.build();
+            var restCtx = builder.Build();
 
 
             _serviceTask = Task.Run(async () =>
