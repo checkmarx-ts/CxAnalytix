@@ -1,7 +1,6 @@
-﻿using CxRestClient;
+﻿using CxRestClient.MNO;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace CxAnalytix.TransformLogic.Data
 {

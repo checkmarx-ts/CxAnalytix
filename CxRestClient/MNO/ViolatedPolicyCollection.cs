@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CxRestClient
+namespace CxRestClient.MNO
 {
     public class ViolatedPolicyCollection
     {

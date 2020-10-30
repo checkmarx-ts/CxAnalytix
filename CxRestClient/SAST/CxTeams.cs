@@ -9,7 +9,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 
-namespace CxRestClient
+namespace CxRestClient.SAST
 {
     public class CxTeams
     {
