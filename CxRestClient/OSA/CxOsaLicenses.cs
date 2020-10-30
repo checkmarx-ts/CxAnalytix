@@ -9,15 +9,15 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 
-namespace CxRestClient
+namespace CxRestClient.OSA
 {
-    public class CxScaLicenses
+    public class CxOsaLicenses
     {
-        private static ILog _log = LogManager.GetLogger(typeof (CxScaLicenses));
+        private static ILog _log = LogManager.GetLogger(typeof (CxOsaLicenses));
 
         private static String URL_SUFFIX = "cxrestapi/osa/licenses";
 
-        private CxScaLicenses()
+        private CxOsaLicenses()
         { }
 
         public class License

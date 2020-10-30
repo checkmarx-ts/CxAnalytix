@@ -1,4 +1,5 @@
 ﻿using CxRestClient;
+using CxRestClient.OSA;
 using log4net;
 using System;
 using System.Collections.Concurrent;
@@ -29,8 +30,8 @@ namespace CxAnalytix.TransformLogic
 
         private Dictionary<String, CxSastScans.Scan> SastScanCache { get; set; }
             = new Dictionary<string, CxSastScans.Scan>();
-        private Dictionary<String, CxScaScans.Scan> ScaScanCache { get; set; }
-            = new Dictionary<string, CxScaScans.Scan>();
+        private Dictionary<String, CxOsaScans.Scan> ScaScanCache { get; set; }
+            = new Dictionary<string, CxOsaScans.Scan>();
 
         private ProjectPolicyIndex Policies { get; set; }
         private DateTime CheckTime { get; set; } = DateTime.Now;
@@ -107,15 +108,15 @@ namespace CxAnalytix.TransformLogic
 
         public static void ScaReportOutput(ScanDescriptor sd, Transformer inst)
         {
-            Dictionary<String, CxScaLicenses.License> licenseIndex =
-                new Dictionary<string, CxScaLicenses.License>();
+            Dictionary<String, CxOsaLicenses.License> licenseIndex =
+                new Dictionary<string, CxOsaLicenses.License>();
 
             Dictionary<String, int> licenseCount =
                 new Dictionary<string, int>();
 
             try
             {
-                var licenses = CxScaLicenses.GetLicenses(inst.RestContext, inst.CancelToken, sd.ScanId);
+                var licenses = CxOsaLicenses.GetLicenses(inst.RestContext, inst.CancelToken, sd.ScanId);
 
                 foreach (var l in licenses)
                 {
@@ -134,13 +135,13 @@ namespace CxAnalytix.TransformLogic
                     $" available.", ex);
             }
 
-            Dictionary<String, CxScaLibraries.Library> libraryIndex =
-            new Dictionary<string, CxScaLibraries.Library>();
+            Dictionary<String, CxOsaLibraries.Library> libraryIndex =
+            new Dictionary<string, CxOsaLibraries.Library>();
 
 
             try
             {
-                var libraries = CxScaLibraries.GetLibraries(inst.RestContext, inst.CancelToken, sd.ScanId);
+                var libraries = CxOsaLibraries.GetLibraries(inst.RestContext, inst.CancelToken, sd.ScanId);
 
                 foreach (var lib in libraries)
                     libraryIndex.Add(lib.LibraryId, lib);
@@ -159,12 +160,12 @@ namespace CxAnalytix.TransformLogic
         }
 
         private static void OutputScaScanDetails(ScanDescriptor sd, Transformer inst, 
-            Dictionary<string, CxScaLicenses.License> licenseIndex, 
-            Dictionary<string, CxScaLibraries.Library> libraryIndex)
+            Dictionary<string, CxOsaLicenses.License> licenseIndex, 
+            Dictionary<string, CxOsaLibraries.Library> libraryIndex)
         {
             try
             {
-                var vulns = CxScaVulnerabilities.GetVulnerabilities(inst.RestContext, 
+                var vulns = CxOsaVulnerabilities.GetVulnerabilities(inst.RestContext, 
                     inst.CancelToken, sd.ScanId);
 
                 var header = new SortedDictionary<String, Object>();
@@ -241,7 +242,7 @@ namespace CxAnalytix.TransformLogic
 
             try
             {
-                var summary = CxScaSummaryReport.GetReport(inst.RestContext, inst.CancelToken, sd.ScanId);
+                var summary = CxOsaSummaryReport.GetReport(inst.RestContext, inst.CancelToken, sd.ScanId);
 
                 flat.Add("HighVulnerabilityLibraries", summary.HighVulnerabilityLibraries);
                 flat.Add("LowVulnerabilityLibraries", summary.LowVulnerabilityLibraries);
@@ -360,7 +361,7 @@ namespace CxAnalytix.TransformLogic
 
                 foreach (var p in projects)
                 {
-                    var scaScans = CxScaScans.GetScans(ctx, token, p.ProjectId);
+                    var scaScans = CxOsaScans.GetScans(ctx, token, p.ProjectId);
                     foreach (var scaScan in scaScans)
                     {
                         _log.Debug($"OSA scan record: {scaScan}");

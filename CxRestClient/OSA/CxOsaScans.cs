@@ -9,15 +9,15 @@ using System.Net.Http;
 using System.Threading;
 using CxRestClient.Utility;
 
-namespace CxRestClient
+namespace CxRestClient.OSA
 {
-    public class CxScaScans
+    public class CxOsaScans
     {
-        private static ILog _log = LogManager.GetLogger(typeof (CxScaScans));
+        private static ILog _log = LogManager.GetLogger(typeof (CxOsaScans));
 
         private static String URL_SUFFIX = "cxrestapi/osa/scans";
 
-        private CxScaScans()
+        private CxOsaScans()
         { }
 
         public struct Scan

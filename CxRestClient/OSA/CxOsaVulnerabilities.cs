@@ -9,16 +9,16 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 
-namespace CxRestClient
+namespace CxRestClient.OSA
 {
-    public class CxScaVulnerabilities
+    public class CxOsaVulnerabilities
     {
-        private static ILog _log = LogManager.GetLogger(typeof (CxScaVulnerabilities));
+        private static ILog _log = LogManager.GetLogger(typeof (CxOsaVulnerabilities));
 
         private static String URL_SUFFIX = "cxrestapi/osa/vulnerabilities";
 
 
-        private CxScaVulnerabilities()
+        private CxOsaVulnerabilities()
         { }
 
         public class Severity

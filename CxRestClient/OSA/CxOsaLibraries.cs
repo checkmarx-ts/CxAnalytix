@@ -6,19 +6,17 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 
-namespace CxRestClient
+namespace CxRestClient.OSA
 {
-    public class CxScaLibraries
+    public class CxOsaLibraries
     {
-        private static ILog _log = LogManager.GetLogger(typeof (CxScaLibraries) );
+        private static ILog _log = LogManager.GetLogger(typeof (CxOsaLibraries) );
         private static String URL_SUFFIX = "cxrestapi/osa/libraries";
 
 
-        private CxScaLibraries ()
+        private CxOsaLibraries ()
         { }
 
         public class Library
