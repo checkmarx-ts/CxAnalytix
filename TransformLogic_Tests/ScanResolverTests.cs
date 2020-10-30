@@ -1,5 +1,5 @@
 ﻿using CxRestClient;
-using NUnit.Framework;
+using Xunit;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Test.TransformerLogic.ScanResolver
 {
-    class ScanResolverTests
+    public class ScanResolverTests
     {
 
         CxAnalytix.TransformLogic.ScanResolver sr;
@@ -27,8 +27,7 @@ namespace Test.TransformerLogic.ScanResolver
         MemoryStream stateStorage;
         StreamWriter stateWriter;
 
-        [SetUp]
-        public void SetupTest ()
+        public ScanResolverTests ()
         {
             stateStorage = new MemoryStream();
             stateWriter = new StreamWriter(stateStorage);
@@ -72,7 +71,7 @@ namespace Test.TransformerLogic.ScanResolver
         }
 
 
-        [Test]
+        [Fact]
         public void ExpectedNumberOfScansAndProjectsWithState()
         {
             DateTime check = DateTime.Now;
@@ -121,7 +120,7 @@ namespace Test.TransformerLogic.ScanResolver
         }
 
 
-        [Test]
+        [Fact]
         public void ScanCountNullUntilAfterResolve()
         {
             DateTime check = DateTime.Now;
@@ -141,7 +140,7 @@ namespace Test.TransformerLogic.ScanResolver
             Assert.True(isNull && isNotNull);
         }
 
-        [Test]
+        [Fact]
         public void ProjectCountNullUntilAfterResolve()
         {
             DateTime check = DateTime.Now;
@@ -161,13 +160,13 @@ namespace Test.TransformerLogic.ScanResolver
             Assert.True(isNull && isNotNull);
         }
 
-        [Test]
+        [Fact]
         public void CantAddScanWithInvalidProjectId ()
         {
             Assert.False (sr.AddScan(0, "Full", "SAST", "ScanId1", DateTime.Now.AddDays(-1)));
         }
 
-        [Test]
+        [Fact]
         public void CantAddDuplicateScanId()
         {
             bool shouldBeTrue = sr.AddScan(1, "Full", "SAST", "ScanId1", DateTime.Now.AddDays(-1));
@@ -176,25 +175,25 @@ namespace Test.TransformerLogic.ScanResolver
             Assert.True(shouldBeTrue && !shouldBeFalse);
         }
 
-        [Test]
+        [Fact]
         public void CantAddScanWithNullScanType()
         {
             Assert.False(sr.AddScan(1, null, "SAST", "ScanId1", DateTime.Now.AddDays(-1)));
         }
 
-        [Test]
+        [Fact]
         public void CantAddScanWithNullScanProduct()
         {
             Assert.False(sr.AddScan(1, "Full", null, "ScanId1", DateTime.Now.AddDays(-1)));
         }
 
-        [Test]
+        [Fact]
         public void CantAddScanWithNullScanId()
         {
             Assert.False(sr.AddScan(1, "Full", "SCA", null, DateTime.Now.AddDays(-1)));
         }
 
-        [Test]
+        [Fact]
         public void CantAddScanAfterResolve()
         {
             var junk = sr.Resolve(DateTime.Now);
@@ -202,7 +201,7 @@ namespace Test.TransformerLogic.ScanResolver
             Assert.False(sr.AddScan(1, "Full", "SCA", null, DateTime.Now.AddDays(-1)));
         }
 
-        [Test]
+        [Fact]
         public void NoScansReturnedWhenFinishTimesAreEqualToCheck()
         {
 
@@ -214,7 +213,7 @@ namespace Test.TransformerLogic.ScanResolver
 
             var scans = sr.Resolve(DateTime.Now);
 
-            Assert.That(sr.ResolvedScanCount == 0);
+            Assert.True(sr.ResolvedScanCount == 0);
         }
 
     }

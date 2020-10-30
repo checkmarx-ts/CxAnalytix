@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using NUnit.Framework;
+using Xunit;
+
 
 namespace Test.TransformerLogic.ProjectResolver
 {
-    class ProjectResolverTests
+    public class ProjectResolverTests
     {
         private CxAnalytix.TransformLogic.ProjectResolver pr;
         private static Dictionary<String, Action<CxAnalytix.TransformLogic.Data.ScanDescriptor, 
@@ -19,8 +20,7 @@ namespace Test.TransformerLogic.ProjectResolver
         String Team1 = "1";
         String Team2 = "2";
 
-        [SetUp]
-        public void SetupTest ()
+        public ProjectResolverTests ()
         {
             CxAnalytix.TransformLogic.DataResolver dr = new CxAnalytix.TransformLogic.DataResolver();
             dr.addPreset(1, "Preset1");
@@ -33,7 +33,7 @@ namespace Test.TransformerLogic.ProjectResolver
         }
 
 
-        [Test]
+        [Fact]
         public void CantAddProjectAfterResolve ()
         {
             bool shouldBeTrue = pr.AddProject(Team1, 1, 1, "Foo", "", new Dictionary<String, String>());
@@ -45,7 +45,7 @@ namespace Test.TransformerLogic.ProjectResolver
             Assert.True(shouldBeTrue && !shouldBeFalse);
         }
 
-        [Test]
+        [Fact]
         public void CantAddDuplicateProject ()
         {
             bool shouldBeTrue = pr.AddProject(Team1, 1, 1, "Foo", "", new Dictionary<String, String>());
@@ -53,34 +53,34 @@ namespace Test.TransformerLogic.ProjectResolver
             Assert.True(shouldBeTrue && !shouldBeFalse);
         }
 
-        [Test]
+        [Fact]
         public void CantAddProjectWithMissingPreset()
         {
             Assert.False(pr.AddProject (Team1, 100, 1, "Foo", "", new Dictionary<String, String>()) );
         }
 
-        [Test]
+        [Fact]
         public void CantAddProjetWithNullProjectName()
         {
             Assert.False(pr.AddProject(Team1, 1, 1, null, "", new Dictionary<String, String>()));
         }
 
-        [Test]
+        [Fact]
         public void CantAddProjectWithMissingTeam()
         {
             Assert.False(pr.AddProject(Guid.NewGuid().ToString(), 1, 1, "Foo", "", new Dictionary<String, String>()));
         }
 
-        [Test]
+        [Fact]
         public void CantAddProjectWithEmptyTeamGuid()
         {
             Assert.False(pr.AddProject(Guid.Empty.ToString(), 1, 1, "Foo", "", new Dictionary<String, String>()));
         }
 
-        [Test]
+        [Fact]
         public void MultiResolveReturnsSameObject ()
         {
-            Assert.That(pr.Resolve(dummy) == pr.Resolve(dummy));
+            Assert.True(pr.Resolve(dummy) == pr.Resolve(dummy));
         }
 
     }

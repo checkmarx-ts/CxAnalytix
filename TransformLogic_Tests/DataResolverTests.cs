@@ -1,4 +1,4 @@
-﻿using NUnit.Framework;
+﻿using Xunit;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,13 +10,12 @@ namespace Test.TransformerLogic.DataResolver
     {
         CxAnalytix.TransformLogic.DataResolver d;
 
-        [SetUp]
-        public void SetupTest ()
+        public DataResolverTests ()
         {
             d = new CxAnalytix.TransformLogic.DataResolver();
         }
 
-        [Test]
+        [Fact]
         public void CantAddTeamPostResolve ()
         {
             bool shouldBeTrue = d.addTeam(Guid.NewGuid().ToString (), "Foo");
@@ -30,7 +29,7 @@ namespace Test.TransformerLogic.DataResolver
 
         }
 
-        [Test]
+        [Fact]
         public void CantAddPresetPostResolve()
         {
             bool shouldBeTrue = d.addPreset(1, "Foo");
@@ -44,28 +43,28 @@ namespace Test.TransformerLogic.DataResolver
         }
 
 
-        [Test]
+        [Fact]
         public void CantAddPresetWithNullName ()
         {
             Assert.False(d.addPreset(1, null) );
         }
 
-        [Test]
+        [Fact]
         public void CantAddTeamWithNullName ()
         {
             Assert.False(d.addTeam(Guid.NewGuid ().ToString(), null));
         }
 
-        [Test]
+        [Fact]
         public void CantAddTeamWithEmptyGuid ()
         {
             Assert.False(d.addTeam(String.Empty, String.Empty));
         }
 
-        [Test]
+        [Fact]
         public void MultiResolveReturnsSameObject ()
         {
-            Assert.That(d.Resolve(null) == d.Resolve(null));
+            Assert.True(d.Resolve(null) == d.Resolve(null));
         }
     }
 }

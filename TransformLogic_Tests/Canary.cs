@@ -1,13 +1,13 @@
-using NUnit.Framework;
+using Xunit;
 
 namespace Test.TransformerLogic.General
 {
     public class Canary
     {
-        [Test]
+        [Fact]
         public void CanaryTest()
         {
-            Assert.Pass();
+            Assert.True(true);
         }
     }
 }

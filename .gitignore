@@ -5,3 +5,8 @@ TransformLogic/TransformLogic.xml
 artifacts/
 **/*- Copy*
 .vscode
+
+# Application config file changes need to be forced to avoid inadvertently
+# persisting credentials in the Git repository.
+**/*.exe.config
+
