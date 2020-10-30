@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CxRestClient
+namespace CxRestClient.SAST
 {
 
     /// <summary>

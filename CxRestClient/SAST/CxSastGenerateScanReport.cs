@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CxRestClient.Utility;
 
-namespace CxRestClient
+namespace CxRestClient.SAST
 {
     public class CxSastGenerateScanReport
     {

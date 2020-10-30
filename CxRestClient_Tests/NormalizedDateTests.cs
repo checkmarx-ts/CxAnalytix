@@ -1,4 +1,4 @@
-﻿using CxRestClient;
+﻿using CxRestClient.SAST;
 using NUnit.Framework;
 using System;
 
