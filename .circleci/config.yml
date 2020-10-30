@@ -6,12 +6,14 @@ jobs:
     steps:
       - checkout
       - run: dotnet test -v n -l "console;verbosity=detailed"
+      
   build:
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk:3.1
     steps:
       - checkout
       - run: dotnet build --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts
+      
   package:
     docker:
       - image: mcr.microsoft.com/dotnet/core/sdk
@@ -93,8 +95,8 @@ workflows:
     jobs:
       - unit-test
       - build
-        requires:
-            - unit-test
+          requires:
+              - unit-test
 
 
 
