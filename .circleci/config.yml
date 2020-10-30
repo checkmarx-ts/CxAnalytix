@@ -2,13 +2,13 @@ version: 2.1
 jobs:
   unit-test:
     docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.1
     steps:
       - checkout
       - run: dotnet test -v n -l "console;verbosity=detailed"
   build:
     docker:
-      - image: mcr.microsoft.com/dotnet/core/sdk
+      - image: mcr.microsoft.com/dotnet/core/sdk:3.1
     steps:
       - checkout
       - run: dotnet build --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts
@@ -91,11 +91,10 @@ workflows:
               - package      
   ci:
     jobs:
-      # Unit tests need to execute on .net core 3.1, commented until they do
-      # - unit-test
+      - unit-test
       - build
-          # requires:
-          #   - unit-test
+        requires:
+          - unit-test
 
 
 
