@@ -7,7 +7,7 @@ jobs:
       - checkout
       - run: dotnet tool install trx2junit --tool-path ./.build_tools/trx2junit
       - run: dotnet test -v q -l "trx"
-      - run: ./.buildtools/trx2junit/trx2junit *_Test*/TestResults/*.trx
+      - run: ./.build_tools/trx2junit/trx2junit *_Test*/TestResults/*.trx
       - run:
           name: collect test results for storage
           when: always
