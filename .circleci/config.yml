@@ -94,7 +94,7 @@ workflows:
       - unit-test
       - build
         requires:
-          - unit-test
+            - unit-test
 
 
 
