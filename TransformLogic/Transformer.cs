@@ -1,4 +1,5 @@
 ﻿using CxRestClient;
+using CxRestClient.MNO;
 using CxRestClient.SAST;
 using CxRestClient.OSA;
 using log4net;

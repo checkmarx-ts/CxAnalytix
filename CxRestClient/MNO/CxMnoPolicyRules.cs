@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using CxRestClient.Utility;
 
-namespace CxRestClient
+namespace CxRestClient.MNO
 {
     public class CxMnoPolicyRules
     {
