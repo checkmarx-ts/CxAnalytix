@@ -8,8 +8,17 @@ jobs:
       - run: dotnet tool install trx2junit --tool-path ./.build_tools/trx2junit
       - run: dotnet test -v q -l "trx"
       - run: ./.buildtools/trx2junit *_Test*/TestResults/*.trx
+      - run:
+          name: collect test results for storage
+          when: always
+          command: |
+            for D in $(ls -d *_Test*)
+            do
+              mkdir test-results/$D
+              cp $(find $D/TestResults -name *.xml -print) test-results/$D
+            done
       - store_test_results:
-          path: *_Test*/TestResults/*.xml
+          path: test-results
           
       
   build:
