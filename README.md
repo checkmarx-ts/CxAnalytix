@@ -34,6 +34,8 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 * 1.1.6
 	* BUG FIXES
 		* Issue 26 - OSA scan details incomplete or missing
+	* FEATURES
+		* The rolling file log naming convention should cause daily log rotation as well as 100MB max log file sizes by default.
 * 1.1.5
   * FEATURES
     * Added the ability to dump all network I/O to the application log.
