@@ -20,12 +20,15 @@
       <loggerToMatch value="RECORD" />
     </filter>
 
-    <file type="log4net.Util.PatternString" value="logs/CxAnalytixService.%date{yyyy_MM_dd}.log" />
+    <file type="log4net.Util.PatternString" value="logs/CxAnalytixService" />
     <appendToFile value="true" />
     <maximumFileSize value="100MB" />
-    <rollingStyle value="Size" />
+    <rollingStyle value="Composite" />
     <staticLogFileName value="false" />
     <countDirection value="1" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
+
 
     <layout type="log4net.Layout.PatternLayout">
       <conversionPattern value="[%date{yyyy-MM-ddTHH:mm:sszzz}][%5level][%thread][%logger] %message%newline" />
@@ -37,10 +40,12 @@
   <appender name="SAST_SS" type="log4net.Appender.RollingFileAppender">
     <appendToFile value="true" />
     <maximumFileSize value="100MB" />
-    <rollingStyle value="Size" />
+    <rollingStyle value="Composite" />
     <staticLogFileName value="false" />
     <countDirection value="1" />
-    <file type="log4net.Util.PatternString" value="logs/sast_scan_summary.%date{yyyy_MM_dd}.log" />
+    <file type="log4net.Util.PatternString" value="logs/sast_scan_summary" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
 
     <layout type="log4net.Layout.PatternLayout">
       <conversionPattern value="%message%newline" />
@@ -50,10 +55,12 @@
   <appender name="SAST_SD" type="log4net.Appender.RollingFileAppender">
     <appendToFile value="true" />
     <maximumFileSize value="100MB" />
-    <rollingStyle value="Size" />
+    <rollingStyle value="Composite" />
     <staticLogFileName value="false" />
     <countDirection value="1" />
-    <file type="log4net.Util.PatternString" value="logs/sast_scan_detail.%date{yyyy_MM_dd}.log" />
+    <file type="log4net.Util.PatternString" value="logs/sast_scan_detail" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
 
     <layout type="log4net.Layout.PatternLayout">
       <conversionPattern value="%message%newline" />
@@ -65,10 +72,12 @@
   <appender name="SAST_PI" type="log4net.Appender.RollingFileAppender">
     <appendToFile value="true" />
     <maximumFileSize value="100MB" />
-    <rollingStyle value="Size" />
+    <rollingStyle value="Composite" />
     <staticLogFileName value="false" />
     <countDirection value="1" />
-    <file type="log4net.Util.PatternString" value="logs/sast_project_info.%date{yyyy_MM_dd}.log" />
+    <file type="log4net.Util.PatternString" value="logs/sast_project_info" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
 
     <layout type="log4net.Layout.PatternLayout">
       <conversionPattern value="%message%newline" />
@@ -78,10 +87,12 @@
   <appender name="SAST_PV" type="log4net.Appender.RollingFileAppender">
     <appendToFile value="true" />
     <maximumFileSize value="100MB" />
-    <rollingStyle value="Size" />
+    <rollingStyle value="Composite" />
     <staticLogFileName value="false" />
     <countDirection value="1" />
-    <file type="log4net.Util.PatternString" value="logs/sast_policy_violations.%date{yyyy_MM_dd}.log" />
+    <file type="log4net.Util.PatternString" value="logs/sast_policy_violations" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
 
     <layout type="log4net.Layout.PatternLayout">
       <conversionPattern value="%message%newline" />
@@ -91,10 +102,12 @@
   <appender name="SCA_SS" type="log4net.Appender.RollingFileAppender">
     <appendToFile value="true" />
     <maximumFileSize value="100MB" />
-    <rollingStyle value="Size" />
+    <rollingStyle value="Composite" />
     <staticLogFileName value="false" />
     <countDirection value="1" />
-    <file type="log4net.Util.PatternString" value="logs/sca_scan_summary.%date{yyyy_MM_dd}.log" />
+    <file type="log4net.Util.PatternString" value="logs/sca_scan_summary" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
 
     <layout type="log4net.Layout.PatternLayout">
       <conversionPattern value="%message%newline" />
@@ -104,10 +117,12 @@
   <appender name="SCA_SD" type="log4net.Appender.RollingFileAppender">
     <appendToFile value="true" />
     <maximumFileSize value="100MB" />
-    <rollingStyle value="Size" />
+    <rollingStyle value="Composite" />
     <staticLogFileName value="false" />
     <countDirection value="1" />
-    <file type="log4net.Util.PatternString" value="logs/sca_scan_detail.%date{yyyy_MM_dd}.log" />
+    <file type="log4net.Util.PatternString" value="logs/sca_scan_detail" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
 
     <layout type="log4net.Layout.PatternLayout">
       <conversionPattern value="%message%newline" />
