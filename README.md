@@ -31,6 +31,9 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 
 ## Version History
+* 1.1.6
+	* BUG FIXES
+		* Issue 26 - OSA scan details incomplete or missing
 * 1.1.5
   * FEATURES
     * Added the ability to dump all network I/O to the application log.
