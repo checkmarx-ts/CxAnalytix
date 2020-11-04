@@ -7,7 +7,7 @@ namespace CxAuditTrails.Config
 	[SecureConfigSection(SensitiveStringProp = "ConnectionString")]
 	class CxAuditDBConnection : EnvAwareConfigurationSection
 	{
-		public static readonly String SECTION_NAME = "CxDBCredentials";
+		public static readonly String SECTION_NAME = "CxDB";
 
 		[ConfigurationProperty("ConnectionString", IsRequired = true)]
 		public String ConnectionString
