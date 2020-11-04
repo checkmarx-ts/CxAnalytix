@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26124.0
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30621.155
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Configuration", "Configuration\Configuration.csproj", "{C441FBE3-E188-4D4F-A990-2BE9D031BC60}"
 EndProject
@@ -29,9 +29,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MongoDBOutput", "MongoDBOut
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions_Test", "Extensions_Test\Extensions_Test.csproj", "{1546DA62-BCD4-4CD3-81B3-F02251B42A50}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Extensions", "Extensions\Extensions.csproj", "{06F7346C-CA7C-477D-A475-8177E84A51C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions", "Extensions\Extensions.csproj", "{06F7346C-CA7C-477D-A475-8177E84A51C4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StringFormatExamples", "StringFormatExamples\StringFormatExamples.csproj", "{A7121C35-FE42-4677-BBA4-CF633595F50F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StringFormatExamples", "StringFormatExamples\StringFormatExamples.csproj", "{A7121C35-FE42-4677-BBA4-CF633595F50F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

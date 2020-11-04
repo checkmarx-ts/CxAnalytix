@@ -25,23 +25,25 @@ namespace CxAnalytix.Configuration
 
             _cfgManager = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.None);
 
-            Credentials = GetConfig<CxCredentials>(CxCredentials.SECTION_NAME);
-            if (Credentials != null && !Credentials.SectionInformation.IsProtected)
-            {
-                Credentials.SectionInformation.ProtectSection("DataProtectionConfigurationProvider");
-                Credentials.SectionInformation.ForceSave = true;
-                Credentials.SectionInformation.ForceDeclaration(true);
+			foreach (ConfigurationSection section in _cfgManager.Sections)
+				if (section.GetType().GetCustomAttributes(typeof(SecureConfigSectionAttribute), true).Length > 0 &&
+						section != null && !section.SectionInformation.IsProtected)
+				{
+					section.SectionInformation.ProtectSection("DataProtectionConfigurationProvider");
+					section.SectionInformation.ForceSave = true;
+					section.SectionInformation.ForceDeclaration(true);
+				}
 
-                try
-                {
-                    _cfgManager.Save(ConfigurationSaveMode.Modified);
-                }
-                catch (Exception ex)
-                {
-                    _log.Error("Exception trying to save application config, this is normal on Linux.", ex);
-                }
+			try
+			{
+                _cfgManager.Save(ConfigurationSaveMode.Modified);
+            }
+            catch (Exception ex)
+            {
+                _log.Error("Exception trying to save application config, this is normal on Linux.", ex);
             }
 
+            Credentials = GetConfig<CxCredentials>(CxCredentials.SECTION_NAME);
             Connection = GetConfig<CxConnection>(CxConnection.SECTION_NAME);
             Service = GetConfig<CxAnalyticsService>(CxAnalyticsService.SECTION_NAME);
         }
