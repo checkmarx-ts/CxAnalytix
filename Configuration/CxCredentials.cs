@@ -7,7 +7,8 @@ using System.Xml.Serialization;
 
 namespace CxAnalytix.Configuration
 {
-	[SecureConfigSection]
+	[SecureConfigSection(SensitiveStringProp = "Password") ]
+	[SecureConfigSection(SensitiveStringProp = "Token")]
 	public sealed class CxCredentials : EnvAwareConfigurationSection
 	{
 		internal CxCredentials()

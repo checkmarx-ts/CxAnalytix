@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\CxAuditTrails\CxAuditTrails.csproj" />
     <ProjectReference Include="..\CxRestClient\CxRestClient.csproj" />
   </ItemGroup>
 
