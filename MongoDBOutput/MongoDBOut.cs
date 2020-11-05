@@ -6,7 +6,7 @@ using MongoDB.Driver;
 using log4net;
 using CxAnalytix.Extensions;
 using System.Security.Cryptography;
-using CxAnalytix.TransformLogic.Interfaces;
+using CxAnalytix.Interfaces.Outputs;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {

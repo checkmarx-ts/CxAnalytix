@@ -6,11 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Folder Include="Interfaces\" />
+    <ProjectReference Include="..\CxAuditTrailsDirectDB\CxAuditTrailsDirectDB.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\CxAuditTrailsDirectDB\CxAuditTrailsDirectDB.csproj" />
+    <Folder Include="Config\" />
   </ItemGroup>
 
 </Project>

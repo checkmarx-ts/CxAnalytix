@@ -5,4 +5,9 @@
     <RootNamespace>CxAnalytix.Interfaces</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Folder Include="Audit\" />
+    <Folder Include="Outputs\" />
+  </ItemGroup>
+
 </Project>

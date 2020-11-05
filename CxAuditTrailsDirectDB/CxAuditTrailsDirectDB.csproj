@@ -7,11 +7,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CxAuditTrailsDB\CxAuditTrailsDB.csproj" />
-    <ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Config\" />
+    <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

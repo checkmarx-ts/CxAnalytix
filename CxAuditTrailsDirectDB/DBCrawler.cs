@@ -1,5 +1,6 @@
 ﻿using System;
-using CxAnalytix.TransformLogic.Interfaces;
+using CxAnalytix.Interfaces.Outputs;
+using CxAnalytix.Interfaces.Audit;
 
 namespace CxAnalytix.CxAuditTrails
 {

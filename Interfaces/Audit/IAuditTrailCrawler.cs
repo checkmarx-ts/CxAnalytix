@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CxAnalytix.AuditTrails.Crawler.Interfaces
+namespace CxAnalytix.Interfaces.Audit
 {
 	public interface IAuditTrailCrawler
 	{

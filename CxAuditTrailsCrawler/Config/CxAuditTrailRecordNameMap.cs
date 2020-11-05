@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Text;
 
-namespace CxAnalytix.CxAuditTrails.DB.Config
+namespace CxAnalytix.AuditTrails.Crawler.Config
 {
 	public class CxAuditTrailRecordNameMap : CxAuditTrailOpts<String>
 	{

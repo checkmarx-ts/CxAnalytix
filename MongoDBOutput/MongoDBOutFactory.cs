@@ -4,7 +4,7 @@ using log4net;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
-using CxAnalytix.TransformLogic.Interfaces;
+using CxAnalytix.Interfaces.Outputs;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
