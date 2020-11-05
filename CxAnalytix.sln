@@ -33,7 +33,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions", "Extensions\Ex
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StringFormatExamples", "StringFormatExamples\StringFormatExamples.csproj", "{A7121C35-FE42-4677-BBA4-CF633595F50F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CxAuditTrails", "CxAuditTrails\CxAuditTrails.csproj", "{93C5C7C1-A7D5-4F79-A2A9-74C711AAB926}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CxAuditTrailsDB", "CxAuditTrailsDB\CxAuditTrailsDB.csproj", "{93C5C7C1-A7D5-4F79-A2A9-74C711AAB926}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Configuration_Tests", "Configuration_Tests\Configuration_Tests.csproj", "{25881CD3-C7C2-4103-97B3-0C4050C4C011}"
 EndProject
