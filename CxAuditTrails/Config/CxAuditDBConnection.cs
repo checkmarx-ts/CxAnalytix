@@ -2,7 +2,7 @@
 using System.Configuration;
 using CxAnalytix.Configuration;
 
-namespace CxAuditTrails.Config
+namespace CxAnalytix.CxAuditTrails.Config
 {
 	[SecureConfigSection(SensitiveStringProp = "ConnectionString")]
 	class CxAuditDBConnection : EnvAwareConfigurationSection
