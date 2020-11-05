@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using CxAnalytix.TransformLogic.Interfaces;
 
 namespace CxAnalytix.Out.Log4NetOutput
 {

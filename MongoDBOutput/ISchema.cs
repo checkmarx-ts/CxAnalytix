@@ -3,6 +3,7 @@ using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using CxAnalytix.TransformLogic.Interfaces;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {

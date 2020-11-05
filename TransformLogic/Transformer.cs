@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Text;
 using CxAnalytix.TransformLogic.Data;
+using CxAnalytix.TransformLogic.Interfaces;
 
 namespace CxAnalytix.TransformLogic
 {

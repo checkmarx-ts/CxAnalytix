@@ -6,6 +6,7 @@ using System.Threading;
 using CxRestClient;
 using CxAnalytix.Configuration;
 using System;
+using CxAnalytix.TransformLogic.Interfaces;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile= "CxAnalytixCLI.log4net", Watch = true)]

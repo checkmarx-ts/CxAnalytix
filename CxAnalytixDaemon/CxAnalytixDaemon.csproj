@@ -15,6 +15,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Configuration\Configuration.csproj" />
+    <ProjectReference Include="..\CxAuditTrails\CxAuditTrails.csproj" />
     <ProjectReference Include="..\Log4NetOutput\Log4NetOutput.csproj" />
     <ProjectReference Include="..\MongoDBOutput\MongoDBOutput.csproj" />
     <ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
