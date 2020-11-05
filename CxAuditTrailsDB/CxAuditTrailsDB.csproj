@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>netcoreapp3.1</TargetFramework>
-		<RootNamespace>CxAnalytix.CxAuditTrails</RootNamespace>
+		<RootNamespace>CxAnalytix.CxAuditTrails.DB</RootNamespace>
 	</PropertyGroup>
 
 

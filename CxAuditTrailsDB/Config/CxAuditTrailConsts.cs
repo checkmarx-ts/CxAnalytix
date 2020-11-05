@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CxAnalytix.CxAuditTrails.Config
+namespace CxAnalytix.CxAuditTrails.DB.Config
 {
 	internal class CxAuditTrailConsts
 	{

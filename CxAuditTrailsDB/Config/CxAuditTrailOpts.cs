@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Configuration;
 
-namespace CxAnalytix.CxAuditTrails.Config
+namespace CxAnalytix.CxAuditTrails.DB.Config
 {
 	public class CxAuditTrailOpts<T> : ConfigurationSection
 	{
