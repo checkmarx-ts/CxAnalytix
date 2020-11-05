@@ -6,11 +6,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Configuration\Configuration.csproj" />
     <ProjectReference Include="..\CxAuditTrailsDirectDB\CxAuditTrailsDirectDB.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Config\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.12" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 
 </Project>

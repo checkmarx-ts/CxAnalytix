@@ -15,10 +15,10 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="log4net" Version="2.0.8" />
-		<PackageReference Include="MongoDB.Bson" Version="2.10.4" />
-		<PackageReference Include="MongoDB.Driver" Version="2.10.4" />
-		<PackageReference Include="MongoDB.Driver.Core" Version="2.10.4" />
+		<PackageReference Include="log4net" Version="2.0.12" />
+		<PackageReference Include="MongoDB.Bson" Version="2.11.4" />
+		<PackageReference Include="MongoDB.Driver" Version="2.11.4" />
+		<PackageReference Include="MongoDB.Driver.Core" Version="2.11.4" />
 	</ItemGroup>
 
 	<ItemGroup>
