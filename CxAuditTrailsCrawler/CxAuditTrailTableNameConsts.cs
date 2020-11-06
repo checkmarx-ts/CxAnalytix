@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System.Runtime.CompilerServices;
 
-namespace CxAnalytix.AuditTrails.Crawler.Config
+[assembly: InternalsVisibleTo("CxAuditTrailsCrawler_Tests")]
+namespace CxAnalytix.AuditTrails.Crawler
 {
-	internal class CxAuditTrailConsts
+	internal class CxAuditTrailTableNameConsts
 	{
 		public const String CxDB_accesscontrol_AuditTrail = "CxDB.accesscontrol.AuditTrail";
 		public const String CxActivity_dbo_AuditTrail = "CxActivity.dbo.AuditTrail";

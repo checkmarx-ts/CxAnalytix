@@ -43,6 +43,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CxAuditTrailsCrawler", "CxA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interfaces", "Interfaces\Interfaces.csproj", "{3ADD8828-7E89-4705-B450-9A27D6356DF1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CxAuditTrailsCrawler_Tests", "CxAuditTrailsCrawler_Tests\CxAuditTrailsCrawler_Tests.csproj", "{A56B0752-F02A-4238-A61B-04A11328A24A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -290,6 +292,18 @@ Global
 		{3ADD8828-7E89-4705-B450-9A27D6356DF1}.Release|x64.Build.0 = Release|Any CPU
 		{3ADD8828-7E89-4705-B450-9A27D6356DF1}.Release|x86.ActiveCfg = Release|Any CPU
 		{3ADD8828-7E89-4705-B450-9A27D6356DF1}.Release|x86.Build.0 = Release|Any CPU
+		{A56B0752-F02A-4238-A61B-04A11328A24A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A56B0752-F02A-4238-A61B-04A11328A24A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A56B0752-F02A-4238-A61B-04A11328A24A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A56B0752-F02A-4238-A61B-04A11328A24A}.Debug|x64.Build.0 = Debug|Any CPU
+		{A56B0752-F02A-4238-A61B-04A11328A24A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A56B0752-F02A-4238-A61B-04A11328A24A}.Debug|x86.Build.0 = Debug|Any CPU
+		{A56B0752-F02A-4238-A61B-04A11328A24A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A56B0752-F02A-4238-A61B-04A11328A24A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A56B0752-F02A-4238-A61B-04A11328A24A}.Release|x64.ActiveCfg = Release|Any CPU
+		{A56B0752-F02A-4238-A61B-04A11328A24A}.Release|x64.Build.0 = Release|Any CPU
+		{A56B0752-F02A-4238-A61B-04A11328A24A}.Release|x86.ActiveCfg = Release|Any CPU
+		{A56B0752-F02A-4238-A61B-04A11328A24A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

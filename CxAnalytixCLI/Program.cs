@@ -7,6 +7,7 @@ using CxRestClient;
 using CxAnalytix.Configuration;
 using System;
 using CxAnalytix.Interfaces.Outputs;
+using CxAnalytix.AuditTrails.Crawler;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile= "CxAnalytixCLI.log4net", Watch = true)]
@@ -55,11 +56,13 @@ namespace CxAnalytixCLI
 
             using (CancellationTokenSource t = new CancellationTokenSource())
             {
+                var outFactory = MakeFactory();
+
                 CxRestContext ctx = builder.Build();
                 Transformer.DoTransform(Config.Service.ConcurrentThreads, 
                     Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
                     ctx, 
-                    MakeFactory (),
+                    outFactory,
                     new RecordNames()
                     {
                         SASTScanSummary = Config.Service.SASTScanSummaryRecordName,
@@ -70,6 +73,9 @@ namespace CxAnalytixCLI
                         PolicyViolations = Config.Service.PolicyViolationsRecordName
                     },
                     t.Token);
+
+
+                AuditTrailCrawler.CrawlAuditTrails(outFactory, t.Token);
             }
 
 

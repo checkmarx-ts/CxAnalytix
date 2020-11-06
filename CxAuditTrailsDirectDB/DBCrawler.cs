@@ -7,13 +7,12 @@ namespace CxAnalytix.CxAuditTrails
 	public class DBCrawler : IAuditTrailCrawler
 	{
 
-		public DBCrawler (IOutputFactory outFactory)
+		public DBCrawler ()
 		{
 
 		}
 
-
-		public void crawl(DateTime since)
+		public void Crawl_CxDB_accesscontrol_AuditTrail(DateTime sinceDate, IOutput output)
 		{
 			throw new NotImplementedException();
 		}

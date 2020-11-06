@@ -18,6 +18,7 @@
 	<ItemGroup>
 		<PackageReference Include="log4net" Version="2.0.12" />
 		<PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
+		<PackageReference Include="System.Data.SqlClient" Version="4.8.2" />
 		<PackageReference Include="System.Runtime.Extensions" Version="4.3.1" />
 	</ItemGroup>
 
