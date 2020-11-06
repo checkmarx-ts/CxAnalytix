@@ -7,6 +7,7 @@ namespace CxAnalytix.Interfaces.Audit
 {
 	public interface IAuditTrailCrawler
 	{
-		void Crawl_CxDB_accesscontrol_AuditTrail(DateTime sinceDate, IOutput output);
+		void CxDB_accesscontrol_AuditTrail(DateTime sinceDate, IOutput output);
+		void CxActivity_dbo_AuditTrail(DateTime sinceDate, IOutput output);
 	}
 }

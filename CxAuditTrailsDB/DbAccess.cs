@@ -7,72 +7,107 @@ using log4net;
 
 namespace CxAnalytix.CxAuditTrails.DB
 {
-	public class DbAccess : IDisposable
+	public class DbAccess
 	{
-		private SqlConnection _con;
-		private static ILog _log = LogManager.GetLogger(typeof (DbAccess) );
+		private static ILog _log = LogManager.GetLogger(typeof(DbAccess));
+		private String _conStr;
 
 
-		public DbAccess ()
+		public DbAccess()
 		{
 			var cfg = CxAnalytix.Configuration.Config.GetConfig<CxAuditDBConnection>(CxAuditDBConnection.SECTION_NAME);
+			_conStr = cfg.ConnectionString;
 
-			_con = new SqlConnection(cfg.ConnectionString);
 		}
 
 
-		private bool TableExists (String dbName, String schemaName, String tableName)
+		private bool TableExists(String dbName, String schemaName, String tableName)
 		{
 			bool retVal = false;
 
+			using (SqlConnection con = new SqlConnection(_conStr))
+			{
+				var cmd = con.CreateCommand();
 
-			var cmd = _con.CreateCommand();
-
-			cmd.CommandText = @"USE {db} 
-				SELECT t.name as TableName, s.name as SchemaName
+				cmd.CommandText = @"SELECT t.name as TableName, s.name as SchemaName
 				FROM sys.tables t 
 				JOIN sys.schemas s ON s.schema_id = t.schema_id 
-				WHERE t.name = {table} AND s.name = {schema}";
+				WHERE t.name = @TABLE AND s.name = @SCHEMA";
 
-			cmd.Parameters.AddWithValue("db", dbName);
-			cmd.Parameters.AddWithValue("table", tableName);
-			cmd.Parameters.AddWithValue("schema", schemaName);
+				cmd.Parameters.AddWithValue("@TABLE", tableName);
+				cmd.Parameters.AddWithValue("@SCHEMA", schemaName);
 
-			try
-			{
-				_con.Open();
-				var reader = cmd.ExecuteReader();
-				retVal = reader.HasRows;
+				try
+				{
+					con.Open();
+					con.ChangeDatabase(dbName);
+					var reader = cmd.ExecuteReader(System.Data.CommandBehavior.SingleRow);
+					retVal = reader.HasRows;
+				}
+				catch (Exception ex)
+				{
+					_log.Error($"Error probing for {dbName}.{schemaName}.{tableName} existence.", ex);
+				}
 			}
-			catch (Exception ex)
-			{
-				_log.Error($"Error probing for {dbName}.{schemaName}.{tableName} existence.", ex);
-			}
-			finally
-			{
-				_con.Close();
-			}
-
 
 			return retVal;
 		}
 
-
-		public bool AccessControlAuditTrailExists ()
+		public SqlDataReader FetchRecords_CxDB_accesscontrol_AuditTrail(DateTime since)
 		{
-			return TableExists("CxDB", "accesscontrol", "AuditTrail");
+			if (!TableExists("CxDB", "accesscontrol", "AuditTrail"))
+				throw new TableDoesNotExistException("CxDB", "accesscontrol", "AuditTrail");
+
+			SqlConnection con = new SqlConnection(_conStr);
+
+			con.Open();
+			con.ChangeDatabase("CxDB");
+
+			var cmd = con.CreateCommand();
+
+			cmd.CommandText = @"SELECT * FROM [CxDB].[accesscontrol].[AuditTrail] WHERE Timestamp > @SINCE";
+
+			cmd.Parameters.AddWithValue("@SINCE", since);
+
+			return cmd.ExecuteReader(System.Data.CommandBehavior.CloseConnection);
+		}
+
+		public SqlDataReader FetchRecords_CxActivity_dbo_AuditTrail(DateTime since)
+		{
+			if (!TableExists("CxActivity", "dbo", "AuditTrail"))
+				throw new TableDoesNotExistException("CxDB", "accesscontrol", "AuditTrail");
+
+			SqlConnection con = new SqlConnection(_conStr);
+
+			con.Open();
+			con.ChangeDatabase("CxActivity");
+
+			var cmd = con.CreateCommand();
+
+			cmd.CommandText = @"SELECT 
+				ActTyp.Name as [Action]
+				,EntTyp.Name as [EntityType]
+				,AudTrl.EntityId
+				,AudTrl.StartTime
+				,AudTrl.EndTime
+				,AudTrl.Origin
+				,CxUsers.UserName
+				,AudTrl.Success
+				,AudTrl.Remarks
+				FROM CxActivity.dbo.AuditTrail as AudTrl
+				JOIN CxActivity.dbo.ActionType as ActTyp ON AudTrl.Action = ActTyp.Id
+				JOIN CxActivity.dbo.EntityType as EntTyp ON AudTrl.EntityType = EntTyp.Id
+				JOIN CxDB.dbo.Users as CxUsers ON AudTrl.UserId = CxUsers.ID
+				WHERE AudTrl.EndTime > @SINCE";
+
+			cmd.Parameters.AddWithValue("@SINCE", since);
+
+			return cmd.ExecuteReader(System.Data.CommandBehavior.CloseConnection);
+
+
 		}
 
 
-		public void Dispose()
-		{
-			if (_con != null)
-			{
-				if (_con.State == System.Data.ConnectionState.Open)
-					_con.Close();
 
-				_con.Dispose();
-			}
-		}
 	}
 }

@@ -8,6 +8,7 @@ using CxAnalytix.CxAuditTrails;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Linq;
+using CxAnalytix.Interfaces.Audit;
 
 namespace CxAnalytix.AuditTrails.Crawler
 {
@@ -15,6 +16,7 @@ namespace CxAnalytix.AuditTrails.Crawler
 	{
 		private const String STORAGE_FILE = "LastAuditTrailCrawl.json";
 		private Dictionary<String, IOutput> _outMappings = new Dictionary<string, IOutput>();
+		private CxAuditTrailTableNameConsts _constsInstance = new CxAuditTrailTableNameConsts();
 
 		private AuditTrailCrawler (IOutputFactory outFactory)
 		{
@@ -31,20 +33,18 @@ namespace CxAnalytix.AuditTrails.Crawler
 			foreach (var f in fields)
 				fieldLookup.Add(f.Name, f);
 
-			var valInst = new CxAuditTrailTableNameConsts();
 
 			foreach (var prop in typeof(CxAuditTrailRecordNameMap).GetProperties() )
 			{
 				if (fieldLookup.ContainsKey (prop.Name))
-					_outMappings.Add(fieldLookup[prop.Name].GetValue (valInst) as String, 
-						outFactory.newInstance(typeof (CxAuditTrailRecordNameMap).
-						InvokeMember(prop.Name, BindingFlags.GetProperty, null, outmap, null) as String));
+					_outMappings.Add(fieldLookup[prop.Name].Name, 
+						outFactory.newInstance(GetPropertyValue<CxAuditTrailRecordNameMap, String>(prop.Name, outmap)));
 			}
 		}
 
 		private void InitSinceDate()
 		{
-			SinceDate = DateTime.MinValue;
+			SinceDate = DateTime.UnixEpoch;
 
 			var storageFile = Path.Combine(CxAnalytix.Configuration.Config.Service.StateDataStoragePath, STORAGE_FILE);
 
@@ -60,30 +60,38 @@ namespace CxAnalytix.AuditTrails.Crawler
 
 		private DateTime SinceDate { get; set; }
 
-		private void ExecuteCrawlOnTable(bool supressed, String tableName)
+		private static TResult GetPropertyValue<T, TResult>(String propName, T inst)
 		{
-			if (supressed)
-				return;
-
-
-
+			return (TResult)inst.GetType().InvokeMember(propName, BindingFlags.GetProperty, null, inst, null);
+		}
+		private void InvokeCrawlMethod(String methodName, IAuditTrailCrawler crawler, CancellationToken token)
+		{
+			var outInst = _outMappings[methodName];
+			crawler.GetType().InvokeMember(methodName, BindingFlags.InvokeMethod, null, crawler, new object[]
+				{
+					SinceDate,
+					outInst
+				});
 		}
 
 		public static void CrawlAuditTrails (IOutputFactory outFactory, CancellationToken token)
 		{
-			var logicController = new AuditTrailCrawler(outFactory);
+			var crawlInvoker = new AuditTrailCrawler(outFactory);
 
-			var supressed = CxAnalytix.Configuration.Config.GetConfig<CxAuditTrailSupressions>(CxAuditTrailSupressions.SECTION_NAME);
+			IAuditTrailCrawler crawler = new DBCrawler();
 
-			//var crawler = new DBCrawler(outFactory);
+			var supressions = CxAnalytix.Configuration.Config.GetConfig<CxAuditTrailSupressions>(CxAuditTrailSupressions.SECTION_NAME);
 
-			//logicController.ExecuteCrawlOnTable(supressed.CxActivity_dbo_AuditTrail, CxAuditTrailConsts.CxActivity_dbo_AuditTrail);
+			foreach (var field in typeof(CxAuditTrailTableNameConsts).GetFields())
+			{
+				if (token.IsCancellationRequested)
+					break;
 
+				if (GetPropertyValue<CxAuditTrailSupressions, bool>(field.Name, supressions))
+					continue;
 
-
-			
-
-
+				crawlInvoker.InvokeCrawlMethod(field.Name, crawler, token);
+			}
 		}
 	}
 }
