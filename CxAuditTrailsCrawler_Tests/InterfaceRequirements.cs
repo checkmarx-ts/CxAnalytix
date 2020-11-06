@@ -8,9 +8,16 @@ namespace CxAuditTrailsCrawler_Tests
 	{
 
 		[Fact]
+		public void Canary()
+		{
+			Assert.True(true);
+		}
+
+
+		[Fact]
 		void IAuditTrailCrawlerMustHaveMethodMatchingTableNames ()
 		{
-			Assert.True(FieldChecker.TypeHasMatchingTableNameProps(typeof(IAuditTrailCrawler)));
+			Assert.True(FieldChecker.TypeHasMatchingTableNameMethods(typeof(IAuditTrailCrawler)));
 		}
 	}
 }
