@@ -47,9 +47,8 @@ namespace CxAnalytix.CxAuditTrails
 			{
 				var serializer = JsonSerializer.Create();
 
-				JsonTextReader jtr = new JsonTextReader(new StringReader(val as String));
-
-				return serializer.Deserialize<SortedDictionary<String, Object>>(jtr);
+				using (JsonTextReader jtr = new JsonTextReader(new StringReader(val as String)))
+					return serializer.Deserialize<SortedDictionary<String, Object>>(jtr);
 			};
 
 			using (var reader = _db.FetchRecords_CxDB_accesscontrol_AuditTrail(sinceDate))
@@ -67,52 +66,62 @@ namespace CxAnalytix.CxAuditTrails
 
 		public void CxActivity_dbo_Audit_DataRetention(DateTime sinceDate, IOutput output)
 		{
-			throw new NotImplementedException();
+			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_DataRetention(sinceDate))
+				OutputRecords(reader, output);
 		}
 
 		public void CxActivity_dbo_Audit_Logins(DateTime sinceDate, IOutput output)
 		{
-			throw new NotImplementedException();
+			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_Logins(sinceDate))
+				OutputRecords(reader, output);
 		}
 
 		public void CxActivity_dbo_Audit_Presets(DateTime sinceDate, IOutput output)
 		{
-			throw new NotImplementedException();
+			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_Presets(sinceDate))
+				OutputRecords(reader, output);
 		}
 
 		public void CxActivity_dbo_Audit_Projects(DateTime sinceDate, IOutput output)
 		{
-			throw new NotImplementedException();
+			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_Projects(sinceDate))
+				OutputRecords(reader, output);
 		}
 
 		public void CxActivity_dbo_Audit_Queries(DateTime sinceDate, IOutput output)
 		{
-			throw new NotImplementedException();
+			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_Queries(sinceDate))
+				OutputRecords(reader, output);
 		}
 
 		public void CxActivity_dbo_Audit_QueriesActions(DateTime sinceDate, IOutput output)
 		{
-			throw new NotImplementedException();
+			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_QueriesActions(sinceDate))
+				OutputRecords(reader, output);
 		}
 
 		public void CxActivity_dbo_Audit_Reports(DateTime sinceDate, IOutput output)
 		{
-			throw new NotImplementedException();
+			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_Reports(sinceDate))
+				OutputRecords(reader, output);
 		}
 
 		public void CxActivity_dbo_Audit_ScanRequests(DateTime sinceDate, IOutput output)
 		{
-			throw new NotImplementedException();
+			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_ScanRequests(sinceDate))
+				OutputRecords(reader, output);
 		}
 
 		public void CxActivity_dbo_Audit_Scans(DateTime sinceDate, IOutput output)
 		{
-			throw new NotImplementedException();
+			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_Scans(sinceDate))
+				OutputRecords(reader, output);
 		}
 
 		public void CxActivity_dbo_Audit_Users(DateTime sinceDate, IOutput output)
 		{
-			throw new NotImplementedException();
+			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_Users(sinceDate))
+				OutputRecords(reader, output);
 		}
 	}
 }
