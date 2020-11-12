@@ -9,9 +9,9 @@ namespace CxAnalytix.AuditTrails.Crawler.Config
 	{
 		public const String SECTION_NAME = "CxAuditTrailRecords";
 
-		private static String StripNonAlphanumeric (String name)
+		private static String DefaultRecordName (String name)
 		{
-			StringBuilder sb = new StringBuilder();
+			StringBuilder sb = new StringBuilder("RECORD_");
 
 			foreach (Char c in name)
 			{
@@ -22,7 +22,7 @@ namespace CxAnalytix.AuditTrails.Crawler.Config
 			return sb.ToString ();
 		}
 
-		public CxAuditTrailRecordNameMap() : base (StripNonAlphanumeric)
+		public CxAuditTrailRecordNameMap() : base (DefaultRecordName)
 		{
 
 		}
