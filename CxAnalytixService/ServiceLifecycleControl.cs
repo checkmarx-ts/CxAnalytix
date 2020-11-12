@@ -8,6 +8,7 @@ using System.Reflection;
 using System;
 using CxRestClient;
 using CxAnalytix.Interfaces.Outputs;
+using CxAnalytix.AuditTrails.Crawler;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "CxAnalytixService.log4net", Watch = true)]
@@ -113,8 +114,6 @@ namespace CxAnalytixService
                     DateTime start = DateTime.Now;
                     _log.Info("Starting data transformation.");
 
-
-
                     try
                     {
                         Transformer.DoTransform(Config.Service.ConcurrentThreads,
@@ -127,16 +126,31 @@ namespace CxAnalytixService
                                 SCAScanDetail = Config.Service.SCAScanDetailRecordName,
                                 ProjectInfo = Config.Service.ProjectInfoRecordName,
                                 PolicyViolations = Config.Service.PolicyViolationsRecordName
-                            },
-                            _cancelToken.Token);
+                            }, _cancelToken.Token);
 
                     }
                     catch (Exception ex)
                     {
-                        _log.Error("Transformation aborted due to unhandled exception.", ex);
+                        _log.Error("Vulnerability data transformation aborted due to unhandled exception.", ex);
                     }
 
-                    _log.InfoFormat("Data transformation finished in {0:0.00} minutes.", DateTime.Now.Subtract(start).TotalMinutes);
+                    _log.InfoFormat("Vulnerability data transformation finished in {0:0.00} minutes.",
+                        DateTime.Now.Subtract(start).TotalMinutes);
+
+                    start = DateTime.Now;
+
+                    try
+                    {
+                        AuditTrailCrawler.CrawlAuditTrails(_outFactory, _cancelToken.Token);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.Error("Audit data transformation aborted due to unhandled exception.", ex);
+                    }
+
+                    _log.InfoFormat("Audit data transformation finished in {0:0.00} minutes.",
+                        DateTime.Now.Subtract(start).TotalMinutes);
+
                     await Task.Delay(Config.Service.ProcessPeriodMinutes * 60 * 1000, _cancelToken.Token);
                 } while (!_cancelToken.Token.IsCancellationRequested);
 

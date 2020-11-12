@@ -20,5 +20,7 @@ namespace CxAnalytix.Interfaces.Audit
 		void CxActivity_dbo_Audit_Scans(DateTime sinceDate, IOutput output);
 		void CxActivity_dbo_Audit_Users(DateTime sinceDate, IOutput output);
 
+		public bool IsDisabled { get; }
+
 	}
 }

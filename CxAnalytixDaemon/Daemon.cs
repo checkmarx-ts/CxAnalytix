@@ -4,12 +4,11 @@ using CxRestClient;
 using log4net;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CxAnalytix.Interfaces.Outputs;
+using CxAnalytix.AuditTrails.Crawler;
 
 namespace CxAnalytixDaemon
 {
@@ -82,14 +81,30 @@ namespace CxAnalytixDaemon
                                 PolicyViolations = Config.Service.PolicyViolationsRecordName
                             }, _cancelToken.Token);
 
+
                     }
                     catch (Exception ex)
                     {
-                        _log.Error("Transformation aborted due to unhandled exception.", ex);
+                        _log.Error("Vulnerability data transformation aborted due to unhandled exception.", ex);
                     }
 
-                    _log.InfoFormat("Data transformation finished in {0:0.00} minutes.",
+                    _log.InfoFormat("Vulnerability data transformation finished in {0:0.00} minutes.",
                         DateTime.Now.Subtract(start).TotalMinutes);
+
+                    start = DateTime.Now;
+
+                    try
+                    {
+                        AuditTrailCrawler.CrawlAuditTrails(_outFactory, _cancelToken.Token);
+                    }
+                    catch (Exception ex)
+					{
+                        _log.Error("Audit data transformation aborted due to unhandled exception.", ex);
+                    }
+
+                    _log.InfoFormat("Audit data transformation finished in {0:0.00} minutes.",
+                        DateTime.Now.Subtract(start).TotalMinutes);
+
                     await Task.Delay(Config.Service.ProcessPeriodMinutes * 60 * 1000, _cancelToken.Token);
                 } while (!_cancelToken.Token.IsCancellationRequested);
 

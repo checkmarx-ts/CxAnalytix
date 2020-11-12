@@ -20,6 +20,14 @@ namespace CxAnalytix.CxAuditTrails
 
 		}
 
+		public bool IsDisabled
+		{
+			get
+			{
+				return _db.IsDisabled;
+			}
+		}
+
 		private void OutputRecords (SqlDataReader reader, IOutput output, 
 			Dictionary<String, Func<Object, Object> > customColumnConverters = null)
 		{

@@ -79,6 +79,9 @@ namespace CxAnalytix.AuditTrails.Crawler
 			var crawlInvoker = new AuditTrailCrawler(outFactory);
 
 			IAuditTrailCrawler crawler = new DBCrawler();
+			
+			if (crawler.IsDisabled)
+				return;
 
 			var supressions = CxAnalytix.Configuration.Config.GetConfig<CxAuditTrailSupressions>(CxAuditTrailSupressions.SECTION_NAME);
 

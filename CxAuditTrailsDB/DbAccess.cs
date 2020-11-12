@@ -11,15 +11,23 @@ namespace CxAnalytix.CxAuditTrails.DB
 	{
 		private static ILog _log = LogManager.GetLogger(typeof(DbAccess));
 		private String _conStr;
+		private CxAuditDBConnection _cfg;
 
 
 		public DbAccess()
 		{
-			var cfg = CxAnalytix.Configuration.Config.GetConfig<CxAuditDBConnection>(CxAuditDBConnection.SECTION_NAME);
-			_conStr = cfg.ConnectionString;
+			_cfg = CxAnalytix.Configuration.Config.GetConfig<CxAuditDBConnection>(CxAuditDBConnection.SECTION_NAME);
+			_conStr = _cfg.ConnectionString;
 
 		}
 
+		public bool IsDisabled
+		{
+			get
+			{
+				return !_cfg.ElementInformation.IsPresent;
+			}
+		}
 
 		private bool TableExists(String dbName, String schemaName, String tableName)
 		{
@@ -48,6 +56,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 				catch (Exception ex)
 				{
 					_log.Error($"Error probing for {dbName}.{schemaName}.{tableName} existence.", ex);
+					throw ex;
 				}
 			}
 
@@ -56,6 +65,9 @@ namespace CxAnalytix.CxAuditTrails.DB
 
 		internal SqlDataReader FetchRecords (String db, String schema, String table, String cmdText, DateTime since)
 		{
+			if (IsDisabled)
+				throw new InvalidOperationException("Database access parameters are not defined.");
+
 			if (!TableExists(db, schema, table))
 				throw new TableDoesNotExistException(db, schema, table);
 
