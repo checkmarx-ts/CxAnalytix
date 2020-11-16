@@ -37,13 +37,13 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAuditTrailsDB", "CxAuditT
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Configuration_Tests", "Configuration_Tests\Configuration_Tests.csproj", "{25881CD3-C7C2-4103-97B3-0C4050C4C011}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CxAuditTrailsDirectDB", "CxAuditTrailsDirectDB\CxAuditTrailsDirectDB.csproj", "{9363739E-7D08-486D-8D64-1DB2B5D18245}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAuditTrailsDirectDB", "CxAuditTrailsDirectDB\CxAuditTrailsDirectDB.csproj", "{9363739E-7D08-486D-8D64-1DB2B5D18245}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CxAuditTrailsCrawler", "CxAuditTrailsCrawler\CxAuditTrailsCrawler.csproj", "{74B9951B-B5A3-468A-A3B5-6CBA056E5090}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAuditTrailsCrawler", "CxAuditTrailsCrawler\CxAuditTrailsCrawler.csproj", "{74B9951B-B5A3-468A-A3B5-6CBA056E5090}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interfaces", "Interfaces\Interfaces.csproj", "{3ADD8828-7E89-4705-B450-9A27D6356DF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Interfaces", "Interfaces\Interfaces.csproj", "{3ADD8828-7E89-4705-B450-9A27D6356DF1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CxAuditTrailsCrawler_Tests", "CxAuditTrailsCrawler_Tests\CxAuditTrailsCrawler_Tests.csproj", "{A56B0752-F02A-4238-A61B-04A11328A24A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAuditTrailsCrawler_Tests", "CxAuditTrailsCrawler_Tests\CxAuditTrailsCrawler_Tests.csproj", "{A56B0752-F02A-4238-A61B-04A11328A24A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -203,7 +203,6 @@ Global
 		{1546DA62-BCD4-4CD3-81B3-F02251B42A50}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{1546DA62-BCD4-4CD3-81B3-F02251B42A50}.Debug|x86.Build.0 = Debug|Any CPU
 		{1546DA62-BCD4-4CD3-81B3-F02251B42A50}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1546DA62-BCD4-4CD3-81B3-F02251B42A50}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1546DA62-BCD4-4CD3-81B3-F02251B42A50}.Release|x64.ActiveCfg = Release|Any CPU
 		{1546DA62-BCD4-4CD3-81B3-F02251B42A50}.Release|x64.Build.0 = Release|Any CPU
 		{1546DA62-BCD4-4CD3-81B3-F02251B42A50}.Release|x86.ActiveCfg = Release|Any CPU
@@ -227,7 +226,6 @@ Global
 		{A7121C35-FE42-4677-BBA4-CF633595F50F}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{A7121C35-FE42-4677-BBA4-CF633595F50F}.Debug|x86.Build.0 = Debug|Any CPU
 		{A7121C35-FE42-4677-BBA4-CF633595F50F}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A7121C35-FE42-4677-BBA4-CF633595F50F}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A7121C35-FE42-4677-BBA4-CF633595F50F}.Release|x64.ActiveCfg = Release|Any CPU
 		{A7121C35-FE42-4677-BBA4-CF633595F50F}.Release|x64.Build.0 = Release|Any CPU
 		{A7121C35-FE42-4677-BBA4-CF633595F50F}.Release|x86.ActiveCfg = Release|Any CPU
@@ -251,7 +249,6 @@ Global
 		{25881CD3-C7C2-4103-97B3-0C4050C4C011}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{25881CD3-C7C2-4103-97B3-0C4050C4C011}.Debug|x86.Build.0 = Debug|Any CPU
 		{25881CD3-C7C2-4103-97B3-0C4050C4C011}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{25881CD3-C7C2-4103-97B3-0C4050C4C011}.Release|Any CPU.Build.0 = Release|Any CPU
 		{25881CD3-C7C2-4103-97B3-0C4050C4C011}.Release|x64.ActiveCfg = Release|Any CPU
 		{25881CD3-C7C2-4103-97B3-0C4050C4C011}.Release|x64.Build.0 = Release|Any CPU
 		{25881CD3-C7C2-4103-97B3-0C4050C4C011}.Release|x86.ActiveCfg = Release|Any CPU
@@ -299,7 +296,6 @@ Global
 		{A56B0752-F02A-4238-A61B-04A11328A24A}.Debug|x86.ActiveCfg = Debug|Any CPU
 		{A56B0752-F02A-4238-A61B-04A11328A24A}.Debug|x86.Build.0 = Debug|Any CPU
 		{A56B0752-F02A-4238-A61B-04A11328A24A}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{A56B0752-F02A-4238-A61B-04A11328A24A}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A56B0752-F02A-4238-A61B-04A11328A24A}.Release|x64.ActiveCfg = Release|Any CPU
 		{A56B0752-F02A-4238-A61B-04A11328A24A}.Release|x64.Build.0 = Release|Any CPU
 		{A56B0752-F02A-4238-A61B-04A11328A24A}.Release|x86.ActiveCfg = Release|Any CPU
