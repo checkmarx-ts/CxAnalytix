@@ -141,7 +141,8 @@ namespace CxAnalytixService
 
                     try
                     {
-                        AuditTrailCrawler.CrawlAuditTrails(_outFactory, _cancelToken.Token);
+                        if (!_cancelToken.Token.IsCancellationRequested)
+							AuditTrailCrawler.CrawlAuditTrails(_outFactory, _cancelToken.Token);
                     }
                     catch (Exception ex)
                     {
