@@ -55,6 +55,8 @@ namespace CxAnalytix.Out.MongoDBOutput
                 record.Add(Spec.Key, keyValue);
             }
 
+            record.Add("_inserted", DateTime.Now.ToUniversalTime() );
+
             Collection.InsertOne(BsonSerialize(record));
         }
     }
