@@ -6,7 +6,7 @@ using System.Data.SqlClient;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
+using log4net;
 
 namespace CxAnalytix.CxAuditTrails
 {
@@ -14,6 +14,7 @@ namespace CxAnalytix.CxAuditTrails
 	{
 
 		private DbAccess _db = new DbAccess();
+		private static readonly ILog _log = LogManager.GetLogger(typeof (DBCrawler));
 
 		public DBCrawler ()
 		{
@@ -31,6 +32,8 @@ namespace CxAnalytix.CxAuditTrails
 		private void OutputRecords (SqlDataReader reader, IOutput output, 
 			Dictionary<String, Func<Object, Object> > customColumnConverters = null)
 		{
+			int count = 0;
+
 			while (reader.Read () )
 			{
 				SortedDictionary<String, Object> rec = new SortedDictionary<string, object>();
@@ -45,7 +48,10 @@ namespace CxAnalytix.CxAuditTrails
 				}
 
 				output.write(rec);
+				count++;
 			}
+
+			_log.Debug($"Wrote ${count} audit records.");
 		}
 
 		public void CxDB_accesscontrol_AuditTrail(DateTime sinceDate, IOutput output)

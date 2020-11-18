@@ -7,8 +7,8 @@ using CxAnalytix.AuditTrails.Crawler.Config;
 using CxAnalytix.CxAuditTrails;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Linq;
 using CxAnalytix.Interfaces.Audit;
+using log4net;
 
 namespace CxAnalytix.AuditTrails.Crawler
 {
@@ -17,6 +17,8 @@ namespace CxAnalytix.AuditTrails.Crawler
 		private const String STORAGE_FILE = "LastAuditTrailCrawl.json";
 		private Dictionary<String, IOutput> _outMappings = new Dictionary<string, IOutput>();
 		private CxAuditTrailTableNameConsts _constsInstance = new CxAuditTrailTableNameConsts();
+		private static readonly ILog _log = LogManager.GetLogger(typeof(AuditTrailCrawler));
+
 
 		private AuditTrailCrawler (IOutputFactory outFactory)
 		{
@@ -91,7 +93,10 @@ namespace CxAnalytix.AuditTrails.Crawler
 					break;
 
 				if (GetPropertyValue<CxAuditTrailSupressions, bool>(field.Name, supressions))
+				{
+					_log.Debug($"{field.Name} logging has been suppressed via configuration.");
 					continue;
+				}
 
 				crawlInvoker.InvokeCrawlMethod(field.Name, crawler, token);
 			}
