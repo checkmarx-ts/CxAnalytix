@@ -44,6 +44,9 @@ namespace CxAnalytix.CxAuditTrails
 					Object insertVal = customColumnConverters != null && customColumnConverters.ContainsKey (colName) ? 
 						customColumnConverters [colName] (reader[x]) : reader[x];
 
+					if (insertVal.GetType() == typeof(System.DBNull))
+						continue;
+
 					rec.Add(reader.GetColumnSchema()[x].ColumnName, insertVal);
 				}
 

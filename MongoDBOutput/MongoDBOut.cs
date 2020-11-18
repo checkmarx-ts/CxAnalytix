@@ -38,7 +38,7 @@ namespace CxAnalytix.Out.MongoDBOutput
             BsonDocument retVal = new BsonDocument();
 
             foreach (var key in record.Keys)
-                retVal.Add(key.Replace ('.', '-'), BsonValue.Create(record[key]));
+                retVal.Add(key.Replace('.', '-'), BsonValue.Create(record[key]));
 
             return retVal;
         }

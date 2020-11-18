@@ -76,13 +76,13 @@ namespace CxAnalytix.Out.MongoDBOutput
         {
             if (!_schemas.ContainsKey(recordType))
             {
-                _log.Warn($"Schema for {recordType} not found, no data will be output for this record type.");
+                _schemas.Add(recordType, MongoDBOut.CreateInstance <GenericSchema>(_db, recordType, _cfg.ShardKeys[recordType]) );
 
-                return new Dummy();
+                return _schemas[recordType];
             }
             else
             {
-                var dest = _schemas[recordType];
+                ISchema dest = _schemas[recordType];
 
                 if (!dest.VerifyOrCreateSchema())
                 {
