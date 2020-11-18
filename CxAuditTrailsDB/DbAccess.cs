@@ -85,8 +85,14 @@ namespace CxAnalytix.CxAuditTrails.DB
 
 		public SqlDataReader FetchRecords_CxDB_accesscontrol_AuditTrail(DateTime since)
 		{
-			String query  = @"SELECT 
-				* 
+			String query  = @"SELECT
+				[Id]
+				,[UserId]
+				,[UserName]
+				,[Type]
+				,[Details]
+				,[Timestamp] as TimeStamp
+				,[OriginIpAddress]
 				FROM [CxDB].[accesscontrol].[AuditTrail] 
 				WHERE Timestamp > @SINCE";
 
