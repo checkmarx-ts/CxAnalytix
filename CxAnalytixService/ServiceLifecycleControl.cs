@@ -9,6 +9,7 @@ using System;
 using CxRestClient;
 using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.AuditTrails.Crawler;
+using CxAnalytix.Exceptions;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "CxAnalytixService.log4net", Watch = true)]
@@ -129,6 +130,12 @@ namespace CxAnalytixService
                             }, _cancelToken.Token);
 
                     }
+                    catch (ProcessFatalException pfe)
+                    {
+                        _log.Error("Fatal exception caught, program ending.", pfe);
+                        _cancelToken.Cancel();
+                        break;
+                    }
                     catch (Exception ex)
                     {
                         _log.Error("Vulnerability data transformation aborted due to unhandled exception.", ex);
@@ -143,6 +150,12 @@ namespace CxAnalytixService
                     {
                         if (!_cancelToken.Token.IsCancellationRequested)
 							AuditTrailCrawler.CrawlAuditTrails(_outFactory, _cancelToken.Token);
+                    }
+                    catch (ProcessFatalException pfe)
+                    {
+                        _log.Error("Fatal exception caught, program ending.", pfe);
+                        _cancelToken.Cancel();
+                        break;
                     }
                     catch (Exception ex)
                     {

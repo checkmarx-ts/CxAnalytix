@@ -13,6 +13,7 @@ using System.Xml;
 using System.Text;
 using CxAnalytix.TransformLogic.Data;
 using CxAnalytix.Interfaces.Outputs;
+using CxAnalytix.Exceptions;
 
 namespace CxAnalytix.TransformLogic
 {
@@ -462,35 +463,27 @@ namespace CxAnalytix.TransformLogic
         public static void DoTransform(int concurrentThreads, String previousStatePath, String instanceId,
         CxRestContext ctx, IOutputFactory outFactory, RecordNames records, CancellationToken token)
         {
-            try
-            {
+			Transformer xform = new Transformer(ctx, token, previousStatePath)
+			{
+				ThreadOpts = new ParallelOptions()
+				{
+					CancellationToken = token,
+					MaxDegreeOfParallelism = concurrentThreads
+				},
+				ProjectInfoOut = outFactory.newInstance(records.ProjectInfo),
+				SastScanSummaryOut = outFactory.newInstance(records.SASTScanSummary),
+				SastScanDetailOut = outFactory.newInstance(records.SASTScanDetail),
+				PolicyViolationDetailOut = outFactory.newInstance(records.PolicyViolations),
+				ScaScanSummaryOut = outFactory.newInstance(records.SCAScanSummary),
+				ScaScanDetailOut = outFactory.newInstance(records.SCAScanDetail),
+				InstanceId = instanceId
 
-                Transformer xform = new Transformer(ctx, token, previousStatePath)
-                {
-                    ThreadOpts = new ParallelOptions()
-                    {
-                        CancellationToken = token,
-                        MaxDegreeOfParallelism = concurrentThreads
-                    },
-                    ProjectInfoOut = outFactory.newInstance(records.ProjectInfo),
-                    SastScanSummaryOut = outFactory.newInstance(records.SASTScanSummary),
-                    SastScanDetailOut = outFactory.newInstance(records.SASTScanDetail),
-                    PolicyViolationDetailOut = outFactory.newInstance(records.PolicyViolations),
-                    ScaScanSummaryOut = outFactory.newInstance(records.SCAScanSummary),
-                    ScaScanDetailOut = outFactory.newInstance(records.SCAScanDetail),
-                    InstanceId = instanceId
+			};
 
-                };
+			xform.ExecuteSweep();
+		}
 
-                xform.ExecuteSweep();
-            }
-            catch (Exception ex)
-            {
-                _log.Error("Unhandled exception caught.", ex);
-            }
-        }
-
-        private void OutputPolicyViolationDetails(ScanDescriptor scan)
+		private void OutputPolicyViolationDetails(ScanDescriptor scan)
         {
             var header = new SortedDictionary<String, Object>();
             AddPrimaryKeyElements(scan, header);

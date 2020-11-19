@@ -23,8 +23,9 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Configuration\Configuration.csproj" />
+		<ProjectReference Include="..\Exceptions\Exceptions.csproj" />
 		<ProjectReference Include="..\Extensions\Extensions.csproj" />
-		<ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
+		<ProjectReference Include="..\Interfaces\Interfaces.csproj" />
 	</ItemGroup>
 
 </Project>

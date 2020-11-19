@@ -1,7 +1,4 @@
-﻿using CxAnalytix.TransformLogic;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
 using CxAnalytix.Interfaces.Outputs;
 
 namespace CxAnalytix.Out.Log4NetOutput

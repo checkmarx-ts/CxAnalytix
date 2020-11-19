@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.Text;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
@@ -9,7 +7,7 @@ namespace CxAnalytix.Out.MongoDBOutput
     {
         public static readonly String SECTION_NAME = "CxMongoOutput";
         
-        [ConfigurationProperty("ConnectionString", IsRequired = true)]
+        [ConfigurationProperty("ConnectionString", IsRequired = false)]
         public String ConnectionString
         {
             get => (String)this["ConnectionString"];

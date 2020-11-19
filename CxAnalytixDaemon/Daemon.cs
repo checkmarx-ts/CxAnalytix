@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.AuditTrails.Crawler;
+using CxAnalytix.Exceptions;
 
 namespace CxAnalytixDaemon
 {
@@ -80,8 +81,12 @@ namespace CxAnalytixDaemon
                                 ProjectInfo = Config.Service.ProjectInfoRecordName,
                                 PolicyViolations = Config.Service.PolicyViolationsRecordName
                             }, _cancelToken.Token);
-
-
+                    }
+                    catch (ProcessFatalException pfe)
+                    {
+                        _log.Error("Fatal exception caught, program ending.", pfe);
+                        _cancelToken.Cancel();
+                        break;
                     }
                     catch (Exception ex)
                     {
@@ -97,6 +102,12 @@ namespace CxAnalytixDaemon
                     {
                         if (!_cancelToken.Token.IsCancellationRequested)
                             AuditTrailCrawler.CrawlAuditTrails(_outFactory, _cancelToken.Token);
+                    }
+                    catch (ProcessFatalException pfe)
+                    {
+                        _log.Error("Fatal exception caught, program ending.", pfe);
+                        _cancelToken.Cancel();
+                        break;
                     }
                     catch (Exception ex)
 					{

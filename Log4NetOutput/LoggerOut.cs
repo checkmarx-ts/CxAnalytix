@@ -1,5 +1,4 @@
 ﻿using CxAnalytix.Configuration;
-using CxAnalytix.TransformLogic;
 using log4net;
 using LogCleaner;
 using Newtonsoft.Json;
@@ -9,6 +8,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using CxAnalytix.Interfaces.Outputs;
+using CxAnalytix.Exceptions;
 
 namespace CxAnalytix.Out.Log4NetOutput
 {
@@ -76,17 +76,16 @@ namespace CxAnalytix.Out.Log4NetOutput
         {
             _recordType = recordType;
             _recordLog = LogManager.Exists(Assembly.GetExecutingAssembly(), recordType);
+            if (_recordLog == null)
+                throw new ProcessFatalException($"Logger for recordType {recordType} was not created. " +
+                    $"The log4net configuration is not correct.");
+
             _log.DebugFormat("Created LoggerOut with record type {0}", recordType);
         }
 
         public void write(IDictionary<string, object> record)
         {
             _log.DebugFormat("Logger for record type [{0}] writing record with {1} elements.", _recordType, record.Keys.Count);
-            if (_recordLog == null)
-            {
-                _log.Warn($"Logger for recordType {_recordType} is null, logging is misconfigured.");
-                return;
-            }
 
             _recordLog.Info(JsonConvert.SerializeObject (record, _serSettings));
         }
