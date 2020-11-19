@@ -54,7 +54,7 @@ namespace CxAnalytix.CxAuditTrails
 				count++;
 			}
 
-			_log.Debug($"Wrote ${count} audit records.");
+			_log.Debug($"Wrote {count} audit records.");
 		}
 
 		public void CxDB_accesscontrol_AuditTrail(DateTime sinceDate, IOutput output)

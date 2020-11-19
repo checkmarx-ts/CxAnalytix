@@ -16,8 +16,8 @@ namespace CxAnalytixDaemon
     class Daemon : IHostedService, IDisposable
     {
         private static ILog _log = LogManager.GetLogger(typeof(Daemon));
-        private Task _serviceTask;
         private CancellationTokenSource _cancelToken;
+        private Task _serviceTask;
         private static IOutputFactory _outFactory = null;
 
         static Daemon()
@@ -49,8 +49,6 @@ namespace CxAnalytixDaemon
         {
             _log.Info("Daemon start.");
 
-            _cancelToken = new CancellationTokenSource();
-
             var builder = new CxRestContext.CxRestContextBuilder();
             builder.WithSASTServiceURL(Config.Connection.URL).
             WithMNOServiceURL(Config.Connection.MNOUrl)
@@ -60,6 +58,8 @@ namespace CxAnalytixDaemon
             .WithPassword(Config.Credentials.Password);
 
             var restCtx = builder.Build();
+
+            _cancelToken = new CancellationTokenSource();
 
             _serviceTask = Task.Run(async () =>
             {
@@ -85,7 +85,7 @@ namespace CxAnalytixDaemon
                     catch (ProcessFatalException pfe)
                     {
                         _log.Error("Fatal exception caught, program ending.", pfe);
-                        _cancelToken.Cancel();
+                        Program._tokenSrc.Cancel();
                         break;
                     }
                     catch (Exception ex)
@@ -100,13 +100,13 @@ namespace CxAnalytixDaemon
 
                     try
                     {
-                        if (!_cancelToken.Token.IsCancellationRequested)
+                        if (!cancellationToken.IsCancellationRequested)
                             AuditTrailCrawler.CrawlAuditTrails(_outFactory, _cancelToken.Token);
                     }
                     catch (ProcessFatalException pfe)
                     {
                         _log.Error("Fatal exception caught, program ending.", pfe);
-                        _cancelToken.Cancel();
+                        Program._tokenSrc.Cancel();
                         break;
                     }
                     catch (Exception ex)
@@ -131,9 +131,9 @@ namespace CxAnalytixDaemon
         {
             if (_cancelToken != null && _serviceTask != null && !_serviceTask.IsCompleted)
             {
-                _cancelToken.Cancel();
-
                 _log.Debug("Waiting for the service task to complete after cancellation.");
+                
+                _cancelToken.Cancel();
 
                 try
                 {
@@ -146,8 +146,6 @@ namespace CxAnalytixDaemon
 
                 _log.Debug("Service task has stopped after wait.");
             }
-            else
-                _log.Warn("Task was null when the service was stopped.");
 
 
             return Task.CompletedTask;
