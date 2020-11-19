@@ -50,7 +50,7 @@ namespace CxAnalytixService
             {
                 _cancelToken.Cancel();
 
-                if (_serviceTask != null)
+                if (_serviceTask != null && !_serviceTask.IsCompleted)
                 {
                     _log.Debug("Waiting for the service task to complete after cancellation.");
 
@@ -65,8 +65,6 @@ namespace CxAnalytixService
 
                     _log.Debug("Service task has stopped after wait.");
                 }
-                else
-                    _log.Warn("Task was null when the service was stopped.");
 
                 _serviceTask.Dispose();
                 _serviceTask = null;
@@ -107,7 +105,6 @@ namespace CxAnalytixService
 
             var restCtx = builder.Build();
 
-
             _serviceTask = Task.Run(async () =>
             {
                 do
@@ -133,7 +130,7 @@ namespace CxAnalytixService
                     catch (ProcessFatalException pfe)
                     {
                         _log.Error("Fatal exception caught, program ending.", pfe);
-                        _cancelToken.Cancel();
+                        new Task(() => Stop()).Start();
                         break;
                     }
                     catch (Exception ex)
@@ -154,7 +151,7 @@ namespace CxAnalytixService
                     catch (ProcessFatalException pfe)
                     {
                         _log.Error("Fatal exception caught, program ending.", pfe);
-                        _cancelToken.Cancel();
+                        new Task(() => Stop()).Start();
                         break;
                     }
                     catch (Exception ex)
