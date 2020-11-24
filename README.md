@@ -6,7 +6,7 @@ CxAnalytix is a background process that crawls Checkmarx SAST, OSA, and Manageme
 obtain data about vulnerabilities.  The data is then flattened into a JSON format with the intent to be forwarded to a data analytics 
 platform for analysis.  Analysis can be performed on the data alone or in aggregate with other sources of data.
 
-The fields available in generated documents can be found in the [specification](SPEC.md).
+The fields available in generated documents can be found in the [data field specification](https://github.com/checkmarx-ts/CxAnalytix/wiki/SPEC.md).
 
 ## Getting Started
 
