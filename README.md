@@ -31,6 +31,9 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 
 ## Version History
+* 1.1.7
+	* BUG FIXES
+		* Issue 31 - No time delay between queries for report generation status.
 * 1.1.6
 	* BUG FIXES
 		* Issue 26 - OSA scan details incomplete or missing
