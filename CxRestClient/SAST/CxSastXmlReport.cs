@@ -29,7 +29,7 @@ namespace CxRestClient.SAST
                 DateTime quitTime = DateTime.Now.Add(ctx.Timeout);
                 do
                 {
-                    Task.Delay(DELAY_MS, token);
+                    Task.Delay(DELAY_MS, token).Wait ();
                     status = CxSastScanReportGenStatus.GetReportGenerationStatus(ctx, token, reportId);
                     if (DateTime.Now.CompareTo(quitTime) > 0)
                     {
