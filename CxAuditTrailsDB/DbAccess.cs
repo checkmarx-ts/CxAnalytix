@@ -203,9 +203,9 @@ namespace CxAnalytix.CxAuditTrails.DB
      			,[Cwe]
      			,[Comments]
      			,[Severity]
-     			,[isExecutable]
-     			,[isEncrypted]
-     			,[is_deprecated]
+     			,[isExecutable] as IsExecutable
+     			,[isEncrypted] as IsEncrypted
+     			,[is_deprecated] as IsDeprecated
      			,[IsCheckOut]
      			,[UpdateTime]
      			,[CurrentUserName]
