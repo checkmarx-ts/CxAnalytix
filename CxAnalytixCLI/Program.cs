@@ -6,6 +6,9 @@ using System.Threading;
 using CxRestClient;
 using CxAnalytix.Configuration;
 using System;
+using CxAnalytix.Interfaces.Outputs;
+using CxAnalytix.AuditTrails.Crawler;
+using CxAnalytix.Exceptions;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile= "CxAnalytixCLI.log4net", Watch = true)]
@@ -54,23 +57,38 @@ namespace CxAnalytixCLI
 
             using (CancellationTokenSource t = new CancellationTokenSource())
             {
-                CxRestContext ctx = builder.Build();
-                Transformer.DoTransform(Config.Service.ConcurrentThreads, 
-                    Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
-                    ctx, 
-                    MakeFactory (),
-                    new RecordNames()
-                    {
-                        SASTScanSummary = Config.Service.SASTScanSummaryRecordName,
-                        SASTScanDetail = Config.Service.SASTScanDetailRecordName,
-                        SCAScanSummary = Config.Service.SCAScanSummaryRecordName,
-                        SCAScanDetail = Config.Service.SCAScanDetailRecordName,
-                        ProjectInfo = Config.Service.ProjectInfoRecordName,
-                        PolicyViolations = Config.Service.PolicyViolationsRecordName
-                    },
-                    t.Token);
-            }
+                try
+                {
+                    var outFactory = MakeFactory();
 
+                    CxRestContext ctx = builder.Build();
+                    Transformer.DoTransform(Config.Service.ConcurrentThreads,
+                        Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
+                        ctx,
+                        outFactory,
+                        new RecordNames()
+                        {
+                            SASTScanSummary = Config.Service.SASTScanSummaryRecordName,
+                            SASTScanDetail = Config.Service.SASTScanDetailRecordName,
+                            SCAScanSummary = Config.Service.SCAScanSummaryRecordName,
+                            SCAScanDetail = Config.Service.SCAScanDetailRecordName,
+                            ProjectInfo = Config.Service.ProjectInfoRecordName,
+                            PolicyViolations = Config.Service.PolicyViolationsRecordName
+                        },
+                        t.Token);
+
+
+                    AuditTrailCrawler.CrawlAuditTrails(outFactory, t.Token);
+                }
+                catch (ProcessFatalException pfe)
+				{
+                    appLog.Error("Fatal exception caught, program ending.", pfe);
+				}
+                catch (Exception ex)
+                {
+                    appLog.Error("Unhandled exception caught, program ending.", ex);
+                }
+            }
 
             appLog.Info("End");
         }

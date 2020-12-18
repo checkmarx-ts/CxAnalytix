@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
-namespace CxAnalytix.TransformLogic
+namespace CxAnalytix.Interfaces.Outputs
 {
     /// <summary>
     /// An interface that is used to output records to some destination

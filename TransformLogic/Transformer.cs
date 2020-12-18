@@ -12,6 +12,8 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Text;
 using CxAnalytix.TransformLogic.Data;
+using CxAnalytix.Interfaces.Outputs;
+using CxAnalytix.Exceptions;
 
 namespace CxAnalytix.TransformLogic
 {
@@ -20,7 +22,7 @@ namespace CxAnalytix.TransformLogic
     /// </summary>
     public class Transformer
     {
-        private static ILog _log = LogManager.GetLogger(typeof(Transformer));
+        private static readonly ILog _log = LogManager.GetLogger(typeof(Transformer));
 
         private static readonly String SAST_PRODUCT_STRING = "SAST";
         private static readonly String SCA_PRODUCT_STRING = "SCA";
@@ -461,35 +463,27 @@ namespace CxAnalytix.TransformLogic
         public static void DoTransform(int concurrentThreads, String previousStatePath, String instanceId,
         CxRestContext ctx, IOutputFactory outFactory, RecordNames records, CancellationToken token)
         {
-            try
-            {
+			Transformer xform = new Transformer(ctx, token, previousStatePath)
+			{
+				ThreadOpts = new ParallelOptions()
+				{
+					CancellationToken = token,
+					MaxDegreeOfParallelism = concurrentThreads
+				},
+				ProjectInfoOut = outFactory.newInstance(records.ProjectInfo),
+				SastScanSummaryOut = outFactory.newInstance(records.SASTScanSummary),
+				SastScanDetailOut = outFactory.newInstance(records.SASTScanDetail),
+				PolicyViolationDetailOut = outFactory.newInstance(records.PolicyViolations),
+				ScaScanSummaryOut = outFactory.newInstance(records.SCAScanSummary),
+				ScaScanDetailOut = outFactory.newInstance(records.SCAScanDetail),
+				InstanceId = instanceId
 
-                Transformer xform = new Transformer(ctx, token, previousStatePath)
-                {
-                    ThreadOpts = new ParallelOptions()
-                    {
-                        CancellationToken = token,
-                        MaxDegreeOfParallelism = concurrentThreads
-                    },
-                    ProjectInfoOut = outFactory.newInstance(records.ProjectInfo),
-                    SastScanSummaryOut = outFactory.newInstance(records.SASTScanSummary),
-                    SastScanDetailOut = outFactory.newInstance(records.SASTScanDetail),
-                    PolicyViolationDetailOut = outFactory.newInstance(records.PolicyViolations),
-                    ScaScanSummaryOut = outFactory.newInstance(records.SCAScanSummary),
-                    ScaScanDetailOut = outFactory.newInstance(records.SCAScanDetail),
-                    InstanceId = instanceId
+			};
 
-                };
+			xform.ExecuteSweep();
+		}
 
-                xform.ExecuteSweep();
-            }
-            catch (Exception ex)
-            {
-                _log.Error("Unhandled exception caught.", ex);
-            }
-        }
-
-        private void OutputPolicyViolationDetails(ScanDescriptor scan)
+		private void OutputPolicyViolationDetails(ScanDescriptor scan)
         {
             var header = new SortedDictionary<String, Object>();
             AddPrimaryKeyElements(scan, header);
@@ -542,10 +536,11 @@ namespace CxAnalytix.TransformLogic
             SortedDictionary<String, Object> curQueryRec = null;
             SortedDictionary<String, Object> curPath = null;
             SortedDictionary<String, Object> curPathNode = null;
-            bool inSnippet = false;
+			bool inSnippet = false;
 
-            using (XmlReader xr = XmlReader.Create(report))
-                while (xr.Read())
+			using (XmlReader xr = XmlReader.Create(report))
+			{
+				while (xr.Read())
                 {
                     if (xr.NodeType == XmlNodeType.Element)
                     {
@@ -715,7 +710,8 @@ namespace CxAnalytix.TransformLogic
                         }
                     }
                 }
-        }
+			}
+		}
 
         private void OutputSASTScanSummary(ScanDescriptor scanRecord)
         {

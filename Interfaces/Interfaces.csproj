@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>CxAnalytix.Interfaces</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Audit\" />
+    <Folder Include="Outputs\" />
+  </ItemGroup>
+
+</Project>

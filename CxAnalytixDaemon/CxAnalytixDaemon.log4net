@@ -1,6 +1,11 @@
 ﻿<log4net>
   <!-- BEGIN: Application logging appender config -->
 
+  <!--
+  It is recommended to not change the application logging appenders other than to change the
+  log output path.
+  -->
+
   <appender name="Console" type="log4net.Appender.ConsoleAppender">
     <filter type="log4net.Filter.LoggerMatchFilter">
       <acceptOnMatch value="false" />
@@ -36,7 +41,14 @@
   </appender>
   <!-- END: Application logging appender config -->
 
-  <!-- BEGIN: Record logging appender config -->
+
+
+  <!-- BEGIN: Vulnerability logging appender config -->
+
+  <!--
+    This section can be eliminated if using an output method other than the default file output.
+    -->
+
   <appender name="SAST_SS" type="log4net.Appender.RollingFileAppender">
     <appendToFile value="true" />
     <maximumFileSize value="100MB" />
@@ -65,7 +77,6 @@
     <layout type="log4net.Layout.PatternLayout">
       <conversionPattern value="%message%newline" />
     </layout>
-
   </appender>
 
 
@@ -128,42 +139,306 @@
       <conversionPattern value="%message%newline" />
     </layout>
   </appender>
+  <!-- END: Vulnerability logging appender config -->
+
+  <!-- BEGIN: Audit logging appender config -->
+
+  <!--
+    This section can be eliminated if using an output method other than the default file output
+    or Audit logging is not enabled.
+    -->
 
 
-  <!-- END: Record logging appender config -->
+  <appender name="Audit_AC_AuditTrail" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Composite" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/CxDB_accesscontrol_AuditTrail" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
 
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%message%newline" />
+    </layout>
+  </appender>
+
+  <appender name="Audit_SAST_AuditTrail" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Composite" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/CxActivity_dbo_AuditTrail" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%message%newline" />
+    </layout>
+  </appender>
+
+
+  <appender name="Audit_SAST_DataRetention" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Composite" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/CxActivity_dbo_Audit_DataRetention" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%message%newline" />
+    </layout>
+  </appender>
+
+
+  <appender name="Audit_SAST_Logins" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Composite" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/CxActivity_dbo_Audit_Logins" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%message%newline" />
+    </layout>
+  </appender>
+
+  <appender name="Audit_SAST_Presets" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Composite" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/CxActivity_dbo_Audit_Presets" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%message%newline" />
+    </layout>
+  </appender>
+
+  <appender name="Audit_SAST_Projects" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Composite" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/CxActivity_dbo_Audit_Projects" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%message%newline" />
+    </layout>
+  </appender>
+
+  <appender name="Audit_SAST_Queries" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Composite" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/CxActivity_dbo_Audit_Queries" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%message%newline" />
+    </layout>
+  </appender>
+
+  <appender name="Audit_SAST_QueriesActions" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Composite" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/CxActivity_dbo_Audit_QueriesActions" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%message%newline" />
+    </layout>
+  </appender>
+
+  <appender name="Audit_SAST_Reports" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Composite" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/CxActivity_dbo_Audit_Reports" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%message%newline" />
+    </layout>
+  </appender>
+
+  <appender name="Audit_SAST_ScanRequests" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Composite" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/CxActivity_dbo_Audit_ScanRequests" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%message%newline" />
+    </layout>
+  </appender>
+
+  <appender name="Audit_SAST_Scans" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Composite" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/CxActivity_dbo_Audit_Scans" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%message%newline" />
+    </layout>
+  </appender>
+
+  <appender name="Audit_SAST_Users" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Composite" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/CxActivity_dbo_Audit_Users" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
+
+    <layout type="log4net.Layout.PatternLayout">
+      <conversionPattern value="%message%newline" />
+    </layout>
+  </appender>
+
+  <!-- END: Audit logging appender config -->
+
+
+  <!-- BEGIN: Vulnerability logger to appender mapping -->
+  <!--
+  The "name" attribute correlates to the record names in the config file's "CxAnalyticsService" element.
+
+  This section can be eliminated if using an output method other than the default file output.
+  -->
   <logger name="RECORD_SAST_Scan_Summary" aditivity="false">
     <level value="ALL" />
     <appender-ref ref="SAST_SS" />
   </logger>
-
   <logger name="RECORD_SAST_Scan_Detail" aditivity="false">
     <level value="ALL" />
     <appender-ref ref="SAST_SD" />
   </logger>
-
-
   <logger name="RECORD_Project_Info" aditivity="false">
     <level value="ALL" />
     <appender-ref ref="SAST_PI" />
   </logger>
-
   <logger name="RECORD_Policy_Violations" aditivity="false">
     <level value="ALL" />
     <appender-ref ref="SAST_PV" />
   </logger>
-
   <logger name="RECORD_SCA_Scan_Summary" aditivity="false">
     <level value="ALL" />
     <appender-ref ref="SCA_SS" />
   </logger>
-
   <logger name="RECORD_SCA_Scan_Detail" aditivity="false">
     <level value="ALL" />
     <appender-ref ref="SCA_SD" />
   </logger>
 
+  <!-- END: Vulnerability logger to appender mapping -->
 
+
+  <!-- BEGIN: Audit logger to appender mapping -->
+  <!--
+  The "name" attribute correlates to the record names in the config file's "CxAuditTrailRecords" element.
+
+  This section can be eliminated if using an output method other than the default file output
+  or Audit logging is not enabled.
+  -->
+  <logger name="RECORD_CxDBaccesscontrolAuditTrail" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="Audit_AC_AuditTrail" />
+  </logger>
+  <logger name="RECORD_CxActivitydboAuditTrail" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="Audit_SAST_AuditTrail" />
+  </logger>
+  <logger name="RECORD_CxActivitydboAuditDataRetention" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="Audit_SAST_DataRetention" />
+  </logger>
+  <logger name="RECORD_CxActivitydboAuditLogins" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="Audit_SAST_Logins" />
+  </logger>
+  <logger name="RECORD_CxActivitydboAuditPresets" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="Audit_SAST_Presets" />
+  </logger>
+  <logger name="RECORD_CxActivitydboAuditProjects" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="Audit_SAST_Projects" />
+  </logger>
+  <logger name="RECORD_CxActivitydboAuditQueries" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="Audit_SAST_Queries" />
+  </logger>
+  <logger name="RECORD_CxActivitydboAuditQueriesActions" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="Audit_SAST_QueriesActions" />
+  </logger>
+  <logger name="RECORD_CxActivitydboAuditReports" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="Audit_SAST_Reports" />
+  </logger>
+  <logger name="RECORD_CxActivitydboAuditScanRequests" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="Audit_SAST_ScanRequests" />
+  </logger>
+  <logger name="RECORD_CxActivitydboAuditScans" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="Audit_SAST_Scans" />
+  </logger>
+  <logger name="RECORD_CxActivitydboAuditUsers" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="Audit_SAST_Users" />
+  </logger>
+  <!-- END: Audit logger to appender mapping -->
+
+
+  <!-- 
+    ** Network IO Trace Logging **
+   
+    Uncomment the logger element below to log all network IO to the application log.  This is for debugging purposes only.
+  
+    The amount of data logged will be extreme.  Sensitive information will also be logged as part of the network IO.  Care
+    should be taken before exposing logs containing network IO.
+   -->
+  <!--
+  <logger name="CxRestClient.IO">
+      <level value="TRACE_NETWORK" />
+  </logger>
+  -->
 
   <root>
     <level value="INFO" />

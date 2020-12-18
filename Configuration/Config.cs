@@ -14,40 +14,67 @@ namespace CxAnalytix.Configuration
         private static ILog _log = LogManager.GetLogger(typeof (Config) );
 
         static Config()
-        {
-            ExeConfigurationFileMap map = new ExeConfigurationFileMap();
-            var process = Process.GetCurrentProcess();
-            map.ExeConfigFilename = process.MainModule.ModuleName + ".config";
-            _log.DebugFormat("Loading configuration from [{0}]", map.ExeConfigFilename);
+		{
+			ExeConfigurationFileMap map = new ExeConfigurationFileMap();
+			var process = Process.GetCurrentProcess();
+			map.ExeConfigFilename = process.MainModule.ModuleName + ".config";
+			_log.DebugFormat("Loading configuration from [{0}]", map.ExeConfigFilename);
 
-            if (!File.Exists(map.ExeConfigFilename))
-                throw new FileNotFoundException("Configuration file missing.", map.ExeConfigFilename);
+			if (!File.Exists(map.ExeConfigFilename))
+				throw new FileNotFoundException("Configuration file missing.", map.ExeConfigFilename);
 
-            _cfgManager = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.None);
+			_cfgManager = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.None);
 
-            Credentials = GetConfig<CxCredentials>(CxCredentials.SECTION_NAME);
-            if (Credentials != null && !Credentials.SectionInformation.IsProtected)
-            {
-                Credentials.SectionInformation.ProtectSection("DataProtectionConfigurationProvider");
-                Credentials.SectionInformation.ForceSave = true;
-                Credentials.SectionInformation.ForceDeclaration(true);
+			EncryptSensitiveSections();
 
-                try
-                {
-                    _cfgManager.Save(ConfigurationSaveMode.Modified);
-                }
-                catch (Exception ex)
-                {
-                    _log.Error("Exception trying to save application config, this is normal on Linux.", ex);
-                }
-            }
+			Credentials = GetConfig<CxCredentials>(CxCredentials.SECTION_NAME);
+			Connection = GetConfig<CxConnection>(CxConnection.SECTION_NAME);
+			Service = GetConfig<CxAnalyticsService>(CxAnalyticsService.SECTION_NAME);
+		}
 
-            Connection = GetConfig<CxConnection>(CxConnection.SECTION_NAME);
-            Service = GetConfig<CxAnalyticsService>(CxAnalyticsService.SECTION_NAME);
-        }
+		private static void EncryptSensitiveSections()
+		{
+			foreach (ConfigurationSection section in _cfgManager.Sections)
+			{
+				var attribs = section.GetType().GetCustomAttributes(typeof(SecureConfigSectionAttribute), true);
 
+				if (attribs != null && attribs.Length > 0)
+				{
+					bool found = false;
+					foreach (SecureConfigSectionAttribute attribInst in attribs)
+					{
+						if (attribInst.IsPropSet(section.GetType(), section))
+						{
+							found = true;
+							break;
+						}
+					}
 
-        public static CxCredentials Credentials
+					if (!found)
+						continue;
+				}
+				else
+					continue;
+
+				if (!section.SectionInformation.IsProtected)
+				{
+					section.SectionInformation.ProtectSection("DataProtectionConfigurationProvider");
+					section.SectionInformation.ForceSave = true;
+					section.SectionInformation.ForceDeclaration(true);
+				}
+			}
+
+			try
+			{
+				_cfgManager.Save(ConfigurationSaveMode.Modified);
+			}
+			catch (Exception ex)
+			{
+				_log.Error("Exception trying to save application config, this is normal on Linux.", ex);
+			}
+		}
+
+		public static CxCredentials Credentials
         {
             get;
             private set;

@@ -11,101 +11,117 @@ using System.Threading;
 
 namespace CxRestClient.SAST
 {
-    public class CxTeams
-    {
-        private static ILog _log = LogManager.GetLogger(typeof (CxTeams));
+	public class CxTeams
+	{
+		private static ILog _log = LogManager.GetLogger(typeof(CxTeams));
 
-        private static String URL_SUFFIX = "cxrestapi/auth/teams";
+		private static String URL_SUFFIX = "cxrestapi/auth/teams";
 
-        private CxTeams()
-        { }
+		private CxTeams()
+		{ }
 
-        private class TeamReader : IEnumerable<Team>, IEnumerator<Team>
-        {
+		private class TeamReader : IEnumerable<Team>, IEnumerator<Team>
+		{
 
-            private JToken _json;
-            private JTokenReader _reader;
-            internal TeamReader(JToken json)
-            {
-                _json = json;
-                _reader = new JTokenReader(_json);
-            }
+			private JToken _json;
+			private JTokenReader _reader;
+			internal TeamReader(JToken json)
+			{
+				_json = json;
+				_reader = new JTokenReader(_json);
+			}
 
-            public Team Current => new Team()
-            {
-                TeamId = ((JProperty)_reader.CurrentToken).Value.ToString(),
-                TeamName = ((JProperty)_reader.CurrentToken.Next).Value.ToString()
-            };
+			private Team _curTeam = null;
+			public Team Current => _curTeam;
 
-            object IEnumerator.Current => Current;
 
-            public void Dispose()
-            {
-                _reader = null;
-            }
+			object IEnumerator.Current => Current;
 
-            public IEnumerator<Team> GetEnumerator()
-            {
-                return new TeamReader(_json);
-            }
+			public void Dispose()
+			{
+				_reader = null;
+			}
 
-            public bool MoveNext()
-            {
-                bool read_result = false;
+			public IEnumerator<Team> GetEnumerator()
+			{
+				return new TeamReader(_json);
+			}
 
-                while (read_result = _reader.Read())
-                    if (_reader.CurrentToken.Type == JTokenType.Property)
-                        if (((JProperty)_reader.CurrentToken).Name.CompareTo("id") == 0)
-                            return true;
+			int _arrayPos = 0;
+			JArray _teamArray;
 
-                return read_result;
-            }
+			public bool MoveNext()
+			{
+				if (_reader.CurrentToken == null)
+				{
+					while (_reader.Read() && _reader.CurrentToken.Type != JTokenType.Array) ;
+					if (_reader.CurrentToken == null || _reader.CurrentToken.Type != JTokenType.Array)
+						return false;
 
-            public void Reset()
-            {
-                throw new NotImplementedException();
-            }
+					_teamArray = (JArray)_reader.CurrentToken;
+				}
+				else
+					_arrayPos++;
 
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return new TeamReader(_json);
-            }
-        }
 
-        public struct Team
-        {
-            public String TeamId { get; internal set; }
-            public String TeamName { get; internal set; }
-        }
+				if (!(_arrayPos < _teamArray.Count))
+					return false;
 
-        public static IEnumerable<Team> GetTeams(CxRestContext ctx, CancellationToken token)
-        {
-            try
-            {
-                using (var client = ctx.Json.CreateSastClient())
-                using (var teams = client.GetAsync(
-                    CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result)
-                {
-                    if (token.IsCancellationRequested)
-                        return null;
 
-                    if (!teams.IsSuccessStatusCode)
-                        throw new InvalidOperationException(teams.ReasonPhrase);
+				_curTeam = (Team)new JsonSerializer().
+					Deserialize(new JTokenReader(_teamArray[_arrayPos]), typeof(Team));
 
-                    using (var sr = new StreamReader
-                        (teams.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
-                    {
-                        JToken jt = JToken.Load(jtr);
-                        return new TeamReader(jt);
-                    }
-                }
-            }
-            catch (HttpRequestException hex)
-            {
-                _log.Error("Communication error.", hex);
-                throw hex;
-            }
-        }
-    }
+				return true;
+			}
+
+			public void Reset()
+			{
+				throw new NotImplementedException();
+			}
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return new TeamReader(_json);
+			}
+		}
+
+		[JsonObject(MemberSerialization.OptIn)]
+		public class Team
+		{
+			[JsonProperty(PropertyName = "id")]
+			public String TeamId { get; internal set; }
+			[JsonProperty(PropertyName = "fullName")]
+			public String TeamName { get; internal set; }
+		}
+
+		public static IEnumerable<Team> GetTeams(CxRestContext ctx, CancellationToken token)
+		{
+			try
+			{
+				using (var client = ctx.Json.CreateSastClient())
+				using (var teams = client.GetAsync(
+					CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result)
+				{
+					if (token.IsCancellationRequested)
+						return null;
+
+					if (!teams.IsSuccessStatusCode)
+						throw new InvalidOperationException(teams.ReasonPhrase);
+
+					using (var sr = new StreamReader
+						(teams.Content.ReadAsStreamAsync().Result))
+					using (var jtr = new JsonTextReader(sr))
+					{
+						JToken jt = JToken.Load(jtr);
+						return new TeamReader(jt);
+					}
+				}
+			}
+			catch (HttpRequestException hex)
+			{
+				_log.Error("Communication error.", hex);
+				throw hex;
+			}
+		}
+	}
 }

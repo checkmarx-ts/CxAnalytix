@@ -4,19 +4,20 @@ using CxRestClient;
 using log4net;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Collections.Generic;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using CxAnalytix.Interfaces.Outputs;
+using CxAnalytix.AuditTrails.Crawler;
+using CxAnalytix.Exceptions;
 
 namespace CxAnalytixDaemon
 {
     class Daemon : IHostedService, IDisposable
     {
         private static ILog _log = LogManager.GetLogger(typeof(Daemon));
-        private Task _serviceTask;
         private CancellationTokenSource _cancelToken;
+        private Task _serviceTask;
         private static IOutputFactory _outFactory = null;
 
         static Daemon()
@@ -48,8 +49,6 @@ namespace CxAnalytixDaemon
         {
             _log.Info("Daemon start.");
 
-            _cancelToken = new CancellationTokenSource();
-
             var builder = new CxRestContext.CxRestContextBuilder();
             builder.WithSASTServiceURL(Config.Connection.URL).
             WithMNOServiceURL(Config.Connection.MNOUrl)
@@ -59,6 +58,8 @@ namespace CxAnalytixDaemon
             .WithPassword(Config.Credentials.Password);
 
             var restCtx = builder.Build();
+
+            _cancelToken = new CancellationTokenSource();
 
             _serviceTask = Task.Run(async () =>
             {
@@ -80,15 +81,42 @@ namespace CxAnalytixDaemon
                                 ProjectInfo = Config.Service.ProjectInfoRecordName,
                                 PolicyViolations = Config.Service.PolicyViolationsRecordName
                             }, _cancelToken.Token);
-
+                    }
+                    catch (ProcessFatalException pfe)
+                    {
+                        _log.Error("Fatal exception caught, program ending.", pfe);
+                        Program._tokenSrc.Cancel();
+                        break;
                     }
                     catch (Exception ex)
                     {
-                        _log.Error("Transformation aborted due to unhandled exception.", ex);
+                        _log.Error("Vulnerability data transformation aborted due to unhandled exception.", ex);
                     }
 
-                    _log.InfoFormat("Data transformation finished in {0:0.00} minutes.",
+                    _log.InfoFormat("Vulnerability data transformation finished in {0:0.00} minutes.",
                         DateTime.Now.Subtract(start).TotalMinutes);
+
+                    start = DateTime.Now;
+
+                    try
+                    {
+                        if (!cancellationToken.IsCancellationRequested)
+                            AuditTrailCrawler.CrawlAuditTrails(_outFactory, _cancelToken.Token);
+                    }
+                    catch (ProcessFatalException pfe)
+                    {
+                        _log.Error("Fatal exception caught, program ending.", pfe);
+                        Program._tokenSrc.Cancel();
+                        break;
+                    }
+                    catch (Exception ex)
+					{
+                        _log.Error("Audit data transformation aborted due to unhandled exception.", ex);
+                    }
+
+                    _log.InfoFormat("Audit data transformation finished in {0:0.00} minutes.",
+                        DateTime.Now.Subtract(start).TotalMinutes);
+
                     await Task.Delay(Config.Service.ProcessPeriodMinutes * 60 * 1000, _cancelToken.Token);
                 } while (!_cancelToken.Token.IsCancellationRequested);
 
@@ -103,9 +131,9 @@ namespace CxAnalytixDaemon
         {
             if (_cancelToken != null && _serviceTask != null && !_serviceTask.IsCompleted)
             {
-                _cancelToken.Cancel();
-
                 _log.Debug("Waiting for the service task to complete after cancellation.");
+                
+                _cancelToken.Cancel();
 
                 try
                 {
@@ -118,8 +146,6 @@ namespace CxAnalytixDaemon
 
                 _log.Debug("Service task has stopped after wait.");
             }
-            else
-                _log.Warn("Task was null when the service was stopped.");
 
 
             return Task.CompletedTask;

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CxAnalytix.TransformLogic
+namespace CxAnalytix.Interfaces.Outputs
 {
     /// <summary>
     /// An interface that defines the factory implementation for IOutput

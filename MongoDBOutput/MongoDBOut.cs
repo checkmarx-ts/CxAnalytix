@@ -1,11 +1,11 @@
 ﻿using System;
-using CxAnalytix.TransformLogic;
 using System.Collections.Generic;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using log4net;
 using CxAnalytix.Extensions;
 using System.Security.Cryptography;
+using CxAnalytix.Interfaces.Outputs;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
@@ -37,7 +37,7 @@ namespace CxAnalytix.Out.MongoDBOutput
             BsonDocument retVal = new BsonDocument();
 
             foreach (var key in record.Keys)
-                retVal.Add(key.Replace ('.', '-'), BsonValue.Create(record[key]));
+                retVal.Add(key.Replace('.', '-'), BsonValue.Create(record[key]));
 
             return retVal;
         }
@@ -53,6 +53,8 @@ namespace CxAnalytix.Out.MongoDBOutput
 
                 record.Add(Spec.Key, keyValue);
             }
+
+            record.Add("_inserted", DateTime.Now.ToUniversalTime() );
 
             Collection.InsertOne(BsonSerialize(record));
         }

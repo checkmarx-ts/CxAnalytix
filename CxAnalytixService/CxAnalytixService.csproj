@@ -1,36 +1,47 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
-    <Authors>Nathan Leach</Authors>
-    <Company>Checkmarx</Company>
-    <Description>Exports static analysis and software composition results to a form suitable for use by data analytics platforms.</Description>
-	<RuntimeIdentifier>win7-x64</RuntimeIdentifier>
-	<RootNamespace>CxAnalytixService</RootNamespace>
-  </PropertyGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>netcoreapp3.1</TargetFramework>
+		<Authors>Nathan Leach</Authors>
+		<Company>Checkmarx</Company>
+		<Description>Exports static analysis and software composition results to a form suitable for use by data analytics platforms.</Description>
+		<RuntimeIdentifier>win7-x64</RuntimeIdentifier>
+		<RootNamespace>CxAnalytixService</RootNamespace>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="log4net" Version="2.0.8" />
-    <PackageReference Include="Microsoft.Windows.Compatibility" Version="3.1.0" />
-    <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
-  </ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Configuration\Configuration.csproj" />
-    <ProjectReference Include="..\CxRestClient\CxRestClient.csproj" />
-    <ProjectReference Include="..\Log4NetOutput\Log4NetOutput.csproj" />
-    <ProjectReference Include="..\MongoDBOutput\MongoDBOutput.csproj" />
-    <ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
-  </ItemGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <None Update="CxAnalytixService.exe.config">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Update="CxAnalytixService.log4net">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="log4net" Version="2.0.12" />
+		<PackageReference Include="Microsoft.Windows.Compatibility" Version="5.0.0" />
+		<PackageReference Include="System.Configuration.ConfigurationManager" Version="5.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Configuration\Configuration.csproj" />
+		<ProjectReference Include="..\CxAuditTrailsCrawler\CxAuditTrailsCrawler.csproj" />
+		<ProjectReference Include="..\CxRestClient\CxRestClient.csproj" />
+		<ProjectReference Include="..\Exceptions\Exceptions.csproj" />
+		<ProjectReference Include="..\Log4NetOutput\Log4NetOutput.csproj" />
+		<ProjectReference Include="..\MongoDBOutput\MongoDBOutput.csproj" />
+		<ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Update="CxAnalytixService.exe.config">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+		<None Update="CxAnalytixService.log4net">
+			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
 
 </Project>

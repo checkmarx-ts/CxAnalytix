@@ -7,6 +7,9 @@ using CxAnalytix.Configuration;
 using System.Reflection;
 using System;
 using CxRestClient;
+using CxAnalytix.Interfaces.Outputs;
+using CxAnalytix.AuditTrails.Crawler;
+using CxAnalytix.Exceptions;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "CxAnalytixService.log4net", Watch = true)]
@@ -47,7 +50,7 @@ namespace CxAnalytixService
             {
                 _cancelToken.Cancel();
 
-                if (_serviceTask != null)
+                if (_serviceTask != null && !_serviceTask.IsCompleted)
                 {
                     _log.Debug("Waiting for the service task to complete after cancellation.");
 
@@ -62,8 +65,6 @@ namespace CxAnalytixService
 
                     _log.Debug("Service task has stopped after wait.");
                 }
-                else
-                    _log.Warn("Task was null when the service was stopped.");
 
                 _serviceTask.Dispose();
                 _serviceTask = null;
@@ -104,15 +105,12 @@ namespace CxAnalytixService
 
             var restCtx = builder.Build();
 
-
             _serviceTask = Task.Run(async () =>
             {
                 do
                 {
                     DateTime start = DateTime.Now;
                     _log.Info("Starting data transformation.");
-
-
 
                     try
                     {
@@ -126,16 +124,44 @@ namespace CxAnalytixService
                                 SCAScanDetail = Config.Service.SCAScanDetailRecordName,
                                 ProjectInfo = Config.Service.ProjectInfoRecordName,
                                 PolicyViolations = Config.Service.PolicyViolationsRecordName
-                            },
-                            _cancelToken.Token);
+                            }, _cancelToken.Token);
 
+                    }
+                    catch (ProcessFatalException pfe)
+                    {
+                        _log.Error("Fatal exception caught, program ending.", pfe);
+                        new Task(() => Stop()).Start();
+                        break;
                     }
                     catch (Exception ex)
                     {
-                        _log.Error("Transformation aborted due to unhandled exception.", ex);
+                        _log.Error("Vulnerability data transformation aborted due to unhandled exception.", ex);
                     }
 
-                    _log.InfoFormat("Data transformation finished in {0:0.00} minutes.", DateTime.Now.Subtract(start).TotalMinutes);
+                    _log.InfoFormat("Vulnerability data transformation finished in {0:0.00} minutes.",
+                        DateTime.Now.Subtract(start).TotalMinutes);
+
+                    start = DateTime.Now;
+
+                    try
+                    {
+                        if (!_cancelToken.Token.IsCancellationRequested)
+							AuditTrailCrawler.CrawlAuditTrails(_outFactory, _cancelToken.Token);
+                    }
+                    catch (ProcessFatalException pfe)
+                    {
+                        _log.Error("Fatal exception caught, program ending.", pfe);
+                        new Task(() => Stop()).Start();
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.Error("Audit data transformation aborted due to unhandled exception.", ex);
+                    }
+
+                    _log.InfoFormat("Audit data transformation finished in {0:0.00} minutes.",
+                        DateTime.Now.Subtract(start).TotalMinutes);
+
                     await Task.Delay(Config.Service.ProcessPeriodMinutes * 60 * 1000, _cancelToken.Token);
                 } while (!_cancelToken.Token.IsCancellationRequested);
 
