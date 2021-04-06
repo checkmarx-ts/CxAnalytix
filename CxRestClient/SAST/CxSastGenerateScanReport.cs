@@ -49,44 +49,28 @@ namespace CxRestClient.SAST
         public static String GetGeneratedReportId(CxRestContext ctx, CancellationToken token,
             String scanId, ReportTypes type)
         {
-
-            try
-            {
-                using (var client = ctx.Json.CreateSastClient())
-                {
-
-                    var dict = new Dictionary<String, String>()
+            var dict = new Dictionary<String, String>()
                 {
                     { "reportType", type.ToString ()},
                     { "scanId", scanId }
                 };
 
-                    using (var payload = new FormUrlEncodedContent(dict))
+			using (var payload = new FormUrlEncodedContent(dict))
+				return WebOperation.ExecutePost<String>(
+				ctx.Json.CreateSastClient
+				, (response) =>
+				{
+                    using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
+                    using (var jtr = new JsonTextReader(sr))
                     {
-                        using (var scanReportTicket = client.PostAsync(
-                            CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), payload, token).Result)
-                        {
-                            if (!scanReportTicket.IsSuccessStatusCode)
-                                throw new InvalidOperationException
-                                    ($"Scan report generation request for scan {scanId} returned " +
-                                    $"{scanReportTicket.StatusCode}");
-
-                            using (var sr = new StreamReader
-                                    (scanReportTicket.Content.ReadAsStreamAsync().Result))
-                            using (var jtr = new JsonTextReader(sr))
-                            {
-                                JToken jt = JToken.Load(jtr);
-                                return ReadReportId(jt);
-                            }
-                        }
+                        JToken jt = JToken.Load(jtr);
+                        return ReadReportId(jt);
                     }
                 }
-            }
-            catch (HttpRequestException hex)
-            {
-                _log.Error("Communication error.", hex);
-                throw hex;
-            }
+                , CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
+                , payload
+                , ctx
+				, token);
         }
     }
 }

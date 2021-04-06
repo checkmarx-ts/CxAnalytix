@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using CxRestClient.Utility;
+using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -6,13 +7,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Text;
 using System.Threading;
 
 namespace CxRestClient.SAST
 {
     public class CxPresets
-    {
+	{
         private static ILog _log = LogManager.GetLogger(typeof(CxPresets));
 
         private static String URL_SUFFIX = "cxrestapi/sast/presets";
@@ -87,32 +87,21 @@ namespace CxRestClient.SAST
 
         public static IEnumerable<Preset> GetPresets(CxRestContext ctx, CancellationToken token)
         {
-            try
-            {
-                using (var client = ctx.Json.CreateSastClient())
-                using (var presets = client.GetAsync(
-                    CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result)
-                {
-                    if (token.IsCancellationRequested)
-                        return null;
-
-                    if (!presets.IsSuccessStatusCode)
-                        throw new InvalidOperationException(presets.ReasonPhrase);
-
-                    using (var sr = new StreamReader
-                            (presets.Content.ReadAsStreamAsync().Result))
+			return WebOperation.ExecuteGet<IEnumerable<Preset>>(
+				ctx.Json.CreateSastClient
+				, (response) =>
+				{
+                    using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
                     using (var jtr = new JsonTextReader(sr))
                     {
                         JToken jt = JToken.Load(jtr);
                         return new PresetReader(jt);
                     }
                 }
-            }
-            catch (HttpRequestException hex)
-            {
-                _log.Error("Communication error.", hex);
-                throw hex;
-            }
-        }
-    }
+                , CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
+				, ctx
+				, token);
+		}
+
+	}
 }

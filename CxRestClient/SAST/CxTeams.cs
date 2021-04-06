@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using CxRestClient.Utility;
+using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -96,32 +97,21 @@ namespace CxRestClient.SAST
 
 		public static IEnumerable<Team> GetTeams(CxRestContext ctx, CancellationToken token)
 		{
-			try
-			{
-				using (var client = ctx.Json.CreateSastClient())
-				using (var teams = client.GetAsync(
-					CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result)
+			return WebOperation.ExecuteGet<IEnumerable<Team>>(
+				ctx.Json.CreateSastClient
+				, (response) =>
 				{
-					if (token.IsCancellationRequested)
-						return null;
-
-					if (!teams.IsSuccessStatusCode)
-						throw new InvalidOperationException(teams.ReasonPhrase);
-
-					using (var sr = new StreamReader
-						(teams.Content.ReadAsStreamAsync().Result))
+					using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
 					using (var jtr = new JsonTextReader(sr))
 					{
 						JToken jt = JToken.Load(jtr);
 						return new TeamReader(jt);
 					}
 				}
-			}
-			catch (HttpRequestException hex)
-			{
-				_log.Error("Communication error.", hex);
-				throw hex;
-			}
+				, CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
+				, ctx
+				, token);
 		}
+
 	}
 }
