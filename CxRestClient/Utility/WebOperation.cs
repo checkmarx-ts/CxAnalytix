@@ -13,14 +13,15 @@ namespace CxRestClient.Utility
 {
 	internal class WebOperation
 	{
-        private static ILog _log = LogManager.GetLogger(typeof(WebOperation));
+		private static ILog _log = LogManager.GetLogger(typeof(WebOperation));
 
 		private static int RETRY_DELAY_MS = 1000;
 		private static int RETRY_DELAY_INCREASE_FACTOR = 2;
 
 
-		private static T ExecuteOperation<T>(Func<CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess, 
-			Func<CxRestClient.IO.CxRestClient, HttpResponseMessage> opExecutor, CxRestContext ctx, CancellationToken token)
+		private static T ExecuteOperation<T>(Func<CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
+			Func<CxRestClient.IO.CxRestClient, HttpResponseMessage> opExecutor, CxRestContext ctx, CancellationToken token,
+			Func<HttpResponseMessage, Boolean> errorLogic)
 		{
 			var endRetryAt = DateTime.Now.Add(ctx.Timeout);
 
@@ -36,7 +37,7 @@ namespace CxRestClient.Utility
 				try
 				{
 					using (var client = clientFactory())
-					using (var response = opExecutor(client) )
+					using (var response = opExecutor(client))
 					{
 						if (token.IsCancellationRequested)
 						{
@@ -44,11 +45,15 @@ namespace CxRestClient.Utility
 							return default(T);
 						}
 
+
 						if (response.IsSuccessStatusCode)
 							return onSuccess(response);
 						else
 						{
 							errMsg = $"Request failed with response {Convert.ToInt32(response.StatusCode)}({response.StatusCode})";
+
+							if (errorLogic != null && !errorLogic(response))
+									return default(T);
 
 							if (lastFail != response.StatusCode)
 							{
@@ -81,8 +86,8 @@ namespace CxRestClient.Utility
 			throw new InvalidOperationException(errMsg);
 		}
 
-		public static T ExecuteGet<T>(Func<CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess, 
-			String url, CxRestContext ctx, CancellationToken token)
+		public static T ExecuteGet<T>(Func<CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
+			String url, CxRestContext ctx, CancellationToken token, Func<HttpResponseMessage, Boolean> errorLogic = null)
 		{
 			return ExecuteOperation<T>(
 				clientFactory
@@ -93,12 +98,14 @@ namespace CxRestClient.Utility
 					return client.GetAsync(url, token).Result;
 				}
 				, ctx
-				, token);
+				, token
+				, errorLogic);
 		}
 
 
 		public static T ExecutePost<T>(Func<CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
-			String url, HttpContent payload, CxRestContext ctx, CancellationToken token)
+			String url, HttpContent payload, CxRestContext ctx, CancellationToken token,
+			Func<HttpResponseMessage, Boolean> errorLogic = null)
 		{
 			return ExecuteOperation<T>(
 				clientFactory
@@ -106,10 +113,11 @@ namespace CxRestClient.Utility
 				, (client) =>
 				{
 					_log.Debug($"Executing POST operation at {url}");
-					return client.PostAsync(url, payload, token).Result; 
+					return client.PostAsync(url, payload, token).Result;
 				}
 				, ctx
-				, token);
+				, token
+				, errorLogic);
 		}
 
 	}
