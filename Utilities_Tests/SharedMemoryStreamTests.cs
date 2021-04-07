@@ -39,7 +39,7 @@ namespace Utilities_Tests
 
 				sms.Write(buffer1, 0, buffer1.Length);
 
-				Assert.Equal(buffer1.Length, sms.Position + 1 - posBefore);
+				Assert.Equal(buffer1.Length, sms.Position - posBefore);
 			}
 		}
 
@@ -55,7 +55,7 @@ namespace Utilities_Tests
 
 				sms.Write(buffer1, 0, buffer1.Length);
 
-				Assert.Equal(buffer1.Length, sms.Position + 1 - posBefore);
+				Assert.Equal(buffer1.Length, sms.Position - posBefore);
 			}
 
 		}
@@ -167,19 +167,14 @@ namespace Utilities_Tests
 		[Fact]
 		public void NoReadBeyondCapacity()
 		{
-			using (var sms = new SharedMemoryStream(buffer1.Length - 1))
-				try
-				{
-					sms.Read(buffer1, 0, buffer1.Length);
-				}
-				catch (ArgumentOutOfRangeException)
-				{
-					Assert.True(true);
-					return;
-
-				}
-
-			Assert.True(false);
+			using (var sms = new SharedMemoryStream(buffer1.Length))
+			{
+				sms.Write(buffer1, 0, buffer1.Length);
+				sms.Seek(0, System.IO.SeekOrigin.Begin);
+				byte[] localBuf = new byte[buffer1.Length * 2];
+				int amount = sms.Read(localBuf, 0, localBuf.Length);
+				Assert.Equal(buffer1.Length, amount);
+			}
 		}
 
 		[Fact]
@@ -295,6 +290,7 @@ namespace Utilities_Tests
 				try
 				{
 					sms.Seek(sms.Length, System.IO.SeekOrigin.Current);
+					sms.Seek(1, System.IO.SeekOrigin.Current);
 				}
 				catch (ArgumentOutOfRangeException)
 				{
@@ -340,7 +336,7 @@ namespace Utilities_Tests
 			using (var sms = new SharedMemoryStream(buffer1.Length))
 				try
 				{
-					sms.Seek(sms.Length, System.IO.SeekOrigin.Begin);
+					sms.Seek(sms.Length + 1, System.IO.SeekOrigin.Begin);
 				}
 				catch (ArgumentOutOfRangeException)
 				{
@@ -373,7 +369,7 @@ namespace Utilities_Tests
 				sms.Position = buffer1.Length - 1;
 				try
 				{
-					sms.Seek(buffer1.Length, System.IO.SeekOrigin.End);
+					sms.Seek(buffer1.Length + 1, System.IO.SeekOrigin.End);
 				}
 				catch (ArgumentOutOfRangeException)
 				{
@@ -408,7 +404,7 @@ namespace Utilities_Tests
 			using (var sms = new SharedMemoryStream(buffer1.Length))
 			{
 				sms.Seek(0, System.IO.SeekOrigin.End);
-				Assert.Equal(buffer1.Length - 1, sms.Position);
+				Assert.Equal(buffer1.Length, sms.Position);
 			}
 		}
 

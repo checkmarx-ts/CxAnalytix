@@ -69,9 +69,6 @@ namespace CxAnalytix.Utilities
 			if (count < 0)
 				throw new ArgumentOutOfRangeException("count", $"Value must be => 0");
 
-			if (count + Position > Length)
-				throw new ArgumentOutOfRangeException("count", $"Attempt to read beyond end of stream");
-
 			if (Position >= Length)
 				return 0;
 
