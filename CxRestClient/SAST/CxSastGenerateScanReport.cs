@@ -55,22 +55,21 @@ namespace CxRestClient.SAST
                     { "scanId", scanId }
                 };
 
-			using (var payload = new FormUrlEncodedContent(dict))
-				return WebOperation.ExecutePost<String>(
-				ctx.Json.CreateSastClient
-				, (response) =>
+			return WebOperation.ExecutePost<String>(
+			ctx.Json.CreateSastClient
+			, (response) =>
+			{
+				using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
+				using (var jtr = new JsonTextReader(sr))
 				{
-                    using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
-                    {
-                        JToken jt = JToken.Load(jtr);
-                        return ReadReportId(jt);
-                    }
-                }
-                , CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
-                , payload
-                , ctx
-				, token);
-        }
-    }
+					JToken jt = JToken.Load(jtr);
+					return ReadReportId(jt);
+				}
+			}
+			, CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
+			, () => new FormUrlEncodedContent(dict)
+			, ctx
+			, token);
+		}
+	}
 }

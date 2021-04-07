@@ -26,6 +26,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\Exceptions\Exceptions.csproj" />
 	  <ProjectReference Include="..\Utilities\Utilities.csproj" />
 	</ItemGroup>
 

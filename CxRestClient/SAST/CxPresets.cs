@@ -87,7 +87,7 @@ namespace CxRestClient.SAST
 
         public static IEnumerable<Preset> GetPresets(CxRestContext ctx, CancellationToken token)
         {
-			return WebOperation.ExecuteGet<IEnumerable<Preset>>(
+			return WebOperation.ExecuteGet<PresetReader>(
 				ctx.Json.CreateSastClient
 				, (response) =>
 				{

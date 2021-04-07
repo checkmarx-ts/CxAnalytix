@@ -57,23 +57,18 @@ namespace CxRestClient.MNO
         public static String GetProjectPoliciesSingleField(CxRestContext ctx,
                 CancellationToken token, int projectId)
         {
-            using (var client = ctx.Json.CreateMnoClient())
-            {
-
-                using (var policyPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
-                    String.Format(PROJECT_POLICY_URL_SUFFIX, projectId)), token).Result)
+            return WebOperation.ExecuteGet<String>(
+                ctx.Json.CreateMnoClient
+                , (response) =>
                 {
-
-                    if (!policyPayload.IsSuccessStatusCode)
-                        throw new InvalidOperationException
-                            ($"Unable to retrieve policies for project {projectId}.");
-
                     JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                        (policyPayload.Content.ReadAsStreamAsync().Result)));
+                        (response.Content.ReadAsStreamAsync().Result)));
 
                     return GetFlatPolicyNames(jt);
                 }
-            }
+                , CxRestContext.MakeUrl(ctx.MnoUrl, String.Format(PROJECT_POLICY_URL_SUFFIX, projectId))
+                , ctx
+                , token);
         }
 
         private static PolicyCollection ParsePolicies(CxRestContext ctx,
@@ -119,64 +114,45 @@ namespace CxRestClient.MNO
         public static PolicyCollection GetAllPolicies(CxRestContext ctx,
                 CancellationToken token)
         {
-            try
-            {
-                using (var client = ctx.Json.CreateMnoClient())
-                using (var policyPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
-                    POLICY_LIST_URL_SUFFIX), token).Result)
+            return WebOperation.ExecuteGet<PolicyCollection>(
+                ctx.Json.CreateMnoClient
+                , (response) =>
                 {
-
-                    if (!policyPayload.IsSuccessStatusCode)
-                        throw new InvalidOperationException
-                            ("Unable to retrieve policies.");
-
                     JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                        (policyPayload.Content.ReadAsStreamAsync().Result)));
+                        (response.Content.ReadAsStreamAsync().Result)));
 
                     return ParsePolicies(ctx, token, jt);
                 }
-            }
-            catch (HttpRequestException hex)
-            {
-                _log.Error("Communication error.", hex);
-                throw hex;
-            }
+                , CxRestContext.MakeUrl(ctx.MnoUrl, POLICY_LIST_URL_SUFFIX)
+                , ctx
+                , token);
         }
 
 
         public static IEnumerable<int> GetPolicyIdsForProject(CxRestContext ctx,
                 CancellationToken token, int projectId)
         {
-            try
-            {
-                using (var client = ctx.Json.CreateMnoClient())
-                using (var policyPayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
-                    String.Format(PROJECT_POLICY_URL_SUFFIX, projectId)), token).Result)
-                {
+			return WebOperation.ExecuteGet<IEnumerable<int>>(
+			ctx.Json.CreateMnoClient
+			, (response) =>
+			{
+				JToken jt = JToken.Load(new JsonTextReader(new StreamReader
+	                (response.Content.ReadAsStreamAsync().Result)));
 
-                    if (!policyPayload.IsSuccessStatusCode)
-                        throw new InvalidOperationException
-                            ($"Unable to retrieve policies for project {projectId}.");
+				LinkedList<int> policyIds = new LinkedList<int>();
 
-                    JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                        (policyPayload.Content.ReadAsStreamAsync().Result)));
+				using (JTokenReader reader = new JTokenReader(jt))
+					while (JsonUtils.MoveToNextProperty(reader, "id"))
+					{
+						policyIds.AddLast(Convert.ToInt32(((JProperty)reader.CurrentToken).Value));
+					}
 
-                    LinkedList<int> policyIds = new LinkedList<int>();
+				return policyIds;
 
-                    using (JTokenReader reader = new JTokenReader(jt))
-                        while (JsonUtils.MoveToNextProperty(reader, "id"))
-                        {
-                            policyIds.AddLast(Convert.ToInt32(((JProperty)reader.CurrentToken).Value));
-                        }
-
-                    return policyIds;
-                }
-            }
-            catch (HttpRequestException hex)
-            {
-                _log.Error("Communication error.", hex);
-                throw hex;
-            }
-        }
-    }
+			}
+			, CxRestContext.MakeUrl(ctx.MnoUrl, String.Format(PROJECT_POLICY_URL_SUFFIX, projectId))
+			, ctx
+			, token);
+		}
+	}
 }

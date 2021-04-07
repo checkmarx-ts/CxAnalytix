@@ -97,7 +97,7 @@ namespace CxRestClient.SAST
 
 		public static IEnumerable<Team> GetTeams(CxRestContext ctx, CancellationToken token)
 		{
-			return WebOperation.ExecuteGet<IEnumerable<Team>>(
+			return WebOperation.ExecuteGet<TeamReader>(
 				ctx.Json.CreateSastClient
 				, (response) =>
 				{

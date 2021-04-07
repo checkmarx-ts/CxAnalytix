@@ -188,7 +188,7 @@ namespace CxRestClient.SAST
                 url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX);
 
 
-			return WebOperation.ExecuteGet<IEnumerable<Scan>>(
+			return WebOperation.ExecuteGet<ScansReader>(
 			ctx.Json.CreateSastClient
 			, (response) =>
 			{

@@ -136,7 +136,7 @@ namespace CxRestClient.SAST
 
         public static IEnumerable<Project> GetProjects(CxRestContext ctx, CancellationToken token)
         {
-			return WebOperation.ExecuteGet<IEnumerable<Project>>(
+			return WebOperation.ExecuteGet<ProjectReader>(
 			ctx.Json.CreateSastClient
 			, (response) =>
 			{

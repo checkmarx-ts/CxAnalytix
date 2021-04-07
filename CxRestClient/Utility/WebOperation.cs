@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using CxAnalytix.Exceptions;
+using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -27,9 +28,10 @@ namespace CxRestClient.Utility
 
 			int delay = RETRY_DELAY_MS;
 
-			HttpStatusCode lastFail = HttpStatusCode.OK;
+			DateTime? recoveryStartedAt = null;
+			bool inRecovery = false;
 
-			String errMsg = "";
+			UnrecoverableOperationException nonRecoveryException = new UnrecoverableOperationException();
 
 
 			while (DateTime.Now.CompareTo(endRetryAt) <= 0)
@@ -47,19 +49,29 @@ namespace CxRestClient.Utility
 
 
 						if (response.IsSuccessStatusCode)
+						{
+							if (inRecovery)
+								_log.Info($"Operation successful after last error - "
+									+ $"recovered after {DateTime.Now.Subtract(recoveryStartedAt.Value).TotalMilliseconds}ms ");
+
 							return onSuccess(response);
+						}
 						else
 						{
-							errMsg = $"Request failed with response {Convert.ToInt32(response.StatusCode)}({response.StatusCode})";
+							if (!recoveryStartedAt.HasValue)
+								recoveryStartedAt = DateTime.Now;
 
 							if (errorLogic != null && !errorLogic(response))
-									return default(T);
+								return default(T);
 
-							if (lastFail != response.StatusCode)
-							{
-								lastFail = response.StatusCode;
-								_log.Warn($"{errMsg} - Retrying until {endRetryAt}");
-							}
+							if (!inRecovery)
+								_log.Warn($"Request failed with response {Convert.ToInt32(response.StatusCode)}({response.StatusCode})" + 
+									$" - Retrying until {endRetryAt}");
+
+							inRecovery = true;
+
+							nonRecoveryException = new UnrecoverableOperationException(response.StatusCode, 
+								response.RequestMessage.RequestUri);
 
 							switch (response.StatusCode)
 							{
@@ -73,17 +85,24 @@ namespace CxRestClient.Utility
 						}
 					}
 				}
-				catch (HttpRequestException hex)
+				catch (Exception ex)
 				{
-					_log.Error("Communication error.", hex);
-					throw hex;
+					if (!recoveryStartedAt.HasValue)
+						recoveryStartedAt = DateTime.Now;
+
+					inRecovery = true;
+
+					nonRecoveryException = new UnrecoverableOperationException($"Last exception caught", ex);
+
+					_log.Error($"Exception: {ex.GetType()} Source: {ex.Source} Message: {ex.Message}" +
+						$" - Retrying until {endRetryAt}");
 				}
 
 				Task.Delay(delay, token).Wait();
 				delay *= RETRY_DELAY_INCREASE_FACTOR;
 			}
 
-			throw new InvalidOperationException(errMsg);
+			throw nonRecoveryException;
 		}
 
 		public static T ExecuteGet<T>(Func<CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
@@ -104,7 +123,7 @@ namespace CxRestClient.Utility
 
 
 		public static T ExecutePost<T>(Func<CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
-			String url, HttpContent payload, CxRestContext ctx, CancellationToken token,
+			String url, Func<HttpContent> contentFactory, CxRestContext ctx, CancellationToken token,
 			Func<HttpResponseMessage, Boolean> errorLogic = null)
 		{
 			return ExecuteOperation<T>(
@@ -113,7 +132,11 @@ namespace CxRestClient.Utility
 				, (client) =>
 				{
 					_log.Debug($"Executing POST operation at {url}");
-					return client.PostAsync(url, payload, token).Result;
+
+					// HttpClient.SendAsync disposes of the payload on send
+					// this means if there is an error, a new instance is needed
+					// on retry.
+					return client.PostAsync(url, (contentFactory != null) ? contentFactory() : null, token).Result;
 				}
 				, ctx
 				, token
