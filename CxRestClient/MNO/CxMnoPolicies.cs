@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using CxRestClient.Utility;
+using CxRestClient.MNO.dto;
 
 namespace CxRestClient.MNO
 {

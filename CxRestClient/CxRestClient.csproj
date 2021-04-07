@@ -20,7 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="MNO\" />
+		<Folder Include="MNO\dto\" />
 		<Folder Include="OSA\" />
 		<Folder Include="SAST\" />
 	</ItemGroup>
