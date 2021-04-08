@@ -41,11 +41,15 @@ namespace CxAnalytix.CxAuditTrails
 				for (int x = 0; x < reader.FieldCount; x++)
 				{
 					var colName = reader.GetColumnSchema()[x].ColumnName;
-					Object insertVal = customColumnConverters != null && customColumnConverters.ContainsKey (colName) ? 
-						customColumnConverters [colName] (reader[x]) : reader[x];
+
+					var insertVal = reader[x];
 
 					if (insertVal.GetType() == typeof(System.DBNull))
 						continue;
+
+					if (customColumnConverters != null && customColumnConverters.ContainsKey(colName))
+						insertVal = customColumnConverters[colName](reader[x]);
+
 
 					rec.Add(reader.GetColumnSchema()[x].ColumnName, insertVal);
 				}
