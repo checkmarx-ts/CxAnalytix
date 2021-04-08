@@ -63,11 +63,18 @@ namespace CxAnalytix.CxAuditTrails.DB
 
 		internal SqlDataReader FetchRecords (String db, String schema, String table, String cmdText, DateTime since)
 		{
+			_log.Debug($"FetchRecords: {db}.{schema}.{table} > {since}");
+
 			if (IsDisabled)
+			{
 				throw new InvalidOperationException("Database access parameters are not defined.");
+			}
 
 			if (!TableExists(db, schema, table))
+			{
+				_log.Debug($"{db}.{schema}.{table} does not exist");
 				throw new TableDoesNotExistException(db, schema, table);
+			}
 
 			SqlConnection con = new SqlConnection(_conStr);
 
@@ -80,7 +87,11 @@ namespace CxAnalytix.CxAuditTrails.DB
 
 			cmd.Parameters.AddWithValue("@SINCE", since);
 
-			return cmd.ExecuteReader(System.Data.CommandBehavior.CloseConnection);
+			var reader = cmd.ExecuteReader(System.Data.CommandBehavior.CloseConnection);
+
+			_log.Debug($"{db}.{schema}.{table} query has rows [{reader.HasRows}]");
+
+			return reader;
 		}
 
 		public SqlDataReader FetchRecords_CxDB_accesscontrol_AuditTrail(DateTime since)

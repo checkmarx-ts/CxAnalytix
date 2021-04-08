@@ -31,6 +31,9 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 
 ## Version History
+* 1.2.1
+	* BUG FIXES
+		* Issue 60 - A DB table row with a column containing a NULL value threw an exception and caused the DB crawl to end prematurely.
 * 1.2.0
 	* FEATURES
 		* New feature to extract audit events by crawling audit log tables in CxActivity and CxDB.  This feature is limited to use in systems that can make a connection directly to the CxSAST DB.
