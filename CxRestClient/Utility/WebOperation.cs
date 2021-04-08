@@ -16,7 +16,7 @@ namespace CxRestClient.Utility
 	{
 		private static ILog _log = LogManager.GetLogger(typeof(WebOperation));
 
-		private static int RETRY_DELAY_MS = 1000;
+		private static int RETRY_DELAY_MS = 3000;
 		private static int RETRY_DELAY_INCREASE_FACTOR = 2;
 
 
@@ -30,6 +30,7 @@ namespace CxRestClient.Utility
 
 			DateTime? recoveryStartedAt = null;
 			bool inRecovery = false;
+			HttpStatusCode lastFailCode = HttpStatusCode.OK;
 
 			UnrecoverableOperationException nonRecoveryException = new UnrecoverableOperationException();
 
@@ -67,8 +68,13 @@ namespace CxRestClient.Utility
 							if (!inRecovery)
 								_log.Warn($"Request failed with response {Convert.ToInt32(response.StatusCode)}({response.StatusCode})" + 
 									$" - Retrying until {endRetryAt}");
+							else if (lastFailCode != response.StatusCode)
+								_log.Warn($"Still in recovery, new failure status code: " 
+									+ $"{Convert.ToInt32(response.StatusCode)}({response.StatusCode})" +
+									$" - Retrying until {endRetryAt}");
 
 							inRecovery = true;
+							lastFailCode = response.StatusCode;
 
 							nonRecoveryException = new UnrecoverableOperationException(response.StatusCode, 
 								response.RequestMessage.RequestUri);
@@ -90,14 +96,16 @@ namespace CxRestClient.Utility
 					if (!recoveryStartedAt.HasValue)
 						recoveryStartedAt = DateTime.Now;
 
+					if (!inRecovery)
+						_log.Error($"Exception: {ex.GetType()} Source: {ex.Source} Message: {ex.Message}" +
+							$" - Retrying until {endRetryAt}");
+
 					inRecovery = true;
 
 					nonRecoveryException = new UnrecoverableOperationException($"Last exception caught", ex);
-
-					_log.Error($"Exception: {ex.GetType()} Source: {ex.Source} Message: {ex.Message}" +
-						$" - Retrying until {endRetryAt}");
 				}
 
+				_log.Debug($"Waiting {delay}ms before retry.");
 				Task.Delay(delay, token).Wait();
 				delay *= RETRY_DELAY_INCREASE_FACTOR;
 			}
