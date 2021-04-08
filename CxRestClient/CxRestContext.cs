@@ -76,8 +76,17 @@ namespace CxRestClient
         {
             lock (_tokenLock)
             {
-                if (DateTime.Now.CompareTo(token.ExpireTime) >= 0)
-                    token = GetLoginToken(Url, token.ReauthContent);
+				if (DateTime.Now.CompareTo(token.ExpireTime) >= 0)
+					token = GetLoginToken(Url, token.ReauthContent);
+			}
+        }
+
+        public void Reauthenticate()
+		{
+            lock (_tokenLock)
+            {
+                _sastToken.ExpireTime = DateTime.MinValue;
+                _mnoToken.ExpireTime = DateTime.MinValue;
             }
         }
 

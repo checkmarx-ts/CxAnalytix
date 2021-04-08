@@ -14,6 +14,7 @@ using System.Text;
 using CxAnalytix.TransformLogic.Data;
 using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.Exceptions;
+using CxRestClient.MNO.dto;
 
 namespace CxAnalytix.TransformLogic
 {

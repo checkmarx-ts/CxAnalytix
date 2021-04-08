@@ -7,6 +7,7 @@ using System.IO;
 using System.Net.Http;
 using System.Threading;
 using CxRestClient.Utility;
+using CxRestClient.MNO.dto;
 
 namespace CxRestClient.MNO
 {
@@ -63,32 +64,20 @@ namespace CxRestClient.MNO
         public static IEnumerable<RuleDescriptor> GetRulesForPolicy(CxRestContext ctx,
         CancellationToken token, int policyId)
         {
-
-            try
-            {
-                using (var client = ctx.Json.CreateMnoClient())
-                using (var rulePayload = client.GetAsync(CxRestContext.MakeUrl(ctx.MnoUrl,
-                    String.Format(URL_SUFFIX, policyId)), token).Result)
-                {
-
-                    if (!rulePayload.IsSuccessStatusCode)
-                        throw new InvalidOperationException
-                            ($"Unable to retrieve rules for policy {policyId}.");
-
-                    using (var sr = new StreamReader
-                        (rulePayload.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
-                    {
-                        JToken jt = JToken.Load(jtr);
-                        return ParseRules(ctx, token, jt);
-                    }
-                }
-            }
-            catch (HttpRequestException hex)
-            {
-                _log.Error("Communication error.", hex);
-                throw hex;
-            }
+			return WebOperation.ExecuteGet<IEnumerable<RuleDescriptor>>(
+			ctx.Json.CreateMnoClient
+			, (response) =>
+			{
+				using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
+				using (var jtr = new JsonTextReader(sr))
+				{
+					JToken jt = JToken.Load(jtr);
+					return ParseRules(ctx, token, jt);
+				}
+			}
+			, CxRestContext.MakeUrl(ctx.MnoUrl, String.Format(URL_SUFFIX, policyId))
+			, ctx
+			, token);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using CxRestClient.MNO;
+using CxRestClient.MNO.dto;
 using System;
 using System.Collections.Generic;
 

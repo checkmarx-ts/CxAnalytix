@@ -20,9 +20,14 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="MNO\" />
+		<Folder Include="MNO\dto\" />
 		<Folder Include="OSA\" />
 		<Folder Include="SAST\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Exceptions\Exceptions.csproj" />
+	  <ProjectReference Include="..\Utilities\Utilities.csproj" />
 	</ItemGroup>
 
 </Project>

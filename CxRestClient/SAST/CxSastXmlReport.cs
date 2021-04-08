@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using CxRestClient.Utility;
+using log4net;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -34,7 +35,7 @@ namespace CxRestClient.SAST
                     if (DateTime.Now.CompareTo(quitTime) > 0)
                     {
                         _log.Warn($"Failed to retrive scan " +
-                            $"report {reportId} for scan id {scanId}. " +
+                            $"report {reportId} for scan id {scanId}. The report failed to generate in less than {ctx.Timeout.TotalSeconds} seconds." +
                             $"Vulnerability details will not be available.");
                         break;
                     }
@@ -44,9 +45,7 @@ namespace CxRestClient.SAST
                 {
                     _log.Debug($"Report Id {reportId} for scan id {scanId} created.");
 
-                    var report = CxSastDownloadReport.GetVulnerabilities(ctx, token, reportId);
-
-                    return report;
+                    return CxSastDownloadReport.GetVulnerabilities(ctx, token, reportId);
                 }
                 else
                     throw new InvalidDataException("XML report stream is invalid.");

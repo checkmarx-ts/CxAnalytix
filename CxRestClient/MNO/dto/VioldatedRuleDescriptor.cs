@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CxRestClient.MNO
+namespace CxRestClient.MNO.dto
 {
     public class ViolatedRuleDescriptor : RuleDescriptor
     {
