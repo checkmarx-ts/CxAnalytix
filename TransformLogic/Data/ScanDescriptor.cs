@@ -1,15 +1,22 @@
-﻿using CxRestClient.MNO;
-using CxRestClient.MNO.dto;
+﻿using CxRestClient.MNO.dto;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace CxAnalytix.TransformLogic.Data
 {
     /// <summary>
     /// A data object used to describe a scan.
     /// </summary>
-    public class ScanDescriptor
+    public class ScanDescriptor : IComparable<ScanDescriptor>
     {
+
+        public enum ScanProductType
+		{
+            SAST,
+            SCA
+		}
+
         internal ScanDescriptor()
         {
             SeverityCounts = new Dictionary<string, long>();
@@ -26,7 +33,7 @@ namespace CxAnalytix.TransformLogic.Data
         /// <summary>
         /// The product that performed the scan.
         /// </summary>
-        public String ScanProduct { get; set; }
+        public ScanProductType ScanProduct { get; set; }
         /// <summary>
         /// The scan identifier according to the product.
         /// </summary>
@@ -51,8 +58,6 @@ namespace CxAnalytix.TransformLogic.Data
         public DateTime ReportCreateTime { get; set; }
         public String Comments { get; set; }
         public String SourceOrigin { get; set; }
-
-        public Action<ScanDescriptor, Transformer> MapAction;
 
         /// <summary>
         /// Increases the count of a severity with a given name.
@@ -103,5 +108,12 @@ namespace CxAnalytix.TransformLogic.Data
 
         }
 
-    }
+		public int CompareTo([AllowNull] ScanDescriptor other)
+		{
+            if (other == null)
+                return 1;
+
+            return FinishedStamp.CompareTo(other.FinishedStamp);
+        }
+	}
 }

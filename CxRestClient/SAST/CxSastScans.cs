@@ -172,21 +172,19 @@ namespace CxRestClient.SAST
         }
 
         public static IEnumerable<Scan> GetScans(CxRestContext ctx, CancellationToken token, 
-            ScanStatus specificStatus)
+            ScanStatus specificStatus, int? projectId = null)
         {
             String url = null;
 
-            if (specificStatus != ScanStatus.All)
-            {
-                url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<string, string>()
-                {
-                    { "scanStatus", specificStatus.ToString () }
-                }
-                );
-            }
-            else
-                url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX);
+            var args = new Dictionary<string, string>();
 
+            if (specificStatus != ScanStatus.All)
+                args.Add("scanStatus", specificStatus.ToString());
+
+            if (projectId != null && projectId.HasValue)
+                args.Add("projectId", Convert.ToString (projectId.Value));
+
+			url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, args);
 
 			return WebOperation.ExecuteGet<ScansReader>(
 			ctx.Json.CreateSastClient

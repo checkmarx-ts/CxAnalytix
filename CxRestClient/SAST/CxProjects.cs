@@ -44,7 +44,10 @@ namespace CxRestClient.SAST
             public bool IsPublic { get; internal set; }
             [JsonProperty(PropertyName = "customFields")]
             public List<ProjectCustomFields> CustomFields { get; internal set; }
-        }
+
+			public override string ToString() =>
+                $"{ProjectId}:{ProjectName} [TeamId: {TeamId} Public: {IsPublic} CustomFields: {CustomFields.Count}]";
+		}
 
         private class ProjectReader : IEnumerable<Project>, IEnumerator<Project>
         {
