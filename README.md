@@ -31,6 +31,9 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 
 ## Version History
+* 1.2.2
+	* BUG FIXES
+		* Issue 53 - Authorization token refresh improvements
 * 1.2.1
 	* BUG FIXES
 		* Issue 60 - A DB table row with a column containing a NULL value threw an exception and caused the DB crawl to end prematurely.
