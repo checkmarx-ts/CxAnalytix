@@ -38,6 +38,7 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 				* LastCrawlDate
 			* Policy Violation Details
 				* ViolationId
+		* A basic [regression testing utility](https://github.com/checkmarx-ts/CxAnalytix/wiki/Development-Home) was added to test that data extraction is consistent between versions.  This is primarily targeted for developer use.
 	* BUG FIXES
 		* Issue 51 - Timestamp of date to check for last scan is recorded as the finish date of the last scan found during the current crawl rather than the date of the current crawl.
 		* Issue 53 - Authorization token refresh improvements
