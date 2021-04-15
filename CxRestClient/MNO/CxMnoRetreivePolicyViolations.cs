@@ -63,6 +63,11 @@ namespace CxRestClient.MNO
                         curRule.FirstDetectionDate = JsonUtils.UtcEpochTimeToDateTime
                             (Convert.ToInt64(((JProperty)reader.CurrentToken).Value) / 1000);
 
+                        if (!JsonUtils.MoveToNextProperty(reader, "findingId"))
+                            break;
+                        curRule.ViolationId = ((JProperty)reader.CurrentToken).Value.ToString();
+
+
                         if (!JsonUtils.MoveToNextProperty(reader, "scanId"))
                             break;
                         curRule.ScanId = ((JProperty)reader.CurrentToken).Value.ToString();

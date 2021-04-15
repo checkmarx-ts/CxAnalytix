@@ -11,17 +11,20 @@ namespace RegressionTester
 	public abstract class DictionaryRegressionTester : IDisposable
 	{
 
-		private LogDataSource<Dictionary<String, String>> _old;
-		private LogDataSource<Dictionary<String, String>> _new;
+		private LogDataSource<Dictionary<String, Object>> _old;
+		private LogDataSource<Dictionary<String, Object>> _new;
 
 
-		protected DictionaryRegressionTester (String oldPath, String newPath)
+		public DictionaryRegressionTester (String oldPath, String newPath)
 		{
-			_old = new LogDataSource<Dictionary<String, String>>(oldPath, FileMask);
-			_new = new LogDataSource<Dictionary<String, String>>(newPath, FileMask);
+			_old = new LogDataSource<Dictionary<String, Object>>(oldPath, FileMask);
+			_new = new LogDataSource<Dictionary<String, Object>>(newPath, FileMask);
+
+			OutputWriter = new StreamWriter($"{TestName}-results.txt");
+
 		}
 
-		private bool CanFormKey (String[] keys, Dictionary<String, String> values)
+		private bool CanFormKey (String[] keys, Dictionary<String, Object> values)
 		{
 			foreach (var element in keys)
 				if (!values.ContainsKey(element))
@@ -30,7 +33,20 @@ namespace RegressionTester
 			return true;
 		}
 
-		private String BuildKey(String[] keys, Dictionary<String, String> values)
+		private String Stringify (String[] values, String separator)
+		{
+			StringBuilder sb = new StringBuilder();
+			foreach (var element in values)
+			{
+				if (sb.Length > 0)
+					sb.Append(separator);
+				sb.Append(element);
+			}
+
+			return sb.ToString();
+		}
+
+		private String BuildKey(String[] keys, Dictionary<String, Object> values)
 		{
 			StringBuilder sb = new StringBuilder();
 			foreach (var element in keys)
@@ -43,17 +59,20 @@ namespace RegressionTester
 			return sb.ToString();
 		}
 
-		private async Task<RecordCatalog> Load(LogDataSource<Dictionary<String, String>> src)
+		private async Task<RecordCatalog> Load(LogDataSource<Dictionary<String, Object>> src)
 		{
 			return await Task<RecordCatalog>.Run(() =>
 			{
 
-				var retVal = new RecordCatalog(FilteredKeys);
+				var retVal = new RecordCatalog();
 
 				foreach (var record in src)
 				{
 					if (!CanFormKey(UniqueIdentifierKeys, record))
-						OutputWriter.WriteLine($"Could not form unique key with elements {UniqueIdentifierKeys} at {src.Location}");
+					{ 
+						OutputWriter.WriteLine($"Could not form unique key with elements {Stringify(UniqueIdentifierKeys, ",")} at {src.Location}");
+						continue;
+					}
 
 					String uniqueId = BuildKey(UniqueIdentifierKeys, record);
 					retVal.AddRecord(uniqueId, src.Location, record);
@@ -87,6 +106,10 @@ namespace RegressionTester
 		private void Reconcile(RecordCatalog oldRecords, RecordCatalog newRecords)
 		{
 			OutputWriter.WriteLine($"START TEST: {TestName}");
+			OutputWriter.WriteLine($"Unique key format: {Stringify(UniqueIdentifierKeys, "::")}");
+			if (FilteredKeys.Length > 0)
+				OutputWriter.WriteLine($"Elements not used in record equality evaluation: {Stringify(FilteredKeys, ",")}");
+
 
 			OutputWriter.WriteLine("*----+ Checking if there are duplicate records in the old data set +----*");
 			ReportDuplicateRecords(oldRecords.Duplicates);
@@ -98,41 +121,58 @@ namespace RegressionTester
 			foreach (var elem in oldRecords.ValueKeys.Except(newRecords.ValueKeys))
 				OutputWriter.WriteLine($"{elem} appears in the old data set, but is not found in the new data set");
 
-			var newFieldFilter = newRecords.ValueKeys.Except(oldRecords.ValueKeys).ToArray ();
+			var newFieldFilter = newRecords.ValueKeys.Except(oldRecords.ValueKeys);
 			foreach (var elem in newFieldFilter)
 				OutputWriter.WriteLine($"{elem} appears to be a new data element");
 
 
 			OutputWriter.WriteLine("*----+ Checking that the number of records in old and new data sets are equal +----*");
 
-			OutputWriter.WriteLine($"Old record correlation keys " +
-				$"{oldRecords.RecordCount} == New record correlation keys {newRecords.RecordCount}");
+			OutputWriter.WriteLine($"Old records" +
+				$"{oldRecords.RecordCount}, New records {newRecords.RecordCount}");
 
 			if (oldRecords.RecordCount != newRecords.RecordCount)
 			{
-				var oldRecordList = oldRecords.GetRecordInfo(newFieldFilter);
-				var newRecordList = newRecords.GetRecordInfo(newFieldFilter);
 
-				var diff = new List<String>(oldRecordList.Keys.Except(newRecordList.Keys));
+				var diff = new List<String>(oldRecords.Records.Keys.Except(newRecords.Records.Keys));
 
 				if (diff.Count > 0)
 				{
 					OutputWriter.WriteLine($"----+ {diff.Count} records missing from the new record  +----*");
 
 					foreach (var key in diff)
-						OutputWriter.WriteLine($"{oldRecordList[key].UniqueId} : {oldRecordList[key].Location}");
+						OutputWriter.WriteLine($"{oldRecords.Records[key].UniqueId} : {oldRecords.Records[key].Location}");
 				}
 
-				diff = new List<String>(newRecordList.Keys.Except(oldRecordList.Keys));
+				diff = new List<String>(newRecords.Records.Keys.Except(oldRecords.Records.Keys));
 
 				if (diff.Count > 0)
 				{
 					OutputWriter.WriteLine($"----+ {diff.Count} records missing from the old record  +----*");
 
 					foreach (var key in diff)
-						OutputWriter.WriteLine($"{newRecordList[key].UniqueId} : {newRecordList[key].Location}");
+						OutputWriter.WriteLine($"{newRecords.Records[key].UniqueId} : {newRecords.Records[key].Location}");
 				}
 			}
+
+			OutputWriter.WriteLine("*----+ Verifying records match in data sets +----*");
+
+			foreach (var recordId in oldRecords.Records.Keys)
+			{
+				if (!newRecords.Records.ContainsKey(recordId) )
+				{
+					OutputWriter.WriteLine($"Record {recordId} not found in the new data set");
+					continue;
+				}
+
+				var comparisonElements = oldRecords.Records[recordId].Record.Keys.Except(FilteredKeys);
+				var oldHash = oldRecords.Records[recordId].HashByKeys(comparisonElements);
+				var newHash = newRecords.Records[recordId].HashByKeys(comparisonElements);
+
+				if (oldHash.CompareTo(newHash) != 0)
+					OutputWriter.WriteLine($"{recordId} did not match");
+			}
+
 
 			OutputWriter.WriteLine($"END TEST: {TestName}");
 		}
@@ -145,7 +185,14 @@ namespace RegressionTester
 			await Task.Run(async () => { Reconcile(await oldLoad, await newLoad); });
 		}
 
-		public abstract void Dispose();
+		public void Dispose()
+		{
+			if (OutputWriter != null)
+			{
+				OutputWriter.Flush();
+				OutputWriter.Close();
+			}
+		}
 
 		protected abstract String FileMask { get; }
 
@@ -155,6 +202,6 @@ namespace RegressionTester
 
 		protected abstract String TestName { get; }
 
-		protected abstract TextWriter OutputWriter { get;  }
+		private TextWriter OutputWriter { get; set; }
 	}
 }

@@ -32,6 +32,7 @@ namespace CxRestClient.MNO.dto
         public double? ViolationRiskScore { get; internal set; }
         public String ViolationStatus { get; internal set; }
         public String ViolationState { get; internal set; }
+        public String ViolationId { get; internal set; }
 
         public override string ToString()
         {

@@ -623,6 +623,7 @@ namespace CxAnalytix.TransformLogic
 						flat.Add("ViolationSource", rule.ViolationSource);
 					flat.Add("ViolationState", rule.ViolationState);
 					flat.Add("ViolationStatus", rule.ViolationStatus);
+					flat.Add("ViolationId", rule.ViolationId);
 					if (rule.ViolationType != null)
 						flat.Add("ViolationType", rule.ViolationType);
 
@@ -635,7 +636,7 @@ namespace CxAnalytix.TransformLogic
 			var reportRec = new SortedDictionary<String, Object>();
 			AddPrimaryKeyElements(scan.Project, reportRec);
 			reportRec.Add(PropertyKeys.KEY_SCANID, scan.ScanId);
-			reportRec.Add(PropertyKeys.KEY_SCANPRODUCT, scan.ScanProduct);
+			reportRec.Add(PropertyKeys.KEY_SCANPRODUCT, scan.ScanProduct.ToString ());
 			reportRec.Add(PropertyKeys.KEY_SCANTYPE, scan.ScanType);
 			reportRec.Add(PropertyKeys.KEY_SCANFINISH, scan.FinishedStamp);
 
@@ -828,7 +829,7 @@ namespace CxAnalytix.TransformLogic
 			var flat = new SortedDictionary<String, Object>();
 			AddPrimaryKeyElements(scanRecord.Project, flat);
 			flat.Add(PropertyKeys.KEY_SCANID, scanRecord.ScanId);
-			flat.Add(PropertyKeys.KEY_SCANPRODUCT, scanRecord.ScanProduct);
+			flat.Add(PropertyKeys.KEY_SCANPRODUCT, scanRecord.ScanProduct.ToString());
 			flat.Add(PropertyKeys.KEY_SCANTYPE, scanRecord.ScanType);
 			flat.Add(PropertyKeys.KEY_SCANFINISH, scanRecord.FinishedStamp);
 			flat.Add(PropertyKeys.KEY_SCANSTART, SastScanCache[scanRecord.ScanId].StartTime);
@@ -871,6 +872,8 @@ namespace CxAnalytix.TransformLogic
 		{
 			var flat = new SortedDictionary<String, Object>();
 			AddPrimaryKeyElements(project, flat);
+
+			flat.Add("LastCrawlDate", DateTime.Now);
 
 			flat.Add(PropertyKeys.KEY_PRESET, project.PresetName);
 			flat.Add("Policies", project.Policies);
