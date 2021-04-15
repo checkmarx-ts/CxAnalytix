@@ -111,25 +111,35 @@ namespace CxRestClient.MNO
             return result;
         }
 
-        public static PolicyCollection GetAllPolicies(CxRestContext ctx,
-                CancellationToken token)
-        {
-            return WebOperation.ExecuteGet<PolicyCollection>(
-                ctx.Json.CreateMnoClient
-                , (response) =>
-                {
-                    JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                        (response.Content.ReadAsStreamAsync().Result)));
+		public static PolicyCollection GetAllPolicies(CxRestContext ctx,
+				CancellationToken token)
+		{
+			return WebOperation.ExecuteGet<PolicyCollection>(
+				ctx.Json.CreateMnoClient
+				, (response) =>
+				{
+					JToken jt = JToken.Load(new JsonTextReader(new StreamReader
+						(response.Content.ReadAsStreamAsync().Result)));
 
-                    return ParsePolicies(ctx, token, jt);
-                }
-                , CxRestContext.MakeUrl(ctx.MnoUrl, POLICY_LIST_URL_SUFFIX)
-                , ctx
-                , token);
-        }
+					return ParsePolicies(ctx, token, jt);
+				}
+				, CxRestContext.MakeUrl(ctx.MnoUrl, POLICY_LIST_URL_SUFFIX)
+				, ctx
+				, token
+				, exceptionErrorLogic: (ex) =>
+				{
+
+                    if (ex is System.AggregateException)
+                        foreach (var x in (ex as System.AggregateException).InnerExceptions)
+                            if (x is System.Net.Http.HttpRequestException)
+                                return false;
+
+					return true;
+				});
+		}
 
 
-        public static IEnumerable<int> GetPolicyIdsForProject(CxRestContext ctx,
+		public static IEnumerable<int> GetPolicyIdsForProject(CxRestContext ctx,
                 CancellationToken token, int projectId)
         {
 			return WebOperation.ExecuteGet<IEnumerable<int>>(
