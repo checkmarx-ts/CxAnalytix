@@ -596,7 +596,7 @@ namespace CxAnalytix.TransformLogic
 			var header = new SortedDictionary<String, Object>();
 			AddPrimaryKeyElements(scan.Project, header);
 			header.Add(PropertyKeys.KEY_SCANID, scan.ScanId);
-			header.Add(PropertyKeys.KEY_SCANPRODUCT, scan.ScanProduct);
+			header.Add(PropertyKeys.KEY_SCANPRODUCT, scan.ScanProduct.ToString());
 			header.Add(PropertyKeys.KEY_SCANTYPE, scan.ScanType);
 
 			var violatedRules = PolicyViolations[scan.Project.ProjectId].

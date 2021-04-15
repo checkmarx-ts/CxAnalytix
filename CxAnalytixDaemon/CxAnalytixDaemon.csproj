@@ -33,6 +33,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="cxanalytix.service">
+		  <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+		</None>
 		<None Update="CxAnalytixDaemon.log4net">
 			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
 		</None>
