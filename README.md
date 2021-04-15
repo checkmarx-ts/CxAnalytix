@@ -32,8 +32,16 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 ## Version History
 * 1.2.2
+	* FEATURES
+		* Fields added to the output records
+			* Project Information
+				* LastCrawlDate
+			* Policy Violation Details
+				* ViolationId
 	* BUG FIXES
+		* Issue 51 - Timestamp of date to check for last scan is recorded as the finish date of the last scan found during the current crawl rather than the date of the current crawl.
 		* Issue 53 - Authorization token refresh improvements
+		* Stealth fix during development - NodeLine would be excluded from the SAST Vulnerability Details record under certain conditions 
 * 1.2.1
 	* BUG FIXES
 		* Issue 60 - A DB table row with a column containing a NULL value threw an exception and caused the DB crawl to end prematurely.
