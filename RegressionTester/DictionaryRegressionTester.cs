@@ -128,8 +128,7 @@ namespace RegressionTester
 
 			OutputWriter.WriteLine("*----+ Checking that the number of records in old and new data sets are equal +----*");
 
-			OutputWriter.WriteLine($"Old records" +
-				$"{oldRecords.RecordCount}, New records {newRecords.RecordCount}");
+			OutputWriter.WriteLine($"Old records {oldRecords.RecordCount}, New records {newRecords.RecordCount}");
 
 			if (oldRecords.RecordCount != newRecords.RecordCount)
 			{

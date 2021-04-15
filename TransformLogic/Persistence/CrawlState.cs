@@ -48,7 +48,8 @@ namespace CxAnalytix.TransformLogic.Persistence
 
 
 
-		// Confirms a project was found in the
+		// Confirms a project was found in the remote system.  This allows projects previously crawled to
+		// be removed if they were deleted from the remote system.
 		[MethodImpl(MethodImplOptions.Synchronized)]
 		public void ConfirmProjects(IReadOnlyCollection<ProjectDescriptor> projects)
 		{
