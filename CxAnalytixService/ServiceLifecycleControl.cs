@@ -10,6 +10,7 @@ using CxRestClient;
 using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.AuditTrails.Crawler;
 using CxAnalytix.Exceptions;
+using ProjectFilter;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "CxAnalytixService.log4net", Watch = true)]
@@ -114,20 +115,23 @@ namespace CxAnalytixService
 
                     try
                     {
-                        Transformer.DoTransform(Config.Service.ConcurrentThreads,
-                            Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
-                            restCtx, _outFactory, new RecordNames()
-                            {
-                                SASTScanSummary = Config.Service.SASTScanSummaryRecordName,
-                                SASTScanDetail = Config.Service.SASTScanDetailRecordName,
-                                SCAScanSummary = Config.Service.SCAScanSummaryRecordName,
-                                SCAScanDetail = Config.Service.SCAScanDetailRecordName,
-                                ProjectInfo = Config.Service.ProjectInfoRecordName,
-                                PolicyViolations = Config.Service.PolicyViolationsRecordName
-                            }, _cancelToken.Token);
+						Transformer.DoTransform(Config.Service.ConcurrentThreads,
+						Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
+						restCtx, _outFactory,
+						new FilterImpl(Config.GetConfig<CxFilter>("ProjectFilterRegex").TeamRegex,
+						Config.GetConfig<CxFilter>("ProjectFilterRegex").ProjectRegex),
+						new RecordNames()
+						{
+							SASTScanSummary = Config.Service.SASTScanSummaryRecordName,
+							SASTScanDetail = Config.Service.SASTScanDetailRecordName,
+							SCAScanSummary = Config.Service.SCAScanSummaryRecordName,
+							SCAScanDetail = Config.Service.SCAScanDetailRecordName,
+							ProjectInfo = Config.Service.ProjectInfoRecordName,
+							PolicyViolations = Config.Service.PolicyViolationsRecordName
+						}, _cancelToken.Token);
 
-                    }
-                    catch (ProcessFatalException pfe)
+					}
+					catch (ProcessFatalException pfe)
                     {
                         _log.Error("Fatal exception caught, program ending.", pfe);
                         new Task(() => Stop()).Start();

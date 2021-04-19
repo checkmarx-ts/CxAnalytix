@@ -9,6 +9,7 @@ using System;
 using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.AuditTrails.Crawler;
 using CxAnalytix.Exceptions;
+using ProjectFilter;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile= "CxAnalytixCLI.log4net", Watch = true)]
@@ -66,6 +67,8 @@ namespace CxAnalytixCLI
                         Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
                         ctx,
                         outFactory,
+                        new FilterImpl (Config.GetConfig<CxFilter>("ProjectFilterRegex").TeamRegex,
+                        Config.GetConfig<CxFilter>("ProjectFilterRegex").ProjectRegex),
                         new RecordNames()
                         {
                             SASTScanSummary = Config.Service.SASTScanSummaryRecordName,

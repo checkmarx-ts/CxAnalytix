@@ -15,8 +15,8 @@ using CxAnalytix.TransformLogic.Data;
 using CxAnalytix.Interfaces.Outputs;
 using CxRestClient.MNO.dto;
 using CxAnalytix.TransformLogic.Persistence;
-using System.Collections.Immutable;
 using static CxAnalytix.TransformLogic.Data.ScanDescriptor;
+using CxAnalytix.Interfaces.Transform;
 
 namespace CxAnalytix.TransformLogic
 {
@@ -59,6 +59,7 @@ namespace CxAnalytix.TransformLogic
 		public IOutput ScaScanSummaryOut { get; internal set; }
 		public IOutput ScaScanDetailOut { get; internal set; }
 		public IOutput PolicyViolationDetailOut { get; internal set; }
+		public IProjectFilter Filter { get; private set; }
 
 		private ConcurrentDictionary<int, ViolatedPolicyCollection> PolicyViolations { get; set; } =
 			new ConcurrentDictionary<int, ViolatedPolicyCollection>();
@@ -266,10 +267,11 @@ namespace CxAnalytix.TransformLogic
 		}
 
 		private Transformer(CxRestContext ctx, CancellationToken token,
-			String previousStatePath)
+			String previousStatePath, IProjectFilter filter)
 		{
 			RestContext = ctx;
 			CancelToken = token;
+			Filter = filter;
 			_state = new CrawlState(previousStatePath);
 
 			ResolveScans().Wait();
@@ -346,6 +348,14 @@ namespace CxAnalytix.TransformLogic
 					return;
 				}
 
+
+				if (!Filter.Matches(teamName, p.ProjectName))
+				{
+					if (_log.IsDebugEnabled)
+						_log.Debug($"FILTERED: Team: [{teamName}] Project: [{p.ProjectName}]");
+
+					return;
+				}
 
 				if (!_loadedProjects.TryAdd(p.ProjectId,
 					new ProjectDescriptor()
@@ -569,9 +579,9 @@ namespace CxAnalytix.TransformLogic
 		/// <param name="token">A cancellation token that can be used to stop processing of data if
 		/// the task needs to be interrupted.</param>
 		public static void DoTransform(int concurrentThreads, String previousStatePath, String instanceId,
-		CxRestContext ctx, IOutputFactory outFactory, RecordNames records, CancellationToken token)
+		CxRestContext ctx, IOutputFactory outFactory, IProjectFilter filter, RecordNames records, CancellationToken token)
 		{
-			Transformer xform = new Transformer(ctx, token, previousStatePath)
+			Transformer xform = new Transformer(ctx, token, previousStatePath, filter)
 			{
 				ThreadOpts = new ParallelOptions()
 				{
