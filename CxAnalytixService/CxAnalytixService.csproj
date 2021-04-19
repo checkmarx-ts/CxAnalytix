@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
@@ -37,12 +37,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Update="CxAnalytixService.exe.config">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
-		<None Update="CxAnalytixService.log4net">
-			<CopyToOutputDirectory>Always</CopyToOutputDirectory>
-		</None>
 	</ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="Build">
+    <Copy SourceFiles="$(ProjectDir)../config_files/dotnet.exe.config;$(ProjectDir)../config_files/log.log4net"
+          DestinationFiles="$(TargetDir)/CxAnalytixService.exe.config;$(TargetDir)/CxAnalytixService.log4net"
+          />
+  </Target>
+
 
 </Project>
