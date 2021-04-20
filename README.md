@@ -31,6 +31,11 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 
 ## Version History
+* 1.2.3
+	* FEATURES
+		* Issue 57 - Filtering scans crawled via Team and Project regex matching
+	* BUG FIXES
+		* Issue 17 - Updated the docker image to better support persisting the state files
 * 1.2.2
 	* FEATURES
 		* Fields added to the output records
