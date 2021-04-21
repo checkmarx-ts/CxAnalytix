@@ -22,7 +22,7 @@ There are several installation variations:
 
 ### Installation
 
-Please refere to the [Installation](https://github.com/checkmarx-ts/CxAnalytix/wiki/Installation) wiki page
+Please refer to the [Installation](https://github.com/checkmarx-ts/CxAnalytix/wiki/Installation-Home) wiki page
 
 
 ## Additional Documentation
