@@ -7,12 +7,14 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.Exceptions;
+using System.IO;
+using CxAnalytix.Utilities;
+using System.Runtime.CompilerServices;
 
 namespace CxAnalytix.Out.Log4NetOutput
 {
-    internal sealed class LoggerOut : IOutput
+    internal sealed class LoggerOut : IDisposable
     {
         private readonly ILog _recordLog = null;
         private static readonly ILog _log = LogManager.GetLogger(typeof (LoggerOut));
@@ -20,6 +22,16 @@ namespace CxAnalytix.Out.Log4NetOutput
         private static readonly String CONFIG_SECTION = "CxLogOutput";
         private static CancellationTokenSource _token;
         private static Task _task = null;
+        private bool _committed = false;
+        private TextWriter _stage;
+        private SharedMemoryStream _stageStorage;
+
+        private Object _sync = new object();
+
+        private static long INITIAL_CAPACITY = 256000000;
+        private static long INCREASE_FACTOR = 64000000;
+        private static int COPY_BUFF_SIZE = 32000000;
+
 
         private static readonly String DATE_FORMAT = "yyyy-MM-ddTHH:mm:ss.fffzzz";
 
@@ -80,14 +92,104 @@ namespace CxAnalytix.Out.Log4NetOutput
                 throw new ProcessFatalException($"Logger for recordType {recordType} was not created. " +
                     $"The log4net configuration is not correct.");
 
+
+            _stageStorage = new SharedMemoryStream(INITIAL_CAPACITY);
+            _stage = new StreamWriter(_stageStorage, leaveOpen: true);
+
             _log.DebugFormat("Created LoggerOut with record type {0}", recordType);
         }
 
-        public void write(IDictionary<string, object> record)
+        private void resize ()
+		{
+            lock (_sync)
+			{
+                _log.Debug($"{_recordType}: Resizing staging storage from {_stageStorage.Length} to {_stageStorage.Length + INCREASE_FACTOR}");
+
+                var newStorage = new SharedMemoryStream(_stageStorage.Length + INCREASE_FACTOR);
+
+                _stage.Flush();
+                _stage.Dispose();
+                _stage = null;
+                _stageStorage.Flush();
+
+                if (_stageStorage.Seek(0, SeekOrigin.Begin) != 0)
+                    throw new UnrecoverableOperationException($"{_recordType}: could not seek to beginning of storage.");
+
+                byte[] buffer = new byte[COPY_BUFF_SIZE];
+                int read = 0;
+
+                do
+                {
+                    read = _stageStorage.Read(buffer, 0, COPY_BUFF_SIZE);
+                    newStorage.Write(buffer, 0, read);
+                } while (read == COPY_BUFF_SIZE);
+
+                _stageStorage.Dispose();
+                _stageStorage = newStorage;
+                newStorage.Seek(0, SeekOrigin.End);
+                _stage = new StreamWriter(_stageStorage, leaveOpen: true);
+			}
+		}
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+
+        public void stage(IDictionary<string, object> record)
         {
+            if (_committed)
+                throw new UnrecoverableOperationException
+                    ($"{_recordType}: Attempted to stage a record after the transaction has been committed.");
+
+            if (record == null || record.Count == 0)
+                return;
+
             _log.DebugFormat("Logger for record type [{0}] writing record with {1} elements.", _recordType, record.Keys.Count);
 
-            _recordLog.Info(JsonConvert.SerializeObject (record, _serSettings));
+            var obj = JsonConvert.SerializeObject(record, _serSettings);
+
+            if (_stageStorage.Position + obj.Length > _stageStorage.Length)
+                resize();
+
+            _stage.WriteLine(obj);
+		}
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void commit ()
+		{
+            if (_committed)
+                throw new UnrecoverableOperationException
+                    ($"{_recordType}: Attempted to commit a transaction that has already been committed.");
+
+            _committed = true;
+
+            _stage.Flush();
+            _stage.Dispose();
+            _stage = null;
+
+            if (_stageStorage.Seek(0, SeekOrigin.Begin) != 0)
+                throw new UnrecoverableOperationException($"{_recordType}: could not seek to beginning of storage.");
+
+            using (var reader = new StreamReader(_stageStorage))
+                while (true)
+                {
+                    var line = reader.ReadLine();
+                    if (line == null)
+                        break;
+                    else
+                        _recordLog.Info(line);
+                }
         }
-    }
+
+        public void Dispose()
+		{
+            lock (_sync)
+			{
+                if (_stage != null)
+                    _stage.Dispose();
+
+                if (_stageStorage != null)
+                    _stageStorage.Dispose();
+
+			}
+		}
+	}
 }

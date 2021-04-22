@@ -24,6 +24,7 @@
 		<ProjectReference Include="..\CxRestClient\CxRestClient.csproj" />
 		<ProjectReference Include="..\Exceptions\Exceptions.csproj" />
 		<ProjectReference Include="..\Interfaces\Interfaces.csproj" />
+		<ProjectReference Include="..\OutputBootstrapper\OutputBootstrapper.csproj" />
 	</ItemGroup>
 
 </Project>

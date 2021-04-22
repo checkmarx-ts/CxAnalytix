@@ -17,6 +17,7 @@ using CxRestClient.MNO.dto;
 using CxAnalytix.TransformLogic.Persistence;
 using static CxAnalytix.TransformLogic.Data.ScanDescriptor;
 using CxAnalytix.Interfaces.Transform;
+using OutputBootstrapper;
 
 namespace CxAnalytix.TransformLogic
 {
@@ -53,19 +54,19 @@ namespace CxAnalytix.TransformLogic
 
 		public String InstanceId { get; set; }
 
-		public IOutput ProjectInfoOut { get; internal set; }
-		public IOutput SastScanSummaryOut { get; internal set; }
-		public IOutput SastScanDetailOut { get; internal set; }
-		public IOutput ScaScanSummaryOut { get; internal set; }
-		public IOutput ScaScanDetailOut { get; internal set; }
-		public IOutput PolicyViolationDetailOut { get; internal set; }
+		public IRecordRef ProjectInfoOut { get; internal set; }
+		public IRecordRef SastScanSummaryOut { get; internal set; }
+		public IRecordRef SastScanDetailOut { get; internal set; }
+		public IRecordRef ScaScanSummaryOut { get; internal set; }
+		public IRecordRef ScaScanDetailOut { get; internal set; }
+		public IRecordRef PolicyViolationDetailOut { get; internal set; }
 		public IProjectFilter Filter { get; private set; }
 
 		private ConcurrentDictionary<int, ViolatedPolicyCollection> PolicyViolations { get; set; } =
 			new ConcurrentDictionary<int, ViolatedPolicyCollection>();
 
 
-		private void SastReportOutput(ScanDescriptor scan)
+		private void SastReportOutput(IOutputTransaction trx, ScanDescriptor scan)
 		{
 
 			_log.Debug($"Retrieving XML Report for scan {scan.ScanId}");
@@ -77,11 +78,11 @@ namespace CxAnalytix.TransformLogic
 					_log.Debug($"XML Report for scan {scan.ScanId} retrieved.");
 
 					_log.Debug($"Processing XML report for scan {scan.ScanId}");
-					ProcessSASTReport(scan, report);
+					ProcessSASTReport(trx, scan, report);
 					_log.Debug($"XML Report for scan {scan.ScanId} processed.");
 				}
 
-				OutputSASTScanSummary(scan);
+				OutputSASTScanSummary(trx, scan);
 			}
 			catch (AggregateException aex)
 			{
@@ -108,7 +109,7 @@ namespace CxAnalytix.TransformLogic
 			}
 		}
 
-		private void ScaReportOutput(ScanDescriptor sd)
+		private void ScaReportOutput(IOutputTransaction trx, ScanDescriptor sd)
 		{
 			Dictionary<String, CxOsaLicenses.License> licenseIndex =
 				new Dictionary<string, CxOsaLicenses.License>();
@@ -155,13 +156,13 @@ namespace CxAnalytix.TransformLogic
 					$" available.", ex);
 			}
 
-			OutputScaScanSummary(sd, licenseCount);
+			OutputScaScanSummary(trx, sd, licenseCount);
 
-			OutputScaScanDetails(sd, licenseIndex, libraryIndex);
+			OutputScaScanDetails(trx, sd, licenseIndex, libraryIndex);
 
 		}
 
-		private void OutputScaScanDetails(ScanDescriptor sd, Dictionary<string, CxOsaLicenses.License> licenseIndex,
+		private void OutputScaScanDetails(IOutputTransaction trx, ScanDescriptor sd, Dictionary<string, CxOsaLicenses.License> licenseIndex,
 			Dictionary<string, CxOsaLibraries.Library> libraryIndex)
 		{
 			try
@@ -217,7 +218,7 @@ namespace CxAnalytix.TransformLogic
 
 					flat.Add("LibraryLicenses", licenseStr.ToString());
 
-					ScaScanDetailOut.write(flat);
+					trx.write(ScaScanDetailOut, flat);
 				}
 			}
 			catch (Exception ex)
@@ -228,7 +229,7 @@ namespace CxAnalytix.TransformLogic
 			}
 		}
 
-		private void OutputScaScanSummary(ScanDescriptor sd, Dictionary<string, int> licenseCount)
+		private void OutputScaScanSummary(IOutputTransaction trx, ScanDescriptor sd, Dictionary<string, int> licenseCount)
 		{
 			var flat = new SortedDictionary<String, Object>();
 			AddPrimaryKeyElements(sd.Project, flat);
@@ -263,7 +264,7 @@ namespace CxAnalytix.TransformLogic
 					$"in project {sd.Project.ProjectName}", ex);
 			}
 
-			ScaScanSummaryOut.write(flat);
+			trx.write(ScaScanSummaryOut, flat);
 		}
 
 		private Transformer(CxRestContext ctx, CancellationToken token,
@@ -516,45 +517,60 @@ namespace CxAnalytix.TransformLogic
 			Parallel.ForEach<ProjectDescriptor>(_state.Projects, ThreadOpts,
 			(project) =>
 			{
-				if (PolicyViolations.TryAdd(project.ProjectId, new ViolatedPolicyCollection()))
-				{
-					if (Policies != null)
-						try
-						{
-							// Collect policy violations, only once per project
-							PolicyViolations[project.ProjectId] =
-							  CxMnoRetreivePolicyViolations.GetViolations(RestContext, CancelToken, project.ProjectId, Policies);
-						}
-						catch (Exception ex)
-						{
-							_log.Debug($"Policy violations for project {project.ProjectId}:" +
-							  $"{project.ProjectName} are unavailable.", ex);
-						}
-
-					OutputProjectInfoRecords(project);
-				}
-
-				foreach (var scan in _state.GetScansForProject(project.ProjectId))
-				{
-					// Increment the policy violation stats for each scan.
-					scan.IncrementPolicyViolations(PolicyViolations[scan.Project.ProjectId].GetViolatedRulesByScanId(scan.ScanId));
-
-					switch (scan.ScanProduct)
+				// Project info is a moment-in-time sample of the state of the project.  This can be output
+				// in a transaction context different than the scans.
+				using (var pinfoTrx = Output.StartTransaction () )
+					if (PolicyViolations.TryAdd(project.ProjectId, new ViolatedPolicyCollection()))
 					{
-						case ScanProductType.SAST:
-							SastReportOutput(scan);
-							break;
+						if (Policies != null)
+							try
+							{
+								// Collect policy violations, only once per project
+								PolicyViolations[project.ProjectId] =
+								  CxMnoRetreivePolicyViolations.GetViolations(RestContext, CancelToken, project.ProjectId, Policies);
+							}
+							catch (Exception ex)
+							{
+								_log.Debug($"Policy violations for project {project.ProjectId}:" +
+								  $"{project.ProjectName} are unavailable.", ex);
+							}
 
-						case ScanProductType.SCA:
-							ScaReportOutput(scan);
-							break;
+						OutputProjectInfoRecords(pinfoTrx, project);
 
+						if (!CancelToken.IsCancellationRequested)
+							pinfoTrx.Commit();
 					}
 
-					OutputPolicyViolationDetails(scan);
+				// One transaction per scan since the entire set of scan records should be output
+				// before the scan date is updated.
+				foreach (var scan in _state.GetScansForProject(project.ProjectId))
+				{
+					if (CancelToken.IsCancellationRequested)
+						break;
 
-					// Persist the date of this scan since it has been output.
-					_state.ScanCompleted(scan);
+					using (var scanTrx = Output.StartTransaction())
+					{
+						// Increment the policy violation stats for each scan.
+						scan.IncrementPolicyViolations(PolicyViolations[scan.Project.ProjectId].GetViolatedRulesByScanId(scan.ScanId));
+
+						switch (scan.ScanProduct)
+						{
+							case ScanProductType.SAST:
+								SastReportOutput(scanTrx, scan);
+								break;
+
+							case ScanProductType.SCA:
+								ScaReportOutput(scanTrx, scan);
+								break;
+
+						}
+
+						OutputPolicyViolationDetails(scanTrx, scan);
+
+						// Persist the date of this scan since it has been output.
+						if (scanTrx.Commit())
+							_state.ScanCompleted(scan);
+					}
 				}
 
 			});
@@ -579,7 +595,7 @@ namespace CxAnalytix.TransformLogic
 		/// <param name="token">A cancellation token that can be used to stop processing of data if
 		/// the task needs to be interrupted.</param>
 		public static void DoTransform(int concurrentThreads, String previousStatePath, String instanceId,
-		CxRestContext ctx, IOutputFactory outFactory, IProjectFilter filter, RecordNames records, CancellationToken token)
+		CxRestContext ctx, IProjectFilter filter, RecordNames records, CancellationToken token)
 		{
 			Transformer xform = new Transformer(ctx, token, previousStatePath, filter)
 			{
@@ -588,12 +604,12 @@ namespace CxAnalytix.TransformLogic
 					CancellationToken = token,
 					MaxDegreeOfParallelism = concurrentThreads
 				},
-				ProjectInfoOut = outFactory.newInstance(records.ProjectInfo),
-				SastScanSummaryOut = outFactory.newInstance(records.SASTScanSummary),
-				SastScanDetailOut = outFactory.newInstance(records.SASTScanDetail),
-				PolicyViolationDetailOut = outFactory.newInstance(records.PolicyViolations),
-				ScaScanSummaryOut = outFactory.newInstance(records.SCAScanSummary),
-				ScaScanDetailOut = outFactory.newInstance(records.SCAScanDetail),
+				ProjectInfoOut = Output.RegisterRecord (records.ProjectInfo),
+				SastScanSummaryOut = Output.RegisterRecord(records.SASTScanSummary),
+				SastScanDetailOut = Output.RegisterRecord(records.SASTScanDetail),
+				PolicyViolationDetailOut = Output.RegisterRecord(records.PolicyViolations),
+				ScaScanSummaryOut = Output.RegisterRecord(records.SCAScanSummary),
+				ScaScanDetailOut = Output.RegisterRecord(records.SCAScanDetail),
 				InstanceId = instanceId
 
 			};
@@ -601,7 +617,7 @@ namespace CxAnalytix.TransformLogic
 			xform.ExecuteSweep();
 		}
 
-		private void OutputPolicyViolationDetails(ScanDescriptor scan)
+		private void OutputPolicyViolationDetails(IOutputTransaction trx, ScanDescriptor scan)
 		{
 			var header = new SortedDictionary<String, Object>();
 			AddPrimaryKeyElements(scan.Project, header);
@@ -637,11 +653,11 @@ namespace CxAnalytix.TransformLogic
 					if (rule.ViolationType != null)
 						flat.Add("ViolationType", rule.ViolationType);
 
-					PolicyViolationDetailOut.write(flat);
+					trx.write(PolicyViolationDetailOut, flat);
 				}
 		}
 
-		private void ProcessSASTReport(ScanDescriptor scan, Stream report)
+		private void ProcessSASTReport(IOutputTransaction trx, ScanDescriptor scan, Stream report)
 		{
 			var reportRec = new SortedDictionary<String, Object>();
 			AddPrimaryKeyElements(scan.Project, reportRec);
@@ -816,7 +832,7 @@ namespace CxAnalytix.TransformLogic
 
 						if (xr.Name.CompareTo("PathNode") == 0)
 						{
-							SastScanDetailOut.write(curPathNode);
+							trx.write(SastScanDetailOut, curPathNode);
 							curPathNode = null;
 							continue;
 						}
@@ -831,7 +847,7 @@ namespace CxAnalytix.TransformLogic
 			}
 		}
 
-		private void OutputSASTScanSummary(ScanDescriptor scanRecord)
+		private void OutputSASTScanSummary(IOutputTransaction trx, ScanDescriptor scanRecord)
 		{
 			if (SastScanSummaryOut == null)
 				return;
@@ -864,7 +880,7 @@ namespace CxAnalytix.TransformLogic
 
 			AddPolicyViolationProperties(scanRecord, flat);
 
-			SastScanSummaryOut.write(flat);
+			trx.write(SastScanSummaryOut, flat);
 		}
 
 		private static void AddPolicyViolationProperties(ScanDescriptor scanRecord,
@@ -878,7 +894,7 @@ namespace CxAnalytix.TransformLogic
 			}
 		}
 
-		private void OutputProjectInfoRecords(ProjectDescriptor project)
+		private void OutputProjectInfoRecords(IOutputTransaction trx, ProjectDescriptor project)
 		{
 			var flat = new SortedDictionary<String, Object>();
 			AddPrimaryKeyElements(project, flat);
@@ -899,8 +915,7 @@ namespace CxAnalytix.TransformLogic
 			if (project.CustomFields != null && project.CustomFields.Count > 0)
 				flat.Add(PropertyKeys.KEY_CUSTOMFIELDS, project.CustomFields);
 
-			ProjectInfoOut.write(flat);
-
+			trx.write(ProjectInfoOut, flat);
 		}
 
 		private void AddPrimaryKeyElements(ProjectDescriptor rec, IDictionary<String, Object> flat)

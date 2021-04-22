@@ -10,6 +10,7 @@ using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.AuditTrails.Crawler;
 using CxAnalytix.Exceptions;
 using ProjectFilter;
+using OutputBootstrapper;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile= "CxAnalytixCLI.log4net", Watch = true)]
@@ -19,26 +20,7 @@ namespace CxAnalytixCLI
 {
     class Program
     {
-        private static readonly ILog recordScanSummaryLog = LogManager.Exists(Assembly.GetExecutingAssembly(), "RECORD_SAST_Scan_Summary");
         private static readonly ILog appLog = LogManager.GetLogger(typeof(Program));
-
-        private static IOutputFactory MakeFactory ()
-        {
-            IOutputFactory retVal = null;
-            try
-            {
-                Assembly outAssembly = Assembly.Load(Config.Service.OutputAssembly);
-                appLog.DebugFormat("outAssembly loaded: {0}", outAssembly.FullName);
-                retVal = outAssembly.CreateInstance(Config.Service.OutputClass) as IOutputFactory;
-                appLog.Debug("IOutputFactory instance created.");
-            }
-            catch (Exception ex)
-            {
-                appLog.Error("Error loading output factory.", ex);
-            }
-
-            return retVal;
-        }
 
         static void Main(string[] args)
         {
@@ -60,13 +42,10 @@ namespace CxAnalytixCLI
             {
                 try
                 {
-                    var outFactory = MakeFactory();
-
                     CxRestContext ctx = builder.Build();
                     Transformer.DoTransform(Config.Service.ConcurrentThreads,
                         Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
                         ctx,
-                        outFactory,
                         new FilterImpl (Config.GetConfig<CxFilter>("ProjectFilterRegex").TeamRegex,
                         Config.GetConfig<CxFilter>("ProjectFilterRegex").ProjectRegex),
                         new RecordNames()
@@ -80,8 +59,13 @@ namespace CxAnalytixCLI
                         },
                         t.Token);
 
+                    using (var auditTrx = Output.StartTransaction())
+                    {
+                        AuditTrailCrawler.CrawlAuditTrails(t.Token);
 
-                    AuditTrailCrawler.CrawlAuditTrails(outFactory, t.Token);
+                        if (!t.Token.IsCancellationRequested)
+                            auditTrx.Commit();
+                    }
                 }
                 catch (ProcessFatalException pfe)
 				{

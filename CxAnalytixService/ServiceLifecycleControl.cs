@@ -20,22 +20,7 @@ namespace CxAnalytixService
     class ServiceLifecycleControl : ServiceBase
     {
         private static ILog _log = LogManager.GetLogger(typeof(ServiceLifecycleControl));
-        private static IOutputFactory _outFactory = null;
 
-        static ServiceLifecycleControl()
-        {
-            try
-            {
-                Assembly outAssembly = Assembly.Load(Config.Service.OutputAssembly);
-                _log.DebugFormat("outAssembly loaded: {0}", outAssembly.FullName);
-                _outFactory = outAssembly.CreateInstance(Config.Service.OutputClass) as IOutputFactory;
-                _log.Debug("IOutputFactory instance created.");
-            }
-            catch (Exception ex)
-            {
-                _log.Error($"Error loading output factory [{Config.Service.OutputAssembly}].", ex);
-            }
-        }
 
         public ServiceLifecycleControl()
         {
@@ -117,7 +102,7 @@ namespace CxAnalytixService
                     {
 						Transformer.DoTransform(Config.Service.ConcurrentThreads,
 						Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
-						restCtx, _outFactory,
+						restCtx,
 						new FilterImpl(Config.GetConfig<CxFilter>("ProjectFilterRegex").TeamRegex,
 						Config.GetConfig<CxFilter>("ProjectFilterRegex").ProjectRegex),
 						new RecordNames()
@@ -150,7 +135,7 @@ namespace CxAnalytixService
                     try
                     {
                         if (!_cancelToken.Token.IsCancellationRequested)
-							AuditTrailCrawler.CrawlAuditTrails(_outFactory, _cancelToken.Token);
+							AuditTrailCrawler.CrawlAuditTrails(_cancelToken.Token);
                     }
                     catch (ProcessFatalException pfe)
                     {

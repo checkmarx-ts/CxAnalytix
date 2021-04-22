@@ -53,6 +53,23 @@ namespace CxAnalytix.Utilities
 		{
 			_mmfa.Flush();
 		}
+		public override void Close()
+		{
+			base.Close();
+			if (_mmfa != null)
+			{
+				_mmfa.Flush();
+				_mmfa.Dispose();
+				_mmfa = null;
+			}
+
+			if (_mmf != null)
+			{
+				_mmf.Dispose();
+				_mmf = null;
+			}
+
+		}
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{

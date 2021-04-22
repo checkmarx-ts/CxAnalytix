@@ -29,7 +29,7 @@ namespace CxAnalytix.CxAuditTrails
 			}
 		}
 
-		private void OutputRecords (SqlDataReader reader, IOutput output, 
+		private void OutputRecords (SqlDataReader reader, IOutputTransaction trx, IRecordRef record, 
 			Dictionary<String, Func<Object, Object> > customColumnConverters = null)
 		{
 			int count = 0;
@@ -54,14 +54,14 @@ namespace CxAnalytix.CxAuditTrails
 					rec.Add(reader.GetColumnSchema()[x].ColumnName, insertVal);
 				}
 
-				output.write(rec);
+				trx.write(record, rec);
 				count++;
 			}
 
 			_log.Debug($"Wrote {count} audit records.");
 		}
 
-		public void CxDB_accesscontrol_AuditTrail(DateTime sinceDate, IOutput output)
+		public void CxDB_accesscontrol_AuditTrail(DateTime sinceDate, IOutputTransaction trx, IRecordRef record)
 		{
 
 			Func<Object, Object> detailsConverter = (val) =>
@@ -73,76 +73,76 @@ namespace CxAnalytix.CxAuditTrails
 			};
 
 			using (var reader = _db.FetchRecords_CxDB_accesscontrol_AuditTrail(sinceDate))
-				OutputRecords(reader, output, new Dictionary<string, Func<object, object>>
+				OutputRecords(reader, trx, record, new Dictionary<string, Func<object, object>>
 				{
 					{ "Details", detailsConverter}
 				});
 		}
 
-		public void CxActivity_dbo_AuditTrail(DateTime sinceDate, IOutput output)
+		public void CxActivity_dbo_AuditTrail(DateTime sinceDate, IOutputTransaction trx, IRecordRef record)
 		{
 			using (var reader = _db.FetchRecords_CxActivity_dbo_AuditTrail(sinceDate))
-				OutputRecords(reader, output);
+				OutputRecords(reader, trx, record);
 		}
 
-		public void CxActivity_dbo_Audit_DataRetention(DateTime sinceDate, IOutput output)
+		public void CxActivity_dbo_Audit_DataRetention(DateTime sinceDate, IOutputTransaction trx, IRecordRef record)
 		{
 			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_DataRetention(sinceDate))
-				OutputRecords(reader, output);
+				OutputRecords(reader, trx, record);
 		}
 
-		public void CxActivity_dbo_Audit_Logins(DateTime sinceDate, IOutput output)
+		public void CxActivity_dbo_Audit_Logins(DateTime sinceDate, IOutputTransaction trx, IRecordRef record)
 		{
 			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_Logins(sinceDate))
-				OutputRecords(reader, output);
+				OutputRecords(reader, trx, record);
 		}
 
-		public void CxActivity_dbo_Audit_Presets(DateTime sinceDate, IOutput output)
+		public void CxActivity_dbo_Audit_Presets(DateTime sinceDate, IOutputTransaction trx, IRecordRef record)
 		{
 			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_Presets(sinceDate))
-				OutputRecords(reader, output);
+				OutputRecords(reader, trx, record);
 		}
 
-		public void CxActivity_dbo_Audit_Projects(DateTime sinceDate, IOutput output)
+		public void CxActivity_dbo_Audit_Projects(DateTime sinceDate, IOutputTransaction trx, IRecordRef record)
 		{
 			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_Projects(sinceDate))
-				OutputRecords(reader, output);
+				OutputRecords(reader, trx, record);
 		}
 
-		public void CxActivity_dbo_Audit_Queries(DateTime sinceDate, IOutput output)
+		public void CxActivity_dbo_Audit_Queries(DateTime sinceDate, IOutputTransaction trx, IRecordRef record)
 		{
 			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_Queries(sinceDate))
-				OutputRecords(reader, output);
+				OutputRecords(reader, trx, record);
 		}
 
-		public void CxActivity_dbo_Audit_QueriesActions(DateTime sinceDate, IOutput output)
+		public void CxActivity_dbo_Audit_QueriesActions(DateTime sinceDate, IOutputTransaction trx, IRecordRef record)
 		{
 			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_QueriesActions(sinceDate))
-				OutputRecords(reader, output);
+				OutputRecords(reader, trx, record);
 		}
 
-		public void CxActivity_dbo_Audit_Reports(DateTime sinceDate, IOutput output)
+		public void CxActivity_dbo_Audit_Reports(DateTime sinceDate, IOutputTransaction trx, IRecordRef record)
 		{
 			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_Reports(sinceDate))
-				OutputRecords(reader, output);
+				OutputRecords(reader, trx, record);
 		}
 
-		public void CxActivity_dbo_Audit_ScanRequests(DateTime sinceDate, IOutput output)
+		public void CxActivity_dbo_Audit_ScanRequests(DateTime sinceDate, IOutputTransaction trx, IRecordRef record)
 		{
 			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_ScanRequests(sinceDate))
-				OutputRecords(reader, output);
+				OutputRecords(reader, trx, record);
 		}
 
-		public void CxActivity_dbo_Audit_Scans(DateTime sinceDate, IOutput output)
+		public void CxActivity_dbo_Audit_Scans(DateTime sinceDate, IOutputTransaction trx, IRecordRef record)
 		{
 			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_Scans(sinceDate))
-				OutputRecords(reader, output);
+				OutputRecords(reader, trx, record);
 		}
 
-		public void CxActivity_dbo_Audit_Users(DateTime sinceDate, IOutput output)
+		public void CxActivity_dbo_Audit_Users(DateTime sinceDate, IOutputTransaction trx, IRecordRef record)
 		{
 			using (var reader = _db.FetchRecords_CxActivity_dbo_Audit_Users(sinceDate))
-				OutputRecords(reader, output);
+				OutputRecords(reader, trx, record);
 		}
 	}
 }
