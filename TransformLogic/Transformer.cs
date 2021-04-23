@@ -521,10 +521,11 @@ namespace CxAnalytix.TransformLogic
 					if (Policies != null)
 						try
 						{
-							// Collect policy violations, only once per project
-							PolicyViolations[project.ProjectId] =
-							  CxMnoRetreivePolicyViolations.GetViolations(RestContext, CancelToken, project.ProjectId, Policies);
-						}
+                            // Collect policy violations, only once per project
+                            var violations = CxMnoRetreivePolicyViolations.GetViolations(RestContext, CancelToken, project.ProjectId, Policies);
+                            if (violations != null)
+                                PolicyViolations[project.ProjectId] = violations;
+                        }
 						catch (Exception ex)
 						{
 							_log.Debug($"Policy violations for project {project.ProjectId}:" +
