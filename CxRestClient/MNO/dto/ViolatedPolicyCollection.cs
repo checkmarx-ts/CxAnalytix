@@ -14,7 +14,7 @@ namespace CxRestClient.MNO.dto
             if (_violatedRulesByScanId.ContainsKey(scanId))
                 return _violatedRulesByScanId[scanId];
             else
-                return null;
+                return new LinkedList<ViolatedRuleDescriptor> ();
         }
 
         public Dictionary<String, LinkedList<ViolatedRuleDescriptor>> Rules { get => _violatedRulesByScanId;
