@@ -570,6 +570,10 @@ namespace CxAnalytix.TransformLogic
 						// Persist the date of this scan since it has been output.
 						if (scanTrx.Commit())
 							_state.ScanCompleted(scan);
+						else
+							// Stop processing further scans in this project if the commit
+							// for the scan information fails.
+							return;
 					}
 				}
 
