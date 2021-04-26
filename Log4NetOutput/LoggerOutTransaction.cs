@@ -10,11 +10,11 @@ namespace CxAnalytix.Out.Log4NetOutput
 	{
 
 		private Dictionary<String, LoggerOut> _loggers = new Dictionary<string, LoggerOut>();
+		private HashSet<String> _records;
 
 		public LoggerOutTransaction(IEnumerable<String> recordNames)
 		{
-			foreach (var rec in recordNames)
-				_loggers.Add(rec, new LoggerOut(rec) );
+			_records = new HashSet<string>(recordNames);
 		}
 
 		public bool Commit()
@@ -33,8 +33,11 @@ namespace CxAnalytix.Out.Log4NetOutput
 
 		public void write(IRecordRef which, IDictionary<string, object> record)
 		{
-			if (!_loggers.ContainsKey(which.RecordName))
+			if (!_records.Contains(which.RecordName))
 				throw new UnrecoverableOperationException($"Attempting to write to unregistered record {which.RecordName}");
+
+			if (!_loggers.ContainsKey(which.RecordName))
+				_loggers.Add(which.RecordName, new LoggerOut(which.RecordName) );
 
 			_loggers[which.RecordName].stage(record);
 		}

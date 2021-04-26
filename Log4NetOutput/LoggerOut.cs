@@ -28,10 +28,7 @@ namespace CxAnalytix.Out.Log4NetOutput
 
         private Object _sync = new object();
 
-        private static long INITIAL_CAPACITY = 256000000;
-        private static long INCREASE_FACTOR = 64000000;
-        private static int COPY_BUFF_SIZE = 32000000;
-
+        private static long INITIAL_CAPACITY = 2048000;
 
         private static readonly String DATE_FORMAT = "yyyy-MM-ddTHH:mm:ss.fffzzz";
 
@@ -99,37 +96,6 @@ namespace CxAnalytix.Out.Log4NetOutput
             _log.DebugFormat("Created LoggerOut with record type {0}", recordType);
         }
 
-        private void resize ()
-		{
-            lock (_sync)
-			{
-                _log.Debug($"{_recordType}: Resizing staging storage from {_stageStorage.Length} to {_stageStorage.Length + INCREASE_FACTOR}");
-
-                var newStorage = new SharedMemoryStream(_stageStorage.Length + INCREASE_FACTOR);
-
-                _stage.Flush();
-                _stage.Dispose();
-                _stage = null;
-                _stageStorage.Flush();
-
-                if (_stageStorage.Seek(0, SeekOrigin.Begin) != 0)
-                    throw new UnrecoverableOperationException($"{_recordType}: could not seek to beginning of storage.");
-
-                byte[] buffer = new byte[COPY_BUFF_SIZE];
-                int read = 0;
-
-                do
-                {
-                    read = _stageStorage.Read(buffer, 0, COPY_BUFF_SIZE);
-                    newStorage.Write(buffer, 0, read);
-                } while (read == COPY_BUFF_SIZE);
-
-                _stageStorage.Dispose();
-                _stageStorage = newStorage;
-                newStorage.Seek(0, SeekOrigin.End);
-                _stage = new StreamWriter(_stageStorage, leaveOpen: true);
-			}
-		}
 
         [MethodImpl(MethodImplOptions.Synchronized)]
 
@@ -142,12 +108,9 @@ namespace CxAnalytix.Out.Log4NetOutput
             if (record == null || record.Count == 0)
                 return;
 
-            _log.DebugFormat("Logger for record type [{0}] writing record with {1} elements.", _recordType, record.Keys.Count);
+            _log.DebugFormat("Logger for record type [{0}] staging record with {1} elements.", _recordType, record.Keys.Count);
 
             var obj = JsonConvert.SerializeObject(record, _serSettings);
-
-            if (_stageStorage.Position + obj.Length > _stageStorage.Length)
-                resize();
 
             _stage.WriteLine(obj);
 		}
@@ -168,6 +131,10 @@ namespace CxAnalytix.Out.Log4NetOutput
             if (_stageStorage.Seek(0, SeekOrigin.Begin) != 0)
                 throw new UnrecoverableOperationException($"{_recordType}: could not seek to beginning of storage.");
 
+
+            var timer = DateTime.Now;
+            long recordCount = 0;
+
             using (var reader = new StreamReader(_stageStorage))
                 while (true)
                 {
@@ -175,8 +142,13 @@ namespace CxAnalytix.Out.Log4NetOutput
                     if (line == null)
                         break;
                     else
+                    {
                         _recordLog.Info(line);
+                        recordCount++;
+                    }
                 }
+            
+            _log.Debug($"COMMITTED: {recordCount} records for {_recordType} in {DateTime.Now.Subtract(timer).TotalMilliseconds}ms");
         }
 
         public void Dispose()
