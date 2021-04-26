@@ -37,7 +37,7 @@ jobs:
           name: Build & Package
           command: |
             export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
-            dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts
+            dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts --no-self-contained
             mkdir tmp
             python .circleci/zip.py --output "tmp/CxAnalytix-${VERSION}-${CIRCLE_BUILD_NUM}.zip" --input artifacts
             cp Dockerfile tmp/Dockerfile
