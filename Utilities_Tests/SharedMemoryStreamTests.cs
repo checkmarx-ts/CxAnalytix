@@ -1,5 +1,6 @@
 ﻿using CxAnalytix.Utilities;
 using System;
+using System.IO;
 using Xunit;
 
 namespace Utilities_Tests
@@ -11,6 +12,29 @@ namespace Utilities_Tests
 			0, 1, 2, 3, 4
 		};
 
+
+
+		[Fact]
+		public void NoReadUnwritten ()
+		{
+			using (var sms = new SharedMemoryStream(buffer1.Length * 2))
+			{
+				sms.Write(buffer1, 0, buffer1.Length);
+
+				byte[] one = new byte[] { 5 };
+
+				sms.Write(one, 0, one.Length);
+				sms.Seek(0, System.IO.SeekOrigin.Begin);
+
+
+				byte[] outData = new byte[buffer1.Length + one.Length];
+
+				int read = sms.Read(outData, 0, buffer1.Length + one.Length);
+
+				Assert.Equal(read, buffer1.Length + one.Length);
+			}
+
+		}
 
 		[Fact]
 		public void ReadAfterWriteResultsInSameData()
@@ -78,10 +102,10 @@ namespace Utilities_Tests
 		}
 
 		[Fact]
-		public void LengthIsCapacity()
+		public void LengthIsNotCapacity()
 		{
 			using (var sms = new SharedMemoryStream(1))
-				Assert.Equal(1, sms.Length);
+				Assert.Equal(0, sms.Length);
 		}
 
 		[Fact]
@@ -144,24 +168,6 @@ namespace Utilities_Tests
 					sms.Position = 10;
 
 			Assert.True(true);
-		}
-
-		[Fact]
-		public void NoWriteBeyondCapacity()
-		{
-			using (var sms = new SharedMemoryStream(buffer1.Length - 1))
-				try
-				{
-					sms.Write(buffer1, 0, buffer1.Length);
-				}
-				catch (ArgumentOutOfRangeException)
-				{
-					Assert.True(true);
-					return;
-
-				}
-
-			Assert.True(false);
 		}
 
 		[Fact]
@@ -267,11 +273,11 @@ namespace Utilities_Tests
 		{
 			using (var sms = new SharedMemoryStream(buffer1.Length))
 			{
-				sms.Position = sms.Length - 1;
+				sms.Position = buffer1.Length - 1;
 
 				try
 				{
-					sms.Seek(-sms.Length, System.IO.SeekOrigin.Current);
+					sms.Seek(-buffer1.Length, System.IO.SeekOrigin.Current);
 				}
 				catch (ArgumentOutOfRangeException)
 				{
@@ -289,7 +295,7 @@ namespace Utilities_Tests
 			using (var sms = new SharedMemoryStream(buffer1.Length))
 				try
 				{
-					sms.Seek(sms.Length, System.IO.SeekOrigin.Current);
+					sms.Seek(buffer1.Length, System.IO.SeekOrigin.Current);
 					sms.Seek(1, System.IO.SeekOrigin.Current);
 				}
 				catch (ArgumentOutOfRangeException)
@@ -336,7 +342,7 @@ namespace Utilities_Tests
 			using (var sms = new SharedMemoryStream(buffer1.Length))
 				try
 				{
-					sms.Seek(sms.Length + 1, System.IO.SeekOrigin.Begin);
+					sms.Seek(buffer1.Length + 1, System.IO.SeekOrigin.Begin);
 				}
 				catch (ArgumentOutOfRangeException)
 				{
@@ -401,8 +407,9 @@ namespace Utilities_Tests
 		[Fact]
 		public void SeekEndZeroOffsetDoesMovesToEnd()
 		{
-			using (var sms = new SharedMemoryStream(buffer1.Length))
+			using (var sms = new SharedMemoryStream(buffer1.Length * 2))
 			{
+				sms.Write(buffer1, 0, buffer1.Length);
 				sms.Seek(0, System.IO.SeekOrigin.End);
 				Assert.Equal(buffer1.Length, sms.Position);
 			}
