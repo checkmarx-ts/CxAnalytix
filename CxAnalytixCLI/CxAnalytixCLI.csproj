@@ -26,6 +26,7 @@
 		<ProjectReference Include="..\CxAuditTrailsCrawler\CxAuditTrailsCrawler.csproj" />
 		<ProjectReference Include="..\CxRestClient\CxRestClient.csproj" />
 		<ProjectReference Include="..\Log4NetOutput\Log4NetOutput.csproj" />
+		<ProjectReference Include="..\MongoDBOutput\MongoDBOutput.csproj" />
 		<ProjectReference Include="..\OutputBootstrapper\OutputBootstrapper.csproj" />
 		<ProjectReference Include="..\ProjectFilter\ProjectFilter.csproj" />
 		<ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />

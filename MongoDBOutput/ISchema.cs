@@ -2,7 +2,7 @@
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
-    internal interface ISchema : IOutput
+    internal interface ISchema : IRecordRef
     {
         bool VerifyOrCreateSchema();
     }

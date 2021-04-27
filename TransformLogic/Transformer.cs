@@ -76,8 +76,6 @@ namespace CxAnalytix.TransformLogic
 					CancelToken, scan.ScanId))
 				{
 					_log.Debug($"XML Report for scan {scan.ScanId} retrieved.");
-
-					_log.Debug($"Processing XML report for scan {scan.ScanId}");
 					ProcessSASTReport(trx, scan, report);
 					_log.Debug($"XML Report for scan {scan.ScanId} processed.");
 				}
@@ -553,6 +551,8 @@ namespace CxAnalytix.TransformLogic
 					{
 						// Increment the policy violation stats for each scan.
 						scan.IncrementPolicyViolations(PolicyViolations[scan.Project.ProjectId].GetViolatedRulesByScanId(scan.ScanId));
+
+						_log.Info($"Processing {scan.ScanProduct} scan {scan.ScanId}:{scan.Project.ProjectId}:{scan.Project.TeamName}:{scan.Project.ProjectName}[{scan.FinishedStamp}]");
 
 						switch (scan.ScanProduct)
 						{
