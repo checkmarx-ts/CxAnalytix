@@ -76,8 +76,17 @@ namespace CxRestClient
         {
             lock (_tokenLock)
             {
-                if (DateTime.Now.CompareTo(token.ExpireTime) >= 0)
-                    token = GetLoginToken(Url, token.ReauthContent);
+				if (DateTime.Now.CompareTo(token.ExpireTime) >= 0)
+					token = GetLoginToken(Url, token.ReauthContent);
+			}
+        }
+
+        public void Reauthenticate()
+		{
+            lock (_tokenLock)
+            {
+                _sastToken.ExpireTime = DateTime.MinValue;
+                _mnoToken.ExpireTime = DateTime.MinValue;
             }
         }
 
@@ -111,7 +120,7 @@ namespace CxRestClient
         }
 
         public static String MakeUrl(String url, String suffix, Dictionary<String, String> query)
-        => MakeUrl(url, suffix) + "?" + MakeQueryString(query);
+        => MakeUrl(url, suffix) + ((query.Count > 0) ? ("?" + MakeQueryString(query)) : (""));
 
 
         private static LoginToken GetLoginToken(String url, HttpContent authContent)
@@ -270,7 +279,7 @@ namespace CxRestClient
                 CxRestContext retVal = new CxRestContext()
                 {
                     SastToken = GetLoginToken(_url, _user, _pass, SAST_SCOPE),
-                    MNOToken = GetLoginToken(_url, _user, _pass, $"{MNO_SCOPE} {SAST_SCOPE}"),
+                    MNOToken =  GetLoginToken(_url, _user, _pass, $"{MNO_SCOPE} {SAST_SCOPE}"),
                     Url = _url,
                     MnoUrl = String.IsNullOrEmpty (_mnoUrl) ? _url : _mnoUrl,
                     ValidateSSL = _validate,

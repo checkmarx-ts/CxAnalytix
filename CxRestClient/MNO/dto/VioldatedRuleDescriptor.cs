@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CxRestClient.MNO
+namespace CxRestClient.MNO.dto
 {
     public class ViolatedRuleDescriptor : RuleDescriptor
     {
@@ -32,6 +32,7 @@ namespace CxRestClient.MNO
         public double? ViolationRiskScore { get; internal set; }
         public String ViolationStatus { get; internal set; }
         public String ViolationState { get; internal set; }
+        public String ViolationId { get; internal set; }
 
         public override string ToString()
         {

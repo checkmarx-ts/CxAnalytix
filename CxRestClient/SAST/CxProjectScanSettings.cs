@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using CxRestClient.Utility;
+using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -64,36 +65,22 @@ namespace CxRestClient.SAST
 
         public static ScanSettings GetScanSettings(CxRestContext ctx, CancellationToken token, int projectId)
         {
-            try
-            {
-                String restUrl = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX);
+            String restUrl = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX);
 
-                using (var client = ctx.Json.CreateSastClient())
-                using (var settings = client.GetAsync(CxRestContext.MakeUrl(restUrl,
-                    Convert.ToString(projectId)), token).Result)
+            return WebOperation.ExecuteGet<ScanSettings>(
+                ctx.Json.CreateSastClient
+                , (response) =>
                 {
-                    if (token.IsCancellationRequested)
-                        return null;
-
-                    if (!settings.IsSuccessStatusCode)
-                        throw new InvalidOperationException(settings.ReasonPhrase);
-
-                    using (var sr = new StreamReader
-                            (settings.Content.ReadAsStreamAsync().Result))
+                    using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
                     using (var jtr = new JsonTextReader(sr))
                     {
                         JToken jt = JToken.Load(jtr);
-
                         return new ScanSettings(jt);
                     }
                 }
-
-            }
-            catch (HttpRequestException hex)
-            {
-                _log.Error("Communication error.", hex);
-                throw hex;
-            }
+                , CxRestContext.MakeUrl(restUrl, Convert.ToString(projectId))
+                , ctx
+                , token);
         }
     }
 }

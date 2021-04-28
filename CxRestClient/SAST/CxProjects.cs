@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using CxRestClient.Utility;
+using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -43,7 +44,10 @@ namespace CxRestClient.SAST
             public bool IsPublic { get; internal set; }
             [JsonProperty(PropertyName = "customFields")]
             public List<ProjectCustomFields> CustomFields { get; internal set; }
-        }
+
+			public override string ToString() =>
+                $"{ProjectId}:{ProjectName} [TeamId: {TeamId} Public: {IsPublic} CustomFields: {CustomFields.Count}]";
+		}
 
         private class ProjectReader : IEnumerable<Project>, IEnumerator<Project>
         {
@@ -135,33 +139,21 @@ namespace CxRestClient.SAST
 
         public static IEnumerable<Project> GetProjects(CxRestContext ctx, CancellationToken token)
         {
-            try
-            {
-                using (var client = ctx.Json.CreateSastClient())
-                using (var projects = client.GetAsync(
-                    CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX), token).Result)
+			return WebOperation.ExecuteGet<ProjectReader>(
+			ctx.Json.CreateSastClient
+			, (response) =>
+			{
+                using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
+                using (var jtr = new JsonTextReader(sr))
                 {
-                    if (token.IsCancellationRequested)
-                        return null;
+                    JToken jt = JToken.Load(jtr);
 
-                    if (!projects.IsSuccessStatusCode)
-                        throw new InvalidOperationException(projects.ReasonPhrase);
-
-                    using (var sr = new StreamReader
-                            (projects.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
-                    {
-                        JToken jt = JToken.Load(jtr);
-
-                        return new ProjectReader(jt, ctx, token);
-                    }
+                    return new ProjectReader(jt, ctx, token);
                 }
             }
-            catch (HttpRequestException hex)
-            {
-                _log.Error("Communication error.", hex);
-                throw hex;
-            }
+            , CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
+            , ctx
+			, token);
         }
     }
 }

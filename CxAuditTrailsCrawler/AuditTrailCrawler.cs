@@ -9,24 +9,26 @@ using System.Collections.Generic;
 using System.Reflection;
 using CxAnalytix.Interfaces.Audit;
 using log4net;
+using OutputBootstrapper;
+using System.Threading.Tasks;
 
 namespace CxAnalytix.AuditTrails.Crawler
 {
 	public class AuditTrailCrawler
 	{
 		private const String STORAGE_FILE = "LastAuditTrailCrawl.json";
-		private Dictionary<String, IOutput> _outMappings = new Dictionary<string, IOutput>();
+		private Dictionary<String, IRecordRef> _outMappings = new Dictionary<string, IRecordRef>();
 		private CxAuditTrailTableNameConsts _constsInstance = new CxAuditTrailTableNameConsts();
 		private static readonly ILog _log = LogManager.GetLogger(typeof(AuditTrailCrawler));
 
 
-		private AuditTrailCrawler (IOutputFactory outFactory)
+		private AuditTrailCrawler ()
 		{
-			InitSinceDate();
-			InitOutputMappings(outFactory);
+			ReadSinceDate();
+			InitOutputMappings();
 		}
 
-		private void InitOutputMappings (IOutputFactory outFactory)
+		private void InitOutputMappings ()
 		{
 			var outmap = CxAnalytix.Configuration.Config.GetConfig<CxAuditTrailRecordNameMap>(CxAuditTrailRecordNameMap.SECTION_NAME);
 
@@ -40,23 +42,28 @@ namespace CxAnalytix.AuditTrails.Crawler
 			{
 				if (fieldLookup.ContainsKey (prop.Name))
 					_outMappings.Add(fieldLookup[prop.Name].Name, 
-						outFactory.newInstance(GetPropertyValue<CxAuditTrailRecordNameMap, String>(prop.Name, outmap)));
+						Output.RegisterRecord(GetPropertyValue<CxAuditTrailRecordNameMap, String>(prop.Name, outmap)));
 			}
 		}
 
-		private void InitSinceDate()
+		private static string StorageFile = Path.Combine(CxAnalytix.Configuration.Config.Service.StateDataStoragePath, STORAGE_FILE);
+
+		private void ReadSinceDate()
 		{
 			SinceDate = DateTime.UnixEpoch;
 
-			var storageFile = Path.Combine(CxAnalytix.Configuration.Config.Service.StateDataStoragePath, STORAGE_FILE);
-
 			var serializer = JsonSerializer.Create();
 
-			if (File.Exists(storageFile))
-				using (StreamReader sr = new StreamReader(storageFile))
+			if (File.Exists(StorageFile))
+				using (StreamReader sr = new StreamReader(StorageFile))
 					SinceDate = serializer.Deserialize<DateTime>(new JsonTextReader(sr));
 
-			using (StreamWriter sw = new StreamWriter(storageFile))
+		}
+
+		private void WriteSinceDate ()
+		{
+			var serializer = JsonSerializer.Create();
+			using (StreamWriter sw = new StreamWriter(StorageFile))
 				serializer.Serialize(sw, DateTime.Now);
 		}
 
@@ -66,40 +73,54 @@ namespace CxAnalytix.AuditTrails.Crawler
 		{
 			return (TResult)inst.GetType().InvokeMember(propName, BindingFlags.GetProperty, null, inst, null);
 		}
-		private void InvokeCrawlMethod(String methodName, IAuditTrailCrawler crawler, CancellationToken token)
+		private void InvokeCrawlMethod(String methodName, IAuditTrailCrawler crawler, IOutputTransaction trx, CancellationToken token)
 		{
-			var outInst = _outMappings[methodName];
+			var recordRef = _outMappings[methodName];
 			crawler.GetType().InvokeMember(methodName, BindingFlags.InvokeMethod, null, crawler, new object[]
 				{
 					SinceDate,
-					outInst
+					trx,
+					recordRef
 				});
 		}
 
-		public static void CrawlAuditTrails (IOutputFactory outFactory, CancellationToken token)
+		public static void CrawlAuditTrails (CancellationToken token)
 		{
-			var crawlInvoker = new AuditTrailCrawler(outFactory);
+			var crawlInvoker = new AuditTrailCrawler();
 
 			IAuditTrailCrawler crawler = new DBCrawler();
 			
 			if (crawler.IsDisabled)
 				return;
 
-			var supressions = CxAnalytix.Configuration.Config.GetConfig<CxAuditTrailSupressions>(CxAuditTrailSupressions.SECTION_NAME);
+			var supressions = Configuration.Config.GetConfig<CxAuditTrailSupressions>(CxAuditTrailSupressions.SECTION_NAME);
 
-			foreach (var field in typeof(CxAuditTrailTableNameConsts).GetFields())
+			using (var trx = Output.StartTransaction())
 			{
-				if (token.IsCancellationRequested)
-					break;
-
-				if (GetPropertyValue<CxAuditTrailSupressions, bool>(field.Name, supressions))
+				Parallel.ForEach(typeof(CxAuditTrailTableNameConsts).GetFields(),
+					new ParallelOptions
+					{
+						CancellationToken = token,
+						MaxDegreeOfParallelism = Configuration.Config.Service.ConcurrentThreads
+					},
+					(field) =>
 				{
-					_log.Debug($"{field.Name} logging has been suppressed via configuration.");
-					continue;
-				}
+					if (token.IsCancellationRequested)
+						return;
 
-				crawlInvoker.InvokeCrawlMethod(field.Name, crawler, token);
+					if (GetPropertyValue<CxAuditTrailSupressions, bool>(field.Name, supressions))
+					{
+						_log.Debug($"{field.Name} logging has been suppressed via configuration.");
+						return;
+					}
+
+					crawlInvoker.InvokeCrawlMethod(field.Name, crawler, trx, token);
+				});
+
+				if (!token.IsCancellationRequested && trx.Commit () )
+					crawlInvoker.WriteSinceDate();
 			}
+
 		}
 	}
 }

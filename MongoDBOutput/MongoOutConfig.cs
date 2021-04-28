@@ -17,6 +17,27 @@ namespace CxAnalytix.Out.MongoDBOutput
             }
         }
 
+        [ConfigurationProperty("UseTransactions", IsRequired = false, DefaultValue = false)]
+        public bool UseTransactions
+        {
+            get => (bool)this["UseTransactions"];
+            set
+            {
+                this["UseTransactions"] = value;
+            }
+        }
+
+
+        [ConfigurationProperty("TransactionTimeoutSeconds", IsRequired = false, DefaultValue = 60)]
+        public int TrxTimeoutSecs
+        {
+            get => (int)this["TransactionTimeoutSeconds"];
+            set
+            {
+                this["TransactionTimeoutSeconds"] = value;
+            }
+        }
+
 
         [ConfigurationProperty("GeneratedShardKeys", IsDefaultCollection = false, IsRequired = false)]
         [ConfigurationCollection(typeof(ShardKeySpecConfig),

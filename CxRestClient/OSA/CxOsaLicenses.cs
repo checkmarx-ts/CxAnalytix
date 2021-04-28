@@ -1,4 +1,5 @@
-﻿using log4net;
+﻿using CxRestClient.Utility;
+using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
@@ -121,36 +122,28 @@ namespace CxRestClient.OSA
         public static IEnumerable<License> GetLicenses(CxRestContext ctx, CancellationToken token,
         String scanId)
         {
-            try
-            {
-                String url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
-            {
-                {"scanId", Convert.ToString (scanId)  }
-            });
 
-                using (var client = ctx.Json.CreateSastClient())
-                using (var licenses = client.GetAsync(url, token).Result)
+            String url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
                 {
-                    if (token.IsCancellationRequested)
-                        return null;
+                    {"scanId", Convert.ToString (scanId)  }
+                });
 
-                    if (!licenses.IsSuccessStatusCode)
-                        throw new InvalidOperationException(licenses.ReasonPhrase);
 
-                    using (var sr = new StreamReader
-                        (licenses.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
-                    {
-                        JToken jt = JToken.Load(jtr);
-                        return new LicensesReader(jt);
-                    }
+            return WebOperation.ExecuteGet<IEnumerable<License>>(
+			ctx.Json.CreateSastClient
+			, (response) =>
+			{
+                using (var sr = new StreamReader (response.Content.ReadAsStreamAsync().Result))
+                using (var jtr = new JsonTextReader(sr))
+                {
+                    JToken jt = JToken.Load(jtr);
+                    return new LicensesReader(jt);
                 }
             }
-            catch (HttpRequestException hex)
-            {
-                _log.Error("Communication error.", hex);
-                throw hex;
-            }
+            , url
+			, ctx
+			, token);
+
         }
     }
 }

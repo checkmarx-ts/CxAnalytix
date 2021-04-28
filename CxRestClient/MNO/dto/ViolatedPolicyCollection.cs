@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CxRestClient.MNO
+namespace CxRestClient.MNO.dto
 {
     public class ViolatedPolicyCollection
     {
@@ -14,7 +14,7 @@ namespace CxRestClient.MNO
             if (_violatedRulesByScanId.ContainsKey(scanId))
                 return _violatedRulesByScanId[scanId];
             else
-                return null;
+                return new LinkedList<ViolatedRuleDescriptor> ();
         }
 
         public Dictionary<String, LinkedList<ViolatedRuleDescriptor>> Rules { get => _violatedRulesByScanId;
