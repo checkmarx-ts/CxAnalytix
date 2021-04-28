@@ -31,6 +31,10 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 
 ## Version History
+* 1.2.4
+	* BUG FIXES
+		* Stability fix for cases where M&O did not return policy violations as expected
+		* Build change to not build self-contained; this was causing issues on some Linux distros
 * 1.2.3
 	* FEATURES
 		* Issue 57 - Filtering scans crawled via Team and Project regex matching
