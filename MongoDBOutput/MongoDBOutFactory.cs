@@ -8,28 +8,39 @@ using CxAnalytix.Exceptions;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
-    public sealed class MongoDBOutFactory : IOutputFactory
-    {
-        private static ILog _log = LogManager.GetLogger(typeof(MongoDBOutFactory));
+	public sealed class MongoDBOutFactory : IOutputFactory
+	{
+		private static ILog _log = LogManager.GetLogger(typeof(MongoDBOutFactory));
 
-        private static MongoOutConfig _outputConfig;
-        private static MongoConnectionConfig _conConfig;
-        private static MongoClient _client;
-        private static IMongoDatabase _db;
+		private static MongoOutConfig _outputConfig;
+		private static MongoConnectionConfig _conConfig;
+		private static MongoClient _client;
+		private static IMongoDatabase _db;
+		private static bool _warned;
 
-        private static Dictionary<String, ISchema> _schemas = new Dictionary<string, ISchema>();
+		private static Dictionary<String, ISchema> _schemas = new Dictionary<string, ISchema>();
 
-        private class Dummy : IOutput
-        {
-            public void write(IDictionary<string, object> record)
-            {
-            }
-        }
+		private class Dummy : GenericSchema
+		{
+			public override void write(IClientSessionHandle session, IDictionary<string, object> record)
+			{
+			}
+		}
+
+		private static void NoTransactionWarning()
+		{
+
+			if (!_warned)
+			{
+				_warned = true;
+				_log.Warn("TRANSACTIONS ARE NOT SUPPORTED FOR THIS MONGODB INSTANCE");
+			}
+		}
 
 
-        static MongoDBOutFactory()
-        {
-            try
+		static MongoDBOutFactory()
+		{
+			try
 			{
 				_outputConfig = Config.GetConfig<MongoOutConfig>(MongoOutConfig.SECTION_NAME);
 				_conConfig = Config.GetConfig<MongoConnectionConfig>(MongoConnectionConfig.SECTION_NAME);
@@ -50,7 +61,6 @@ namespace CxAnalytix.Out.MongoDBOutput
 					_log.Warn($"Database {mu.DatabaseName} does not exist, it will be created.");
 
 				_db = _client.GetDatabase(mu.DatabaseName);
-
 
 				// It is a violation of OOP principles for this component to know about these records.  At some point the schema
 				// creation may be moved to an installer that initializes the DB prior to running the application.
@@ -73,11 +83,11 @@ namespace CxAnalytix.Out.MongoDBOutput
 					_outputConfig.ShardKeys[Config.Service.PolicyViolationsRecordName]));
 			}
 			catch (Exception ex)
-            {
-                _log.Error("Error initializing MongoDB connectivity.", ex);
+			{
+				_log.Error("Error initializing MongoDB connectivity.", ex);
 				_client = null;
-            }
-        }
+			}
+		}
 
 		private static MongoUrl GetMongoConnectionString()
 		{
@@ -102,26 +112,130 @@ namespace CxAnalytix.Out.MongoDBOutput
 			return mu;
 		}
 
-		public IOutput newInstance(string recordType)
+
+		private class Transaction : IOutputTransaction
+		{
+			private MongoDBOutFactory _inst;
+			private bool _rollback = true;
+			private IClientSessionHandle _session;
+			private bool _noTransaction = false;
+			private DateTime _trxStarted = DateTime.MinValue;
+			private long _recordCount = 0;
+
+			public Transaction (MongoDBOutFactory instance)
+			{
+				_inst = instance;
+
+				lock (_client)
+				{
+					_session = _client.StartSession();
+				}
+
+				if (_outputConfig.UseTransactions)
+				{
+					try
+					{
+						var opts = new TransactionOptions(maxCommitTime: new TimeSpan(0, 0, _outputConfig.TrxTimeoutSecs));
+						_session.StartTransaction(opts);
+						_trxStarted = DateTime.Now;
+
+						_log.Debug($"Transaction START at {_trxStarted} for session id {_session.ServerSession.Id}");
+					}
+					catch (NotSupportedException)
+					{
+						_noTransaction = true;
+						NoTransactionWarning();
+					}
+				}
+			}
+
+
+			public bool Commit()
+			{
+				if (!_noTransaction && _outputConfig.UseTransactions)
+				{
+					_rollback = false;
+					try
+					{
+						_session.CommitTransaction();
+						var end = DateTime.Now;
+						_log.Debug($"Transaction COMMIT at {end} elapsed time {end.Subtract(_trxStarted).TotalMilliseconds}ms for session id {_session.ServerSession.Id} [{_recordCount} records]");
+					}
+					catch (MongoCommandException ex)
+					{
+						_log.Error($"Commit to MongoDB failed in session {_session.ServerSession.Id}, possibly this means the transaction timeout is too short.", ex);
+						return false;
+					}
+				}
+
+				return true;
+			}
+
+			public void Dispose()
+			{
+				if (_rollback && _outputConfig.UseTransactions && !_noTransaction && _session != null)
+				{
+					var end = DateTime.Now;
+					_log.Debug($"Transaction ROLLBACK at {end} elapsed time {end.Subtract(_trxStarted).TotalMilliseconds}ms for session id {_session.ServerSession.Id} [{_recordCount} records]");
+					_session.AbortTransaction();
+				}
+
+				if (_session != null)
+				{
+					_log.Debug($"Disposing of session {_session.ServerSession.Id}");
+					_session.Dispose();
+				}
+			}
+
+			public void write(IRecordRef which, IDictionary<string, object> record)
+			{
+				MongoDBOut outInst = null;
+				
+				if (which is MongoDBOut)
+					outInst = which as MongoDBOut;
+
+				if (outInst == null)
+					throw new UnrecoverableOperationException($"Record reference for Mongo record {which.RecordName} is invalid.");
+
+				try
+				{
+					// TODO: Need to queue this up and write many.
+					outInst.write(_session, record);
+					_recordCount++;
+				}
+				catch (MongoCommandException ex)
+				{
+					_log.Error($"Error writing for session {_session.ServerSession.Id}: {ex.ErrorMessage}");
+					throw ex;
+				}
+			}
+		}
+
+		public IOutputTransaction StartTransaction()
+		{
+			return new Transaction(this);
+
+		}
+
+		public IRecordRef RegisterRecord(string recordName)
 		{
 			if (_client == null)
 				throw new ProcessFatalException("The connection to MongoDB could not be established.");
 
-
 			lock (_schemas)
-				if (!_schemas.ContainsKey(recordType))
+				if (!_schemas.ContainsKey(recordName))
 				{
-					_schemas.Add(recordType, MongoDBOut.CreateInstance<GenericSchema>(_db, recordType, _outputConfig.ShardKeys[recordType]));
+					_schemas.Add(recordName, MongoDBOut.CreateInstance<GenericSchema>(_db, recordName, _outputConfig.ShardKeys[recordName]));
 
-					return _schemas[recordType];
+					return _schemas[recordName];
 				}
 				else
 				{
-					ISchema dest = _schemas[recordType];
+					ISchema dest = _schemas[recordName];
 
 					if (!dest.VerifyOrCreateSchema())
 					{
-						_log.Warn($"Schema for {recordType} could not be verified or created, no data will be output for this record type.");
+						_log.Warn($"Schema for {recordName} could not be verified or created, no data will be output for this record type.");
 						return new Dummy();
 					}
 

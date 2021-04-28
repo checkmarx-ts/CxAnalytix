@@ -25,6 +25,7 @@
 		<ProjectReference Include="..\Exceptions\Exceptions.csproj" />
 		<ProjectReference Include="..\Interfaces\Interfaces.csproj" />
 		<ProjectReference Include="..\LogCleaner\LogCleaner.csproj" />
+		<ProjectReference Include="..\Utilities\Utilities.csproj" />
 	</ItemGroup>
 
 </Project>

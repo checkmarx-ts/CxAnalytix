@@ -40,32 +40,20 @@ namespace CxRestClient.SAST
         public static GenStatus GetReportGenerationStatus(CxRestContext ctx,
             CancellationToken token, String reportId)
         {
-            try
-            {
-                using (var client = ctx.Json.CreateSastClient())
-                {
-                    using (var scanReportStatus = client.GetAsync(
-                        CxRestContext.MakeUrl(ctx.Url,
-                        String.Format(URL_SUFFIX, reportId)), token).Result)
-                    {
-                        if (!scanReportStatus.IsSuccessStatusCode)
-                            return GenStatus.None;
-
-                        using (var sr = new StreamReader
-                                (scanReportStatus.Content.ReadAsStreamAsync().Result))
-                        using (var jtr = new JsonTextReader(sr))
-                        {
-                            JToken jt = JToken.Load(jtr);
-                            return ReadStatus(jt);
-                        }
-                    }
-                }
-            }
-            catch (HttpRequestException hex)
-            {
-                _log.Error("Communication error.", hex);
-                throw hex;
-            }
-        }
-    }
+			return WebOperation.ExecuteGet<GenStatus>(
+			ctx.Json.CreateSastClient
+			, (response) =>
+			{
+				using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
+				using (var jtr = new JsonTextReader(sr))
+				{
+					JToken jt = JToken.Load(jtr);
+					return ReadStatus(jt);
+				}
+			}
+			, CxRestContext.MakeUrl(ctx.Url, String.Format(URL_SUFFIX, reportId))
+			, ctx
+			, token);
+		}
+	}
 }

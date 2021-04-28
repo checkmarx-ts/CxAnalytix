@@ -9,15 +9,18 @@ using CxAnalytix.Interfaces.Outputs;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
-    internal abstract class MongoDBOut : IOutput
+    internal abstract class MongoDBOut : ISchema
     {
         private static ILog _log = LogManager.GetLogger(typeof(MongoDBOut));
 
-        protected IMongoCollection<BsonDocument> Collection { get; private set; }
+        public IMongoCollection<BsonDocument> Collection { get; private set; }
         protected IMongoDatabase DB { get; private set; }
 
         protected ShardKeySpec Spec { get; set; }
-        private SHA256 _sha = SHA256.Create();
+
+		public string RecordName { get; private set; }
+
+		private SHA256 _sha = SHA256.Create();
 
         protected MongoDBOut ()
         { }
@@ -28,6 +31,7 @@ namespace CxAnalytix.Out.MongoDBOutput
             retVal.DB = db;
             retVal.Collection = MongoUtil.MakeCollection(db, collectionName);
             retVal.Spec = spec;
+            retVal.RecordName = collectionName;
 
             return retVal;
         }
@@ -42,7 +46,7 @@ namespace CxAnalytix.Out.MongoDBOutput
             return retVal;
         }
 
-        public void write(IDictionary<string, object> record)
+        public virtual void write(IClientSessionHandle session, IDictionary<string, object> record)
         {
             if (Spec != null)
             {
@@ -56,7 +60,9 @@ namespace CxAnalytix.Out.MongoDBOutput
 
             record.Add("_inserted", DateTime.Now.ToUniversalTime() );
 
-            Collection.InsertOne(BsonSerialize(record));
+            Collection.InsertOne(session, BsonSerialize(record));
         }
-    }
+
+		public abstract bool VerifyOrCreateSchema();
+	}
 }

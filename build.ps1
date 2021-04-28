@@ -41,7 +41,7 @@ Write-Host "Output Directory: $OutLoc"
 if ((-NOT $Docker) -AND (Get-Command "dotnet.exe" -ErrorAction SilentlyContinue) )
 {
 	Write-Host "Building [$BuildConfig] using .Net Core"
-	dotnet publish .\CxAnalytix.sln -p:VersionPrefix=${Version} --version-suffix $Build -o $OutLoc -c $BuildConfig
+	dotnet publish .\CxAnalytix.sln -p:VersionPrefix=${Version} --version-suffix $Build -o $OutLoc -c $BuildConfig --no-self-contained
 }
 elseif (Get-Command "docker.exe" -ErrorAction SilentlyContinue)
 {
@@ -53,7 +53,7 @@ elseif (Get-Command "docker.exe" -ErrorAction SilentlyContinue)
 	
 	docker pull mcr.microsoft.com/dotnet/core/sdk
 	docker run --mount type=bind,src=${OutLoc},target=/artifacts --mount type=bind,src=${pwd},target=/mnt -it mcr.microsoft.com/dotnet/core/sdk bash -c "cd /mnt && dotnet test"
-	docker run --mount type=bind,src=${OutLoc},target=/artifacts --mount type=bind,src=${pwd},target=/mnt -it mcr.microsoft.com/dotnet/core/sdk bash -c "cd /mnt && dotnet publish CxAnalytix.sln -p:VersionPrefix=${Version} --version-suffix ${Build} -o /artifacts -c ${BuildConfig}"
+	docker run --mount type=bind,src=${OutLoc},target=/artifacts --mount type=bind,src=${pwd},target=/mnt -it mcr.microsoft.com/dotnet/core/sdk bash -c "cd /mnt && dotnet publish CxAnalytix.sln -p:VersionPrefix=${Version} --version-suffix ${Build} -o /artifacts -c ${BuildConfig} --no-self-contained"
 	
 	
 

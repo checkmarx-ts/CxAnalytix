@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CxRestClient.MNO
+namespace CxRestClient.MNO.dto
 {
     public class PolicyDescriptor
     {

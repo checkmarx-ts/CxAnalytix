@@ -10,147 +10,135 @@ using System.Threading.Tasks;
 using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.AuditTrails.Crawler;
 using CxAnalytix.Exceptions;
+using ProjectFilter;
 
 namespace CxAnalytixDaemon
 {
-    class Daemon : IHostedService, IDisposable
-    {
-        private static ILog _log = LogManager.GetLogger(typeof(Daemon));
-        private CancellationTokenSource _cancelToken;
-        private Task _serviceTask;
-        private static IOutputFactory _outFactory = null;
-
-        static Daemon()
-        {
-            try
-            {
-                Assembly outAssembly = Assembly.Load(Config.Service.OutputAssembly);
-                _log.DebugFormat("outAssembly loaded: {0}", outAssembly.FullName);
-                _outFactory = outAssembly.CreateInstance(Config.Service.OutputClass) as IOutputFactory;
-                _log.Debug("IOutputFactory instance created.");
-            }
-            catch (Exception ex)
-            {
-                _log.Error($"Error loading output factory [{Config.Service.OutputAssembly}].", ex);
-            }
-        }
+	class Daemon : IHostedService, IDisposable
+	{
+		private static ILog _log = LogManager.GetLogger(typeof(Daemon));
+		private CancellationTokenSource _cancelToken;
+		private Task _serviceTask;
 
 
-        public void Dispose()
-        {
-            if (_serviceTask != null)
-            {
-                _serviceTask.Dispose();
-                _serviceTask = null;
-            }
-        }
+		public void Dispose()
+		{
+			if (_serviceTask != null)
+			{
+				_serviceTask.Dispose();
+				_serviceTask = null;
+			}
+		}
 
-        public Task StartAsync(CancellationToken cancellationToken)
-        {
-            _log.Info("Daemon start.");
+		public Task StartAsync(CancellationToken cancellationToken)
+		{
+			_log.Info("Daemon start.");
 
-            var builder = new CxRestContext.CxRestContextBuilder();
-            builder.WithSASTServiceURL(Config.Connection.URL).
-            WithMNOServiceURL(Config.Connection.MNOUrl)
-            .WithOpTimeout(Config.Connection.TimeoutSeconds)
-            .WithSSLValidate(Config.Connection.ValidateCertificates)
-            .WithUsername(Config.Credentials.Username)
-            .WithPassword(Config.Credentials.Password);
+			var builder = new CxRestContext.CxRestContextBuilder();
+			builder.WithSASTServiceURL(Config.Connection.URL).
+			WithMNOServiceURL(Config.Connection.MNOUrl)
+			.WithOpTimeout(Config.Connection.TimeoutSeconds)
+			.WithSSLValidate(Config.Connection.ValidateCertificates)
+			.WithUsername(Config.Credentials.Username)
+			.WithPassword(Config.Credentials.Password);
 
-            var restCtx = builder.Build();
+			var restCtx = builder.Build();
 
-            _cancelToken = new CancellationTokenSource();
+			_cancelToken = new CancellationTokenSource();
 
-            _serviceTask = Task.Run(async () =>
-            {
-                do
-                {
-                    DateTime start = DateTime.Now;
-                    _log.Info("Starting data transformation.");
+			_serviceTask = Task.Run(async () =>
+			{
+				do
+				{
+					DateTime start = DateTime.Now;
+					_log.Info("Starting data transformation.");
 
-                    try
-                    {
-                        Transformer.DoTransform(Config.Service.ConcurrentThreads,
-                            Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
-                            restCtx, _outFactory, new RecordNames()
-                            {
-                                SASTScanSummary = Config.Service.SASTScanSummaryRecordName,
-                                SASTScanDetail = Config.Service.SASTScanDetailRecordName,
-                                SCAScanSummary = Config.Service.SCAScanSummaryRecordName,
-                                SCAScanDetail = Config.Service.SCAScanDetailRecordName,
-                                ProjectInfo = Config.Service.ProjectInfoRecordName,
-                                PolicyViolations = Config.Service.PolicyViolationsRecordName
-                            }, _cancelToken.Token);
-                    }
-                    catch (ProcessFatalException pfe)
-                    {
-                        _log.Error("Fatal exception caught, program ending.", pfe);
-                        Program._tokenSrc.Cancel();
-                        break;
-                    }
-                    catch (Exception ex)
-                    {
-                        _log.Error("Vulnerability data transformation aborted due to unhandled exception.", ex);
-                    }
-
-                    _log.InfoFormat("Vulnerability data transformation finished in {0:0.00} minutes.",
-                        DateTime.Now.Subtract(start).TotalMinutes);
-
-                    start = DateTime.Now;
-
-                    try
-                    {
-                        if (!cancellationToken.IsCancellationRequested)
-                            AuditTrailCrawler.CrawlAuditTrails(_outFactory, _cancelToken.Token);
-                    }
-                    catch (ProcessFatalException pfe)
-                    {
-                        _log.Error("Fatal exception caught, program ending.", pfe);
-                        Program._tokenSrc.Cancel();
-                        break;
-                    }
-                    catch (Exception ex)
+					try
 					{
-                        _log.Error("Audit data transformation aborted due to unhandled exception.", ex);
-                    }
+						Transformer.DoTransform(Config.Service.ConcurrentThreads,
+						Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
+						restCtx,
+						new FilterImpl(Config.GetConfig<CxFilter>("ProjectFilterRegex").TeamRegex,
+						Config.GetConfig<CxFilter>("ProjectFilterRegex").ProjectRegex),
+						new RecordNames()
+						{
+							SASTScanSummary = Config.Service.SASTScanSummaryRecordName,
+							SASTScanDetail = Config.Service.SASTScanDetailRecordName,
+							SCAScanSummary = Config.Service.SCAScanSummaryRecordName,
+							SCAScanDetail = Config.Service.SCAScanDetailRecordName,
+							ProjectInfo = Config.Service.ProjectInfoRecordName,
+							PolicyViolations = Config.Service.PolicyViolationsRecordName
+						}, _cancelToken.Token);
+					}
+					catch (ProcessFatalException pfe)
+					{
+						_log.Error("Fatal exception caught, program ending.", pfe);
+						Program._tokenSrc.Cancel();
+						break;
+					}
+					catch (Exception ex)
+					{
+						_log.Error("Vulnerability data transformation aborted due to unhandled exception.", ex);
+					}
 
-                    _log.InfoFormat("Audit data transformation finished in {0:0.00} minutes.",
-                        DateTime.Now.Subtract(start).TotalMinutes);
+					_log.InfoFormat("Vulnerability data transformation finished in {0:0.00} minutes.",
+						DateTime.Now.Subtract(start).TotalMinutes);
 
-                    await Task.Delay(Config.Service.ProcessPeriodMinutes * 60 * 1000, _cancelToken.Token);
-                } while (!_cancelToken.Token.IsCancellationRequested);
+					start = DateTime.Now;
 
-                _cancelToken.Token.ThrowIfCancellationRequested();
+					try
+					{
+						if (!cancellationToken.IsCancellationRequested)
+							AuditTrailCrawler.CrawlAuditTrails(_cancelToken.Token);
+					}
+					catch (ProcessFatalException pfe)
+					{
+						_log.Error("Fatal exception caught, program ending.", pfe);
+						Program._tokenSrc.Cancel();
+						break;
+					}
+					catch (Exception ex)
+					{
+						_log.Error("Audit data transformation aborted due to unhandled exception.", ex);
+					}
 
-            }, _cancelToken.Token);
+					_log.InfoFormat("Audit data transformation finished in {0:0.00} minutes.",
+						DateTime.Now.Subtract(start).TotalMinutes);
 
-            return Task.CompletedTask;
-        }
+					await Task.Delay(Config.Service.ProcessPeriodMinutes * 60 * 1000, _cancelToken.Token);
+				} while (!_cancelToken.Token.IsCancellationRequested);
 
-        public Task StopAsync(CancellationToken cancellationToken)
-        {
-            if (_cancelToken != null && _serviceTask != null && !_serviceTask.IsCompleted)
-            {
-                _log.Debug("Waiting for the service task to complete after cancellation.");
-                
-                _cancelToken.Cancel();
+				_cancelToken.Token.ThrowIfCancellationRequested();
 
-                try
-                {
-                    _serviceTask.Wait();
-                }
-                catch (AggregateException ex)
-                {
-                    _log.Debug("Task finished normally and exception has been logged.", ex);
-                }
+			}, _cancelToken.Token);
 
-                _log.Debug("Service task has stopped after wait.");
-            }
+			return Task.CompletedTask;
+		}
+
+		public Task StopAsync(CancellationToken cancellationToken)
+		{
+			if (_cancelToken != null && _serviceTask != null && !_serviceTask.IsCompleted)
+			{
+				_log.Debug("Waiting for the service task to complete after cancellation.");
+
+				_cancelToken.Cancel();
+
+				try
+				{
+					_serviceTask.Wait();
+				}
+				catch (AggregateException ex)
+				{
+					_log.Debug("Task finished normally and exception has been logged.", ex);
+				}
+
+				_log.Debug("Service task has stopped after wait.");
+			}
 
 
-            return Task.CompletedTask;
-        }
+			return Task.CompletedTask;
+		}
 
 
-    }
+	}
 }

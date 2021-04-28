@@ -22,7 +22,7 @@ There are several installation variations:
 
 ### Installation
 
-Please refere to the [Installation](https://github.com/checkmarx-ts/CxAnalytix/wiki/Installation) wiki page
+Please refer to the [Installation](https://github.com/checkmarx-ts/CxAnalytix/wiki/Installation-Home) wiki page
 
 
 ## Additional Documentation
@@ -31,6 +31,30 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 
 ## Version History
+* 1.2.4
+	* BUG FIXES
+		* Stability fix for cases where M&O did not return policy violations as expected
+		* Build change to not build self-contained; this was causing issues on some Linux distros
+* 1.2.3
+	* FEATURES
+		* Issue 57 - Filtering scans crawled via Team and Project regex matching
+	* BUG FIXES
+		* Issue 17 - Updated the docker image to better support persisting the state files
+* 1.2.2
+	* FEATURES
+		* Fields added to the output records
+			* Project Information
+				* LastCrawlDate
+			* Policy Violation Details
+				* ViolationId
+		* A basic [regression testing utility](https://github.com/checkmarx-ts/CxAnalytix/wiki/Development-Home) was added to test that data extraction is consistent between versions.  This is primarily targeted for developer use.
+	* BUG FIXES
+		* Issue 51 - Timestamp of date to check for last scan is recorded as the finish date of the last scan found during the current crawl rather than the date of the current crawl.
+		* Issue 53 - Authorization token refresh improvements
+		* Stealth fix during development - NodeLine would be excluded from the SAST Vulnerability Details record under certain conditions 
+* 1.2.1
+	* BUG FIXES
+		* Issue 60 - A DB table row with a column containing a NULL value threw an exception and caused the DB crawl to end prematurely.
 * 1.2.0
 	* FEATURES
 		* New feature to extract audit events by crawling audit log tables in CxActivity and CxDB.  This feature is limited to use in systems that can make a connection directly to the CxSAST DB.

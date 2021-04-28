@@ -11,7 +11,7 @@ namespace CxAnalytix.Out.MongoDBOutput
     {
         private static ILog _log = LogManager.GetLogger(typeof(PolicyViolationsSchema));
 
-        public bool VerifyOrCreateSchema()
+        public override bool VerifyOrCreateSchema()
         {
 
             var opts = new CreateIndexOptions()

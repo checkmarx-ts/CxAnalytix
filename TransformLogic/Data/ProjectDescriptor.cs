@@ -2,7 +2,7 @@
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-
+using static CxAnalytix.TransformLogic.Data.ScanDescriptor;
 
 namespace CxAnalytix.TransformLogic.Data
 {
@@ -13,8 +13,8 @@ namespace CxAnalytix.TransformLogic.Data
     {
         internal ProjectDescriptor()
         {
-            ScanCountByProduct = new Dictionary<string, int>();
-            LatestScanDateByProduct = new Dictionary<String, DateTime>();
+            ScanCountByProduct = new Dictionary<ScanProductType, int>();
+            LatestScanDateByProduct = new Dictionary<ScanProductType, DateTime>();
         }
 
         internal ProjectDescriptor (ProjectDescriptor src)
@@ -72,19 +72,19 @@ namespace CxAnalytix.TransformLogic.Data
         /// to a 1:1 match for each scan.
         /// </summary>
         [JsonIgnore]
-        public Dictionary<String, int> ScanCountByProduct { get; internal set; }
+        public Dictionary<ScanProductType, int> ScanCountByProduct { get; internal set; }
         /// <summary>
         /// The most recent scan date for the project by product.
         /// </summary>
         [JsonIgnore]
-        public Dictionary<String, DateTime> LatestScanDateByProduct { get; internal set; }
+        public Dictionary<ScanProductType, DateTime> LatestScanDateByProduct { get; internal set; }
 
         /// <summary>
         /// Increments the number of scans for the product name passed in 
         /// the <paramref name="scanProduct"/> parameter.
         /// </summary>
         /// <param name="scanProduct">The name of the product.</param>
-        public void IncrementScanCount(String scanProduct)
+        public void IncrementScanCount(ScanProductType scanProduct)
         {
             if (!ScanCountByProduct.ContainsKey(scanProduct))
             {
@@ -101,7 +101,7 @@ namespace CxAnalytix.TransformLogic.Data
         /// </summary>
         /// <param name="scanTime">The time of a scan.</param>
         /// <param name="scanProduct">The product that performed the scan.</param>
-        public void UpdateLatestScanDate(String scanProduct, DateTime scanTime)
+        public void UpdateLatestScanDate(ScanProductType scanProduct, DateTime scanTime)
         {
             if (!LatestScanDateByProduct.ContainsKey(scanProduct))
             {

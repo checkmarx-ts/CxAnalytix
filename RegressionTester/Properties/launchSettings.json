@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "RegressionTester": {
+      "commandName": "Project",
+      "commandLineArgs": "-p \"C:\\temp\\logs.old\" -n \"C:\\temp\\logs\""
+    }
+  }
+}
