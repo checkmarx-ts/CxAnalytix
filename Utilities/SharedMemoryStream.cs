@@ -23,12 +23,12 @@ namespace CxAnalytix.Utilities
 		private readonly int COPY_BUFF_SIZE = 64738;
 
 
-		public SharedMemoryStream(long capacity) : base()
+		public SharedMemoryStream(long initialCapacity) : base()
 		{
-			_capacity = capacity;
+			_capacity = initialCapacity;
 			_pos = 0;
-			_mmf = MemoryMappedFile.CreateNew(null, capacity, MemoryMappedFileAccess.CopyOnWrite);
-			_mmfa = _mmf.CreateViewAccessor(0, capacity, MemoryMappedFileAccess.CopyOnWrite);
+			_mmf = MemoryMappedFile.CreateNew(null, initialCapacity, MemoryMappedFileAccess.CopyOnWrite);
+			_mmfa = _mmf.CreateViewAccessor(0, initialCapacity, MemoryMappedFileAccess.CopyOnWrite);
 		}
 
 
@@ -182,7 +182,6 @@ namespace CxAnalytix.Utilities
 			_mmf = new_mmf;
 			_mmfa = new_mmfa;
 			_capacity = newCapacity;
-
 		}
 
 		public override void Write(byte[] buffer, int offset, int count)
