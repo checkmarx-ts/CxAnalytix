@@ -23,13 +23,13 @@ namespace OutputBootstrapper
 				_outFactory = outAssembly.CreateInstance(Config.Service.OutputClass) as IOutputFactory;
 
 				if (_outFactory == null)
-					throw new UnrecoverableOperationException($"Could not load the output factory with the name {Config.Service.OutputClass} in assembly {outAssembly.FullName}");
+					throw new ProcessFatalException($"Could not load the output factory with the name {Config.Service.OutputClass} in assembly {outAssembly.FullName}");
 
 				_log.Debug("IOutputFactory instance created.");
 			}
 			catch (Exception ex)
 			{
-				throw new UnrecoverableOperationException("Error loading output factory.", ex);
+				throw new ProcessFatalException("Error loading output factory.", ex);
 			}
 		}
 
