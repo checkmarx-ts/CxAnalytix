@@ -60,15 +60,16 @@ namespace CxAnalytixCLI
                         },
                         t.Token);
 
-                    using (var auditTrx = Output.StartTransaction())
-                    {
-                        AuditTrailCrawler.CrawlAuditTrails(t.Token);
+					if (!t.Token.IsCancellationRequested)
+						using (var auditTrx = Output.StartTransaction())
+						{
+							AuditTrailCrawler.CrawlAuditTrails(t.Token);
 
-                        if (!t.Token.IsCancellationRequested)
-                            auditTrx.Commit();
-                    }
-                }
-                catch (ProcessFatalException pfe)
+							if (!t.Token.IsCancellationRequested)
+								auditTrx.Commit();
+						}
+				}
+				catch (ProcessFatalException pfe)
 				{
                     appLog.Error("Fatal exception caught, program ending.", pfe);
 				}

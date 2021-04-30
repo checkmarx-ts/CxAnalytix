@@ -517,6 +517,13 @@ namespace CxAnalytix.TransformLogic
 			Parallel.ForEach<ProjectDescriptor>(_state.Projects, ThreadOpts,
 			(project) =>
 			{
+				// Do not output project info if a project has no scans.
+				if (_state.GetScanCountForProject(project.ProjectId) <= 0)
+				{
+					_log.Info($"Project {project.ProjectId}:{project.TeamName}:{project.ProjectName} has no new scans to process.");
+					return;
+				}
+
 				// Project info is a moment-in-time sample of the state of the project.  This can be output
 				// in a transaction context different than the scans.
 				using (var pinfoTrx = Output.StartTransaction () )
@@ -571,7 +578,7 @@ namespace CxAnalytix.TransformLogic
 						OutputPolicyViolationDetails(scanTrx, scan);
 
 						// Persist the date of this scan since it has been output.
-						if (scanTrx.Commit())
+						if (!CancelToken.IsCancellationRequested && scanTrx.Commit())
 							_state.ScanCompleted(scan);
 						else
 							// Stop processing further scans in this project if the commit
