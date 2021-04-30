@@ -1,4 +1,5 @@
 ﻿using CxAnalytix.Configuration;
+using CxAnalytix.Exceptions;
 using CxAnalytix.Interfaces.Outputs;
 using log4net;
 using System;
@@ -19,11 +20,15 @@ namespace OutputBootstrapper
 				Assembly outAssembly = Assembly.Load(Config.Service.OutputAssembly);
 				_log.DebugFormat("outAssembly loaded: {0}", outAssembly.FullName);
 				_outFactory = outAssembly.CreateInstance(Config.Service.OutputClass) as IOutputFactory;
+
+				if (_outFactory == null)
+					throw new UnrecoverableOperationException($"Could not load the output factory with the name {Config.Service.OutputClass} in assembly {outAssembly.FullName}");
+
 				_log.Debug("IOutputFactory instance created.");
 			}
 			catch (Exception ex)
 			{
-				_log.Error("Error loading output factory.", ex);
+				throw new UnrecoverableOperationException("Error loading output factory.", ex);
 			}
 		}
 

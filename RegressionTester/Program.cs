@@ -30,7 +30,7 @@ namespace RegressionTester
 			   });
 
 			using (var projectInfo = new SastProjectInfoTester(oldPath, newPath))
-			using (var policyViolations = new SastPolicyViolationTester(oldPath, newPath) ) 
+			using (var policyViolations = new SastPolicyViolationTester(oldPath, newPath))
 			using (var scaDetail = new ScaScanDetailTester(oldPath, newPath))
 			using (var scaSummary = new ScaScanSummaryTester(oldPath, newPath))
 			using (var sastSummary = new SastScanSummaryTester(oldPath, newPath))

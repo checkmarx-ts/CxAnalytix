@@ -13,27 +13,22 @@ namespace CxAnalytix.Out.MongoDBOutput
 		private static ILog _log = LogManager.GetLogger(typeof(MongoDBOutFactory));
 
 		private static MongoOutConfig _outputConfig;
+		internal static MongoOutConfig OutConfig { get => _outputConfig; }
+
 		private static MongoConnectionConfig _conConfig;
 		private static MongoClient _client;
-		private static IMongoDatabase _db;
-		private static bool _warned;
+		internal static MongoClient Client { get => _client; }
 
-		private static Dictionary<String, ISchema> _schemas = new Dictionary<string, ISchema>();
+
+		private static IMongoDatabase _db;
+
+		private static Dictionary<String, MongoDBOut> _schemas = new Dictionary<string, MongoDBOut>();
+		internal MongoDBOut this[String name] => _schemas[name];
 
 		private class Dummy : GenericSchema
 		{
 			public override void write(IClientSessionHandle session, IDictionary<string, object> record)
 			{
-			}
-		}
-
-		private static void NoTransactionWarning()
-		{
-
-			if (!_warned)
-			{
-				_warned = true;
-				_log.Warn("TRANSACTIONS ARE NOT SUPPORTED FOR THIS MONGODB INSTANCE");
 			}
 		}
 
@@ -113,108 +108,9 @@ namespace CxAnalytix.Out.MongoDBOutput
 		}
 
 
-		private class Transaction : IOutputTransaction
-		{
-			private MongoDBOutFactory _inst;
-			private bool _rollback = true;
-			private IClientSessionHandle _session;
-			private bool _noTransaction = false;
-			private DateTime _trxStarted = DateTime.MinValue;
-			private long _recordCount = 0;
-
-			public Transaction (MongoDBOutFactory instance)
-			{
-				_inst = instance;
-
-				lock (_client)
-				{
-					_session = _client.StartSession();
-				}
-
-				if (_outputConfig.UseTransactions)
-				{
-					try
-					{
-						var opts = new TransactionOptions(maxCommitTime: new TimeSpan(0, 0, _outputConfig.TrxTimeoutSecs));
-						_session.StartTransaction(opts);
-						_trxStarted = DateTime.Now;
-
-						_log.Debug($"Transaction START at {_trxStarted} for session id {_session.ServerSession.Id}");
-					}
-					catch (NotSupportedException)
-					{
-						_noTransaction = true;
-						NoTransactionWarning();
-					}
-				}
-			}
-
-
-			public bool Commit()
-			{
-				if (!_noTransaction && _outputConfig.UseTransactions)
-				{
-					_rollback = false;
-					try
-					{
-						_session.CommitTransaction();
-						var end = DateTime.Now;
-						_log.Debug($"Transaction COMMIT at {end} elapsed time {end.Subtract(_trxStarted).TotalMilliseconds}ms for session id {_session.ServerSession.Id} [{_recordCount} records]");
-					}
-					catch (MongoCommandException ex)
-					{
-						_log.Error($"Commit to MongoDB failed in session {_session.ServerSession.Id}, possibly this means the transaction timeout is too short.", ex);
-						return false;
-					}
-				}
-
-				return true;
-			}
-
-			public void Dispose()
-			{
-				if (_rollback && _outputConfig.UseTransactions && !_noTransaction && _session != null)
-				{
-					var end = DateTime.Now;
-					_log.Debug($"Transaction ROLLBACK at {end} elapsed time {end.Subtract(_trxStarted).TotalMilliseconds}ms for session id {_session.ServerSession.Id} [{_recordCount} records]");
-					_session.AbortTransaction();
-				}
-
-				if (_session != null)
-				{
-					_log.Debug($"Disposing of session {_session.ServerSession.Id}");
-					_session.Dispose();
-				}
-			}
-
-			public void write(IRecordRef which, IDictionary<string, object> record)
-			{
-				MongoDBOut outInst = null;
-				
-				if (which is MongoDBOut)
-					outInst = which as MongoDBOut;
-
-				if (outInst == null)
-					throw new UnrecoverableOperationException($"Record reference for Mongo record {which.RecordName} is invalid.");
-
-				try
-				{
-					// TODO: Need to queue this up and write many.
-					outInst.write(_session, record);
-					_recordCount++;
-				}
-				catch (MongoCommandException ex)
-				{
-					_log.Error($"Error writing for session {_session.ServerSession.Id}: {ex.ErrorMessage}");
-					throw ex;
-				}
-			}
-		}
-
 		public IOutputTransaction StartTransaction()
 		{
-			return new Transaction(this);
-
+			return new MongoOutputTransaction(this);
 		}
 
 		public IRecordRef RegisterRecord(string recordName)
@@ -231,7 +127,7 @@ namespace CxAnalytix.Out.MongoDBOutput
 				}
 				else
 				{
-					ISchema dest = _schemas[recordName];
+					var dest = _schemas[recordName];
 
 					if (!dest.VerifyOrCreateSchema())
 					{

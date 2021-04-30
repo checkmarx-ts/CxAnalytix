@@ -6,6 +6,7 @@ using log4net;
 using CxAnalytix.Extensions;
 using System.Security.Cryptography;
 using CxAnalytix.Interfaces.Outputs;
+using System.IO;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
@@ -36,7 +37,7 @@ namespace CxAnalytix.Out.MongoDBOutput
             return retVal;
         }
 
-        private BsonDocument BsonSerialize (IDictionary<string, object> record)
+        private BsonDocument ToBsonDocument (IDictionary<string, object> record)
         {
             BsonDocument retVal = new BsonDocument();
 
@@ -46,23 +47,40 @@ namespace CxAnalytix.Out.MongoDBOutput
             return retVal;
         }
 
-        public virtual void write(IClientSessionHandle session, IDictionary<string, object> record)
-        {
+        public BsonDocument BsonSerialize (IDictionary<string, object> record)
+		{
+            AddExtraFields(record);
+            return ToBsonDocument(record);
+        }
+
+
+        private void AddExtraFields(IDictionary<string, object> record)
+		{
             if (Spec != null)
             {
                 String keyValue = record.ComposeString(Spec.Format);
 
                 if (!Spec.NoHash)
-                    keyValue = Convert.ToBase64String (_sha.ComputeHash(System.Text.UTF8Encoding.UTF8.GetBytes(keyValue)));
+                    keyValue = Convert.ToBase64String(_sha.ComputeHash(System.Text.UTF8Encoding.UTF8.GetBytes(keyValue)));
 
                 record.Add(Spec.Key, keyValue);
             }
 
-            record.Add("_inserted", DateTime.Now.ToUniversalTime() );
+            record.Add("_inserted", DateTime.Now.ToUniversalTime());
 
-            Collection.InsertOne(session, BsonSerialize(record));
         }
 
-		public abstract bool VerifyOrCreateSchema();
+        public virtual void write(IClientSessionHandle session, IDictionary<string, object> record)
+        {
+            AddExtraFields(record);
+            Collection.InsertOne(session, ToBsonDocument(record));
+        }
+
+        public virtual void write(IClientSessionHandle session, IEnumerable<BsonDocument> docs)
+        {
+            Collection.InsertMany(session, docs);
+        }
+
+        public abstract bool VerifyOrCreateSchema();
 	}
 }

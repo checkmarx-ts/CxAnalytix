@@ -18,6 +18,7 @@ namespace CxAnalytix.Utilities
 		private long _pos;
 		private long _capacity;
 		private long _maxPosition;
+		private bool _readOnly = false;
 
 		private readonly float INCREASE_FACTOR = 0.2F;
 		private readonly int COPY_BUFF_SIZE = 64738;
@@ -27,16 +28,26 @@ namespace CxAnalytix.Utilities
 		{
 			_capacity = initialCapacity;
 			_pos = 0;
-			_mmf = MemoryMappedFile.CreateNew(null, initialCapacity, MemoryMappedFileAccess.CopyOnWrite);
-			_mmfa = _mmf.CreateViewAccessor(0, initialCapacity, MemoryMappedFileAccess.CopyOnWrite);
+			_mmf = MemoryMappedFile.CreateNew(null, initialCapacity, MemoryMappedFileAccess.ReadWrite);
+			_mmfa = _mmf.CreateViewAccessor(0, initialCapacity, MemoryMappedFileAccess.ReadWrite);
 		}
 
+		private SharedMemoryStream () : base()
+		{
+
+		}
+
+		public Stream ReadOnlyView()
+		{
+			_mmfa.Flush();
+			return _mmf.CreateViewStream(0, _capacity, MemoryMappedFileAccess.Read);
+		}
 
 		public override bool CanRead => true;
 
 		public override bool CanSeek => true;
 
-		public override bool CanWrite => true;
+		public override bool CanWrite => !_readOnly;
 
 		public override long Length {get => _maxPosition; }
 
@@ -79,6 +90,7 @@ namespace CxAnalytix.Utilities
 			}
 
 		}
+
 
 		public override int Read(byte[] buffer, int offset, int count)
 		{
@@ -161,8 +173,9 @@ namespace CxAnalytix.Utilities
 
 			byte[] buf = new byte[COPY_BUFF_SIZE];
 
-			MemoryMappedFile new_mmf = MemoryMappedFile.CreateNew(null, newCapacity, MemoryMappedFileAccess.CopyOnWrite);
-			MemoryMappedViewAccessor new_mmfa = new_mmf.CreateViewAccessor(0, newCapacity, MemoryMappedFileAccess.CopyOnWrite);
+			MemoryMappedFile new_mmf = MemoryMappedFile.CreateNew(null, newCapacity, MemoryMappedFileAccess.ReadWrite);
+			MemoryMappedViewAccessor new_mmfa = new_mmf.CreateViewAccessor(0, newCapacity, MemoryMappedFileAccess.ReadWrite);
+			_mmfa.Flush();
 
 			long curPos = 0;
 
@@ -186,6 +199,9 @@ namespace CxAnalytix.Utilities
 
 		public override void Write(byte[] buffer, int offset, int count)
 		{
+			if (_readOnly)
+				throw new InvalidOperationException("This instance is read only.");
+
 			if (buffer == null)
 				throw new ArgumentException("It is not possible to write from a null buffer.");
 
@@ -205,6 +221,7 @@ namespace CxAnalytix.Utilities
 			_mmfa.WriteArray<byte>(Position, buffer, offset, count);
 
 			Position += count;
+
 			_maxPosition = Math.Max(Position, _maxPosition);
 		}
 

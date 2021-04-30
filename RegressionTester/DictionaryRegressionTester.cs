@@ -169,7 +169,7 @@ namespace RegressionTester
 				var newHash = newRecords.Records[recordId].HashByKeys(comparisonElements);
 
 				if (oldHash.CompareTo(newHash) != 0)
-					OutputWriter.WriteLine($"{recordId} did not match");
+					OutputWriter.WriteLine($"Unique Key {recordId} did not match");
 			}
 
 
