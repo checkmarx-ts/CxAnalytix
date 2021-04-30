@@ -1,4 +1,5 @@
 ﻿using CxAnalytix.Exceptions;
+using CxAnalytix.Extensions;
 using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.Utilities;
 using log4net;
@@ -26,6 +27,8 @@ namespace CxAnalytix.Out.MongoDBOutput
 		private long _recordCount = 0;
 		private Dictionary<String, LinkedList<IndexDescriptor>> _index = new Dictionary<string, LinkedList<IndexDescriptor>>();
 		private SharedMemoryStream _cache = new SharedMemoryStream(2048000);
+
+		public string TransactionId => _id.ToString();
 
 		private class IndexDescriptor
 		{
@@ -133,7 +136,7 @@ namespace CxAnalytix.Out.MongoDBOutput
 					var writeStart = DateTime.Now;
 					using (var view = _cache.ReadOnlyView())
 						outWriter.write(session, new BsonCacheEnumerable(_index[recordName], view));
-					_log.Debug($"{recordName} records written in {DateTime.Now.Subtract(writeStart).TotalMilliseconds}ms ");
+					_log.Trace($"{recordName} records written in {DateTime.Now.Subtract(writeStart).TotalMilliseconds}ms ");
 				}
 
 			});
@@ -143,7 +146,7 @@ namespace CxAnalytix.Out.MongoDBOutput
 
 		public void Dispose()
 		{
-			_log.Debug($"Disposing of pseudo transaction {_id}: {_recordCount} records {((_committed) ? ("committed.") : ("discarded.")) } ");
+			_log.Trace($"Disposing of pseudo transaction {_id}: {_recordCount} records {((_committed) ? ("committed.") : ("discarded.")) } ");
 
 		}
 

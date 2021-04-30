@@ -13,6 +13,7 @@ using CxAnalytix.Exceptions;
 using ProjectFilter;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
+[assembly: CxAnalytix.Extensions.LogTrace()]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "CxAnalytixService.log4net", Watch = true)]
 
 namespace CxAnalytixService

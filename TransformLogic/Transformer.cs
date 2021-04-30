@@ -18,6 +18,7 @@ using CxAnalytix.TransformLogic.Persistence;
 using static CxAnalytix.TransformLogic.Data.ScanDescriptor;
 using CxAnalytix.Interfaces.Transform;
 using OutputBootstrapper;
+using CxAnalytix.Extensions;
 
 namespace CxAnalytix.TransformLogic
 {
@@ -26,7 +27,6 @@ namespace CxAnalytix.TransformLogic
 	/// </summary>
 	public class Transformer
 	{
-
 		private static readonly ILog _log = LogManager.GetLogger(typeof(Transformer));
 
 		private IEnumerable<ScanDescriptor> ScanDescriptors { get; set; }
@@ -399,7 +399,8 @@ namespace CxAnalytix.TransformLogic
 					foreach (var s in sastScans)
 					{
 						// Add to crawl state.
-						_log.Debug($"SAST scan record: {s}");
+						if (_log.IsTraceEnabled())
+							_log.Trace($"SAST scan record: {s}");
 						_state.AddScan(s.ProjectId, s.ScanType, ScanProductType.SAST, s.ScanId, s.FinishTime);
 						SastScanCache.TryAdd(s.ScanId, s);
 					}
@@ -409,7 +410,8 @@ namespace CxAnalytix.TransformLogic
 					foreach (var s in osaScans)
 					{
 						// Add to crawl state.
-						_log.Debug($"OSA scan record: {s}");
+						if (_log.IsTraceEnabled())
+							_log.Trace($"OSA scan record: {s}");
 						_state.AddScan(s.ProjectId, "Composition", ScanProductType.SCA, s.ScanId, s.FinishTime);
 						ScaScanCache.TryAdd(s.ScanId, s);
 					}
@@ -685,7 +687,7 @@ namespace CxAnalytix.TransformLogic
 					{
 						if (xr.Name.CompareTo("CxXMLResults") == 0)
 						{
-							_log.Debug($"[Scan: {scan.ScanId}] Processing attributes in CxXMLResults.");
+							_log.Trace($"[Scan: {scan.ScanId}] Processing attributes in CxXMLResults.");
 
 							scan.Preset = xr.GetAttribute("Preset");
 							scan.Initiator = xr.GetAttribute("InitiatorName");
@@ -699,7 +701,7 @@ namespace CxAnalytix.TransformLogic
 
 						if (xr.Name.CompareTo("Query") == 0)
 						{
-							_log.Debug($"[Scan: {scan.ScanId}] Processing attributes in Query " +
+							_log.Trace($"[Scan: {scan.ScanId}] Processing attributes in Query " +
 								$"[{xr.GetAttribute("id")} - {xr.GetAttribute("name")}].");
 
 							curQueryRec = new SortedDictionary<String, Object>
@@ -718,7 +720,7 @@ namespace CxAnalytix.TransformLogic
 
 						if (xr.Name.CompareTo("Result") == 0)
 						{
-							_log.Debug($"[Scan: {scan.ScanId}] Processing attributes in Result " +
+							_log.Trace($"[Scan: {scan.ScanId}] Processing attributes in Result " +
 								$"[{xr.GetAttribute("NodeId")}].");
 
 							scan.IncrementSeverity(xr.GetAttribute("Severity"));
@@ -813,7 +815,7 @@ namespace CxAnalytix.TransformLogic
 					{
 						if (xr.Name.CompareTo("CxXMLResults") == 0)
 						{
-							_log.Debug($"[Scan: {scan.ScanId}] Finished processing CxXMLResults");
+							_log.Trace($"[Scan: {scan.ScanId}] Finished processing CxXMLResults");
 							continue;
 						}
 

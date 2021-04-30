@@ -11,11 +11,14 @@ namespace CxAnalytix.Out.Log4NetOutput
 
 		private Dictionary<String, LoggerOut> _loggers = new Dictionary<string, LoggerOut>();
 		private HashSet<String> _records;
+		private Guid _id = Guid.NewGuid ();
 
 		public LoggerOutTransaction(IEnumerable<String> recordNames)
 		{
 			_records = new HashSet<string>(recordNames);
 		}
+
+		public string TransactionId => _id.ToString();
 
 		public bool Commit()
 		{

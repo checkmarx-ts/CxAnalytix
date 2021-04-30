@@ -1,5 +1,6 @@
 ﻿using CxAnalytix.Configuration;
 using CxAnalytix.Exceptions;
+using CxAnalytix.Extensions;
 using CxAnalytix.Interfaces.Outputs;
 using log4net;
 using System;
@@ -36,9 +37,11 @@ namespace OutputBootstrapper
 
 		public static IOutputTransaction StartTransaction()
 		{
-			_log.Debug("Starting output transaction");
+			var retVal =  _outFactory.StartTransaction();
 
-			return _outFactory.StartTransaction();
+			_log.Trace($"Starting output transaction: {retVal.TransactionId}");
+
+			return retVal;
 		}
 
 		[MethodImpl(MethodImplOptions.Synchronized)]

@@ -26,5 +26,10 @@ namespace CxAnalytix.Interfaces.Outputs
 		/// <returns>True if the commit is a success, false otherwise.</returns>
 		bool Commit();
 
+		/// <summary>
+		/// Produces an identifier for the transaction.
+		/// </summary>
+		String TransactionId { get; }
+
 	}
 }

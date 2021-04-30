@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CxAuditTrailsDB\CxAuditTrailsDB.csproj" />
+    <ProjectReference Include="..\Extensions\Extensions.csproj" />
     <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
   </ItemGroup>
 

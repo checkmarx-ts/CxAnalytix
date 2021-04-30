@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.IO;
 using log4net;
+using CxAnalytix.Extensions;
 
 namespace CxAnalytix.CxAuditTrails
 {
@@ -58,7 +59,7 @@ namespace CxAnalytix.CxAuditTrails
 				count++;
 			}
 
-			_log.Debug($"Wrote {count} audit records.");
+			_log.Trace($"Wrote {count} audit records.");
 		}
 
 		public void CxDB_accesscontrol_AuditTrail(DateTime sinceDate, IOutputTransaction trx, IRecordRef record)

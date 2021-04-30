@@ -11,6 +11,7 @@ using CxAnalytix.Exceptions;
 using System.IO;
 using CxAnalytix.Utilities;
 using System.Runtime.CompilerServices;
+using CxAnalytix.Extensions;
 
 namespace CxAnalytix.Out.Log4NetOutput
 {
@@ -108,7 +109,7 @@ namespace CxAnalytix.Out.Log4NetOutput
             if (record == null || record.Count == 0)
                 return;
 
-            _log.DebugFormat("Logger for record type [{0}] staging record with {1} elements.", _recordType, record.Keys.Count);
+            _log.TraceFormat("Logger for record type [{0}] staging record with {1} elements.", _recordType, record.Keys.Count);
 
             var obj = JsonConvert.SerializeObject(record, _serSettings);
 

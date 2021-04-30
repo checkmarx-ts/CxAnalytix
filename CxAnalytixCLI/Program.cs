@@ -13,6 +13,7 @@ using ProjectFilter;
 using OutputBootstrapper;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
+[assembly: CxAnalytix.Extensions.LogTrace()]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile= "CxAnalytixCLI.log4net", Watch = true)]
 
 
