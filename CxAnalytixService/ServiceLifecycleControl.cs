@@ -92,7 +92,7 @@ namespace CxAnalytixService
 
             var restCtx = builder.Build();
 
-            _serviceTask = Task.Run(async () =>
+			_serviceTask = Task.Run(async () =>
             {
                 do
                 {
@@ -118,9 +118,13 @@ namespace CxAnalytixService
 
 					}
 					catch (ProcessFatalException pfe)
+					{
+						Fatal(pfe);
+						break;
+					}
+					catch (TypeInitializationException ex)
                     {
-                        _log.Error("Fatal exception caught, program ending.", pfe);
-                        new Task(() => Stop()).Start();
+                        Fatal(ex);
                         break;
                     }
                     catch (Exception ex)
@@ -161,7 +165,13 @@ namespace CxAnalytixService
 
         }
 
-        protected override void OnStop()
+		private void Fatal(Exception ex)
+		{
+			_log.Error("Fatal exception caught, program ending.", ex);
+			new Task(() => Stop()).Start();
+		}
+
+		protected override void OnStop()
         {
             _log.Info("Service is stopping due to stop request.");
             stopService();

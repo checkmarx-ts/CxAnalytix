@@ -72,8 +72,12 @@ namespace CxAnalytixDaemon
 					}
 					catch (ProcessFatalException pfe)
 					{
-						_log.Error("Fatal exception caught, program ending.", pfe);
-						Program._tokenSrc.Cancel();
+						Fatal(pfe);
+						break;
+					}
+					catch (TypeInitializationException ex)
+					{
+						Fatal(ex);
 						break;
 					}
 					catch (Exception ex)
@@ -113,6 +117,12 @@ namespace CxAnalytixDaemon
 			}, _cancelToken.Token);
 
 			return Task.CompletedTask;
+		}
+
+		private static void Fatal(Exception ex)
+		{
+			_log.Error("Fatal exception caught, program ending.", ex);
+			Program._tokenSrc.Cancel();
 		}
 
 		public Task StopAsync(CancellationToken cancellationToken)
