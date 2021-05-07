@@ -143,8 +143,8 @@ namespace CxRestClient.OSA
 
 				var beforeCount = osaScans.Count;
 
-				osaScans.AddRange(WebOperation.ExecuteGet<IEnumerable<Scan>>(
-				ctx.Json.CreateSastClient
+
+				var scans = WebOperation.ExecuteGet<IEnumerable<Scan>>(ctx.Json.CreateSastClient
 				, (response) =>
 				{
 					using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -167,7 +167,11 @@ namespace CxRestClient.OSA
 					}
 
 					return true;
-				}));
+				});
+
+
+				if (scans != null)
+					osaScans.AddRange(scans);
 
 
 				if (osaScans.Count == beforeCount)
