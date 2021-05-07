@@ -8,14 +8,17 @@
 		<Description>Exports static analysis and software composition results to a form suitable for use by data analytics platforms.</Description>
 		<RuntimeIdentifier>win7-x64</RuntimeIdentifier>
 		<RootNamespace>CxAnalytixService</RootNamespace>
+		<StartupObject>CxAnalytixService.Program</StartupObject>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<PlatformTarget>AnyCPU</PlatformTarget>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<PlatformTarget>AnyCPU</PlatformTarget>
 	</PropertyGroup>
 
 

@@ -2,12 +2,12 @@
 using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.Interfaces.Audit;
 using CxAnalytix.CxAuditTrails.DB;
-using System.Data.SqlClient;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using System.IO;
 using log4net;
 using CxAnalytix.Extensions;
+using Microsoft.Data.SqlClient;
 
 namespace CxAnalytix.CxAuditTrails
 {

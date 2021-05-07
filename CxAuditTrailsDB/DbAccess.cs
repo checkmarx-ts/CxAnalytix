@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Data.SqlClient;
 using CxAnalytix.CxAuditTrails.DB.Config;
 using CxAnalytix.Extensions;
 using log4net;
+using Microsoft.Data.SqlClient;
 
 namespace CxAnalytix.CxAuditTrails.DB
 {
