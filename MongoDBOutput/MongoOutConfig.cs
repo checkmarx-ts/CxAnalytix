@@ -17,7 +17,6 @@ namespace CxAnalytix.Out.MongoDBOutput
             }
         }
 
-
         [ConfigurationProperty("GeneratedShardKeys", IsDefaultCollection = false, IsRequired = false)]
         [ConfigurationCollection(typeof(ShardKeySpecConfig),
             AddItemName = "Spec")]

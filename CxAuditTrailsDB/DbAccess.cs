@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Data.SqlClient;
 using CxAnalytix.CxAuditTrails.DB.Config;
+using CxAnalytix.Extensions;
 using log4net;
+using Microsoft.Data.SqlClient;
 
 namespace CxAnalytix.CxAuditTrails.DB
 {
@@ -63,7 +64,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 
 		internal SqlDataReader FetchRecords (String db, String schema, String table, String cmdText, DateTime since)
 		{
-			_log.Debug($"FetchRecords: {db}.{schema}.{table} > {since}");
+			_log.Trace($"FetchRecords: {db}.{schema}.{table} > {since}");
 
 			if (IsDisabled)
 			{

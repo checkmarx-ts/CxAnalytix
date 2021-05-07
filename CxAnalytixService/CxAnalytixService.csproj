@@ -8,14 +8,17 @@
 		<Description>Exports static analysis and software composition results to a form suitable for use by data analytics platforms.</Description>
 		<RuntimeIdentifier>win7-x64</RuntimeIdentifier>
 		<RootNamespace>CxAnalytixService</RootNamespace>
+		<StartupObject>CxAnalytixService.Program</StartupObject>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<PlatformTarget>AnyCPU</PlatformTarget>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+		<PlatformTarget>AnyCPU</PlatformTarget>
 	</PropertyGroup>
 
 
@@ -30,8 +33,10 @@
 		<ProjectReference Include="..\CxAuditTrailsCrawler\CxAuditTrailsCrawler.csproj" />
 		<ProjectReference Include="..\CxRestClient\CxRestClient.csproj" />
 		<ProjectReference Include="..\Exceptions\Exceptions.csproj" />
+		<ProjectReference Include="..\Extensions\Extensions.csproj" />
 		<ProjectReference Include="..\Log4NetOutput\Log4NetOutput.csproj" />
 		<ProjectReference Include="..\MongoDBOutput\MongoDBOutput.csproj" />
+		<ProjectReference Include="..\OutputBootstrapper\OutputBootstrapper.csproj" />
 		<ProjectReference Include="..\ProjectFilter\ProjectFilter.csproj" />
 		<ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
 	</ItemGroup>
@@ -40,12 +45,8 @@
 	</ItemGroup>
 
   <Target Name="CopyConfigs" AfterTargets="Build">
-    <Copy SourceFiles="$(ProjectDir)../config_files/dotnet.exe.config;$(ProjectDir)../config_files/log.log4net"
-          DestinationFiles="$(TargetDir)/CxAnalytixService.exe.config;$(TargetDir)/CxAnalytixService.log4net"
-          />
-    <Copy SourceFiles="$(ProjectDir)../config_files/dotnet.exe.config;$(ProjectDir)../config_files/log.log4net"
-          DestinationFiles="$(PublishDir)/CxAnalytixService.exe.config;$(PublishDir)/CxAnalytixService.log4net"
-          />
+    <Copy SourceFiles="$(ProjectDir)../config_files/dotnet.exe.config;$(ProjectDir)../config_files/log.log4net" DestinationFiles="$(TargetDir)/CxAnalytixService.exe.config;$(TargetDir)/CxAnalytixService.log4net" />
+    <Copy SourceFiles="$(ProjectDir)../config_files/dotnet.exe.config;$(ProjectDir)../config_files/log.log4net" DestinationFiles="$(PublishDir)/CxAnalytixService.exe.config;$(PublishDir)/CxAnalytixService.log4net" />
   </Target>
 
 

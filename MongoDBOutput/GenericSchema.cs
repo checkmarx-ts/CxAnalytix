@@ -5,11 +5,11 @@ using System.Text;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
-	internal class GenericSchema : MongoDBOut, ISchema
+	internal class GenericSchema : MongoDBOut
 	{
 		private static ILog _log = LogManager.GetLogger(typeof(GenericSchema));
 
-		public bool VerifyOrCreateSchema()
+		public override bool VerifyOrCreateSchema()
 		{
 			return true;
 		}

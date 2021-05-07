@@ -1,4 +1,5 @@
 ﻿using CxAnalytix.Exceptions;
+using CxAnalytix.Extensions;
 using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -131,7 +132,7 @@ namespace CxRestClient.Utility
 				, onSuccess
 				, (client) =>
 				{
-					_log.Debug($"Executing GET operation at {url}");
+					_log.Trace($"Executing GET operation at {url}");
 					return client.GetAsync(url, token).Result;
 				}
 				, ctx
@@ -150,7 +151,7 @@ namespace CxRestClient.Utility
 				, onSuccess
 				, (client) =>
 				{
-					_log.Debug($"Executing POST operation at {url}");
+					_log.Trace($"Executing POST operation at {url}");
 
 					// HttpClient.SendAsync disposes of the payload on send
 					// this means if there is an error, a new instance is needed

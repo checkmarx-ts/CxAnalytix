@@ -173,6 +173,8 @@ namespace CxAnalytix.TransformLogic.Persistence
 		public IEnumerable<ScanDescriptor> GetScansForProject(int projectId)
 			=> _projectScanIndex[projectId];
 
+		public int GetScanCountForProject(int projectId) => _projectScanIndex[projectId].Count;
+
 
 		public bool AddScan(int projectId, String scanType, ScanProductType scanProduct, String scanId, DateTime finishTime)
 		{

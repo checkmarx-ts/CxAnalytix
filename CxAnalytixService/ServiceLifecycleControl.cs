@@ -4,15 +4,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using CxAnalytix.TransformLogic;
 using CxAnalytix.Configuration;
-using System.Reflection;
 using System;
 using CxRestClient;
-using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.AuditTrails.Crawler;
 using CxAnalytix.Exceptions;
 using ProjectFilter;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
+[assembly: CxAnalytix.Extensions.LogTrace()]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = "CxAnalytixService.log4net", Watch = true)]
 
 namespace CxAnalytixService
@@ -20,22 +19,7 @@ namespace CxAnalytixService
     class ServiceLifecycleControl : ServiceBase
     {
         private static ILog _log = LogManager.GetLogger(typeof(ServiceLifecycleControl));
-        private static IOutputFactory _outFactory = null;
 
-        static ServiceLifecycleControl()
-        {
-            try
-            {
-                Assembly outAssembly = Assembly.Load(Config.Service.OutputAssembly);
-                _log.DebugFormat("outAssembly loaded: {0}", outAssembly.FullName);
-                _outFactory = outAssembly.CreateInstance(Config.Service.OutputClass) as IOutputFactory;
-                _log.Debug("IOutputFactory instance created.");
-            }
-            catch (Exception ex)
-            {
-                _log.Error($"Error loading output factory [{Config.Service.OutputAssembly}].", ex);
-            }
-        }
 
         public ServiceLifecycleControl()
         {
@@ -106,7 +90,7 @@ namespace CxAnalytixService
 
             var restCtx = builder.Build();
 
-            _serviceTask = Task.Run(async () =>
+			_serviceTask = Task.Run(async () =>
             {
                 do
                 {
@@ -117,7 +101,7 @@ namespace CxAnalytixService
                     {
 						Transformer.DoTransform(Config.Service.ConcurrentThreads,
 						Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
-						restCtx, _outFactory,
+						restCtx,
 						new FilterImpl(Config.GetConfig<CxFilter>("ProjectFilterRegex").TeamRegex,
 						Config.GetConfig<CxFilter>("ProjectFilterRegex").ProjectRegex),
 						new RecordNames()
@@ -132,9 +116,13 @@ namespace CxAnalytixService
 
 					}
 					catch (ProcessFatalException pfe)
+					{
+						Fatal(pfe);
+						break;
+					}
+					catch (TypeInitializationException ex)
                     {
-                        _log.Error("Fatal exception caught, program ending.", pfe);
-                        new Task(() => Stop()).Start();
+                        Fatal(ex);
                         break;
                     }
                     catch (Exception ex)
@@ -150,7 +138,7 @@ namespace CxAnalytixService
                     try
                     {
                         if (!_cancelToken.Token.IsCancellationRequested)
-							AuditTrailCrawler.CrawlAuditTrails(_outFactory, _cancelToken.Token);
+							AuditTrailCrawler.CrawlAuditTrails(_cancelToken.Token);
                     }
                     catch (ProcessFatalException pfe)
                     {
@@ -175,7 +163,13 @@ namespace CxAnalytixService
 
         }
 
-        protected override void OnStop()
+		private void Fatal(Exception ex)
+		{
+			_log.Error("Fatal exception caught, program ending.", ex);
+			new Task(() => Stop()).Start();
+		}
+
+		protected override void OnStop()
         {
             _log.Info("Service is stopping due to stop request.");
             stopService();

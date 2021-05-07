@@ -8,28 +8,34 @@ using CxAnalytix.Exceptions;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
-    public sealed class MongoDBOutFactory : IOutputFactory
-    {
-        private static ILog _log = LogManager.GetLogger(typeof(MongoDBOutFactory));
+	public sealed class MongoDBOutFactory : IOutputFactory
+	{
+		private static ILog _log = LogManager.GetLogger(typeof(MongoDBOutFactory));
 
-        private static MongoOutConfig _outputConfig;
-        private static MongoConnectionConfig _conConfig;
-        private static MongoClient _client;
-        private static IMongoDatabase _db;
+		private static MongoOutConfig _outputConfig;
+		internal static MongoOutConfig OutConfig { get => _outputConfig; }
 
-        private static Dictionary<String, ISchema> _schemas = new Dictionary<string, ISchema>();
-
-        private class Dummy : IOutput
-        {
-            public void write(IDictionary<string, object> record)
-            {
-            }
-        }
+		private static MongoConnectionConfig _conConfig;
+		private static MongoClient _client;
+		internal static MongoClient Client { get => _client; }
 
 
-        static MongoDBOutFactory()
-        {
-            try
+		private static IMongoDatabase _db;
+
+		private static Dictionary<String, MongoDBOut> _schemas = new Dictionary<string, MongoDBOut>();
+		internal MongoDBOut this[String name] => _schemas[name];
+
+		private class Dummy : GenericSchema
+		{
+			public override void write(IClientSessionHandle session, IDictionary<string, object> record)
+			{
+			}
+		}
+
+
+		static MongoDBOutFactory()
+		{
+			try
 			{
 				_outputConfig = Config.GetConfig<MongoOutConfig>(MongoOutConfig.SECTION_NAME);
 				_conConfig = Config.GetConfig<MongoConnectionConfig>(MongoConnectionConfig.SECTION_NAME);
@@ -50,7 +56,6 @@ namespace CxAnalytix.Out.MongoDBOutput
 					_log.Warn($"Database {mu.DatabaseName} does not exist, it will be created.");
 
 				_db = _client.GetDatabase(mu.DatabaseName);
-
 
 				// It is a violation of OOP principles for this component to know about these records.  At some point the schema
 				// creation may be moved to an installer that initializes the DB prior to running the application.
@@ -73,11 +78,11 @@ namespace CxAnalytix.Out.MongoDBOutput
 					_outputConfig.ShardKeys[Config.Service.PolicyViolationsRecordName]));
 			}
 			catch (Exception ex)
-            {
-                _log.Error("Error initializing MongoDB connectivity.", ex);
+			{
+				_log.Error("Error initializing MongoDB connectivity.", ex);
 				_client = null;
-            }
-        }
+			}
+		}
 
 		private static MongoUrl GetMongoConnectionString()
 		{
@@ -102,26 +107,31 @@ namespace CxAnalytix.Out.MongoDBOutput
 			return mu;
 		}
 
-		public IOutput newInstance(string recordType)
+
+		public IOutputTransaction StartTransaction()
+		{
+			return new MongoOutputTransaction(this);
+		}
+
+		public IRecordRef RegisterRecord(string recordName)
 		{
 			if (_client == null)
 				throw new ProcessFatalException("The connection to MongoDB could not be established.");
 
-
 			lock (_schemas)
-				if (!_schemas.ContainsKey(recordType))
+				if (!_schemas.ContainsKey(recordName))
 				{
-					_schemas.Add(recordType, MongoDBOut.CreateInstance<GenericSchema>(_db, recordType, _outputConfig.ShardKeys[recordType]));
+					_schemas.Add(recordName, MongoDBOut.CreateInstance<GenericSchema>(_db, recordName, _outputConfig.ShardKeys[recordName]));
 
-					return _schemas[recordType];
+					return _schemas[recordName];
 				}
 				else
 				{
-					ISchema dest = _schemas[recordType];
+					var dest = _schemas[recordName];
 
 					if (!dest.VerifyOrCreateSchema())
 					{
-						_log.Warn($"Schema for {recordType} could not be verified or created, no data will be output for this record type.");
+						_log.Warn($"Schema for {recordName} could not be verified or created, no data will be output for this record type.");
 						return new Dummy();
 					}
 

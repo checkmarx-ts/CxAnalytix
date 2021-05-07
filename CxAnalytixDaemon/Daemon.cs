@@ -19,22 +19,6 @@ namespace CxAnalytixDaemon
 		private static ILog _log = LogManager.GetLogger(typeof(Daemon));
 		private CancellationTokenSource _cancelToken;
 		private Task _serviceTask;
-		private static IOutputFactory _outFactory = null;
-
-		static Daemon()
-		{
-			try
-			{
-				Assembly outAssembly = Assembly.Load(Config.Service.OutputAssembly);
-				_log.DebugFormat("outAssembly loaded: {0}", outAssembly.FullName);
-				_outFactory = outAssembly.CreateInstance(Config.Service.OutputClass) as IOutputFactory;
-				_log.Debug("IOutputFactory instance created.");
-			}
-			catch (Exception ex)
-			{
-				_log.Error($"Error loading output factory [{Config.Service.OutputAssembly}].", ex);
-			}
-		}
 
 
 		public void Dispose()
@@ -73,7 +57,7 @@ namespace CxAnalytixDaemon
 					{
 						Transformer.DoTransform(Config.Service.ConcurrentThreads,
 						Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
-						restCtx, _outFactory,
+						restCtx,
 						new FilterImpl(Config.GetConfig<CxFilter>("ProjectFilterRegex").TeamRegex,
 						Config.GetConfig<CxFilter>("ProjectFilterRegex").ProjectRegex),
 						new RecordNames()
@@ -88,8 +72,12 @@ namespace CxAnalytixDaemon
 					}
 					catch (ProcessFatalException pfe)
 					{
-						_log.Error("Fatal exception caught, program ending.", pfe);
-						Program._tokenSrc.Cancel();
+						Fatal(pfe);
+						break;
+					}
+					catch (TypeInitializationException ex)
+					{
+						Fatal(ex);
 						break;
 					}
 					catch (Exception ex)
@@ -105,7 +93,7 @@ namespace CxAnalytixDaemon
 					try
 					{
 						if (!cancellationToken.IsCancellationRequested)
-							AuditTrailCrawler.CrawlAuditTrails(_outFactory, _cancelToken.Token);
+							AuditTrailCrawler.CrawlAuditTrails(_cancelToken.Token);
 					}
 					catch (ProcessFatalException pfe)
 					{
@@ -129,6 +117,12 @@ namespace CxAnalytixDaemon
 			}, _cancelToken.Token);
 
 			return Task.CompletedTask;
+		}
+
+		private static void Fatal(Exception ex)
+		{
+			_log.Error("Fatal exception caught, program ending.", ex);
+			Program._tokenSrc.Cancel();
 		}
 
 		public Task StopAsync(CancellationToken cancellationToken)

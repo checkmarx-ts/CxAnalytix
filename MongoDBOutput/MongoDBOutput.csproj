@@ -16,9 +16,9 @@
 
 	<ItemGroup>
 		<PackageReference Include="log4net" Version="2.0.12" />
-		<PackageReference Include="MongoDB.Bson" Version="2.12.1" />
-		<PackageReference Include="MongoDB.Driver" Version="2.12.1" />
-		<PackageReference Include="MongoDB.Driver.Core" Version="2.12.1" />
+		<PackageReference Include="MongoDB.Bson" Version="2.12.2" />
+		<PackageReference Include="MongoDB.Driver" Version="2.12.2" />
+		<PackageReference Include="MongoDB.Driver.Core" Version="2.12.2" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -26,6 +26,7 @@
 		<ProjectReference Include="..\Exceptions\Exceptions.csproj" />
 		<ProjectReference Include="..\Extensions\Extensions.csproj" />
 		<ProjectReference Include="..\Interfaces\Interfaces.csproj" />
+		<ProjectReference Include="..\Utilities\Utilities.csproj" />
 	</ItemGroup>
 
 </Project>

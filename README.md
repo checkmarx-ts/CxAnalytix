@@ -31,6 +31,11 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 
 ## Version History
+* 1.2.5
+	* FEATURES
+		* Issue 52 - Transactional writes have been implemented as [Pseudo Transactions](https://github.com/checkmarx-ts/CxAnalytix/wiki/Pseudo-Transactions)
+	* BUG FIXES
+		* An issue with crawls aborting on SAST systems not licensed for OSA was re-introduced in 1.2.2 and has been fixed.
 * 1.2.4
 	* BUG FIXES
 		* Stability fix for cases where M&O did not return policy violations as expected

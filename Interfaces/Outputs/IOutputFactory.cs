@@ -11,11 +11,18 @@ namespace CxAnalytix.Interfaces.Outputs
     public interface IOutputFactory
     {
         /// <summary>
-        /// A factory method for making a new instance of <see cref="IOutput"/>
-        /// that can handle the particular record type.
+        /// Begins a transaction context to collect written records until such time
+        /// as they are to be committed as a single write.
         /// </summary>
-        /// <param name="recordType">A string indicating the record type.</param>
-        /// <returns></returns>
-        IOutput newInstance(String recordType);
+        /// <returns>An instance of a transaction context.</returns>
+        IOutputTransaction StartTransaction();
+
+        /// <summary>
+        /// Registers a record with a specific name.
+        /// </summary>
+        /// <param name="recordName">The name of the record</param>
+        /// <returns>A reference to the record that is used later to specify the record to which writes will occur.</returns>
+        IRecordRef RegisterRecord(String recordName);
+
     }
 }
