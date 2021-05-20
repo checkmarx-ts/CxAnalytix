@@ -1,6 +1,7 @@
 ﻿using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.Out.AMQPOutput.Config;
 using CxAnalytix.Utilities.DictFilters;
+using CxAnalytix.Extensions;
 using System;
 using System.Collections.Generic;
 using RabbitMQ.Client;
@@ -20,6 +21,9 @@ namespace CxAnalytix.Out.AMQPOutput
 		private String _exchange;
 		private String _topic;
 		private DictionaryFilter<String, object> _filter = null;
+		private Dictionary<String, String> _headers = null;
+
+		private static int MAX_ROUTING_KEY_SIZE = 255;
 
 		public RecordHandler(String recordName)
 		{
@@ -30,6 +34,7 @@ namespace CxAnalytix.Out.AMQPOutput
 			_exchange = cfg.Exchange;
 			_topic = recordName;
 			var record_cfg = cfg.Records[recordName];
+
 
 			if (record_cfg != null)
 			{
@@ -48,7 +53,15 @@ namespace CxAnalytix.Out.AMQPOutput
 
 					_filter = DictionaryFilterFactory.CreateFilter<string, object>(record_cfg.Filter.Mode, fnames);
 				}
-			}	
+
+
+				if (record_cfg.Headers != null)
+				{
+					_headers = new Dictionary<string, string>();
+					foreach (AmqpRecordHeaderConfig header in record_cfg.Headers)
+						_headers.Add(header.HeaderKey, header.HeaderValueSpec);
+				}
+			}
 		}
 
 
@@ -59,7 +72,19 @@ namespace CxAnalytix.Out.AMQPOutput
 			if (_filter != null)
 				dict = _filter.Filter(record);
 
-			channel.BasicPublish(_exchange, _topic, null, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict, Defs.serializerSettings) ) );
+			var props = channel.CreateBasicProperties();
+			props.ContentType = "application/json";
+			props.Type = _recordName;
+
+			if (_headers != null)
+			{
+				props.Headers = new Dictionary<String, Object>();
+
+				foreach (var headerSpec in _headers)
+					props.Headers.Add(headerSpec.Key, record.ComposeString(headerSpec.Value));
+			}
+
+			channel.BasicPublish(_exchange, record.ComposeString(_topic).Truncate(MAX_ROUTING_KEY_SIZE), props, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict, Defs.serializerSettings) ) );
 		}
 	}
 }

@@ -38,6 +38,13 @@ namespace CxAnalytix.Out.AMQPOutput.Config
 			set => base["Filter"] = value;
 		}
 
+		[ConfigurationProperty("MessageHeaders", IsRequired = false, DefaultValue = null)]
+		[ConfigurationCollection(typeof(AmqpRecordHeaderConfig), AddItemName = "Header")]
+		public AmqpRecordHeaderCollection Headers
+		{
+			get => (AmqpRecordHeaderCollection)base["MessageHeaders"];
+			set => base["MessageHeaders"] = value;
+		}
 
 
 
