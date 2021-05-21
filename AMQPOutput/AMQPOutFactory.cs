@@ -14,7 +14,7 @@ namespace CxAnalytix.Out.AMQPOutput
 		private static ILog _log = LogManager.GetLogger(typeof(AMQPOutFactory));
 
 		private static ConnectionFactory _amqpFactory = new ConnectionFactory();
-		private static IConnection _connection;
+		private IConnection _connection;
 
 		public AMQPOutFactory()
 		{
