@@ -33,11 +33,6 @@ namespace CxAnalytix.Out.AMQPOutput.Config
 				if (!SSLOpts.ElementInformation.IsPresent)
 					return new SslOption() { Enabled = false };
 				
-				var o = SSLOpts;
-
-				var t1 = ((SSLOpts.CertChainError) ? (System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors) : (0));
-				var t2 = ((SSLOpts.CertNameMistmatch) ? (System.Net.Security.SslPolicyErrors.RemoteCertificateNameMismatch) : (0));
-
 				var retVal = new SslOption()
 				{
 					Version = System.Security.Authentication.SslProtocols.None,
