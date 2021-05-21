@@ -31,6 +31,9 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 
 ## Version History
+* 1.3.0
+	* FEATURES
+		* Issue 10 - Output can now be routed to AMQP endpoints
 * 1.2.5
 	* FEATURES
 		* Issue 52 - Transactional writes have been implemented as [Pseudo Transactions](https://github.com/checkmarx-ts/CxAnalytix/wiki/Pseudo-Transactions)
