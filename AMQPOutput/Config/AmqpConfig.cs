@@ -18,10 +18,6 @@ namespace CxAnalytix.Out.AMQPOutput.Config
 		}
 
 
-		// TODO: Default exchange binding args
-
-
-
 		[ConfigurationProperty("RecordSpecs", IsDefaultCollection = false, IsRequired = false)]
 		[ConfigurationCollection(typeof(AmqpRecordConfig), AddItemName = "Record")]
 		public AmqpRecordConfigCollection Records
