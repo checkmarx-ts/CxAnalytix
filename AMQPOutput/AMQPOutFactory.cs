@@ -16,7 +16,7 @@ namespace CxAnalytix.Out.AMQPOutput
 		private static ConnectionFactory _amqpFactory = new ConnectionFactory();
 		private static IConnection _connection;
 
-		static AMQPOutFactory()
+		public AMQPOutFactory()
 		{
 			var endpoints = Configuration.Config.GetConfig<AmqpConnectionConfig> (AmqpConnectionConfig.SECTION_NAME).Endpoints;
 
