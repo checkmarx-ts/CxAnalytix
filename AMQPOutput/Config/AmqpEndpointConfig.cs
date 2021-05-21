@@ -8,10 +8,6 @@ namespace CxAnalytix.Out.AMQPOutput.Config
 {
 	public class AmqpEndpointConfig : ConfigurationElement
 	{
-
-
-		// TODO: Add SSL options
-
 		[ConfigurationProperty("AmqpUri", IsRequired = true)]
 		public String AmqpUri
 		{
