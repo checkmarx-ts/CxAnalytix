@@ -24,6 +24,7 @@ namespace CxAnalytix.Out.AMQPOutput
 		private Dictionary<String, String> _headers = null;
 
 		private static int MAX_ROUTING_KEY_SIZE = 255;
+		private static String GENERATION_KEY = "Generation";
 
 		public RecordHandler(String recordName)
 		{
@@ -59,7 +60,8 @@ namespace CxAnalytix.Out.AMQPOutput
 				{
 					_headers = new Dictionary<string, string>();
 					foreach (AmqpRecordHeaderConfig header in record_cfg.Headers)
-						_headers.Add(header.HeaderKey, header.HeaderValueSpec);
+						if (header.HeaderKey.CompareTo(GENERATION_KEY) != 0)
+							_headers.Add(header.HeaderKey, header.HeaderValueSpec);
 				}
 			}
 		}
@@ -77,11 +79,12 @@ namespace CxAnalytix.Out.AMQPOutput
 			props.Type = _recordName;
 
 			props.Headers = new Dictionary<String, Object>();
-			props.Headers.Add("Generation", 0);
+			props.Headers.Add(GENERATION_KEY, 0);
 
 			if (_headers != null)
 				foreach (var headerSpec in _headers)
 					props.Headers.Add(headerSpec.Key, record.ComposeString(headerSpec.Value));
+
 
 			channel.BasicPublish(_exchange, record.ComposeString(_topic).Truncate(MAX_ROUTING_KEY_SIZE), props, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict, Defs.serializerSettings) ) );
 		}
