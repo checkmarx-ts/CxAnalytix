@@ -76,13 +76,12 @@ namespace CxAnalytix.Out.AMQPOutput
 			props.ContentType = "application/json";
 			props.Type = _recordName;
 
-			if (_headers != null)
-			{
-				props.Headers = new Dictionary<String, Object>();
+			props.Headers = new Dictionary<String, Object>();
+			props.Headers.Add("Generation", 0);
 
+			if (_headers != null)
 				foreach (var headerSpec in _headers)
 					props.Headers.Add(headerSpec.Key, record.ComposeString(headerSpec.Value));
-			}
 
 			channel.BasicPublish(_exchange, record.ComposeString(_topic).Truncate(MAX_ROUTING_KEY_SIZE), props, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict, Defs.serializerSettings) ) );
 		}
