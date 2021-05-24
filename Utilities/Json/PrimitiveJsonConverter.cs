@@ -1,12 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using System.Runtime.CompilerServices;
-using System.Text;
 
-namespace CxAnalytix.Out.Log4NetOutput
+namespace CxAnalytix.Utilities.Json
 {
-    class PrimitiveJsonConverter : JsonConverter
+    public class PrimitiveJsonConverter : JsonConverter
     {
         public override bool CanConvert(Type objectType)
         {
