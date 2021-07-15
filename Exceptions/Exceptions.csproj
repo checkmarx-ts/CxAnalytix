@@ -4,6 +4,7 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <RootNamespace>CxAnalytix.Exceptions</RootNamespace>
     <Nullable>enable</Nullable>
+    <Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
   </PropertyGroup>
 
   <ItemGroup>
