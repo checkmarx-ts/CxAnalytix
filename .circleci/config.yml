@@ -75,6 +75,7 @@ jobs:
           name: "Publish Images On Dockerhub"
           command: |
             mkdir -p tmp/docker
+            ls -lR
             unzip CxAnalytix-*.linux-x64.zip -d tmp/docker
             docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io
             docker build -f Dockerfile -t ${DOCKER_REPO}:${CIRCLE_TAG} -t ${DOCKER_REPO}:${CIRCLE_SHA1} -t ${DOCKER_REPO} tmp/docker
