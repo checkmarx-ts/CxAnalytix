@@ -110,7 +110,10 @@ namespace CxAnalytix.Out.MongoDBOutput
 
 		public IOutputTransaction StartTransaction()
 		{
-			return new MongoOutputTransaction(this);
+			if (Config.Service.EnablePseudoTransactions)
+				return new MongoOutputTransaction(this);
+			else
+				return new MongoOutputNoTransaction(this);
 		}
 
 		public IRecordRef RegisterRecord(string recordName)
