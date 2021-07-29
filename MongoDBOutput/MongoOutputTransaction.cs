@@ -15,20 +15,17 @@ using System.Threading.Tasks;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
-	internal class MongoOutputTransaction : IOutputTransaction
+	internal class MongoOutputTransaction : MongoOutputBase
 	{
 		private static ILog _log = LogManager.GetLogger(typeof(MongoOutputTransaction));
 
-		private Guid _id = Guid.NewGuid();
 
-		private MongoDBOutFactory _inst;
 		private bool _committed = false;
 		private DateTime _trxStarted = DateTime.MinValue;
 		private long _recordCount = 0;
 		private Dictionary<String, LinkedList<IndexDescriptor>> _index = new Dictionary<string, LinkedList<IndexDescriptor>>();
 		private SharedMemoryStream _cache = new SharedMemoryStream(2048000);
 
-		public string TransactionId => _id.ToString();
 
 		private class IndexDescriptor
 		{
@@ -111,25 +108,24 @@ namespace CxAnalytix.Out.MongoDBOutput
 
 
 
-		public MongoOutputTransaction(MongoDBOutFactory instance)
+		internal MongoOutputTransaction(MongoDBOutFactory instance) : base(instance)
 		{
-			_inst = instance;
 			_trxStarted = DateTime.Now;
-			_log.Debug($"Pseudo Transaction START at {_trxStarted}: {_id}");
+			_log.Debug($"Pseudo Transaction START at {_trxStarted}: {TransactionId}");
 		}
 
 		[MethodImpl(MethodImplOptions.Synchronized)]
-		public bool Commit()
+		public override bool Commit()
 		{
 			_committed = true;
 			var end = DateTime.Now;
-			_log.Debug($"Pseudo Transaction COMMIT at {end} elapsed time {end.Subtract(_trxStarted).TotalMilliseconds}ms for {_id} [{_recordCount} records]");
+			_log.Debug($"Pseudo Transaction COMMIT at {end} elapsed time {end.Subtract(_trxStarted).TotalMilliseconds}ms for {TransactionId} [{_recordCount} records]");
 
 
 
 			Parallel.ForEach(_index.Keys, (recordName) => {
 
-				var outWriter = _inst[recordName];
+				var outWriter = this[recordName];
 
 				using (var session = MongoDBOutFactory.Client.StartSession())
 				{
@@ -144,17 +140,16 @@ namespace CxAnalytix.Out.MongoDBOutput
 			return true;
 		}
 
-		public void Dispose()
+		public override void Dispose()
 		{
-			_log.Trace($"Disposing of pseudo transaction {_id}: {_recordCount} records {((_committed) ? ("committed.") : ("discarded.")) } ");
-
+			_log.Trace($"Disposing of pseudo transaction {TransactionId}: {_recordCount} records {((_committed) ? ("committed.") : ("discarded.")) } ");
 		}
 
 
 		[MethodImpl(MethodImplOptions.Synchronized)]
-		public void write(IRecordRef which, IDictionary<string, object> record)
+		public override void write(IRecordRef which, IDictionary<string, object> record)
 		{
-			MongoDBOut outInst = _inst[which.RecordName];
+			var outInst = this[which.RecordName];
 
 			if (outInst == null)
 				throw new UnrecoverableOperationException($"Record reference for Mongo record {which.RecordName} is invalid.");
