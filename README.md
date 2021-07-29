@@ -31,6 +31,13 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 
 ## Version History
+* 1.3.1
+	* FEATURES
+		* Platform-specific tarballs are now created.  This is to address the dynamic loading of DPAPI that .Net Core apparently doesn't handle well in cross-platform builds.
+		* Pseudo-transactions are now off by default.
+		* New data fields added to scan summary and scan detail records.
+	* BUG FIXES
+		* Issue 85 - Malformed AMQP config written on first run, preventing subsequent runs without removing the malformed config and commenting out the AMQP config class references.
 * 1.3.0
 	* FEATURES
 		* Issue 10 - Output can now be routed to AMQP endpoints

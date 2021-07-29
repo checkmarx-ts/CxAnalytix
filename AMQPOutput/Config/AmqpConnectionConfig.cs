@@ -7,7 +7,7 @@ using System.Text;
 namespace CxAnalytix.Out.AMQPOutput.Config
 {
 
-	[SecureConfigSection]
+	[SecureConfigSection(SensitiveStringProp = "Password")]
 	public class AmqpConnectionConfig : EnvAwareConfigurationSection
 	{
 

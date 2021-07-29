@@ -6,10 +6,10 @@ using System.Text;
 
 namespace CxAnalytix.Out.Log4NetOutput
 {
-	internal class LoggerOutTransaction : IOutputTransaction
+	internal class LoggerOutTransaction<T> : IOutputTransaction where T : LoggerOut
 	{
 
-		private Dictionary<String, LoggerOut> _loggers = new Dictionary<string, LoggerOut>();
+		private Dictionary<String, T> _loggers = new Dictionary<string, T>();
 		private HashSet<String> _records;
 		private Guid _id = Guid.NewGuid ();
 
@@ -40,7 +40,7 @@ namespace CxAnalytix.Out.Log4NetOutput
 				throw new UnrecoverableOperationException($"Attempting to write to unregistered record {which.RecordName}");
 
 			if (!_loggers.ContainsKey(which.RecordName))
-				_loggers.Add(which.RecordName, new LoggerOut(which.RecordName) );
+				_loggers.Add(which.RecordName, (T)Activator.CreateInstance(typeof(T), new object[] { which.RecordName } ) );
 
 			_loggers[which.RecordName].stage(record);
 		}

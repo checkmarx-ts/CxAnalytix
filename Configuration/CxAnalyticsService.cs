@@ -14,6 +14,14 @@ namespace CxAnalytix.Configuration
 
         public static readonly String SECTION_NAME = "CxAnalyticsService";
 
+        [ConfigurationProperty("EnablePseudoTransactions", IsRequired = false, DefaultValue = false)]
+        public bool EnablePseudoTransactions
+        {
+            get => (bool)this["EnablePseudoTransactions"];
+            set { this["EnablePseudoTransactions"] = value; }
+        }
+
+
         [ConfigurationProperty("InstanceId", IsRequired = false)]
         public String InstanceIdentifier
         {
