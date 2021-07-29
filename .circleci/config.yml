@@ -37,10 +37,11 @@ jobs:
           name: Build & Package
           command: |
             export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
-            dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts --no-self-contained
-            mkdir tmp
-            python .circleci/zip.py --output "tmp/CxAnalytix-${VERSION}-${CIRCLE_BUILD_NUM}.zip" --input artifacts
-            cp Dockerfile tmp/Dockerfile
+            dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c ReleaseWindows -o artifacts/win-x64 -r win-x64
+            dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c ReleaseLinux -o artifacts/linux-x64 -r linux-x64
+            mkdir -p tmp
+            python .circleci/zip.py --output "tmp/CxAnalytix${VERSION}-${CIRCLE_BUILD_NUM}.win-x64.zip" --input artifacts/win-x64
+            python .circleci/zip.py --output "tmp/CxAnalytix${VERSION}-${CIRCLE_BUILD_NUM}.linux-x64.zip" --input artifacts/linux-x64
       - persist_to_workspace:
           root: tmp
           paths:
@@ -72,11 +73,10 @@ jobs:
       - run:
           name: "Publish Images On Dockerhub"
           command: |
-            cd tmp
-            mv CxAnalytix-*.zip CxAnalytix.zip
-            unzip CxAnalytix.zip
+            mkdir -p tmp/docker
+            unzip CxAnalytix-*.linux-x64.zip -d tmp/docker
             docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io
-            docker build -t ${DOCKER_REPO}:${CIRCLE_TAG} -t ${DOCKER_REPO}:${CIRCLE_SHA1} -t ${DOCKER_REPO} .
+            docker build -f Dockerfile -t ${DOCKER_REPO}:${CIRCLE_TAG} -t ${DOCKER_REPO}:${CIRCLE_SHA1} -t ${DOCKER_REPO} tmp/docker
             docker push ${DOCKER_REPO}
 
 workflows:

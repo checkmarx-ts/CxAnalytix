@@ -1,6 +1,5 @@
 param(
 [String]$OutLoc="artifacts",
-[String]$BuildConfig="Release",
 [String]$Version="",
 [String]$Build="",
 [Switch]$Docker,
@@ -27,7 +26,7 @@ if ($dir -eq "" )
 	$OutLoc = (Get-Location).Path + "\" + $OutLoc
 }
 
-$OutLoc = $OutLoc + "\" + $BuildConfig
+$OutLoc = $OutLoc + "\"
 
 if ($Clean -AND (Test-Path $OutLoc) )
 {
@@ -40,12 +39,13 @@ Write-Host "Output Directory: $OutLoc"
 
 if ((-NOT $Docker) -AND (Get-Command "dotnet.exe" -ErrorAction SilentlyContinue) )
 {
-	Write-Host "Building [$BuildConfig] using .Net Core"
-	dotnet publish .\CxAnalytix.sln -p:VersionPrefix=${Version} --version-suffix $Build -o $OutLoc -c $BuildConfig --no-self-contained
+	Write-Host "Building using .Net Core on the local machine"
+	dotnet publish .\CxAnalytix.sln -p:VersionPrefix=${Version} --version-suffix $Build -o $OutLoc/win-x64 -c ReleaseWindows -r win-x64
+	dotnet publish .\CxAnalytix.sln -p:VersionPrefix=${Version} --version-suffix $Build -o $OutLoc/linux-x64 -c ReleaseLinux -r linux-x64
 }
 elseif (Get-Command "docker.exe" -ErrorAction SilentlyContinue)
 {
-	Write-Host "Building [$BuildConfig] using .Net Core on Docker"
+	Write-Host "Building using .Net Core on Docker"
 	if (-NOT (Test-Path $OutLoc) )
 	{
 		New-Item -Path $OutLoc -Type "dir" | Out-Null
@@ -53,7 +53,8 @@ elseif (Get-Command "docker.exe" -ErrorAction SilentlyContinue)
 	
 	docker pull mcr.microsoft.com/dotnet/sdk:3.1
 	docker run --mount type=bind,src=${OutLoc},target=/artifacts --mount type=bind,src=${pwd},target=/mnt -it mcr.microsoft.com/dotnet/sdk:3.1 bash -c "cd /mnt && dotnet test"
-	docker run --mount type=bind,src=${OutLoc},target=/artifacts --mount type=bind,src=${pwd},target=/mnt -it mcr.microsoft.com/dotnet/sdk:3.1 bash -c "cd /mnt && dotnet publish CxAnalytix.sln -p:VersionPrefix=${Version} --version-suffix ${Build} -o /artifacts -c ${BuildConfig} --no-self-contained"
+	docker run --mount type=bind,src=${OutLoc},target=/artifacts --mount type=bind,src=${pwd},target=/mnt -it mcr.microsoft.com/dotnet/sdk:3.1 bash -c "cd /mnt && dotnet publish CxAnalytix.sln -p:VersionPrefix=${Version} --version-suffix ${Build} -o /artifacts/win-x64 -c ReleaseWindows -r win-x64"
+	docker run --mount type=bind,src=${OutLoc},target=/artifacts --mount type=bind,src=${pwd},target=/mnt -it mcr.microsoft.com/dotnet/sdk:3.1 bash -c "cd /mnt && dotnet publish CxAnalytix.sln -p:VersionPrefix=${Version} --version-suffix ${Build} -o /artifacts/linux-x64 -c ReleaseLinux -r linux-x64"
 	
 	
 

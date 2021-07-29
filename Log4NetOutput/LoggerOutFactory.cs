@@ -25,7 +25,11 @@ namespace CxAnalytix.Out.Log4NetOutput
 
 		public IOutputTransaction StartTransaction()
 		{
-			return new LoggerOutTransaction(_recs);
+			if (Configuration.Config.Service.EnablePseudoTransactions)
+				return new LoggerOutTransaction<TransactionalLoggerOut>(_recs);
+			else
+				return new LoggerOutTransaction<LoggerOut>(_recs);
 		}
+
 	}
 }
