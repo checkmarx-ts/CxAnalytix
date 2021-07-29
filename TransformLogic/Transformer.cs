@@ -412,7 +412,7 @@ namespace CxAnalytix.TransformLogic
 						// Add to crawl state.
 						if (_log.IsTraceEnabled())
 							_log.Trace($"OSA scan record: {s}");
-						_state.AddScan(s.ProjectId, "Composition", ScanProductType.SCA, s.ScanId, s.FinishTime);
+						_state.AddScan(s.ProjectId, "Composition", ScanProductType.SCA, s.ScanId, s.FinishTime, "N/A");
 						ScaScanCache.TryAdd(s.ScanId, s);
 					}
 

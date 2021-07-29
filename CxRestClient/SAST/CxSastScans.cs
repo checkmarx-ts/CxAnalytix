@@ -89,7 +89,7 @@ namespace CxRestClient.SAST
             [JsonProperty(PropertyName = "engineServer")]
             internal Dictionary<String, Object> engine { get; set; }
 
-            public String Engine { get => (engine != null) ? (engine["name"] as String) : ("NotSpecified") }
+            public String Engine { get => (engine != null) ? (engine["name"] as String) : ("NotSpecified"); }
 
 
             public override string ToString()
