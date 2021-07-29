@@ -74,6 +74,7 @@ jobs:
       - run:
           name: "Publish Images On Dockerhub"
           command: |
+            ls -lr ..
             mkdir -p tmp/docker
             unzip tmp/CxAnalytix*.linux-x64.zip -d tmp/docker
             docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io
@@ -98,14 +99,14 @@ workflows:
                 ignore: /.*/
           requires:
               - package
-      - docker-push:
-          filters:
-              tags:
-                only: /^v.*/
-              branches:
-                ignore: /.*/
-          requires:
-              - package      
+      # - docker-push:
+          # filters:
+              # tags:
+                # only: /^v.*/
+              # branches:
+                # ignore: /.*/
+          # requires:
+              # - package      
   ci:
     jobs:
       - unit-test
