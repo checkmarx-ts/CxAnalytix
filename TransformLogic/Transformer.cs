@@ -401,7 +401,7 @@ namespace CxAnalytix.TransformLogic
 						// Add to crawl state.
 						if (_log.IsTraceEnabled())
 							_log.Trace($"SAST scan record: {s}");
-						_state.AddScan(s.ProjectId, s.ScanType, ScanProductType.SAST, s.ScanId, s.FinishTime);
+						_state.AddScan(s.ProjectId, s.ScanType, ScanProductType.SAST, s.ScanId, s.FinishTime, s.Engine);
 						SastScanCache.TryAdd(s.ScanId, s);
 					}
 
@@ -744,6 +744,16 @@ namespace CxAnalytix.TransformLogic
 							curResultRec.Add("State", xr.GetAttribute("state"));
 							curResultRec.Add("Remark", xr.GetAttribute("Remark"));
 							curResultRec.Add("ResultDeepLink", xr.GetAttribute("DeepLink"));
+
+							try
+							{
+								curResultRec.Add("FirstDetectionDate", DateTime.Parse(xr.GetAttribute("DetectionDate")) );
+							}
+							catch (Exception)
+							{
+								// Don't output it if there is a parse exception.
+							}
+
 							continue;
 						}
 
@@ -889,6 +899,7 @@ namespace CxAnalytix.TransformLogic
 			flat.Add("ReportCreationTime", scanRecord.ReportCreateTime);
 			flat.Add("ScanComments", scanRecord.Comments);
 			flat.Add("SourceOrigin", scanRecord.SourceOrigin);
+			flat.Add("ScanProcessingEngine", scanRecord.Engine);
 			foreach (var sev in scanRecord.SeverityCounts.Keys)
 				flat.Add(sev, scanRecord.SeverityCounts[sev]);
 

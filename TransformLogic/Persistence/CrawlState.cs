@@ -176,7 +176,7 @@ namespace CxAnalytix.TransformLogic.Persistence
 		public int GetScanCountForProject(int projectId) => _projectScanIndex[projectId].Count;
 
 
-		public bool AddScan(int projectId, String scanType, ScanProductType scanProduct, String scanId, DateTime finishTime)
+		public bool AddScan(int projectId, String scanType, ScanProductType scanProduct, String scanId, DateTime finishTime, String engine)
 		{
 			if (!_confirmed)
 				throw new InvalidOperationException("The crawl state has not yet been confirmed.");
@@ -208,7 +208,9 @@ namespace CxAnalytix.TransformLogic.Persistence
 					ScanType = scanType,
 					ScanProduct = scanProduct,
 					ScanId = scanId,
-					FinishedStamp = finishTime
+					FinishedStamp = finishTime,
+					Engine = engine
+
 				};
 
 				if (!_scans.TryAdd(scanId, descriptor))

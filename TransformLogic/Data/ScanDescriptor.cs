@@ -59,6 +59,8 @@ namespace CxAnalytix.TransformLogic.Data
         public String Comments { get; set; }
         public String SourceOrigin { get; set; }
 
+        public String Engine { get; set; }
+
         /// <summary>
         /// Increases the count of a severity with a given name.
         /// </summary>

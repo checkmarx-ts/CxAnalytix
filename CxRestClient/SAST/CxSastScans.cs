@@ -86,6 +86,12 @@ namespace CxRestClient.SAST
             [JsonProperty(PropertyName = "scanRiskSeverity")]
             public int ScanRiskSeverity { get; internal set; }
 
+            [JsonProperty(PropertyName = "engineServer")]
+            internal Dictionary<String, Object> engine { get; set; }
+
+            public String Engine { get => (engine != null) ? (engine["name"] as String) : ("NotSpecified") }
+
+
             public override string ToString()
             {
                 return JsonConvert.SerializeObject(this, Formatting.None);
