@@ -36,7 +36,7 @@ jobs:
       - run:
           name: Build & Package - Windows
           command: |
-            export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
+            export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/(v|pr)(.+)/\1/g')
             dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c ReleaseWindows -o artifacts/win-x64 -r win-x64
             mkdir -p tmp
             python .circleci/zip.py --output "tmp/CxAnalytix${VERSION}-${CIRCLE_BUILD_NUM}.win-x64.zip" --input artifacts/win-x64
@@ -53,7 +53,7 @@ jobs:
       - run:
           name: Build & Package - Linux
           command: |
-            export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
+            export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/(v|pr)(.+)/\1/g')
             dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c ReleaseLinux -o artifacts/linux-x64 -r linux-x64
             mkdir -p tmp
             python .circleci/zip.py --output "tmp/CxAnalytix${VERSION}-${CIRCLE_BUILD_NUM}.linux-x64.zip" --input artifacts/linux-x64
@@ -61,6 +61,21 @@ jobs:
           root: tmp
           paths:
             - ./*
+
+
+  publish-github-pre-release:
+    docker:
+      - image: circleci/golang:1.9
+    steps:
+      - attach_workspace:
+          at: tmp
+      - run:
+          name: "Publish Release on GitHub"
+          command: |
+            go get github.com/tcnksm/ghr
+            BODY=$(sha256sum tmp/*)
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256:<BR>${BODY}" -delete -prerelease -replace ${CIRCLE_TAG} tmp
+
 
   publish-github-release:
     docker:
@@ -73,9 +88,9 @@ jobs:
           command: |
             go get github.com/tcnksm/ghr
             BODY=$(sha256sum tmp/*)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256:<BR>${BODY}" -replace ${CIRCLE_TAG} tmp
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256:<BR>${BODY}" -delete -replace ${CIRCLE_TAG} tmp
 
-  docker-push:
+  docker-push-release:
     docker:
       - image: docker:20-dind
         environment:
@@ -87,9 +102,26 @@ jobs:
       - run:
           name: "Push Docker image to GitHub packages"
           command: |
-            ls -lR
             set
-            which curl
+            mkdir -p docker
+            unzip tmp/CxAnalytix*.linux-x64.zip -d docker
+            docker login -u ${GITHUB_USER} -p ${GITHUB_TOKEN} docker.pkg.github.com
+            docker build -f Dockerfile -t ${DOCKER_REPO}:${CIRCLE_TAG} -t ${DOCKER_REPO}:${CIRCLE_SHA1} -t ${DOCKER_REPO} docker
+            docker push ${DOCKER_REPO}
+
+  docker-push-pre-release:
+    docker:
+      - image: docker:20-dind
+        environment:
+          DOCKER_REPO: docker.pkg.github.com/checkmarx-ts/cxanalytix-docker/cxanalytix
+    steps:
+      - attach_workspace:
+          at: tmp
+      - setup_remote_docker
+      - run:
+          name: "Push Docker image to GitHub packages"
+          command: |
+            set
             mkdir -p docker
             unzip tmp/CxAnalytix*.linux-x64.zip -d docker
             docker login -u ${GITHUB_USER} -p ${GITHUB_TOKEN} docker.pkg.github.com
@@ -103,13 +135,13 @@ workflows:
       - package-win:
           filters:
               tags:
-                only: /^v.*/
+                only: /^(v|pr).*/
               branches:
                 ignore: /.*/
       - package-linux:
           filters:
               tags:
-                only: /^v.*/
+                only: /^(v|pr).*/
               branches:
                 ignore: /.*/
       - publish-github-release:
@@ -121,10 +153,27 @@ workflows:
           requires:
               - package-win
               - package-linux
-      - docker-push:
+      - publish-github-pre-release:
+          filters:
+              tags:
+                only: /^pr.*/
+              branches:
+                ignore: /.*/
+          requires:
+              - package-win
+              - package-linux
+      - docker-push-release:
           filters:
               tags:
                 only: /^v.*/
+              branches:
+                ignore: /.*/
+          requires:
+              - package-linux      
+      - docker-push-pre-release:
+          filters:
+              tags:
+                only: /^pr.*/
               branches:
                 ignore: /.*/
           requires:
