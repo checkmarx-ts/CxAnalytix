@@ -98,7 +98,7 @@ jobs:
     docker:
       - image: docker:20-dind
         environment:
-          DOCKER_REPO: docker.pkg.github.com/checkmarx-ts/cxanalytix
+          DOCKER_REPO: docker.pkg.github.com/checkmarx-ts/cxanalytix/cxanalytix
     steps:
       - checkout 
       - attach_workspace:
@@ -118,7 +118,7 @@ jobs:
     docker:
       - image: docker:20-dind
         environment:
-          DOCKER_REPO: docker.pkg.github.com/checkmarx-ts/cxanalytix
+          DOCKER_REPO: docker.pkg.github.com/checkmarx-ts/cxanalytix/cxanalytix
     steps:
       - checkout 
       - attach_workspace:
