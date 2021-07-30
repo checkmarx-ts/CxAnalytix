@@ -76,7 +76,7 @@ jobs:
             pushd tmp
             BODY=$(sha256sum *)
             popd
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256:<BR>${BODY}" -delete -prerelease -replace ${CIRCLE_TAG} tmp
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256:<BR>${BODY}" -delete -prerelease ${CIRCLE_TAG} tmp
 
 
   publish-github-release:
@@ -92,13 +92,13 @@ jobs:
             pushd tmp
             BODY=$(sha256sum *)
             popd
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256:<BR>${BODY}" -delete -replace ${CIRCLE_TAG} tmp
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256:<BR>${BODY}" -delete ${CIRCLE_TAG} tmp
 
   docker-push-release:
     docker:
       - image: docker:20-dind
         environment:
-          DOCKER_REPO: docker.pkg.github.com/checkmarx-ts/cxanalytix-docker/cxanalytix
+          DOCKER_REPO: docker.pkg.github.com/checkmarx-ts/cxanalytix
     steps:
       - checkout 
       - attach_workspace:
@@ -118,7 +118,7 @@ jobs:
     docker:
       - image: docker:20-dind
         environment:
-          DOCKER_REPO: docker.pkg.github.com/checkmarx-ts/cxanalytix-docker/cxanalytix
+          DOCKER_REPO: docker.pkg.github.com/checkmarx-ts/cxanalytix
     steps:
       - checkout 
       - attach_workspace:
