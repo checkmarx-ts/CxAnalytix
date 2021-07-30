@@ -59,7 +59,7 @@ jobs:
             go get github.com/tcnksm/ghr
             cd tmp
             BODY=$(sha256sum *)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256: ${BODY}" -replace ${CIRCLE_TAG} .
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256: ${BODY}" ${CIRCLE_TAG} .
 
   docker-push:
     docker:
