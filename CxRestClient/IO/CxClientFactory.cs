@@ -22,16 +22,16 @@ namespace CxRestClient.IO
         private CxRestContext Context { get; set; }
         private String MediaType { get; set; }
 
-        public CxRestClient CreateSastClient()
+        public CxRestClient CreateSastClient(String apiVersion)
         {
             return new CxRestClient(new System.Net.Http.Headers.AuthenticationHeaderValue(Context.SastToken.TokenType,
-                Context.SastToken.Token), MediaType);
+                Context.SastToken.Token), MediaType, apiVersion);
         }
 
-        public CxRestClient CreateMnoClient()
+        public CxRestClient CreateMnoClient(String apiVersion)
         {
             return new CxRestClient(new System.Net.Http.Headers.AuthenticationHeaderValue(Context.MNOToken.TokenType,
-                Context.MNOToken.Token), MediaType);
+                Context.MNOToken.Token), MediaType, apiVersion);
         }
     }
 

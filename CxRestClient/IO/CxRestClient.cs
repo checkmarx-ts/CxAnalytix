@@ -15,11 +15,14 @@ namespace CxRestClient.IO
 
         private static ILog _log = LogManager.GetLogger(typeof(CxRestClient));
 
-        internal CxRestClient(AuthenticationHeaderValue authHeader, String acceptMediaType)
+        internal CxRestClient(AuthenticationHeaderValue authHeader, String acceptMediaType, String apiVersion)
         {
             _msg = new HttpRequestMessage();
             _msg.Headers.Authorization = authHeader;
-            _msg.Headers.Add("Accept", acceptMediaType);
+            if (!String.IsNullOrEmpty(apiVersion) )
+				_msg.Headers.TryAddWithoutValidation("Accept", $"{acceptMediaType};v={apiVersion}");
+            else
+                _msg.Headers.Add("Accept", acceptMediaType);
         }
 
         private Task<HttpResponseMessage> DoAsyncOp(HttpMethod method, CancellationToken cancelToken)

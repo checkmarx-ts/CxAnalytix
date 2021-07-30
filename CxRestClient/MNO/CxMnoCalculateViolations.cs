@@ -18,12 +18,12 @@ namespace CxRestClient.MNO
 				CancellationToken token, int projectId)
 		{
 			return WebOperation.ExecutePost<bool>(
-			ctx.Json.CreateMnoClient
+			ctx.Json.CreateMnoClient 
 			, (response) => response.StatusCode == HttpStatusCode.Created
 			, CxRestContext.MakeUrl(ctx.MnoUrl, String.Format(URL_SUFFIX, projectId))
 			, null
 			, ctx
-			, token);
+			, token, apiVersion: null);
 		}
 
 

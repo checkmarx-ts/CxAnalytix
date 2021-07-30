@@ -21,9 +21,9 @@ namespace CxRestClient.Utility
 		private static int RETRY_DELAY_INCREASE_FACTOR = 2;
 
 
-		private static T ExecuteOperation<T>(Func<CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
+		private static T ExecuteOperation<T>(Func<String, CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
 			Func<CxRestClient.IO.CxRestClient, HttpResponseMessage> opExecutor, CxRestContext ctx, CancellationToken token,
-			Func<HttpResponseMessage, Boolean> responseErrorLogic, Func<Exception, Boolean> exceptionErrorLogic)
+			Func<HttpResponseMessage, Boolean> responseErrorLogic, Func<Exception, Boolean> exceptionErrorLogic, String apiVersion)
 		{
 			var endRetryAt = DateTime.Now.Add(ctx.Timeout);
 
@@ -40,7 +40,7 @@ namespace CxRestClient.Utility
 			{
 				try
 				{
-					using (var client = clientFactory())
+					using (var client = clientFactory(apiVersion))
 					using (var response = opExecutor(client))
 					{
 						if (token.IsCancellationRequested)
@@ -123,9 +123,9 @@ namespace CxRestClient.Utility
 			throw nonRecoveryException;
 		}
 
-		public static T ExecuteGet<T>(Func<CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
+		public static T ExecuteGet<T>(Func<String, CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
 			String url, CxRestContext ctx, CancellationToken token, Func<HttpResponseMessage, Boolean> responseErrorLogic = null,
-			Func<Exception, Boolean> exceptionErrorLogic = null)
+			Func<Exception, Boolean> exceptionErrorLogic = null, String apiVersion = "1.0")
 		{
 			return ExecuteOperation<T>(
 				clientFactory
@@ -138,13 +138,15 @@ namespace CxRestClient.Utility
 				, ctx
 				, token
 				, responseErrorLogic
-				, exceptionErrorLogic);
+				, exceptionErrorLogic
+				, apiVersion);
+
 		}
 
 
-		public static T ExecutePost<T>(Func<CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
+		public static T ExecutePost<T>(Func<String, CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
 			String url, Func<HttpContent> contentFactory, CxRestContext ctx, CancellationToken token,
-			Func<HttpResponseMessage, Boolean> responseErrorLogic = null, Func<Exception, Boolean> exceptionErrorLogic = null)
+			Func<HttpResponseMessage, Boolean> responseErrorLogic = null, Func<Exception, Boolean> exceptionErrorLogic = null, String apiVersion = "1.0")
 		{
 			return ExecuteOperation<T>(
 				clientFactory
@@ -161,7 +163,8 @@ namespace CxRestClient.Utility
 				, ctx
 				, token
 				, responseErrorLogic
-				, exceptionErrorLogic);
+				, exceptionErrorLogic
+				, apiVersion);
 		}
 
 	}

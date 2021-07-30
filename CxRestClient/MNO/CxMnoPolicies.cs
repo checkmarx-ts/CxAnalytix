@@ -68,7 +68,7 @@ namespace CxRestClient.MNO
                 }
                 , CxRestContext.MakeUrl(ctx.MnoUrl, String.Format(PROJECT_POLICY_URL_SUFFIX, projectId))
                 , ctx
-                , token);
+                , token, apiVersion: null);
         }
 
         private static PolicyCollection ParsePolicies(CxRestContext ctx,
@@ -135,7 +135,7 @@ namespace CxRestClient.MNO
                                 return false;
 
 					return true;
-				});
+				}, apiVersion: null);
 		}
 
 
@@ -162,7 +162,7 @@ namespace CxRestClient.MNO
 			}
 			, CxRestContext.MakeUrl(ctx.MnoUrl, String.Format(PROJECT_POLICY_URL_SUFFIX, projectId))
 			, ctx
-			, token);
+			, token, apiVersion: null);
 		}
 	}
 }

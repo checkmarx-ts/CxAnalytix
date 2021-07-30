@@ -153,7 +153,7 @@ namespace CxRestClient.SAST
             }
             , CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
             , ctx
-			, token);
+			, token, apiVersion: "2.0");
         }
     }
 }
