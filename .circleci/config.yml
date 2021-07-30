@@ -70,10 +70,12 @@ jobs:
       - attach_workspace:
           at: tmp
       - run:
-          name: "Publish Release on GitHub"
+          name: "Publish Pre-Release on GitHub"
           command: |
             go get github.com/tcnksm/ghr
-            BODY=$(sha256sum tmp/*)
+            pushd tmp
+            BODY=$(sha256sum *)
+            popd
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256:<BR>${BODY}" -delete -prerelease -replace ${CIRCLE_TAG} tmp
 
 
@@ -87,7 +89,9 @@ jobs:
           name: "Publish Release on GitHub"
           command: |
             go get github.com/tcnksm/ghr
-            BODY=$(sha256sum tmp/*)
+            pushd tmp
+            BODY=$(sha256sum *)
+            popd
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256:<BR>${BODY}" -delete -replace ${CIRCLE_TAG} tmp
 
   docker-push-release:
