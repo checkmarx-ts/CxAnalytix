@@ -100,10 +100,10 @@ jobs:
         environment:
           DOCKER_REPO: docker.pkg.github.com/checkmarx-ts/cxanalytix-docker/cxanalytix
     steps:
+      - checkout 
       - attach_workspace:
           at: tmp
       - setup_remote_docker
-      - checkout 
       - run:
           name: "Push Docker image to GitHub packages"
           command: |
@@ -120,10 +120,10 @@ jobs:
         environment:
           DOCKER_REPO: docker.pkg.github.com/checkmarx-ts/cxanalytix-docker/cxanalytix
     steps:
+      - checkout 
       - attach_workspace:
           at: tmp
       - setup_remote_docker
-      - checkout 
       - run:
           name: "Push Docker image to GitHub packages"
           command: |
