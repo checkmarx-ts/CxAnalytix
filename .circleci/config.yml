@@ -36,7 +36,7 @@ jobs:
       - run:
           name: Build & Package - Windows
           command: |
-            export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/(v|pr)(.+)/\1/g')
+            export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/(v|pr)(.+)/\2/g')
             dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c ReleaseWindows -o artifacts/win-x64 -r win-x64
             mkdir -p tmp
             python .circleci/zip.py --output "tmp/CxAnalytix${VERSION}-${CIRCLE_BUILD_NUM}.win-x64.zip" --input artifacts/win-x64
@@ -53,7 +53,7 @@ jobs:
       - run:
           name: Build & Package - Linux
           command: |
-            export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/(v|pr)(.+)/\1/g')
+            export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/(v|pr)(.+)/\2/g')
             dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c ReleaseLinux -o artifacts/linux-x64 -r linux-x64
             mkdir -p tmp
             python .circleci/zip.py --output "tmp/CxAnalytix${VERSION}-${CIRCLE_BUILD_NUM}.linux-x64.zip" --input artifacts/linux-x64
