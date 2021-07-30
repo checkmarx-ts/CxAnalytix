@@ -34,7 +34,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build & Package
+          name: Build & Package - Windows
           command: |
             export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
             dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c ReleaseWindows -o artifacts/win-x64 -r win-x64
@@ -51,7 +51,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Build & Package
+          name: Build & Package - Linux
           command: |
             export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
             dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c ReleaseLinux -o artifacts/linux-x64 -r linux-x64
@@ -70,6 +70,9 @@ jobs:
           name: "Publish Release on GitHub"
           command: |
             go get github.com/tcnksm/ghr
+            pwd
+            ls -lR
+            ls -l tmp
             BODY=$(sha256sum tmp/*)
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256:<BR>${BODY}" ${CIRCLE_TAG} tmp
 
