@@ -28,7 +28,7 @@ jobs:
       - checkout
       - run: dotnet build --version-suffix ${CIRCLE_BUILD_NUM} -c Release -o artifacts
       
-  package:
+  package-win:
     docker:
       - image: mcr.microsoft.com/dotnet/sdk:3.1
     steps:
@@ -38,9 +38,24 @@ jobs:
           command: |
             export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
             dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c ReleaseWindows -o artifacts/win-x64 -r win-x64
-            dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c ReleaseLinux -o artifacts/linux-x64 -r linux-x64
             mkdir -p tmp
             python .circleci/zip.py --output "tmp/CxAnalytix${VERSION}-${CIRCLE_BUILD_NUM}.win-x64.zip" --input artifacts/win-x64
+      - persist_to_workspace:
+          root: tmp
+          paths:
+            - ./*
+
+  package-linux:
+    docker:
+      - image: mcr.microsoft.com/dotnet/sdk:3.1
+    steps:
+      - checkout
+      - run:
+          name: Build & Package
+          command: |
+            export VERSION=$(echo ${CIRCLE_TAG} | sed -E 's/v(.+)/\1/g')
+            dotnet publish -p:VersionPrefix=${VERSION} --version-suffix ${CIRCLE_BUILD_NUM} -c ReleaseLinux -o artifacts/linux-x64 -r linux-x64
+            mkdir -p tmp
             python .circleci/zip.py --output "tmp/CxAnalytix${VERSION}-${CIRCLE_BUILD_NUM}.linux-x64.zip" --input artifacts/linux-x64
       - persist_to_workspace:
           root: tmp
@@ -57,27 +72,26 @@ jobs:
           name: "Publish Release on GitHub"
           command: |
             go get github.com/tcnksm/ghr
-            cd tmp
-            BODY=$(sha256sum *)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256: ${BODY}" ${CIRCLE_TAG} .
+            BODY=$(sha256sum *.zip)
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256:<BR>${BODY}" ${CIRCLE_TAG} .
 
   docker-push:
     docker:
-      - image: docker:18.06.3-ce-git
+      - image: docker:20-dind
         environment:
-          DOCKER_REPO: docker.io/checkmarxts/cxanalytix
+          DOCKER_REPO: docker.pkg.github.com/checkmarx-ts/cxanalytix-docker/cxanalytix
     steps:
       - setup_remote_docker
-      - attach_workspace:
-          at: tmp
       - run:
-          name: "Publish Images On Dockerhub"
+          name: "Push Docker image to GitHub packages"
           command: |
-            ls -lr ..
-            mkdir -p tmp/docker
-            unzip tmp/CxAnalytix*.linux-x64.zip -d tmp/docker
-            docker login -u ${DOCKER_USER} -p ${DOCKER_PASSWORD} docker.io
-            docker build -f ../Dockerfile -t ${DOCKER_REPO}:${CIRCLE_TAG} -t ${DOCKER_REPO}:${CIRCLE_SHA1} -t ${DOCKER_REPO} tmp/docker
+            ls -lR
+            set
+            which curl
+            mkdir -p docker
+            unzip tmp/CxAnalytix*.linux-x64.zip -d docker
+            docker login -u ${GITHUB_USER} -p ${GITHUB_TOKEN} docker.pkg.github.com
+            docker build -f Dockerfile -t ${DOCKER_REPO}:${CIRCLE_TAG} -t ${DOCKER_REPO}:${CIRCLE_SHA1} -t ${DOCKER_REPO} docker
             docker push ${DOCKER_REPO}
 
 workflows:
@@ -97,15 +111,16 @@ workflows:
               branches:
                 ignore: /.*/
           requires:
-              - package
-      # - docker-push:
-          # filters:
-              # tags:
-                # only: /^v.*/
-              # branches:
-                # ignore: /.*/
-          # requires:
-              # - package      
+              - package-win
+              - package-linux
+      - docker-push:
+          filters:
+              tags:
+                only: /^v.*/
+              branches:
+                ignore: /.*/
+          requires:
+              - package-linux      
   ci:
     jobs:
       - unit-test
