@@ -72,7 +72,7 @@ jobs:
           name: "Publish Release on GitHub"
           command: |
             go get github.com/tcnksm/ghr
-            BODY=$(sha256sum *.zip)
+            BODY=$(sha256sum *)
             ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256:<BR>${BODY}" ${CIRCLE_TAG} .
 
   docker-push:
