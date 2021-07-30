@@ -103,6 +103,7 @@ jobs:
       - attach_workspace:
           at: tmp
       - setup_remote_docker
+      - checkout 
       - run:
           name: "Push Docker image to GitHub packages"
           command: |
@@ -110,7 +111,7 @@ jobs:
             mkdir -p docker
             unzip tmp/CxAnalytix*.linux-x64.zip -d docker
             docker login -u ${GITHUB_USER} -p ${GITHUB_TOKEN} docker.pkg.github.com
-            docker build -f Dockerfile -t ${DOCKER_REPO}:${CIRCLE_TAG} -t ${DOCKER_REPO}:${CIRCLE_SHA1} -t ${DOCKER_REPO} docker
+            docker build -f Dockerfile -t ${DOCKER_REPO}:${CIRCLE_TAG} -t ${DOCKER_REPO}:${CIRCLE_SHA1} -t ${DOCKER_REPO}:latest -t ${DOCKER_REPO} docker
             docker push ${DOCKER_REPO}
 
   docker-push-pre-release:
@@ -122,6 +123,7 @@ jobs:
       - attach_workspace:
           at: tmp
       - setup_remote_docker
+      - checkout 
       - run:
           name: "Push Docker image to GitHub packages"
           command: |
