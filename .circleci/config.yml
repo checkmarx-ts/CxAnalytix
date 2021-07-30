@@ -112,7 +112,9 @@ jobs:
             unzip tmp/CxAnalytix*.linux-x64.zip -d docker
             docker login -u ${GITHUB_USER} -p ${GITHUB_TOKEN} docker.pkg.github.com
             docker build -f Dockerfile -t ${DOCKER_REPO}:${CIRCLE_TAG} -t ${DOCKER_REPO}:${CIRCLE_SHA1} -t ${DOCKER_REPO}:latest -t ${DOCKER_REPO} docker
-            docker push ${DOCKER_REPO}
+            docker push ${DOCKER_REPO}:${CIRCLE_TAG}
+            docker push ${DOCKER_REPO}:${CIRCLE_SHA1}
+            docker push ${DOCKER_REPO}:latest
 
   docker-push-pre-release:
     docker:
@@ -132,7 +134,8 @@ jobs:
             unzip tmp/CxAnalytix*.linux-x64.zip -d docker
             docker login -u ${GITHUB_USER} -p ${GITHUB_TOKEN} docker.pkg.github.com
             docker build -f Dockerfile -t ${DOCKER_REPO}:${CIRCLE_TAG} -t ${DOCKER_REPO}:${CIRCLE_SHA1} -t ${DOCKER_REPO} docker
-            docker push ${DOCKER_REPO}
+            docker push ${DOCKER_REPO}:${CIRCLE_TAG}
+            docker push ${DOCKER_REPO}:${CIRCLE_SHA1}
 
 workflows:
   version: 2
