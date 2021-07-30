@@ -98,7 +98,13 @@ workflows:
   version: 2
   package-release:
     jobs:
-      - package:
+      - package-win:
+          filters:
+              tags:
+                only: /^v.*/
+              branches:
+                ignore: /.*/
+      - package-linux:
           filters:
               tags:
                 only: /^v.*/
