@@ -72,11 +72,8 @@ jobs:
           name: "Publish Release on GitHub"
           command: |
             go get github.com/tcnksm/ghr
-            pwd
-            ls -lR
-            ls -l tmp
             BODY=$(sha256sum tmp/*)
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256:<BR>${BODY}" ${CIRCLE_TAG} tmp
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -n ${CIRCLE_TAG} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -body "SHA256:<BR>${BODY}" -replace ${CIRCLE_TAG} tmp
 
   docker-push:
     docker:
@@ -84,6 +81,8 @@ jobs:
         environment:
           DOCKER_REPO: docker.pkg.github.com/checkmarx-ts/cxanalytix-docker/cxanalytix
     steps:
+      - attach_workspace:
+          at: tmp
       - setup_remote_docker
       - run:
           name: "Push Docker image to GitHub packages"
