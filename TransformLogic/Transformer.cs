@@ -581,9 +581,12 @@ namespace CxAnalytix.TransformLogic
 						if (!CancelToken.IsCancellationRequested && scanTrx.Commit())
 							_state.ScanCompleted(scan);
 						else
+						{
 							// Stop processing further scans in this project if the commit
 							// for the scan information fails.
+							_log.Warn($"Stopped processing scans for project {project.ProjectId}:{project.TeamName}:{project.ProjectName} at {scan.ScanId}, will resume here next crawl.");
 							return;
+						}
 					}
 				}
 
