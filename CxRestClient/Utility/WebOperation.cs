@@ -25,99 +25,112 @@ namespace CxRestClient.Utility
 			Func<CxRestClient.IO.CxRestClient, HttpResponseMessage> opExecutor, CxRestContext ctx, CancellationToken token,
 			Func<HttpResponseMessage, Boolean> responseErrorLogic, Func<Exception, Boolean> exceptionErrorLogic, String apiVersion)
 		{
-			var endRetryAt = DateTime.Now.Add(ctx.Timeout);
-
-			int delay = RETRY_DELAY_MS;
-
-			DateTime? recoveryStartedAt = null;
-			bool inRecovery = false;
-			HttpStatusCode lastFailCode = HttpStatusCode.OK;
+			int loopsLeft = ctx.RetryLoop;
 
 			UnrecoverableOperationException nonRecoveryException = new UnrecoverableOperationException();
 
-
-			while (DateTime.Now.CompareTo(endRetryAt) <= 0)
+			while (loopsLeft >= 0)
 			{
-				try
+				if (loopsLeft != ctx.RetryLoop)
+					_log.Warn($"Retry loop {ctx.RetryLoop - loopsLeft} of {ctx.RetryLoop}");
+
+				loopsLeft--;
+
+				nonRecoveryException = new UnrecoverableOperationException("Loop retries exhausted");
+
+				var endRetryAt = DateTime.Now.Add(ctx.Timeout);
+
+				int delay = RETRY_DELAY_MS;
+
+				DateTime? recoveryStartedAt = null;
+				bool inRecovery = false;
+				HttpStatusCode lastFailCode = HttpStatusCode.OK;
+
+
+
+				while (DateTime.Now.CompareTo(endRetryAt) <= 0)
 				{
-					using (var client = clientFactory(apiVersion))
-					using (var response = opExecutor(client))
+					try
 					{
-						if (token.IsCancellationRequested)
+						using (var client = clientFactory(apiVersion))
+						using (var response = opExecutor(client))
 						{
-							_log.Warn($"Execution of operation has been cancelled.");
-							return default(T);
-						}
-
-
-						if (response.IsSuccessStatusCode)
-						{
-							if (inRecovery)
-								_log.Info($"Operation successful after last error - "
-									+ $"recovered after {DateTime.Now.Subtract(recoveryStartedAt.Value).TotalMilliseconds}ms ");
-
-							return onSuccess(response);
-						}
-						else if (response.StatusCode == HttpStatusCode.NotFound)
-						{
-							_log.Warn($"{response.StatusCode} error with URI {response.RequestMessage.RequestUri}, not attempting retry.");
-
-							return default(T);
-						}
-						else
-						{
-							if (!recoveryStartedAt.HasValue)
-								recoveryStartedAt = DateTime.Now;
-
-							if (responseErrorLogic != null && !responseErrorLogic(response))
-								return default(T);
-
-							if (!inRecovery)
-								_log.Warn($"Request failed with response {Convert.ToInt32(response.StatusCode)}({response.StatusCode})" + 
-									$" - Retrying until {endRetryAt}");
-							else if (lastFailCode != response.StatusCode)
-								_log.Warn($"Still in recovery, new failure status code: " 
-									+ $"{Convert.ToInt32(response.StatusCode)}({response.StatusCode})" +
-									$" - Retrying until {endRetryAt}");
-
-							inRecovery = true;
-							lastFailCode = response.StatusCode;
-
-							nonRecoveryException = new UnrecoverableOperationException(response.StatusCode, 
-								response.RequestMessage.RequestUri);
-
-							switch (response.StatusCode)
+							if (token.IsCancellationRequested)
 							{
-								case HttpStatusCode.Unauthorized:
-								case HttpStatusCode.Forbidden:
-									ctx.Reauthenticate();
-									break;
-								default:
-									break;
+								_log.Warn($"Execution of operation has been cancelled.");
+								return default(T);
+							}
+
+
+							if (response.IsSuccessStatusCode)
+							{
+								if (inRecovery)
+									_log.Info($"Operation successful after last error - "
+										+ $"recovered after {DateTime.Now.Subtract(recoveryStartedAt.Value).TotalMilliseconds}ms ");
+
+								return onSuccess(response);
+							}
+							else if (response.StatusCode == HttpStatusCode.NotFound)
+							{
+								_log.Warn($"{response.StatusCode} error with URI {response.RequestMessage.RequestUri}, not attempting retry.");
+
+								return default(T);
+							}
+							else
+							{
+								if (!recoveryStartedAt.HasValue)
+									recoveryStartedAt = DateTime.Now;
+
+								if (responseErrorLogic != null && !responseErrorLogic(response))
+									return default(T);
+
+								if (!inRecovery)
+									_log.Warn($"Request failed with response {Convert.ToInt32(response.StatusCode)}({response.StatusCode})" +
+										$" - Retrying until {endRetryAt}");
+								else if (lastFailCode != response.StatusCode)
+									_log.Warn($"Still in recovery, new failure status code: "
+										+ $"{Convert.ToInt32(response.StatusCode)}({response.StatusCode})" +
+										$" - Retrying until {endRetryAt}");
+
+								inRecovery = true;
+								lastFailCode = response.StatusCode;
+
+								nonRecoveryException = new UnrecoverableOperationException(response.StatusCode,
+									response.RequestMessage.RequestUri);
+
+								switch (response.StatusCode)
+								{
+									case HttpStatusCode.Unauthorized:
+									case HttpStatusCode.Forbidden:
+										ctx.Reauthenticate();
+										break;
+									default:
+										break;
+								}
 							}
 						}
 					}
+					catch (Exception ex)
+					{
+						if (!recoveryStartedAt.HasValue)
+							recoveryStartedAt = DateTime.Now;
+
+						if (!inRecovery)
+							_log.Error($"Exception: {ex.GetType()} Source: {ex.Source} Message: {ex.Message}" +
+								$" - Retrying until {endRetryAt}");
+
+						inRecovery = true;
+
+						nonRecoveryException = new UnrecoverableOperationException($"Last exception caught", ex);
+
+						if (exceptionErrorLogic != null && !exceptionErrorLogic(ex))
+							throw ex;
+					}
+
+					_log.Debug($"Waiting {delay}ms before retry.");
+					Task.Delay(delay, token).Wait();
+					delay *= RETRY_DELAY_INCREASE_FACTOR;
 				}
-				catch (Exception ex)
-				{
-					if (!recoveryStartedAt.HasValue)
-						recoveryStartedAt = DateTime.Now;
-
-					if (!inRecovery)
-						_log.Error($"Exception: {ex.GetType()} Source: {ex.Source} Message: {ex.Message}" +
-							$" - Retrying until {endRetryAt}");
-
-					inRecovery = true;
-
-					nonRecoveryException = new UnrecoverableOperationException($"Last exception caught", ex);
-
-					if (exceptionErrorLogic != null && !exceptionErrorLogic(ex))
-						throw ex;
-				}
-
-				_log.Debug($"Waiting {delay}ms before retry.");
-				Task.Delay(delay, token).Wait();
-				delay *= RETRY_DELAY_INCREASE_FACTOR;
 			}
 
 			throw nonRecoveryException;

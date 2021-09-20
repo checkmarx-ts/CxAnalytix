@@ -34,6 +34,7 @@ namespace CxRestClient
         public TimeSpan Timeout { get; internal set; }
         public CxClientFactory Json { get; internal set; }
         public CxClientFactory Xml { get; internal set; }
+        public int RetryLoop { get; internal set; }
 
 
         private readonly Object _tokenLock = new object();
@@ -55,7 +56,7 @@ namespace CxRestClient
         }
 
         private LoginToken _mnoToken;
-        internal LoginToken MNOToken
+        internal LoginToken? MNOToken
         {
             get
             {
@@ -65,7 +66,7 @@ namespace CxRestClient
 
             set
             {
-                _mnoToken = value;
+                _mnoToken = value.GetValueOrDefault();
             }
         }
 
@@ -260,6 +261,13 @@ namespace CxRestClient
                 return this;
             }
 
+            private int _retryLoop;
+            public CxRestContextBuilder WithRetryLoop(int loopCount)
+			{
+                _retryLoop = loopCount;
+                return this;
+			}
+
 
             public CxRestContext Build()
             {
@@ -272,6 +280,12 @@ namespace CxRestClient
                 if (_pass == null)
                     throw new InvalidOperationException("Password was not specified.");
 
+                if (_retryLoop < 0)
+                    throw new InvalidOperationException("Retry loop can't be < 0.");
+
+                if (_timeout < 0)
+                    throw new InvalidOperationException("Timeout can't be < 0.");
+
                 var timeoutSpan = new TimeSpan(0, 0, _timeout);
 
                 HttpClientSingleton.Initialize(_validate, timeoutSpan);
@@ -279,11 +293,12 @@ namespace CxRestClient
                 CxRestContext retVal = new CxRestContext()
                 {
                     SastToken = GetLoginToken(_url, _user, _pass, SAST_SCOPE),
-                    MNOToken =  GetLoginToken(_url, _user, _pass, $"{MNO_SCOPE} {SAST_SCOPE}"),
+                    MNOToken =  String.IsNullOrEmpty(_mnoUrl) ? new Nullable<LoginToken> () : GetLoginToken(_url, _user, _pass, $"{MNO_SCOPE} {SAST_SCOPE}"),
                     Url = _url,
-                    MnoUrl = String.IsNullOrEmpty (_mnoUrl) ? _url : _mnoUrl,
+                    MnoUrl = _mnoUrl,
                     ValidateSSL = _validate,
-                    Timeout = timeoutSpan
+                    Timeout = timeoutSpan,
+                    RetryLoop = _retryLoop
                 };
 
                 retVal.Json = new CxClientFactory("application/json", retVal);
