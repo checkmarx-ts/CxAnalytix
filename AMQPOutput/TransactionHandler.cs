@@ -14,12 +14,13 @@ namespace CxAnalytix.Out.AMQPOutput
 
 		private IModel _channel;
 		private bool _committed = false;
+		private bool _noRollback = false;
 
 		public TransactionHandler(IModel amqpChannel)
 		{
 			_channel = amqpChannel;
+			_channel.ContinuationTimeout = new TimeSpan(0, 0, Configuration.Config.Connection.TimeoutSeconds);
 			_channel.TxSelect();
-
 		}
 
 		public string TransactionId => $"CHANNEL:{_channel.ChannelNumber}";
@@ -34,6 +35,7 @@ namespace CxAnalytix.Out.AMQPOutput
 			catch (Exception ex)
 			{
 				_log.Error($"Error committing transaction {TransactionId}", ex);
+				_noRollback = true;
 			}
 
 			return _committed;
@@ -43,7 +45,7 @@ namespace CxAnalytix.Out.AMQPOutput
 		{
 			if (_channel != null)
 			{
-				if (!_committed)
+				if (!_committed && !_noRollback)
 					_channel.TxRollback();
 
 				_channel.Dispose();
