@@ -19,6 +19,7 @@ using static CxAnalytix.TransformLogic.Data.ScanDescriptor;
 using CxAnalytix.Interfaces.Transform;
 using OutputBootstrapper;
 using CxAnalytix.Extensions;
+using CxAnalytix.Exceptions;
 
 namespace CxAnalytix.TransformLogic
 {
@@ -99,11 +100,14 @@ namespace CxAnalytix.TransformLogic
 				});
 
 				_log.Warn("END exception report");
+
+				throw aex;
 			}
 			catch (Exception ex)
 			{
 				_log.Warn($"Error attempting to retrieve the SAST XML report for {scan.ScanId}" +
 					$" in project {scan.Project.ProjectId}: {scan.Project.ProjectName}. ", ex);
+				throw ex;
 			}
 		}
 
@@ -129,6 +133,10 @@ namespace CxAnalytix.TransformLogic
 						licenseCount.Add(l.RiskLevel, 1);
 				}
 			}
+			catch (UnrecoverableOperationException uopex)
+			{
+				throw uopex;
+			}
 			catch (Exception ex)
 			{
 				_log.Warn($"Could not obtain license data for scan {sd.ScanId} in project " +
@@ -146,6 +154,10 @@ namespace CxAnalytix.TransformLogic
 
 				foreach (var lib in libraries)
 					libraryIndex.Add(lib.LibraryId, lib);
+			}
+			catch (UnrecoverableOperationException uopex)
+			{
+				throw uopex;
 			}
 			catch (Exception ex)
 			{
@@ -219,6 +231,10 @@ namespace CxAnalytix.TransformLogic
 					trx.write(ScaScanDetailOut, flat);
 				}
 			}
+			catch (UnrecoverableOperationException uopex)
+			{
+				throw uopex;
+			}
 			catch (Exception ex)
 			{
 				_log.Warn($"Could not obtain vulnerability data for scan {sd.ScanId} in project " +
@@ -255,6 +271,10 @@ namespace CxAnalytix.TransformLogic
 				flat.Add("VulnerabilityScore", summary.VulnerabilityScore);
 				flat.Add("VulnerableAndOutdated", summary.VulnerableAndOutdated);
 				flat.Add("VulnerableAndUpdated", summary.VulnerableAndUpdated);
+			}
+			catch (UnrecoverableOperationException uopex)
+			{
+				throw uopex;
 			}
 			catch (Exception ex)
 			{
@@ -471,27 +491,31 @@ namespace CxAnalytix.TransformLogic
 
 		private async Task<ProjectPolicyIndex> PopulatePolicies()
 		{
-			// Policies may not have data if M&O is not installed.
-			try
-			{
-				return await Task.Run(
-					() =>
-					{
-						_log.Debug("Retrieving policies, if available.");
 
-						return new ProjectPolicyIndex(CxMnoPolicies.GetAllPolicies(RestContext, CancelToken));
+			if (!String.IsNullOrEmpty(Configuration.Config.Connection.MNOUrl))
+				// Policies will not have data if M&O is not installed.
+				try
+				{
+					return await Task.Run(
+						() =>
+						{
+							_log.Debug("Retrieving policies, if available.");
 
-					}, CancelToken);
-			}
-			catch (Exception ex)
-			{
-				String msg = "Policy data is not available. M&O was unreachable.  You can omit the M&O URL in the configuration if M&O is not installed.";
+							return new ProjectPolicyIndex(CxMnoPolicies.GetAllPolicies(RestContext, CancelToken));
 
-				if (_log.IsDebugEnabled)
-					_log.Debug(msg, ex);
-				else
-					_log.Warn(msg);
-			}
+						}, CancelToken);
+				}
+				catch (Exception ex)
+				{
+					String msg = "Policy data is not available. M&O was unreachable.  You can omit the M&O URL in the configuration if M&O is not installed.";
+
+					if (_log.IsDebugEnabled)
+						_log.Debug(msg, ex);
+					else
+						_log.Warn(msg);
+				}
+			else
+				_log.Info("The M&O URL was not provided, policy data will not be available.");
 
 
 			return null;
@@ -558,35 +582,43 @@ namespace CxAnalytix.TransformLogic
 
 					using (var scanTrx = Output.StartTransaction())
 					{
-						// Increment the policy violation stats for each scan.
-						scan.IncrementPolicyViolations(PolicyViolations[scan.Project.ProjectId].GetViolatedRulesByScanId(scan.ScanId));
-
-						_log.Info($"Processing {scan.ScanProduct} scan {scan.ScanId}:{scan.Project.ProjectId}:{scan.Project.TeamName}:{scan.Project.ProjectName}[{scan.FinishedStamp}]");
-
-						switch (scan.ScanProduct)
+						try
 						{
-							case ScanProductType.SAST:
-								SastReportOutput(scanTrx, scan);
-								break;
+							// Increment the policy violation stats for each scan.
+							scan.IncrementPolicyViolations(PolicyViolations[scan.Project.ProjectId].GetViolatedRulesByScanId(scan.ScanId));
 
-							case ScanProductType.SCA:
-								ScaReportOutput(scanTrx, scan);
-								break;
+							_log.Info($"Processing {scan.ScanProduct} scan {scan.ScanId}:{scan.Project.ProjectId}:{scan.Project.TeamName}:{scan.Project.ProjectName}[{scan.FinishedStamp}]");
 
+							switch (scan.ScanProduct)
+							{
+								case ScanProductType.SAST:
+									SastReportOutput(scanTrx, scan);
+									break;
+
+								case ScanProductType.SCA:
+									ScaReportOutput(scanTrx, scan);
+									break;
+
+							}
+
+							OutputPolicyViolationDetails(scanTrx, scan);
+
+							// Persist the date of this scan since it has been output.
+							if (!CancelToken.IsCancellationRequested && scanTrx.Commit())
+							{
+								_state.ScanCompleted(scan);
+								continue;
+							}
+						}
+						catch (Exception)
+						{
+							_log.Debug("Exception caught during scan output. Exceptions should have already been logged.");
 						}
 
-						OutputPolicyViolationDetails(scanTrx, scan);
-
-						// Persist the date of this scan since it has been output.
-						if (!CancelToken.IsCancellationRequested && scanTrx.Commit())
-							_state.ScanCompleted(scan);
-						else
-						{
-							// Stop processing further scans in this project if the commit
-							// for the scan information fails.
-							_log.Warn($"Stopped processing scans for project {project.ProjectId}:{project.TeamName}:{project.ProjectName} at {scan.ScanId}, will resume here next crawl.");
-							return;
-						}
+						// Stop processing further scans in this project if the commit
+						// for the scan information fails.
+						_log.Warn($"Stopped processing scans for project {project.ProjectId}:{project.TeamName}:{project.ProjectName} at {scan.ScanId}, will resume here next crawl.");
+						return;
 					}
 				}
 

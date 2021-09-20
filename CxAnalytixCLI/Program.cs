@@ -36,8 +36,9 @@ namespace CxAnalytixCLI
             .WithOpTimeout(Config.Connection.TimeoutSeconds)
             .WithSSLValidate(Config.Connection.ValidateCertificates)
             .WithUsername(Config.Credentials.Username)
-            .WithPassword(Config.Credentials.Password).
-            WithMNOServiceURL (Config.Connection.MNOUrl);
+            .WithPassword(Config.Credentials.Password)
+            .WithMNOServiceURL (Config.Connection.MNOUrl)
+            .WithRetryLoop(Config.Connection.RetryLoop);
 
             using (CancellationTokenSource t = new CancellationTokenSource())
             {

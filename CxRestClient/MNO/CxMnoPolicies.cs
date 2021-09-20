@@ -126,16 +126,18 @@ namespace CxRestClient.MNO
 				, CxRestContext.MakeUrl(ctx.MnoUrl, POLICY_LIST_URL_SUFFIX)
 				, ctx
 				, token
-				, exceptionErrorLogic: (ex) =>
-				{
+				//, exceptionErrorLogic: 
+    //            (ex) =>
+				//{
 
-                    if (ex is System.AggregateException)
-                        foreach (var x in (ex as System.AggregateException).InnerExceptions)
-                            if (x is System.Net.Http.HttpRequestException)
-                                return false;
+    //                if (ex is System.AggregateException)
+    //                    foreach (var x in (ex as System.AggregateException).InnerExceptions)
+    //                        if (x is System.Net.Http.HttpRequestException)
+    //                            return false;
 
-					return true;
-				}, apiVersion: null);
+				//	return true;
+				//}
+                , apiVersion: null);
 		}
 
 
