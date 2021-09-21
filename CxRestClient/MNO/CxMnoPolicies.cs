@@ -61,10 +61,13 @@ namespace CxRestClient.MNO
                 ctx.Json.CreateMnoClient
                 , (response) =>
                 {
-                    JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-                        (response.Content.ReadAsStreamAsync().Result)));
+                    using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
+                    using (var jtr = new JsonTextReader(sr))
+                    {
+                        JToken jt = JToken.Load(jtr);
 
-                    return GetFlatPolicyNames(jt);
+                        return GetFlatPolicyNames(jt);
+                    }
                 }
                 , CxRestContext.MakeUrl(ctx.MnoUrl, String.Format(PROJECT_POLICY_URL_SUFFIX, projectId))
                 , ctx
@@ -118,25 +121,17 @@ namespace CxRestClient.MNO
 				ctx.Json.CreateMnoClient
 				, (response) =>
 				{
-					JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-						(response.Content.ReadAsStreamAsync().Result)));
+                    using (var sr = new StreamReader (response.Content.ReadAsStreamAsync().Result))
+                    using (var jtr = new JsonTextReader(sr))
+                    {
+                        JToken jt = JToken.Load(jtr);
 
-					return ParsePolicies(ctx, token, jt);
+                        return ParsePolicies(ctx, token, jt);
+                    }
 				}
 				, CxRestContext.MakeUrl(ctx.MnoUrl, POLICY_LIST_URL_SUFFIX)
 				, ctx
 				, token
-				//, exceptionErrorLogic: 
-    //            (ex) =>
-				//{
-
-    //                if (ex is System.AggregateException)
-    //                    foreach (var x in (ex as System.AggregateException).InnerExceptions)
-    //                        if (x is System.Net.Http.HttpRequestException)
-    //                            return false;
-
-				//	return true;
-				//}
                 , apiVersion: null);
 		}
 
@@ -148,18 +143,21 @@ namespace CxRestClient.MNO
 			ctx.Json.CreateMnoClient
 			, (response) =>
 			{
-				JToken jt = JToken.Load(new JsonTextReader(new StreamReader
-	                (response.Content.ReadAsStreamAsync().Result)));
+                using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
+                using (var jtr = new JsonTextReader(sr))
+                {
+                    JToken jt = JToken.Load(jtr);
 
-				LinkedList<int> policyIds = new LinkedList<int>();
+                    LinkedList<int> policyIds = new LinkedList<int>();
 
-				using (JTokenReader reader = new JTokenReader(jt))
-					while (JsonUtils.MoveToNextProperty(reader, "id"))
-					{
-						policyIds.AddLast(Convert.ToInt32(((JProperty)reader.CurrentToken).Value));
-					}
+                    using (JTokenReader reader = new JTokenReader(jt))
+                        while (JsonUtils.MoveToNextProperty(reader, "id"))
+                        {
+                            policyIds.AddLast(Convert.ToInt32(((JProperty)reader.CurrentToken).Value));
+                        }
 
-				return policyIds;
+                    return policyIds;
+                }
 
 			}
 			, CxRestContext.MakeUrl(ctx.MnoUrl, String.Format(PROJECT_POLICY_URL_SUFFIX, projectId))
