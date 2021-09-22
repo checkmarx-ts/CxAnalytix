@@ -1,5 +1,6 @@
 ﻿using log4net;
 using System;
+using CxAnalytix.Extensions;
 using System.Collections.Generic;
 using System.Text;
 
@@ -24,8 +25,7 @@ namespace CxRestClient.Utility
 		{
 			if (_log.Logger.IsEnabledFor(log4net.Core.Level.Trace))
 			{
-				_log.Logger.Log(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType, log4net.Core.Level.Trace, 
-					$"Operation [{_op}] completed in [{DateTime.Now.Subtract(_start).TotalMilliseconds:0.##}ms]", null);
+				_log.Trace($"Operation [{_op}] completed in [{DateTime.Now.Subtract(_start).TotalMilliseconds:0.##}ms]");
 			}
 		}
 	}
