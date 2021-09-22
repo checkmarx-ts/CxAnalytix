@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -121,7 +122,7 @@ namespace CxRestClient.Utility
 
 						inRecovery = true;
 
-						nonRecoveryException = new UnrecoverableOperationException($"Last exception caught", ex);
+						nonRecoveryException = new UnrecoverableOperationException($"Last exception caught: {ex.GetType().Name}: {ex.Message}");
 
 						if (exceptionErrorLogic != null && !exceptionErrorLogic(ex))
 							throw ex;
@@ -131,9 +132,30 @@ namespace CxRestClient.Utility
 					Task.Delay(delay, token).Wait();
 					delay *= RETRY_DELAY_INCREASE_FACTOR;
 				}
+
+				if (inRecovery)
+					_log.Debug("Retry time exceeded, while loop exited during recover.");
 			}
 
 			throw nonRecoveryException;
+		}
+
+		private static void LogAggregateException(AggregateException aex)
+		{
+			StringBuilder sb = new StringBuilder();
+
+			aex.Handle((x) => {
+
+				sb.AppendLine("----- EXCEPTION -----");
+				if (x is UnrecoverableOperationException)
+					sb.AppendLine(x.Message);
+				else
+					sb.AppendLine($"Type: {x.GetType().FullName} Message: {x.Message}");
+
+				return true;
+			});
+
+
 		}
 
 		public static T ExecuteGet<T>(Func<String, CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
@@ -157,6 +179,11 @@ namespace CxRestClient.Utility
 
 							return result;
 						}
+					}
+					catch(AggregateException aex)
+					{
+						LogAggregateException(aex);
+						throw aex;
 					}
 					catch (Exception ex)
 					{
@@ -197,6 +224,11 @@ namespace CxRestClient.Utility
 
 							return result;
 						}
+					}
+					catch (AggregateException aex)
+					{
+						LogAggregateException(aex);
+						throw aex;
 					}
 					catch (Exception ex)
 					{
