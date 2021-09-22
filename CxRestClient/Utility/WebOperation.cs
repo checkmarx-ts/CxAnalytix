@@ -146,7 +146,16 @@ namespace CxRestClient.Utility
 				, (client) =>
 				{
 					_log.Trace($"Executing GET operation at {url}");
-					return client.GetAsync(url, token).Result;
+
+					try
+					{
+						return client.GetAsync(url, token).Result;
+					}
+					catch (Exception ex)
+					{
+						_log.Error($"GET operation failed for [{url}]", ex);
+						throw ex;
+					}
 				}
 				, ctx
 				, token
@@ -168,10 +177,19 @@ namespace CxRestClient.Utility
 				{
 					_log.Trace($"Executing POST operation at {url}");
 
-					// HttpClient.SendAsync disposes of the payload on send
-					// this means if there is an error, a new instance is needed
-					// on retry.
-					return client.PostAsync(url, (contentFactory != null) ? contentFactory() : null, token).Result;
+					try
+					{
+						// HttpClient.SendAsync disposes of the payload on send
+						// this means if there is an error, a new instance is needed
+						// on retry.
+						return client.PostAsync(url, (contentFactory != null) ? contentFactory() : null, token).Result;
+					}
+					catch (Exception ex)
+					{
+						_log.Error($"POST operation failed for [{url}]", ex);
+						throw ex;
+
+					}
 				}
 				, ctx
 				, token
