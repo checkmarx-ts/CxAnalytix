@@ -38,6 +38,7 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 		* Stopped the attempt to load policies at startup if the M&O URL is not provided.
 		* Stability fixes for AMQP outputs.
 		* Dependency upgrades.
+		* Garbage collection tuning.
 * 1.3.1
 	* FEATURES
 		* Platform-specific tarballs are now created.  This is to address the dynamic loading of DPAPI that .Net Core apparently doesn't handle well in cross-platform builds.
