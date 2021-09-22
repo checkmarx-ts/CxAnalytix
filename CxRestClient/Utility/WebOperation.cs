@@ -150,7 +150,13 @@ namespace CxRestClient.Utility
 					try
 					{
 						using (new OpTimer($"GET {url}"))
-							return client.GetAsync(url, token).Result;
+						{
+							var result = client.GetAsync(url, token).Result;
+
+							_log.Trace($"GET operation at {url} status: {(int)result.StatusCode}:{result.ReasonPhrase}");
+
+							return result;
+						}
 					}
 					catch (Exception ex)
 					{
@@ -184,7 +190,13 @@ namespace CxRestClient.Utility
 						// this means if there is an error, a new instance is needed
 						// on retry.
 						using (new OpTimer($"POST {url}"))
-							return client.PostAsync(url, (contentFactory != null) ? contentFactory() : null, token).Result;
+						{
+							var result = client.PostAsync(url, (contentFactory != null) ? contentFactory() : null, token).Result;
+
+							_log.Trace($"POST operation at {url} status: {(int)result.StatusCode}:{result.ReasonPhrase}");
+
+							return result;
+						}
 					}
 					catch (Exception ex)
 					{
