@@ -50,10 +50,11 @@ namespace CxRestClient.OSA
 
 		private static ScanSummary ParseScanSummary(JToken jt)
 		{
-			var reader = new JTokenReader(jt);
-
-			JsonSerializer js = new JsonSerializer();
-			return js.Deserialize(reader, typeof(ScanSummary)) as ScanSummary;
+			using (var reader = new JTokenReader(jt))
+			{
+				JsonSerializer js = new JsonSerializer();
+				return js.Deserialize(reader, typeof(ScanSummary)) as ScanSummary;
+			}
 		}
 
 

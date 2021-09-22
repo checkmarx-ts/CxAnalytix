@@ -49,7 +49,7 @@ namespace CxRestClient.SAST
                 $"{ProjectId}:{ProjectName} [TeamId: {TeamId} Public: {IsPublic} CustomFields: {CustomFields.Count}]";
 		}
 
-        private class ProjectReader : IEnumerable<Project>, IEnumerator<Project>
+        private class ProjectReader : IEnumerable<Project>, IEnumerator<Project>, IDisposable
         {
 
             private JToken _json;
@@ -70,7 +70,11 @@ namespace CxRestClient.SAST
 
             public void Dispose()
             {
-                _reader = null;
+                if (_reader != null)
+                {
+                    _reader.Close();
+                    _reader = null;
+                }
                 _ctx = null;
             }
 
@@ -104,10 +108,10 @@ namespace CxRestClient.SAST
                     if (!(_arrayPos < _projectArray.Count))
                         return false;
 
-                    _curProject = (Project)new JsonSerializer().
-                        Deserialize(new JTokenReader(_projectArray[_arrayPos]), typeof(Project));
+					using (var jtr = new JTokenReader(_projectArray[_arrayPos]))
+						_curProject = (Project)new JsonSerializer().Deserialize(jtr, typeof(Project));
 
-                    if (!_curProject.IsPublic)
+					if (!_curProject.IsPublic)
                     {
                         _curProject = null;
                         continue;
@@ -139,10 +143,10 @@ namespace CxRestClient.SAST
 
         public static IEnumerable<Project> GetProjects(CxRestContext ctx, CancellationToken token)
         {
-			return WebOperation.ExecuteGet<ProjectReader>(
-			ctx.Json.CreateSastClient
-			, (response) =>
-			{
+            using (var projectReader = WebOperation.ExecuteGet<ProjectReader>(
+            ctx.Json.CreateSastClient
+            , (response) =>
+            {
                 using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
                 using (var jtr = new JsonTextReader(sr))
                 {
@@ -153,7 +157,8 @@ namespace CxRestClient.SAST
             }
             , CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
             , ctx
-			, token, apiVersion: "2.0");
+            , token, apiVersion: "2.0"))
+                return new List<Project>(projectReader);
         }
     }
 }

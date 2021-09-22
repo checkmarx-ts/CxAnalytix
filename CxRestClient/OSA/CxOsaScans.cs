@@ -36,7 +36,7 @@ namespace CxRestClient.OSA
 		}
 
 
-		private class ScansReader : IEnumerable<Scan>, IEnumerator<Scan>
+		private class ScansReader : IEnumerable<Scan>, IEnumerator<Scan>, IDisposable
 		{
 
 			private JToken _json;
@@ -59,7 +59,11 @@ namespace CxRestClient.OSA
 
 			public void Dispose()
 			{
-				_reader = null;
+				if (_reader != null)
+				{
+					_reader.Close();
+					_reader = null;
+				}
 			}
 
 			public IEnumerator<Scan> GetEnumerator()
@@ -144,7 +148,7 @@ namespace CxRestClient.OSA
 				var beforeCount = osaScans.Count;
 
 
-				var scans = WebOperation.ExecuteGet<IEnumerable<Scan>>(ctx.Json.CreateSastClient
+				using (var scans = WebOperation.ExecuteGet<ScansReader>(ctx.Json.CreateSastClient
 				, (response) =>
 				{
 					using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -167,15 +171,14 @@ namespace CxRestClient.OSA
 					}
 
 					return true;
-				});
+				}))
+				{
+					if (scans != null)
+						osaScans.AddRange(scans);
 
-
-				if (scans != null)
-					osaScans.AddRange(scans);
-
-
-				if (osaScans.Count == beforeCount)
-					break;
+					if (osaScans.Count == beforeCount)
+						break;
+				}
 
 			}
 
