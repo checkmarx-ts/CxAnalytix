@@ -149,7 +149,8 @@ namespace CxRestClient.Utility
 
 					try
 					{
-						return client.GetAsync(url, token).Result;
+						using (new OpTimer($"GET {url}"))
+							return client.GetAsync(url, token).Result;
 					}
 					catch (Exception ex)
 					{
@@ -182,7 +183,8 @@ namespace CxRestClient.Utility
 						// HttpClient.SendAsync disposes of the payload on send
 						// this means if there is an error, a new instance is needed
 						// on retry.
-						return client.PostAsync(url, (contentFactory != null) ? contentFactory() : null, token).Result;
+						using (new OpTimer($"POST {url}"))
+							return client.PostAsync(url, (contentFactory != null) ? contentFactory() : null, token).Result;
 					}
 					catch (Exception ex)
 					{

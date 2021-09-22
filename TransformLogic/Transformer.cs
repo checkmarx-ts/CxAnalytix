@@ -306,16 +306,15 @@ namespace CxAnalytix.TransformLogic
 
 			var teamsTask = PopulateTeams();
 
-			_log.Debug("Resolving projects.");
-
-			var projects = await Task.Run(() => CxProjects.GetProjects(RestContext, CancelToken), CancelToken);
+			var projectsTask = Task.Run(() => CxProjects.GetProjects(RestContext, CancelToken), CancelToken);
 
 			Policies = await policyTask;
 			Teams = await teamsTask;
 			Presets = await presetsTask;
 
 
-			Parallel.ForEach(projects, new ParallelOptions { CancellationToken = CancelToken }, (p) =>
+			_log.Debug("Resolving projects.");
+			Parallel.ForEach(await projectsTask, new ParallelOptions { CancellationToken = CancelToken }, (p) =>
 			{
 
 				if (p.ProjectName == null)
