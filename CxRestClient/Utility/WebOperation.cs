@@ -134,7 +134,7 @@ namespace CxRestClient.Utility
 				}
 
 				if (inRecovery)
-					_log.Debug("Retry time exceeded, while loop exited during recover.");
+					_log.Debug("Retry time exceeded, while loop exited during recovery.");
 			}
 
 			throw nonRecoveryException;
@@ -155,7 +155,7 @@ namespace CxRestClient.Utility
 				return true;
 			});
 
-
+			_log.Error($"Aggregate exception: {sb.ToString()}");
 		}
 
 		public static T ExecuteGet<T>(Func<String, CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
