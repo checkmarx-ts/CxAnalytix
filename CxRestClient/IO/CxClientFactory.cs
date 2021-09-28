@@ -30,8 +30,11 @@ namespace CxRestClient.IO
 
         public CxRestClient CreateMnoClient(String apiVersion)
         {
-            return new CxRestClient(new System.Net.Http.Headers.AuthenticationHeaderValue(Context.MNOToken.TokenType,
-                Context.MNOToken.Token), MediaType, apiVersion);
+            if (!Context.MNOToken.HasValue)
+                return null;
+
+            return new CxRestClient(new System.Net.Http.Headers.AuthenticationHeaderValue(Context.MNOToken.Value.TokenType,
+                Context.MNOToken.Value.Token), MediaType, apiVersion);
         }
     }
 

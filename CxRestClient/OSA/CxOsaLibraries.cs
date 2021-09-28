@@ -64,7 +64,7 @@ namespace CxRestClient.OSA
 		}
 
 
-		private class LibrariesReader : IEnumerable<Library>, IEnumerator<Library>
+		private class LibrariesReader : IEnumerable<Library>, IEnumerator<Library>, IDisposable
 		{
 			private JToken _json;
 			private JTokenReader _reader;
@@ -83,7 +83,11 @@ namespace CxRestClient.OSA
 
 			public void Dispose()
 			{
-				_reader = null;
+				if (_reader != null)
+				{
+					_reader.Close();
+					_reader = null;
+				}
 			}
 
 			public IEnumerator<Library> GetEnumerator()
@@ -111,8 +115,8 @@ namespace CxRestClient.OSA
 				if (!(_arrayPos < _libArray.Count))
 					return false;
 
-				_currentLibrary = (Library)new JsonSerializer().
-				Deserialize(new JTokenReader(_libArray[_arrayPos]), typeof(Library));
+				using (var jtr = new JTokenReader(_libArray[_arrayPos]))
+					_currentLibrary = (Library)new JsonSerializer().Deserialize(jtr, typeof(Library));
 
 				return true;
 			}
@@ -147,7 +151,7 @@ namespace CxRestClient.OSA
 			{
 				var beforeCount = returnLibs.Count;
 
-				returnLibs.AddRange(WebOperation.ExecuteGet<LibrariesReader>(
+				using (var libReader = WebOperation.ExecuteGet<LibrariesReader>(
 				ctx.Json.CreateSastClient
 				, (response) =>
 				{
@@ -160,7 +164,8 @@ namespace CxRestClient.OSA
 				}
 				, url(curPage++)
 				, ctx
-				, token));
+				, token))
+					returnLibs.AddRange(libReader);
 
 				if (returnLibs.Count == beforeCount)
 					break;

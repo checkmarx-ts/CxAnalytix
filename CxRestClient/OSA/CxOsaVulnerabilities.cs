@@ -66,7 +66,7 @@ namespace CxRestClient.OSA
 		}
 
 
-		private class VulnerabilityReader : IEnumerable<Vulnerability>, IEnumerator<Vulnerability>
+		private class VulnerabilityReader : IEnumerable<Vulnerability>, IEnumerator<Vulnerability>, IDisposable
 		{
 			private JToken _json;
 			private JTokenReader _reader;
@@ -91,7 +91,11 @@ namespace CxRestClient.OSA
 
 			void IDisposable.Dispose()
 			{
-				_reader = null;
+				if (_reader != null)
+				{
+					_reader.Close();
+					_reader = null;
+				}
 			}
 
 			IEnumerator IEnumerable.GetEnumerator()
@@ -118,8 +122,9 @@ namespace CxRestClient.OSA
 				if (!(_arrayPos < _vulnArray.Count))
 					return false;
 
-				_currentVuln = (Vulnerability)new JsonSerializer().
-					Deserialize(new JTokenReader(_vulnArray[_arrayPos]), typeof(Vulnerability));
+				using (var jtr = new JTokenReader(_vulnArray[_arrayPos]))
+					_currentVuln = (Vulnerability)new JsonSerializer().
+						Deserialize(jtr, typeof(Vulnerability));
 
 				return true;
 			}

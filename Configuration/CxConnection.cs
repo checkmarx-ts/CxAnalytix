@@ -42,5 +42,12 @@ namespace CxAnalytix.Configuration
             set { this["ValidateCertificates"] = value; }
         }
 
+        [ConfigurationProperty("RetryLoop", IsRequired = false, DefaultValue = 0)]
+        public int RetryLoop
+        {
+            get => (int)this["RetryLoop"];
+            set { this["RetryLoop"] = value; }
+        }
+
     }
 }

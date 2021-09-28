@@ -32,7 +32,7 @@ namespace CxRestClient.SAST
             }
         }
 
-        private class PresetReader : IEnumerable<Preset>, IEnumerator<Preset>
+        private class PresetReader : IEnumerable<Preset>, IEnumerator<Preset>, IDisposable
         {
 
             private JToken _json;
@@ -54,7 +54,11 @@ namespace CxRestClient.SAST
 
             public void Dispose()
             {
-                _reader = null;
+                if (_reader != null)
+                {
+                    _reader.Close();
+                    _reader = null;
+                }
             }
 
             public IEnumerator<Preset> GetEnumerator()
@@ -87,20 +91,21 @@ namespace CxRestClient.SAST
 
         public static IEnumerable<Preset> GetPresets(CxRestContext ctx, CancellationToken token)
         {
-			return WebOperation.ExecuteGet<PresetReader>(
+			using (var presetReader = WebOperation.ExecuteGet<PresetReader>(
 				ctx.Json.CreateSastClient
 				, (response) =>
 				{
-                    using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
-                    using (var jtr = new JsonTextReader(sr))
-                    {
-                        JToken jt = JToken.Load(jtr);
-                        return new PresetReader(jt);
-                    }
-                }
-                , CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
+					using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
+					using (var jtr = new JsonTextReader(sr))
+					{
+						JToken jt = JToken.Load(jtr);
+						return new PresetReader(jt);
+					}
+				}
+				, CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
 				, ctx
-				, token);
+				, token))
+				return new List<Preset>(presetReader);
 		}
 
 	}
