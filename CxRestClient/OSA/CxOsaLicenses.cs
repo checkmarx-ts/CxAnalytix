@@ -54,7 +54,7 @@ namespace CxRestClient.OSA
             public String Url { get; internal set; }
         }
 
-        private class LicensesReader : IEnumerable<License>, IEnumerator<License>
+        private class LicensesReader : IEnumerable<License>, IEnumerator<License>, IDisposable
         {
             private JToken _json;
             private JTokenReader _reader;
@@ -73,7 +73,11 @@ namespace CxRestClient.OSA
 
             public void Dispose()
             {
-                _reader = null;
+                if (_reader != null)
+                {
+                    _reader.Close();
+                    _reader = null;
+                }
             }
 
             public IEnumerator<License> GetEnumerator()
@@ -102,8 +106,8 @@ namespace CxRestClient.OSA
                 if (!(_arrayPos < _licenseArray.Count))
                     return false;
 
-                _currentLicense = (License)new JsonSerializer().
-                    Deserialize(new JTokenReader(_licenseArray[_arrayPos]), typeof(License));
+                using (var jtr = new JTokenReader(_licenseArray[_arrayPos]))
+                _currentLicense = (License)new JsonSerializer().Deserialize(jtr, typeof(License));
 
                 return true;
             }
@@ -128,12 +132,13 @@ namespace CxRestClient.OSA
                     {"scanId", Convert.ToString (scanId)  }
                 });
 
+            List<License> retVal = new List<License>();
 
-            return WebOperation.ExecuteGet<IEnumerable<License>>(
-			ctx.Json.CreateSastClient
-			, (response) =>
-			{
-                using (var sr = new StreamReader (response.Content.ReadAsStreamAsync().Result))
+            using (var licReader = WebOperation.ExecuteGet<LicensesReader>(
+            ctx.Json.CreateSastClient
+            , (response) =>
+            {
+                using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
                 using (var jtr = new JsonTextReader(sr))
                 {
                     JToken jt = JToken.Load(jtr);
@@ -141,8 +146,12 @@ namespace CxRestClient.OSA
                 }
             }
             , url
-			, ctx
-			, token);
+            , ctx
+            , token))
+            {
+                retVal.AddRange(licReader);
+                return retVal;
+            }
 
         }
     }

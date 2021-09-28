@@ -64,13 +64,15 @@ namespace CxRestClient.SAST
                 {
                     LinkedList<String> langs = new LinkedList<string>();
 
-                    var langDicts = (List<Dictionary<String, String>>)new JsonSerializer().
-                        Deserialize(new JTokenReader(scan_state["languageStateCollection"] as JArray), typeof(List<Dictionary<String, String>>));
+                    using (var jtr = new JTokenReader(scan_state["languageStateCollection"] as JArray))
+                    {
+                        var langDicts = (List<Dictionary<String, String>>)new JsonSerializer().Deserialize(jtr, typeof(List<Dictionary<String, String>>));
 
-                    foreach (var langDict in langDicts)
-                        langs.AddLast(langDict["languageName"]);
+                        foreach (var langDict in langDicts)
+                            langs.AddLast(langDict["languageName"]);
 
-                    return String.Join(';', langs);
+                        return String.Join(';', langs);
+                    }
                 }
             }
 
@@ -99,7 +101,7 @@ namespace CxRestClient.SAST
         }
 
 
-        private class ScansReader : IEnumerable<Scan>, IEnumerator<Scan>
+        private class ScansReader : IEnumerable<Scan>, IEnumerator<Scan>, IDisposable
         {
 
             private JToken _json;
@@ -116,7 +118,11 @@ namespace CxRestClient.SAST
 
             public void Dispose()
             {
-                _reader = null;
+                if (_reader != null)
+                {
+                    _reader.Close();
+                    _reader = null;
+                }
             }
 
             public IEnumerator<Scan> GetEnumerator()
@@ -177,26 +183,26 @@ namespace CxRestClient.SAST
             return GetScans(ctx, token, ScanStatus.All);
         }
 
-        public static IEnumerable<Scan> GetScans(CxRestContext ctx, CancellationToken token, 
-            ScanStatus specificStatus, int? projectId = null)
-        {
-            String url = null;
+		public static IEnumerable<Scan> GetScans(CxRestContext ctx, CancellationToken token,
+			ScanStatus specificStatus, int? projectId = null)
+		{
+			String url = null;
 
-            var args = new Dictionary<string, string>();
+			var args = new Dictionary<string, string>();
 
-            if (specificStatus != ScanStatus.All)
-                args.Add("scanStatus", specificStatus.ToString());
+			if (specificStatus != ScanStatus.All)
+				args.Add("scanStatus", specificStatus.ToString());
 
-            if (projectId != null && projectId.HasValue)
-                args.Add("projectId", Convert.ToString (projectId.Value));
+			if (projectId != null && projectId.HasValue)
+				args.Add("projectId", Convert.ToString(projectId.Value));
 
 			url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, args);
 
-			return WebOperation.ExecuteGet<ScansReader>(
+			using (var scansReader = WebOperation.ExecuteGet<ScansReader>(
 			ctx.Json.CreateSastClient
 			, (response) =>
 			{
-				using (var sr = new StreamReader (response.Content.ReadAsStreamAsync().Result))
+				using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
 				using (var jtr = new JsonTextReader(sr))
 				{
 					jtr.DateParseHandling = DateParseHandling.None;
@@ -206,7 +212,8 @@ namespace CxRestClient.SAST
 			}
 			, url
 			, ctx
-			, token);
-        }
-    }
+			, token))
+				return new List<Scan>(scansReader);
+		}
+	}
 }

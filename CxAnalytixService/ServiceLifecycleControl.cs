@@ -86,7 +86,8 @@ namespace CxAnalytixService
             .WithOpTimeout(Config.Connection.TimeoutSeconds)
             .WithSSLValidate(Config.Connection.ValidateCertificates)
             .WithUsername(Config.Credentials.Username)
-            .WithPassword(Config.Credentials.Password);
+            .WithPassword(Config.Credentials.Password)
+            .WithRetryLoop(Config.Connection.RetryLoop);
 
             var restCtx = builder.Build();
 

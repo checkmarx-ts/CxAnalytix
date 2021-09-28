@@ -21,7 +21,7 @@ namespace CxRestClient.SAST
 		private CxTeams()
 		{ }
 
-		private class TeamReader : IEnumerable<Team>, IEnumerator<Team>
+		private class TeamReader : IEnumerable<Team>, IEnumerator<Team>, IDisposable
 		{
 
 			private JToken _json;
@@ -40,7 +40,11 @@ namespace CxRestClient.SAST
 
 			public void Dispose()
 			{
-				_reader = null;
+				if (_reader != null)
+				{
+					_reader.Close();
+					_reader = null;
+				}
 			}
 
 			public IEnumerator<Team> GetEnumerator()
@@ -68,9 +72,8 @@ namespace CxRestClient.SAST
 				if (!(_arrayPos < _teamArray.Count))
 					return false;
 
-
-				_curTeam = (Team)new JsonSerializer().
-					Deserialize(new JTokenReader(_teamArray[_arrayPos]), typeof(Team));
+				using (var jtr = new JTokenReader(_teamArray[_arrayPos]))
+					_curTeam = (Team)new JsonSerializer().Deserialize(jtr, typeof(Team));
 
 				return true;
 			}
@@ -97,7 +100,10 @@ namespace CxRestClient.SAST
 
 		public static IEnumerable<Team> GetTeams(CxRestContext ctx, CancellationToken token)
 		{
-			return WebOperation.ExecuteGet<TeamReader>(
+
+			List<Team> retVal = new List<Team>();
+
+			using (var teamReader = WebOperation.ExecuteGet<TeamReader>(
 				ctx.Json.CreateSastClient
 				, (response) =>
 				{
@@ -110,7 +116,12 @@ namespace CxRestClient.SAST
 				}
 				, CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
 				, ctx
-				, token);
+				, token))
+			{
+				retVal.AddRange(teamReader);
+
+				return retVal;
+			}
 		}
 
 	}
