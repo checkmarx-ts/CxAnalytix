@@ -714,6 +714,7 @@ namespace CxAnalytix.TransformLogic
 			reportRec.Add(PropertyKeys.KEY_SCANTYPE, scan.ScanType);
 			reportRec.Add(PropertyKeys.KEY_SCANFINISH, scan.FinishedStamp);
 
+			Queue<SortedDictionary<String, Object>> writeQueue = null;
 			SortedDictionary<String, Object> curResultRec = null;
 			SortedDictionary<String, Object> curQueryRec = null;
 			SortedDictionary<String, Object> curPath = null;
@@ -722,6 +723,10 @@ namespace CxAnalytix.TransformLogic
 
 			using (XmlReader xr = XmlReader.Create(report))
 			{
+				String sinkLine = null;
+				String sinkColumn = null;
+				String sinkFile = null;
+
 				while (xr.Read())
 				{
 					if (xr.NodeType == XmlNodeType.Element)
@@ -766,15 +771,16 @@ namespace CxAnalytix.TransformLogic
 
 							scan.IncrementSeverity(xr.GetAttribute("Severity"));
 
+							writeQueue = new Queue<SortedDictionary<string, object>>();
+							sinkLine = sinkColumn = sinkFile = null;
+
 							curResultRec = new SortedDictionary<String, Object>(curQueryRec);
 							curResultRec.Add("VulnerabilityId", xr.GetAttribute("NodeId"));
-							curResultRec.Add("SinkFileName", xr.GetAttribute("FileName"));
 							curResultRec.Add("Status", xr.GetAttribute("Status"));
-							curResultRec.Add("SinkLine", xr.GetAttribute("Line"));
-							curResultRec.Add("SinkColumn", xr.GetAttribute("Column"));
+
+
 							curResultRec.Add("FalsePositive", xr.GetAttribute("FalsePositive"));
 							curResultRec.Add("ResultSeverity", xr.GetAttribute("Severity"));
-							// TODO: Translate state number to an appropriate string
 							curResultRec.Add("State", xr.GetAttribute("state"));
 							curResultRec.Add("Remark", xr.GetAttribute("Remark"));
 							curResultRec.Add("ResultDeepLink", xr.GetAttribute("DeepLink"));
@@ -806,21 +812,26 @@ namespace CxAnalytix.TransformLogic
 							continue;
 						}
 
+						#region PathNode Element Extractions
+
 						if (xr.Name.CompareTo("FileName") == 0 && curPathNode != null)
 						{
-							curPathNode.Add("NodeFileName", xr.ReadElementContentAsString());
+							sinkFile = xr.ReadElementContentAsString();
+							curPathNode.Add("NodeFileName", sinkFile);
 							continue;
 						}
 
 						if (xr.Name.CompareTo("Line") == 0 && curPathNode != null && !inSnippet)
 						{
-							curPathNode.Add("NodeLine", xr.ReadElementContentAsString());
+							sinkLine = xr.ReadElementContentAsString();
+							curPathNode.Add("NodeLine", sinkLine);
 							continue;
 						}
 
 						if (xr.Name.CompareTo("Column") == 0 && curPathNode != null)
 						{
-							curPathNode.Add("NodeColumn", xr.ReadElementContentAsString());
+							sinkColumn = xr.ReadElementContentAsString();
+							curPathNode.Add("NodeColumn", sinkColumn);
 							continue;
 						}
 
@@ -859,6 +870,8 @@ namespace CxAnalytix.TransformLogic
 							curPathNode.Add("NodeCodeSnippet", xr.ReadElementContentAsString());
 							continue;
 						}
+
+						#endregion
 					}
 
 
@@ -878,19 +891,29 @@ namespace CxAnalytix.TransformLogic
 
 						if (xr.Name.CompareTo("Result") == 0)
 						{
+							writeQueue = null;
 							curResultRec = null;
 							continue;
 						}
 
 						if (xr.Name.CompareTo("Path") == 0)
 						{
+							while (writeQueue.Count > 0)
+							{
+								var curRec = writeQueue.Dequeue();
+								curRec.Add("SinkFileName", sinkFile);
+								curRec.Add("SinkLine", sinkLine);
+								curRec.Add("SinkColumn", sinkColumn);
+								trx.write(SastScanDetailOut, curRec);
+							}
+
 							curPath = null;
 							continue;
 						}
 
 						if (xr.Name.CompareTo("PathNode") == 0)
 						{
-							trx.write(SastScanDetailOut, curPathNode);
+							writeQueue.Enqueue(curPathNode);
 							curPathNode = null;
 							continue;
 						}
