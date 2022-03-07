@@ -16,6 +16,10 @@ namespace CxRestClient.IO
 
         private static ILog _log = LogManager.GetLogger(typeof(HttpClientSingleton));
 
+  //      private static String StripWhitespace(this String from)
+		//{
+		//}
+
 		static HttpClientSingleton()
 		{
             var assembly = System.Reflection.Assembly.GetEntryAssembly();
@@ -24,22 +28,33 @@ namespace CxRestClient.IO
             String productName = "CxAnalytix";
             String productVersion = "0.0.0";
 
+            _userAgent = new ProductInfoHeaderValue($"{companyName}-{productName}", productVersion);
+
             if (assembly != null)
             {
-                var companyAttrib = assembly.CustomAttributes.FirstOrDefault((x) => x.AttributeType == typeof (System.Reflection.AssemblyCompanyAttribute) );
-                if (companyAttrib != null)
-                    companyName = companyAttrib.ConstructorArguments[0].ToString();
+				var companyAttrib = assembly.CustomAttributes.FirstOrDefault((x) => x.AttributeType == typeof(System.Reflection.AssemblyCompanyAttribute));
+				if (companyAttrib != null)
+					companyName = companyAttrib.ConstructorArguments[0].ToString().Replace("\"", "");
 
-                var productAttrib = assembly.CustomAttributes.FirstOrDefault((x) => x.AttributeType == typeof(System.Reflection.AssemblyProductAttribute));
-                if (productAttrib != null)
-                    productName = productAttrib.ConstructorArguments[0].ToString();
+				var productAttrib = assembly.CustomAttributes.FirstOrDefault((x) => x.AttributeType == typeof(System.Reflection.AssemblyProductAttribute));
+				if (productAttrib != null)
+					productName = productAttrib.ConstructorArguments[0].ToString().Replace("\"", "");
 
-                var versionAttrib = assembly.CustomAttributes.FirstOrDefault((x) => x.AttributeType == typeof(System.Reflection.AssemblyInformationalVersionAttribute));
-                if (versionAttrib != null)
-                    productVersion = versionAttrib.ConstructorArguments[0].ToString();
+				var versionAttrib = assembly.CustomAttributes.FirstOrDefault((x) => x.AttributeType == typeof(System.Reflection.AssemblyInformationalVersionAttribute));
+				if (versionAttrib != null)
+					productVersion = versionAttrib.ConstructorArguments[0].ToString().Replace("\"", "");
+			}
+
+
+            try
+            {
+                _userAgent = new ProductInfoHeaderValue($"{companyName}-{productName}", productVersion);
             }
-
-            _userAgent = new ProductInfoHeaderValue($"{companyName}/{productName}", productVersion);
+            catch (Exception)
+			{
+                // Attempting to assign values such as "Microsoft Corporation" causes the
+                // user agent class to throw an exception.
+			}
         }
 
 
