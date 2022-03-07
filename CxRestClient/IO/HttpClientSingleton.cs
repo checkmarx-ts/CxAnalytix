@@ -16,10 +16,6 @@ namespace CxRestClient.IO
 
         private static ILog _log = LogManager.GetLogger(typeof(HttpClientSingleton));
 
-  //      private static String StripWhitespace(this String from)
-		//{
-		//}
-
 		static HttpClientSingleton()
 		{
             var assembly = System.Reflection.Assembly.GetEntryAssembly();
