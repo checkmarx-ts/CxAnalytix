@@ -11,6 +11,7 @@ using CxAnalytix.AuditTrails.Crawler;
 using CxAnalytix.Exceptions;
 using ProjectFilter;
 using OutputBootstrapper;
+using CxRestClient.Utility;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: CxAnalytix.Extensions.LogTrace()]
@@ -59,7 +60,9 @@ namespace CxAnalytixCLI
                             ProjectInfo = Config.Service.ProjectInfoRecordName,
                             PolicyViolations = Config.Service.PolicyViolationsRecordName
                         },
-                        t.Token);
+                        t.Token,
+                        !String.IsNullOrEmpty(Config.Connection.MNOUrl), 
+                        LicenseChecks.OsaIsNotLicensed(ctx, t.Token));
 
 					if (!t.Token.IsCancellationRequested)
 						using (var auditTrx = Output.StartTransaction())

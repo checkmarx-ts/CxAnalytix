@@ -53,6 +53,9 @@ namespace CxAnalytix.TransformLogic
 
 		ParallelOptions ThreadOpts { get; set; }
 
+		bool IncludeMNO { get; set; }
+		bool IncludeOSA { get; set; }
+
 		public String InstanceId { get; set; }
 
 		public IRecordRef ProjectInfoOut { get; internal set; }
@@ -286,8 +289,11 @@ namespace CxAnalytix.TransformLogic
 		}
 
 		private Transformer(CxRestContext ctx, CancellationToken token,
-			String previousStatePath, IProjectFilter filter)
+			String previousStatePath, IProjectFilter filter, bool includeMnO, bool includeOSA, ParallelOptions _topts)
 		{
+			ThreadOpts = _topts;
+			IncludeMNO = includeMnO;
+			IncludeOSA = includeOSA;
 			RestContext = ctx;
 			CancelToken = token;
 			Filter = filter;
@@ -314,7 +320,7 @@ namespace CxAnalytix.TransformLogic
 
 
 			_log.Debug("Resolving projects.");
-			Parallel.ForEach(await projectsTask, new ParallelOptions { CancellationToken = CancelToken }, (p) =>
+			Parallel.ForEach(await projectsTask, ThreadOpts, (p) =>
 			{
 
 				if (p.ProjectName == null)
@@ -408,7 +414,7 @@ namespace CxAnalytix.TransformLogic
 			_log.Debug("Resolving scans.");
 
 			// Load the scans for each project
-			Parallel.ForEach(_state.Projects, new ParallelOptions { CancellationToken = CancelToken },
+			Parallel.ForEach(_state.Projects, ThreadOpts,
 				(p) =>
 				{
 
@@ -424,15 +430,19 @@ namespace CxAnalytix.TransformLogic
 						SastScanCache.TryAdd(s.ScanId, s);
 					}
 
-					// OSA scans
-					var osaScans = CxOsaScans.GetScans(RestContext, CancelToken, p.ProjectId);
-					foreach (var s in osaScans)
+
+					if (IncludeOSA)
 					{
-						// Add to crawl state.
-						if (_log.IsTraceEnabled())
-							_log.Trace($"OSA scan record: {s}");
-						_state.AddScan(s.ProjectId, "Composition", ScanProductType.SCA, s.ScanId, s.FinishTime, "N/A");
-						ScaScanCache.TryAdd(s.ScanId, s);
+						// OSA scans
+						var osaScans = CxOsaScans.GetScans(RestContext, CancelToken, p.ProjectId);
+						foreach (var s in osaScans)
+						{
+							// Add to crawl state.
+							if (_log.IsTraceEnabled())
+								_log.Trace($"OSA scan record: {s}");
+							_state.AddScan(s.ProjectId, "Composition", ScanProductType.SCA, s.ScanId, s.FinishTime, "N/A");
+							ScaScanCache.TryAdd(s.ScanId, s);
+						}
 					}
 
 
@@ -491,7 +501,7 @@ namespace CxAnalytix.TransformLogic
 		private async Task<ProjectPolicyIndex> PopulatePolicies()
 		{
 
-			if (!String.IsNullOrEmpty(Configuration.Config.Connection.MNOUrl))
+			if (IncludeMNO)
 				// Policies will not have data if M&O is not installed.
 				try
 				{
@@ -635,23 +645,25 @@ namespace CxAnalytix.TransformLogic
 		/// <param name="concurrentThreads">The number of concurrent scan transformation threads.</param>
 		/// <param name="previousStatePath">A folder path where files will be created to store any state
 		/// data required to resume operations across program runs.</param>
+		/// <param name="instanceId">The identifier of the SAST instance that is being crawled</param>
 		/// <param name="ctx"></param>
-		/// <param name="outFactory">The factory implementation for making IOutput instances
-		/// used for outputting various record types.</param>
+		/// <param name="filter">The project filtering implementation.</param>
 		/// <param name="records">The names of the supported record types that will be used by 
 		/// the IOutputFactory to create the correct output implementation instance.</param>
 		/// <param name="token">A cancellation token that can be used to stop processing of data if
 		/// the task needs to be interrupted.</param>
+		/// <param name="includeMnO">Set to true if all M&O interaction should be skipped.</param>
+		/// <param name="includeOSA">Set to true if all OSA interaction should be skipped.</param>
 		public static void DoTransform(int concurrentThreads, String previousStatePath, String instanceId,
-		CxRestContext ctx, IProjectFilter filter, RecordNames records, CancellationToken token)
+		CxRestContext ctx, IProjectFilter filter, RecordNames records, CancellationToken token, bool includeMnO, bool includeOSA)
 		{
-			Transformer xform = new Transformer(ctx, token, previousStatePath, filter)
-			{
-				ThreadOpts = new ParallelOptions()
+			Transformer xform = new Transformer(ctx, token, previousStatePath, filter, includeMnO, includeOSA,
+				new ParallelOptions()
 				{
 					CancellationToken = token,
 					MaxDegreeOfParallelism = concurrentThreads
-				},
+				})
+			{
 				ProjectInfoOut = Output.RegisterRecord (records.ProjectInfo),
 				SastScanSummaryOut = Output.RegisterRecord(records.SASTScanSummary),
 				SastScanDetailOut = Output.RegisterRecord(records.SASTScanDetail),
@@ -659,7 +671,6 @@ namespace CxAnalytix.TransformLogic
 				ScaScanSummaryOut = Output.RegisterRecord(records.SCAScanSummary),
 				ScaScanDetailOut = Output.RegisterRecord(records.SCAScanDetail),
 				InstanceId = instanceId
-
 			};
 
 			xform.ExecuteSweep();
@@ -777,7 +788,6 @@ namespace CxAnalytix.TransformLogic
 							curResultRec = new SortedDictionary<String, Object>(curQueryRec);
 							curResultRec.Add("VulnerabilityId", xr.GetAttribute("NodeId"));
 							curResultRec.Add("Status", xr.GetAttribute("Status"));
-
 
 							curResultRec.Add("FalsePositive", xr.GetAttribute("FalsePositive"));
 							curResultRec.Add("ResultSeverity", xr.GetAttribute("Severity"));

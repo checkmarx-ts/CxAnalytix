@@ -4,13 +4,12 @@ using CxRestClient;
 using log4net;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.AuditTrails.Crawler;
 using CxAnalytix.Exceptions;
 using ProjectFilter;
+using CxRestClient.Utility;
 
 namespace CxAnalytixDaemon
 {
@@ -47,6 +46,7 @@ namespace CxAnalytixDaemon
 
 			_cancelToken = new CancellationTokenSource();
 
+
 			_serviceTask = Task.Run(async () =>
 			{
 				do
@@ -69,7 +69,8 @@ namespace CxAnalytixDaemon
 							SCAScanDetail = Config.Service.SCAScanDetailRecordName,
 							ProjectInfo = Config.Service.ProjectInfoRecordName,
 							PolicyViolations = Config.Service.PolicyViolationsRecordName
-						}, _cancelToken.Token);
+						}, _cancelToken.Token, !String.IsNullOrEmpty(Config.Connection.MNOUrl), 
+						LicenseChecks.OsaIsNotLicensed(restCtx, _cancelToken.Token) );
 					}
 					catch (ProcessFatalException pfe)
 					{

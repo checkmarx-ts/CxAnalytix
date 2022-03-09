@@ -17,8 +17,6 @@ namespace CxRestClient
         private static readonly String LOGIN_URI_SUFFIX = "cxrestapi/auth/identity/connect/token";
         private static readonly String CLIENT_SECRET = "014DF517-39D1-4453-B7B3-9930C563627C";
 
-        private static readonly String SAST_SCOPE = "sast_rest_api";
-        private static readonly String MNO_SCOPE = "cxarm_api";
 
 
         private static ILog _log = LogManager.GetLogger(typeof(CxRestContext));
@@ -190,25 +188,49 @@ namespace CxRestClient
             };
         }
 
-        private static LoginToken GetLoginToken(String url, String username, String password,
-            String scope)
+
+        private static LoginToken GetLoginToken(String url, Dictionary<string, string> headers)
+		{
+            return GetLoginToken(url, new FormUrlEncodedContent(headers));
+		}
+
+
+        private static LoginToken GetSASTLoginToken(String url, String username, String password)
         {
-            _log.Debug($"Obtainting login token for scope [{scope}]");
+            _log.Debug($"Obtainting SAST login token");
 
             var requestContent = new Dictionary<string, string>()
             {
                 {"username", username},
                 {"password", password},
                 {"grant_type", "password"},
-                {"scope", scope},
+                {"scope", "sast_api"},
+                {"client_id", "resource_owner_sast_client"},
+                {"client_secret", CLIENT_SECRET}
+            };
+
+
+            return GetLoginToken(url, requestContent);
+        }
+
+
+        private static LoginToken GetMNOLoginToken(String url, String username, String password)
+        {
+            _log.Debug($"Obtainting CxARM login token");
+
+            var requestContent = new Dictionary<string, string>()
+            {
+                {"username", username},
+                {"password", password},
+                {"grant_type", "password"},
+                {"scope", "sast_rest_api cxarm_api"},
                 {"client_id", "resource_owner_client"},
                 {"client_secret", CLIENT_SECRET}
             };
 
-            var payloadContent = new FormUrlEncodedContent(requestContent);
-
-            return GetLoginToken(url, payloadContent);
+            return GetLoginToken(url, requestContent);
         }
+
 
         #endregion
 
@@ -292,8 +314,8 @@ namespace CxRestClient
 
                 CxRestContext retVal = new CxRestContext()
                 {
-                    SastToken = GetLoginToken(_url, _user, _pass, SAST_SCOPE),
-                    MNOToken =  String.IsNullOrEmpty(_mnoUrl) ? new Nullable<LoginToken> () : GetLoginToken(_url, _user, _pass, $"{MNO_SCOPE} {SAST_SCOPE}"),
+                    SastToken = GetSASTLoginToken(_url, _user, _pass),
+                    MNOToken =  String.IsNullOrEmpty(_mnoUrl) ? new Nullable<LoginToken> () : GetMNOLoginToken(_url, _user, _pass),
                     Url = _url,
                     MnoUrl = _mnoUrl,
                     ValidateSSL = _validate,

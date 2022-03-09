@@ -9,6 +9,7 @@ using CxRestClient;
 using CxAnalytix.AuditTrails.Crawler;
 using CxAnalytix.Exceptions;
 using ProjectFilter;
+using CxRestClient.Utility;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: CxAnalytix.Extensions.LogTrace()]
@@ -113,7 +114,8 @@ namespace CxAnalytixService
 							SCAScanDetail = Config.Service.SCAScanDetailRecordName,
 							ProjectInfo = Config.Service.ProjectInfoRecordName,
 							PolicyViolations = Config.Service.PolicyViolationsRecordName
-						}, _cancelToken.Token);
+						}, _cancelToken.Token, !String.IsNullOrEmpty(Config.Connection.MNOUrl), 
+                        LicenseChecks.OsaIsNotLicensed(restCtx, _cancelToken.Token));
 
 					}
 					catch (ProcessFatalException pfe)
