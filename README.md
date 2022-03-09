@@ -37,6 +37,7 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 		* Issue 142 - Correct the SinkFileName, SinkLine, SinkColumn values in the scan detail output.
 		* Issue 135 - Avoid repeatedly calling OSA endpoints if OSA is not licensed.
 		* Issue 109 - The user agent now shows API requests with CxAnalytix and version in the user agent string.
+		* As of v1.3.3, CxAnalytix is no longer compatible with SAST versions prior to 9.0.
 
 * 1.3.2
 	* BUG FIXES
