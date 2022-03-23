@@ -70,7 +70,7 @@ namespace CxAnalytixDaemon
 							ProjectInfo = Config.Service.ProjectInfoRecordName,
 							PolicyViolations = Config.Service.PolicyViolationsRecordName
 						}, _cancelToken.Token, !String.IsNullOrEmpty(Config.Connection.MNOUrl), 
-						LicenseChecks.OsaIsNotLicensed(restCtx, _cancelToken.Token) );
+						LicenseChecks.OsaIsLicensed(restCtx, _cancelToken.Token) );
 					}
 					catch (ProcessFatalException pfe)
 					{

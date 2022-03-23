@@ -657,6 +657,12 @@ namespace CxAnalytix.TransformLogic
 		public static void DoTransform(int concurrentThreads, String previousStatePath, String instanceId,
 		CxRestContext ctx, IProjectFilter filter, RecordNames records, CancellationToken token, bool includeMnO, bool includeOSA)
 		{
+			if (!includeMnO)
+				_log.Warn("Management & Orchestration data will not be crawled.");
+
+			if (!includeOSA)
+				_log.Warn("OSA data will not be crawled.");
+
 			Transformer xform = new Transformer(ctx, token, previousStatePath, filter, includeMnO, includeOSA,
 				new ParallelOptions()
 				{

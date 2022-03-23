@@ -84,7 +84,7 @@ namespace CxRestClient.Utility
 		}
 
 
-		public static bool OsaIsNotLicensed(CxRestContext ctx, CancellationToken token)
+		public static bool OsaIsLicensed(CxRestContext ctx, CancellationToken token)
 		{
 			_log.Info("Detecting OSA License...");
 
@@ -101,7 +101,7 @@ namespace CxRestClient.Utility
 
             _log.Info($"OSA is Licensed: {osaEnabled}");
 
-			return !osaEnabled;
+			return osaEnabled;
 		}
 	}
 }

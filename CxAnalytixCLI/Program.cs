@@ -62,7 +62,7 @@ namespace CxAnalytixCLI
                         },
                         t.Token,
                         !String.IsNullOrEmpty(Config.Connection.MNOUrl), 
-                        LicenseChecks.OsaIsNotLicensed(ctx, t.Token));
+                        LicenseChecks.OsaIsLicensed(ctx, t.Token));
 
 					if (!t.Token.IsCancellationRequested)
 						using (var auditTrx = Output.StartTransaction())
