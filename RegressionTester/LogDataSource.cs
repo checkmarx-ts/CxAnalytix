@@ -14,8 +14,19 @@ namespace RegressionTester
 
 		public LogDataSource(String path, String fileMask)
 		{
-			_files = Directory.GetFiles(path, fileMask);
+			var foundFiles = Directory.GetFiles(path, fileMask);
 
+			List<String> filteredFiles = new List<string>();
+
+			foreach (var filePath in foundFiles)
+			{
+				var fi = new FileInfo(filePath);
+
+				if (fi.Length > 0)
+					filteredFiles.Add(filePath);
+			}
+
+			_files = filteredFiles.ToArray();
 		}
 
 		private void ReportLocation (String fileName, long lineNumber)
