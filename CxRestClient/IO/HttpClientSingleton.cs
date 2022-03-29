@@ -45,6 +45,7 @@ namespace CxRestClient.IO
             try
             {
                 _userAgent = new ProductInfoHeaderValue($"{companyName}-{productName}", productVersion);
+                _log.Debug($"User Agent: {_userAgent}");
             }
             catch (Exception)
 			{
