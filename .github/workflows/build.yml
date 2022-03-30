@@ -29,6 +29,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: [install-net-core]
     steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
       - name: Platform build ${{ inputs.platform }}
         run: |
           dotnet publish -p:Version=${{ inputs.version }} -c ${{ inputs.configuration }} -o artifacts/${{ inputs.platform }} -r ${{ inputs.platform }}
