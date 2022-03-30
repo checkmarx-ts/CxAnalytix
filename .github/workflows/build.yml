@@ -36,7 +36,7 @@ jobs:
     steps:
       - run: which zip
       - run: set
-      - name: Fetch Code from Cache
+      - name: Fetch Code
         uses: actions/checkout@v2
         with:
           path: ./code
