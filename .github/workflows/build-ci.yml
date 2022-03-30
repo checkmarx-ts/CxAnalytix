@@ -1,24 +1,14 @@
 name: build-ci
 on: push
 jobs:
-  checkout:
+
+  build-windows:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
-      - run: |
-          pwd
-          ls -l ./.github/workflows/build/action.yml
-          
-
-  build-windows:
-    runs-on: ubuntu-latest
-    needs: [checkout]
-    steps:
-      - run: |
-          pwd
-          ls -l
-      - uses: ./.github/workflows/build/action.yml
+      -name: Call Build Action
+        uses: ./.github/workflows/build/action.yml
         with:
           version: 1.3.3
           platform: win-x64
@@ -32,7 +22,7 @@ jobs:
         run: |
           set
           pwd
-          ls -l
+          ls -la
               
               
             
