@@ -1,25 +1,24 @@
 name: build-ci
 on: push
 jobs:
-
     build-windows:
-        runs-on: ubuntu-latest
-        steps:
-            - uses: ./.github/workflows/build
-            with:
-                version: 1.3.3
-                platform: win-x64
-                configuration: ReleaseWindows
+      runs-on: ubuntu-latest
+      steps:
+        - uses: ./.github/workflows/build
+          with:
+            version: 1.3.3
+            platform: win-x64
+            configuration: ReleaseWindows
 
     verify:
-        runs-on: ubuntu-latest
-        needs: [build-windows]
-        steps:
-          - name: Dump Environment
-            run: |
-              set
-              pwd
-              ls -l
+      runs-on: ubuntu-latest
+      needs: [build-windows]
+      steps:
+        - name: Dump Environment
+          run: |
+            set
+            pwd
+            ls -l
               
               
             
