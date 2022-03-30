@@ -6,7 +6,7 @@ jobs:
   checkout-and-cache:
     runs-on: ubuntu-latest
     steps:
-      - run: echo ${{ GITHUB_SHA }}
+      - run: set
       - name: Checkout Code
         uses: actions/checkout@v2
         with:
@@ -15,8 +15,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./code
-          key: ${{ GITHUB_SHA }}
-          restore-keys: ${{ GITHUB_SHA }}
+          key: ${{ env.GITHUB_SHA }}
+          restore-keys: ${{ env.GITHUB_SHA }}
           
           
             

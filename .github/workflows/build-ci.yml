@@ -2,6 +2,10 @@ name: build-ci
 on: push
 jobs:
 
+   dump:
+    runs-on: ubuntu-latest
+    steps:
+      - run: set   
 
   fetch-code:
     uses: ./.github/workflows/cache-code.yml
@@ -24,8 +28,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./win-x64
-          key: ${{ GITHUB_SHA }}-win-x64
-          restore-keys: ${{ GITHUB_SHA }}-win-x64
+          key: ${{ env.GITHUB_SHA }}-win-x64
+          restore-keys: ${{ env.GITHUB_SHA }}-win-x64
     
       - name: Dump Environment
         run: |
