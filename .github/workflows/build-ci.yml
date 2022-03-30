@@ -4,7 +4,7 @@ jobs:
     build-windows:
       runs-on: ubuntu-latest
       steps:
-        - uses: ./.github/workflows/build
+        - uses: ./.github/workflows/build.yml
           with:
             version: 1.3.3
             platform: win-x64
