@@ -3,12 +3,12 @@ on: push
 jobs:
 
   build-windows:
-    runs-on: ubuntu-latest
     uses: ./.github/workflows/build.yml
-      with:
-        version: 1.3.3
-        platform: win-x64
-        configuration: ReleaseWindows
+    name: Windows x64 Platform Build
+    with:
+      version: 1.3.3
+      platform: win-x64
+      configuration: ReleaseWindows
 
   verify:
     runs-on: ubuntu-latest
