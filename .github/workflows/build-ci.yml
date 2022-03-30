@@ -6,9 +6,9 @@ jobs:
         steps:
             - name: Dump Environment
               run: |
-              pwd
-              set
-              ls -l
+                pwd
+                set
+                ls -l
               
               
             
