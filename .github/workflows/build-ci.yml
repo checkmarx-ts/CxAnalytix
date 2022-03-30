@@ -5,7 +5,7 @@ jobs:
 
   build-windows-no-package:
     runs-on: ubuntu-latest
-    if: github.event_name != "pull_request"
+    if: github.event_name != 'pull_request'
     steps:
       - name: Dotnet Core 3.1 Install
         uses: actions/setup-dotnet@v1.7.2
@@ -23,7 +23,7 @@ jobs:
 
   build-linux-no-package:
     runs-on: ubuntu-latest
-    if: github.event_name != "pull_request"
+    if: github.event_name != 'pull_request'
     steps:
       - name: Dotnet Core 3.1 Install
         uses: actions/setup-dotnet@v1.7.2
