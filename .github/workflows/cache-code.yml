@@ -14,8 +14,8 @@ jobs:
       - name: Insert into Cache
         uses: actions/cache@v2
         with:
-          path: ./code
           key: ${{ env.GITHUB_SHA }}
+          path: ./code
           restore-keys: ${{ env.GITHUB_SHA }}
           
           

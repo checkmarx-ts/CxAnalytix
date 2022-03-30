@@ -32,8 +32,8 @@ jobs:
       - name: Fetch Code from Cache
         uses: actions/cache@v2
         with:
-          path: ./code
           key: ${{ env.GITHUB_SHA }}
+          path: ./code
           restore-keys: ${{ env.GITHUB_SHA }}
       - name: Platform build ${{ inputs.platform }}
         run: |
@@ -43,7 +43,7 @@ jobs:
       - name: Push Build Artifacts into Cache
         uses: actions/cache@v2
         with:
-          path: ./${{ inputs.platform }}
           key: ${{ env.GITHUB_SHA }}-${{ inputs.platform }}
+          path: ./${{ inputs.platform }}
           restore-keys: ${{ env.GITHUB_SHA }}-${{ inputs.platform }}
             

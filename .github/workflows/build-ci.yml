@@ -27,8 +27,8 @@ jobs:
       - name: Fetch Build Artifacts from Cache
         uses: actions/cache@v2
         with:
-          path: ./win-x64
           key: ${{ env.GITHUB_SHA }}-win-x64
+          path: ./win-x64
           restore-keys: ${{ env.GITHUB_SHA }}-win-x64
     
       - name: Dump Environment
