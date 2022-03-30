@@ -24,8 +24,8 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ./win-x64
-          key: ${{ env.GITHUB_SHA }}-win-x64
-          restore-keys: ${{ env.GITHUB_SHA }}-win-x64
+          key: ${{ GITHUB_SHA }}-win-x64
+          restore-keys: ${{ GITHUB_SHA }}-win-x64
     
       - name: Dump Environment
         run: |
