@@ -9,6 +9,7 @@ jobs:
 
   build-windows:
     uses: ./.github/workflows/build.yml
+    needs: [fetch-code]
     name: Windows x64 Platform Build
     with:
       version: 1.3.3

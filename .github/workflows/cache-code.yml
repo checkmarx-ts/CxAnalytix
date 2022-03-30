@@ -6,6 +6,7 @@ jobs:
   checkout-and-cache:
     runs-on: ubuntu-latest
     steps:
+      - run: echo ${{ env.GITHUB_SHA }}
       - name: Checkout Code
         uses: actions/checkout@v2
         with:
