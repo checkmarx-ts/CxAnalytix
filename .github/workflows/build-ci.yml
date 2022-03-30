@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [checkout]
     steps:
-      - uses: ./.github/workflows/build.yml
+      - uses: ./.github/workflows/build
         with:
           version: 1.3.3
           platform: win-x64
