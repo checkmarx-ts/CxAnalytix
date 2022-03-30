@@ -13,13 +13,8 @@ jobs:
           dotnet-version: 3.1
       - name: Fetch Code
         uses: actions/checkout@v2
-        with:
-          path: ./code
       - name: Platform build win-x64
-        run: |
-          pushd code
-          dotnet publish -c ReleaseWindows -o ../build -r win-x64
-          popd
+        run: dotnet publish -c ReleaseWindows -o artifacts -r win-x64
 
   build-linux-no-package:
     runs-on: ubuntu-latest
@@ -31,13 +26,10 @@ jobs:
           dotnet-version: 3.1
       - name: Fetch Code
         uses: actions/checkout@v2
-        with:
-          path: ./code
       - name: Platform build linux-x64
         run: |
-          pushd code
-          dotnet publish -c ReleaseLinux -o ../build -r linux-x64
-          popd
+        dotnet restore
+        dotnet publish -c ReleaseLinux -o artifacts -r linux-x64
       
 
   unit-test:
