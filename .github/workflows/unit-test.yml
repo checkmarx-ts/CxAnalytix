@@ -12,6 +12,6 @@ jobs:
       - name: Fetch Code
         uses: actions/checkout@v2
       - name: Run Tests
-        run: dotnet test --verbosity n
+        run: dotnet test --verbosity q
               
             
