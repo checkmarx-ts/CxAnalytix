@@ -6,6 +6,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v2
+      - run: |
+          pwd
+          ls -la
+          
 
   build-windows:
     runs-on: ubuntu-latest
