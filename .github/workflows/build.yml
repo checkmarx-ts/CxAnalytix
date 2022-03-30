@@ -58,9 +58,13 @@ jobs:
           pushd code
           dotnet publish -p:Version=${{ inputs.version }} -c ${{ inputs.configuration }} -o ../${{ inputs.platform }} -r ${{ inputs.platform }}
           popd
-          zip -db -r ${{ inputs.package_name }} ${{ inputs.platform }}/*
+          pushd ${{ inputs.platform }}
+          zip -db -r ../${{ inputs.package_name }} *
+          popd
+         
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ inputs.package_name }}
+          path: ${{ inputs.package_name }}            
           
-#      - uses: actions/upload-artifact@v2
-#        with:
-#          name: my-artifact
-#          path: path/to/artifact/world.txt            
+          
