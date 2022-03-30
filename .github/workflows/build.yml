@@ -14,11 +14,10 @@ on:
         description: 'The build configuration to use when building for the target platform'
         required: true
         type: string
-      package:
-        description: 'Flag to indicate package is to be built'
+      package_name:
+        description: 'The name of the zip package to be created'
         required: false
-        type: boolean
-        default: false
+        type: string
 
 jobs:
   install-net-core:
@@ -30,12 +29,15 @@ jobs:
           dotnet-version: 3.1
           
   
-  build:
+  build-no-package:
     runs-on: ubuntu-latest
     needs: [install-net-core]
+    if: ${{ inputs.package_name == "" }}
     steps:
       - run: which zip
       - run: set
+      
+      
       - name: Fetch Code
         uses: actions/checkout@v2
         with:
@@ -45,4 +47,27 @@ jobs:
           pushd code
           dotnet publish -p:Version=${{ inputs.version }} -c ${{ inputs.configuration }} -o ../${{ inputs.platform }} -r ${{ inputs.platform }}
           popd
-            
+          
+  build-with-package:
+    runs-on: ubuntu-latest
+    needs: [install-net-core]
+    if: ${{ inputs.package_name != "" }}
+    steps:
+      - run: which zip
+      - run: set
+     
+      - name: Fetch Code
+        uses: actions/checkout@v2
+        with:
+          path: ./code
+      - name: Platform build ${{ inputs.platform }}
+        run: |
+          pushd code
+          dotnet publish -p:Version=${{ inputs.version }} -c ${{ inputs.configuration }} -o ../${{ inputs.platform }} -r ${{ inputs.platform }}
+          popd
+          
+      
+#      - uses: actions/upload-artifact@v2
+#        with:
+#          name: my-artifact
+#          path: path/to/artifact/world.txt            

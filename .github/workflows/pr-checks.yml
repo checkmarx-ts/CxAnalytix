@@ -1,0 +1,30 @@
+name: pr-checks
+on: [pull_request]
+jobs:
+  
+
+  build-windows:
+    uses: ./.github/workflows/build.yml
+    name: Windows x64 Platform Build
+    with:
+      version: 0.0.0.0
+      platform: win-x64
+      configuration: ReleaseWindows
+      package_name: pr-windows-test-package.zip
+
+  build-linux:
+    uses: ./.github/workflows/build.yml
+    name: Linux x64 Platform Build
+    with:
+      version: 0.0.0.0
+      platform: linux-x64
+      configuration: ReleaseLinux
+      package_name: pr-linux-test-package.zip
+
+  unit-test:
+    uses: ./.github/workflows/unit-test.yml
+    name: Unit Tests
+
+
+  
+            
