@@ -57,7 +57,7 @@ jobs:
         run: |
           pushd code
           dotnet publish -p:Version=${{ inputs.version }} -c ${{ inputs.configuration }} -o ../${{ inputs.platform }} -r ${{ inputs.platform }}
-          zip -db -r ../${{ inputs.package_name }}
+          zip -db -r ../${{ inputs.package_name }} *
           popd
           
 #      - uses: actions/upload-artifact@v2
