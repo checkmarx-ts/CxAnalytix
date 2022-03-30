@@ -1,0 +1,17 @@
+name: build-any-platform
+on:
+  workflow_call:
+    inputs:
+      version:
+        description: 'The build version tag'
+        required: true
+        type: string
+      platform:
+        description: 'The target platform for the build'
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Platform build
+    
