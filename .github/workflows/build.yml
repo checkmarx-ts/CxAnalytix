@@ -29,9 +29,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: [install-net-core]
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v2
+      - name: Fetch Code from Cache
+        uses: actions/cache@v2
+        with:
+          path: ./code
+          key: ${{ env.GITHUB_SHA }}
+          restore-keys: ${{ env.GITHUB_SHA }}
       - name: Platform build ${{ inputs.platform }}
         run: |
-          dotnet publish -p:Version=${{ inputs.version }} -c ${{ inputs.configuration }} -o artifacts/${{ inputs.platform }} -r ${{ inputs.platform }}
+          pushd code
+          dotnet publish -p:Version=${{ inputs.version }} -c ${{ inputs.configuration }} -o ../${{ inputs.platform }} -r ${{ inputs.platform }}
+          popd
+      - name: Push Build Artifacts into Cache
+        uses: actions/cache@v2
+        with:
+          path: ./${{ inputs.platform }}
+          key: ${{ env.GITHUB_SHA }}-${{ inputs.platform }}
+          restore-keys: ${{ env.GITHUB_SHA }}-${{ inputs.platform }}
             

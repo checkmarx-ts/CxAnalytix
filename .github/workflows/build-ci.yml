@@ -2,6 +2,11 @@ name: build-ci
 on: push
 jobs:
 
+
+  fetch-code:
+    uses: ./.github/workflows/cache-code.yml
+    
+
   build-windows:
     uses: ./.github/workflows/build.yml
     name: Windows x64 Platform Build
@@ -10,15 +15,22 @@ jobs:
       platform: win-x64
       configuration: ReleaseWindows
 
-  verify:
+  verify-windows:
     runs-on: ubuntu-latest
     needs: [build-windows]
     steps:
+      - name: Fetch Build Artifacts from Cache
+        uses: actions/cache@v2
+        with:
+          path: ./win-x64
+          key: ${{ env.GITHUB_SHA }}-win-x64
+          restore-keys: ${{ env.GITHUB_SHA }}-win-x64
+    
       - name: Dump Environment
         run: |
           set
           pwd
-          ls -la
+          ls -l win-x64
               
               
             

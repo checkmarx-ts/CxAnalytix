@@ -1,0 +1,21 @@
+name: cache-code
+on: workflow_call
+
+jobs:
+  
+  checkout-and-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+        with:
+          path: code
+      - name: Insert into Cache
+        uses: actions/cache@v2
+        with:
+          path: ./code
+          key: ${{ env.GITHUB_SHA }}
+          restore-keys: ${{ env.GITHUB_SHA }}
+          
+          
+            
