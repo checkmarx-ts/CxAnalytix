@@ -32,7 +32,7 @@ jobs:
   build-no-package:
     runs-on: ubuntu-latest
     needs: [install-net-core]
-    if: ${{ inputs.package_name == "" }}
+    if: ${{ inputs.package_name == '' }}
     steps:
       - run: which zip
       - run: set
@@ -51,7 +51,7 @@ jobs:
   build-with-package:
     runs-on: ubuntu-latest
     needs: [install-net-core]
-    if: ${{ inputs.package_name != "" }}
+    if: ${{ inputs.package_name != '' }}
     steps:
       - run: which zip
       - run: set

@@ -1,7 +1,6 @@
 name: pr-checks
 on: [pull_request]
 jobs:
-  
 
   build-windows:
     uses: ./.github/workflows/build.yml
