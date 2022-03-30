@@ -8,7 +8,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
       - name: Call Build Action
-        uses: ./.github/workflows/build
+        uses: ./.github/workflows/build.yml
         with:
           version: 1.3.3
           platform: win-x64
