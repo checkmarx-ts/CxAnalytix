@@ -49,7 +49,7 @@ jobs:
           artifactErrorsFailBuild: true
           artifacts: artifacts/*.zip
           artifactContentType: application/zip
-          bodyFile: release.md
+#          bodyFile: release.md
           name: v${{ inputs.tag }}
           prerelease: ${{ inputs.prerelease }}
 #          replacesArtifacts: true
