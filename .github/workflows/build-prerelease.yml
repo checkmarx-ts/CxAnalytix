@@ -1,13 +1,13 @@
 name: build-prerelease
-on: workflow_dispatch
-  inputs:
-    version:
-      description: 'The version tag to use in the form of x.x.x'
-      required: true
-      type: string
+on: 
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The version tag to use in the form of x.x.x'
+        required: true
+        type: string
       
 jobs:
-
   set-version-tag-variable:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
