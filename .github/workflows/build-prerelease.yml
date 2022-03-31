@@ -12,8 +12,9 @@ jobs:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     steps:
+      - run: set
       - name: Create version tag
-        run: echo ::set-output name=tag::inputs.version-$GITHUB_RUN_ID-prerelease
+        run: echo ::set-output name=tag::$INPUTS_VERSION-$GITHUB_RUN_ID-prerelease
         id: set-tag
       - name: Tag repo ${{ steps.set-tag.outputs.tag }}
         uses: richardsimko/update-tag@v1
