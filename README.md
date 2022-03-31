@@ -1,4 +1,4 @@
-![Build Badge](https://circleci.com/gh/checkmarx-ts/CxAnalytix.svg?style=shield)
+[![build-ci](https://github.com/checkmarx-ts/CxAnalytix/actions/workflows/build-ci.yml/badge.svg)](https://github.com/checkmarx-ts/CxAnalytix/actions/workflows/build-ci.yml)
 
 # CxAnalytix
 
