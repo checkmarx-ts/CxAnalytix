@@ -41,7 +41,7 @@ jobs:
       - run: ls -l artifacts
       - name: Create GitHub Release
         id: create_release
-        uses: actions/create-release@v1
+        uses: ncipollo/release-action@v1
 #        env:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -54,7 +54,7 @@ jobs:
           prerelease: ${{ inputs.prerelease }}
 #          replacesArtifacts: true
           tag: v${{ inputs.tag }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+#          token: ${{ secrets.GITHUB_TOKEN }}
           
           
           
