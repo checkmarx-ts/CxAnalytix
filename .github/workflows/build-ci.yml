@@ -26,7 +26,6 @@ jobs:
         with:
           header: InferCsharp win-x64 Results
           path: infer-out/report.txt
-      - run: rm -f infer-out/report.txt
       - name: Run InferCsharp linux-x64
         uses: microsoft/infersharpaction@v1.2.1
         id: runinfersharp-linux-x64
