@@ -8,20 +8,20 @@ on:
         type: string
       
 jobs:
-  set-version-tag-variable:
+  create-pre-release:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
     steps:
-      - run: set
-      - run: ${{ inputs.version }}
-      - run: export VERSION_TAG=${{ inputs.version }}
+      - name: Create version tag
+        run: echo ::set-output name=tag::${{ inputs.version }}-${{ env.GITHUB_RUN_ID }}-prerelease
+        id: set-tag
+      - name: Tag repo ${{ steps.set-tag.outputs.tag }}
+        uses: richardsimko/update-tag@v1
+        with:
+          tag_name: ${{ steps.set-tag.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
-  
-  perform-build:
-    runs-on: ubuntu-latest
-    needs: [set-version-tag-variable]
-    steps:
-      - run: set
 
   
   
