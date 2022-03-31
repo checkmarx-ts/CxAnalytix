@@ -25,7 +25,9 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: InferCsharp win-x64 Results
-          path: infer-out/report.txt
+          message: |
+            InferCsharp win-x64 Results
+            ${{ cat infer-out/report.txt | grep -v ^\# }}
       - name: Run InferCsharp linux-x64
         uses: microsoft/infersharpaction@v1.2.1
         id: runinfersharp-linux-x64
@@ -35,7 +37,9 @@ jobs:
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: InferCsharp linux-x64 Results
-          path: infer-out/report.txt
+          message: |
+            InferCsharp linux-x64 Results
+            ${{ cat infer-out/report.txt | grep -v ^\# }}
   
 
   build-windows:
