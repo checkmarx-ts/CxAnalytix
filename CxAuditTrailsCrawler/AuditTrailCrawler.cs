@@ -56,7 +56,8 @@ namespace CxAnalytix.AuditTrails.Crawler
 
 			if (File.Exists(StorageFile))
 				using (StreamReader sr = new StreamReader(StorageFile))
-					SinceDate = serializer.Deserialize<DateTime>(new JsonTextReader(sr));
+				using (var jtr = new JsonTextReader(sr))
+					SinceDate = serializer.Deserialize<DateTime>(jtr);
 
 		}
 

@@ -13,9 +13,7 @@ jobs:
       - name: Fetch Code
         uses: actions/checkout@v2
       - name: Platform build win-x64
-        run: |
-          dotnet publish -c ReleaseWindows -o artifacts/win-x64 -r win-x64
-          dotnet publish -c ReleaseLinux -o artifacts/linux-x64 -r linux-x64
+        run: dotnet publish -c ReleaseWindows -o artifacts -r win-x64
       - name: Run InferCsharp
         uses: microsoft/infersharpaction@v1.2.1
         id: runinfersharp
@@ -35,6 +33,8 @@ jobs:
         uses: actions/setup-dotnet@v1.7.2
         with:
           dotnet-version: 3.1
+      - run: dotnet --version
+      - run: dotnet --info
       - name: Fetch Code
         uses: actions/checkout@v2
       - name: Platform build linux-x64

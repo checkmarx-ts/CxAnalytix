@@ -94,6 +94,7 @@ namespace CxRestClient.OSA
 				if (_reader != null)
 				{
 					_reader.Close();
+					(_reader as IDisposable).Dispose();
 					_reader = null;
 				}
 			}

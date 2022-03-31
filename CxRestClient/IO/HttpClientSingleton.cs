@@ -100,10 +100,11 @@ namespace CxRestClient.IO
 
         public static HttpClient GetClient()
         {
-            if (_client == null)
-                throw new InvalidOperationException("HttpClient has not been initialized.");
+            lock(_lock)
+				if (_client == null)
+					throw new InvalidOperationException("HttpClient has not been initialized.");
 
-            return _client;
+			return _client;
         }
 
     }
