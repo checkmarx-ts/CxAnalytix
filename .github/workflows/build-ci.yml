@@ -21,25 +21,27 @@ jobs:
         id: runinfersharp-win-x64
         with:
           binary-path: artifacts/win-x64
+      - run: |
+        echo InferCsharp win-x64 Results > filtered-report.txt
+        cat infer-out/report.txt | grep -v ^\# >> filtered-report.txt
       - name: PR Comment for win-x64 results
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: InferCsharp win-x64 Results
-          message: |
-            InferCsharp win-x64 Results
-            ${{ cat infer-out/report.txt | grep -v ^\# }}
+          path: filtered-report.txt
       - name: Run InferCsharp linux-x64
         uses: microsoft/infersharpaction@v1.2.1
         id: runinfersharp-linux-x64
         with:
           binary-path: artifacts/linux-x64
+      - run: |
+        echo InferCsharp linux-x64 Results > filtered-report.txt
+        cat infer-out/report.txt | grep -v ^\# >> filtered-report.txt
       - name: PR Comment for linux-x64 results
         uses: marocchino/sticky-pull-request-comment@v2
         with:
           header: InferCsharp linux-x64 Results
-          message: |
-            InferCsharp linux-x64 Results
-            ${{ cat infer-out/report.txt | grep -v ^\# }}
+          path: filtered-report.txt
   
 
   build-windows:
