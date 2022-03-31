@@ -1,0 +1,25 @@
+name: publish-build
+on: 
+  workflow_call:
+    inputs:
+      tag:
+        description: 'The version tag to use for stamping build artifacts and naming generated archives'
+        required: true
+        type: string
+      prerelease:
+        description: 'Set to true if published build is a prerelease'
+        type: boolean
+        required: true
+        
+jobs:
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo ${{ inputs.tag }}
+      - run: echo ${{ inputs.prerelease }}
+      
+
+        
+        
+        

@@ -20,15 +20,16 @@ jobs:
       - name: Tag repo v${{ steps.create-tag.outputs.tag }}
         uses: richardsimko/update-tag@v1
         with:
-          tag_name: v${{ steps.set-tag.outputs.tag }}
+          tag_name: v${{ steps.create-tag.outputs.tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
   publish-prerelease:
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/publish-build.yml
+      with:
+        tag: ${{ needs.create-tag.outputs.tag }}
+        prerelease: true
     needs: [create-tag]
-    steps:
-      - run: echo ${{ needs.create-tag.outputs.tag }}
       
     
   
