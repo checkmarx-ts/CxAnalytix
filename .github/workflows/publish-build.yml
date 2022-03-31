@@ -54,6 +54,8 @@ jobs:
           prerelease: ${{ inputs.prerelease }}
 #          replacesArtifacts: true
           tag: v${{ inputs.tag }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
           
           
           
