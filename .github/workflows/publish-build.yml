@@ -13,12 +13,35 @@ on:
         
 jobs:
 
-  test:
+  build-packages:
     runs-on: ubuntu-latest
     steps:
-      - run: echo ${{ inputs.tag }}
-      - run: echo ${{ inputs.prerelease }}
+      - name: Fetch Code @ tag v${{ inputs.tag }}
+        uses: actions/checkout@v2
+        with:
+          ref: refs/tags/v${{ inputs.tag }}
+      - name: Dotnet Core 3.1 Install
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 3.1
+      - name: Platform build win-x64
+        run: dotnet publish -p:Version=${{ inputs.tag }}  -c ReleaseWindows -o artifacts/win-x64 -r win-x64
+      - name: Platform build linux-x64
+        run: dotnet publish -p:Version=${{ inputs.tag }}  -c ReleaseLinux -o artifacts/linux-x64 -r linux-x64
+      - name: Make win-x64 package
+        run: |
+          pushd artifacts/win-x64
+          zip ../CxAnalytix-v${{ inputs.tag }}-win-x64.zip *
+          popd
+      - name: Make linux-x64 package
+        run: |
+          pushd artifacts/linux-x64
+          zip ../CxAnalytix-v${{ inputs.tag }}-linux-x64.zip *
+          popd
+      - run: ls -l
       
+          
+
 
         
         
