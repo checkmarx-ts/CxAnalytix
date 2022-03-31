@@ -77,19 +77,26 @@ namespace RegressionTester
 		}
 
 
-		public void AddRecord (String uid, String location, Dictionary<String, Object> record)
+		public bool AddRecord (String uid, String location, Dictionary<String, Object> record)
 		{
-			_records.Add(uid, new RecordLocator(uid, record, location));
+			if (!_records.ContainsKey(uid))
+			{
+				_records.Add(uid, new RecordLocator(uid, record, location));
 
-			var dupeHash = Hash(record);
+				var dupeHash = Hash(record);
 
-			if (_internalDupes.ContainsKey(dupeHash))
-				_internalDupes[dupeHash].AddLast(location);
+				if (_internalDupes.ContainsKey(dupeHash))
+					_internalDupes[dupeHash].AddLast(location);
+				else
+					_internalDupes.Add(dupeHash, new LinkedList<String>(new String[] { location }));
+
+				foreach (var valueKey in record.Keys)
+					ValueKeys.Add(valueKey);
+
+				return true;
+			}
 			else
-				_internalDupes.Add(dupeHash, new LinkedList<String>(new String[] { location }));
-			
-			foreach (var valueKey in record.Keys)
-				ValueKeys.Add(valueKey);
+				return false;
 		}
 
 

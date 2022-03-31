@@ -69,7 +69,8 @@ namespace CxAnalytix.CxAuditTrails
 			{
 				var serializer = JsonSerializer.Create();
 
-				using (JsonTextReader jtr = new JsonTextReader(new StringReader(val as String)))
+				using (var sr = new StringReader(val as String))
+				using (JsonTextReader jtr = new JsonTextReader(sr))
 					return serializer.Deserialize<SortedDictionary<String, Object>>(jtr);
 			};
 

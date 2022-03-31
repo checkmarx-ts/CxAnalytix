@@ -1,0 +1,110 @@
+name: build-ci
+on: 
+  push:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+jobs:
+  
+  infer-csharp-pr-comment:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - name: Dotnet Core 3.1 Install
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 3.1
+      - name: Fetch Code
+        uses: actions/checkout@v2
+      - name: Platform build win-x64
+        run: dotnet publish -c ReleaseWindows -o artifacts/win-x64 -r win-x64
+      - name: Platform build linux-x64
+        run: dotnet publish -c ReleaseLinux -o artifacts/linux-x64 -r linux-x64
+      - name: Run InferCsharp win-x64
+        uses: microsoft/infersharpaction@v1.2.1
+        id: runinfersharp-win-x64
+        with:
+          binary-path: artifacts/win-x64
+      - run: |
+          echo InferCsharp win-x64 Results > filtered-report.txt
+          cat infer-out/report.txt | grep -v ^\# >> filtered-report.txt
+      - name: PR Comment for win-x64 results
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: InferCsharp win-x64 Results
+          path: filtered-report.txt
+      - name: Run InferCsharp linux-x64
+        uses: microsoft/infersharpaction@v1.2.1
+        id: runinfersharp-linux-x64
+        with:
+          binary-path: artifacts/linux-x64
+      - run: |
+          echo InferCsharp linux-x64 Results > filtered-report.txt
+          cat infer-out/report.txt | grep -v ^\# >> filtered-report.txt
+      - name: PR Comment for linux-x64 results
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: InferCsharp linux-x64 Results
+          path: filtered-report.txt
+  
+
+  build-windows:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dotnet Core 3.1 Install
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 3.1
+      - name: Fetch Code
+        uses: actions/checkout@v2
+      - name: Platform build win-x64
+        run: dotnet publish -c ReleaseWindows -o artifacts -r win-x64
+       
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dotnet Core 3.1 Install
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 3.1
+      - name: Fetch Code
+        uses: actions/checkout@v2
+      - name: Platform build linux-x64
+        run: dotnet publish -c ReleaseLinux -o artifacts -r linux-x64
+
+
+  build-docker:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dotnet Core 3.1 Install
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 3.1
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1          
+      - name: Fetch Code
+        uses: actions/checkout@v2
+      - name: Platform build linux-x64
+        run: dotnet publish -c ReleaseLinux -o artifacts -r linux-x64
+      - name: Build Docker Container
+        run: docker build -f Dockerfile artifacts
+    
+
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dotnet Core 3.1 Install
+        uses: actions/setup-dotnet@v1.7.2
+        with:
+          dotnet-version: 3.1
+      - name: Fetch Code
+        uses: actions/checkout@v2
+      - name: Run Tests
+        run: dotnet test --verbosity q
+              
+              
+            

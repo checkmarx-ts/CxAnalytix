@@ -3,13 +3,14 @@
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>netcoreapp3.1</TargetFramework>
-		<Authors>Nathan Leach</Authors>
+		<Authors>Checkmarx</Authors>
 		<Company>Checkmarx</Company>
 		<Description>Exports static analysis and software composition results to a form suitable for use by data analytics platforms.</Description>
 		<RuntimeIdentifier>win-x64</RuntimeIdentifier>
 		<RootNamespace>CxAnalytixService</RootNamespace>
 		<StartupObject>CxAnalytixService.Program</StartupObject>
 		<Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
+		<Version>0.0.0</Version>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

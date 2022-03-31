@@ -53,6 +53,9 @@ namespace CxAnalytix.TransformLogic
 
 		ParallelOptions ThreadOpts { get; set; }
 
+		bool IncludeMNO { get; set; }
+		bool IncludeOSA { get; set; }
+
 		public String InstanceId { get; set; }
 
 		public IRecordRef ProjectInfoOut { get; internal set; }
@@ -286,8 +289,11 @@ namespace CxAnalytix.TransformLogic
 		}
 
 		private Transformer(CxRestContext ctx, CancellationToken token,
-			String previousStatePath, IProjectFilter filter)
+			String previousStatePath, IProjectFilter filter, bool includeMnO, bool includeOSA, ParallelOptions _topts)
 		{
+			ThreadOpts = _topts;
+			IncludeMNO = includeMnO;
+			IncludeOSA = includeOSA;
 			RestContext = ctx;
 			CancelToken = token;
 			Filter = filter;
@@ -314,7 +320,7 @@ namespace CxAnalytix.TransformLogic
 
 
 			_log.Debug("Resolving projects.");
-			Parallel.ForEach(await projectsTask, new ParallelOptions { CancellationToken = CancelToken }, (p) =>
+			Parallel.ForEach(await projectsTask, ThreadOpts, (p) =>
 			{
 
 				if (p.ProjectName == null)
@@ -408,7 +414,7 @@ namespace CxAnalytix.TransformLogic
 			_log.Debug("Resolving scans.");
 
 			// Load the scans for each project
-			Parallel.ForEach(_state.Projects, new ParallelOptions { CancellationToken = CancelToken },
+			Parallel.ForEach(_state.Projects, ThreadOpts,
 				(p) =>
 				{
 
@@ -424,15 +430,19 @@ namespace CxAnalytix.TransformLogic
 						SastScanCache.TryAdd(s.ScanId, s);
 					}
 
-					// OSA scans
-					var osaScans = CxOsaScans.GetScans(RestContext, CancelToken, p.ProjectId);
-					foreach (var s in osaScans)
+
+					if (IncludeOSA)
 					{
-						// Add to crawl state.
-						if (_log.IsTraceEnabled())
-							_log.Trace($"OSA scan record: {s}");
-						_state.AddScan(s.ProjectId, "Composition", ScanProductType.SCA, s.ScanId, s.FinishTime, "N/A");
-						ScaScanCache.TryAdd(s.ScanId, s);
+						// OSA scans
+						var osaScans = CxOsaScans.GetScans(RestContext, CancelToken, p.ProjectId);
+						foreach (var s in osaScans)
+						{
+							// Add to crawl state.
+							if (_log.IsTraceEnabled())
+								_log.Trace($"OSA scan record: {s}");
+							_state.AddScan(s.ProjectId, "Composition", ScanProductType.SCA, s.ScanId, s.FinishTime, "N/A");
+							ScaScanCache.TryAdd(s.ScanId, s);
+						}
 					}
 
 
@@ -491,7 +501,7 @@ namespace CxAnalytix.TransformLogic
 		private async Task<ProjectPolicyIndex> PopulatePolicies()
 		{
 
-			if (!String.IsNullOrEmpty(Configuration.Config.Connection.MNOUrl))
+			if (IncludeMNO)
 				// Policies will not have data if M&O is not installed.
 				try
 				{
@@ -635,23 +645,31 @@ namespace CxAnalytix.TransformLogic
 		/// <param name="concurrentThreads">The number of concurrent scan transformation threads.</param>
 		/// <param name="previousStatePath">A folder path where files will be created to store any state
 		/// data required to resume operations across program runs.</param>
+		/// <param name="instanceId">The identifier of the SAST instance that is being crawled</param>
 		/// <param name="ctx"></param>
-		/// <param name="outFactory">The factory implementation for making IOutput instances
-		/// used for outputting various record types.</param>
+		/// <param name="filter">The project filtering implementation.</param>
 		/// <param name="records">The names of the supported record types that will be used by 
 		/// the IOutputFactory to create the correct output implementation instance.</param>
 		/// <param name="token">A cancellation token that can be used to stop processing of data if
 		/// the task needs to be interrupted.</param>
+		/// <param name="includeMnO">Set to true if all M&O interaction should be skipped.</param>
+		/// <param name="includeOSA">Set to true if all OSA interaction should be skipped.</param>
 		public static void DoTransform(int concurrentThreads, String previousStatePath, String instanceId,
-		CxRestContext ctx, IProjectFilter filter, RecordNames records, CancellationToken token)
+		CxRestContext ctx, IProjectFilter filter, RecordNames records, CancellationToken token, bool includeMnO, bool includeOSA)
 		{
-			Transformer xform = new Transformer(ctx, token, previousStatePath, filter)
-			{
-				ThreadOpts = new ParallelOptions()
+			if (!includeMnO)
+				_log.Warn("Management & Orchestration data will not be crawled.");
+
+			if (!includeOSA)
+				_log.Warn("OSA data will not be crawled.");
+
+			Transformer xform = new Transformer(ctx, token, previousStatePath, filter, includeMnO, includeOSA,
+				new ParallelOptions()
 				{
 					CancellationToken = token,
 					MaxDegreeOfParallelism = concurrentThreads
-				},
+				})
+			{
 				ProjectInfoOut = Output.RegisterRecord (records.ProjectInfo),
 				SastScanSummaryOut = Output.RegisterRecord(records.SASTScanSummary),
 				SastScanDetailOut = Output.RegisterRecord(records.SASTScanDetail),
@@ -659,7 +677,6 @@ namespace CxAnalytix.TransformLogic
 				ScaScanSummaryOut = Output.RegisterRecord(records.SCAScanSummary),
 				ScaScanDetailOut = Output.RegisterRecord(records.SCAScanDetail),
 				InstanceId = instanceId
-
 			};
 
 			xform.ExecuteSweep();
@@ -714,6 +731,7 @@ namespace CxAnalytix.TransformLogic
 			reportRec.Add(PropertyKeys.KEY_SCANTYPE, scan.ScanType);
 			reportRec.Add(PropertyKeys.KEY_SCANFINISH, scan.FinishedStamp);
 
+			Queue<SortedDictionary<String, Object>> writeQueue = null;
 			SortedDictionary<String, Object> curResultRec = null;
 			SortedDictionary<String, Object> curQueryRec = null;
 			SortedDictionary<String, Object> curPath = null;
@@ -722,6 +740,10 @@ namespace CxAnalytix.TransformLogic
 
 			using (XmlReader xr = XmlReader.Create(report))
 			{
+				String sinkLine = null;
+				String sinkColumn = null;
+				String sinkFile = null;
+
 				while (xr.Read())
 				{
 					if (xr.NodeType == XmlNodeType.Element)
@@ -766,15 +788,15 @@ namespace CxAnalytix.TransformLogic
 
 							scan.IncrementSeverity(xr.GetAttribute("Severity"));
 
+							writeQueue = new Queue<SortedDictionary<string, object>>();
+							sinkLine = sinkColumn = sinkFile = null;
+
 							curResultRec = new SortedDictionary<String, Object>(curQueryRec);
 							curResultRec.Add("VulnerabilityId", xr.GetAttribute("NodeId"));
-							curResultRec.Add("SinkFileName", xr.GetAttribute("FileName"));
 							curResultRec.Add("Status", xr.GetAttribute("Status"));
-							curResultRec.Add("SinkLine", xr.GetAttribute("Line"));
-							curResultRec.Add("SinkColumn", xr.GetAttribute("Column"));
+
 							curResultRec.Add("FalsePositive", xr.GetAttribute("FalsePositive"));
 							curResultRec.Add("ResultSeverity", xr.GetAttribute("Severity"));
-							// TODO: Translate state number to an appropriate string
 							curResultRec.Add("State", xr.GetAttribute("state"));
 							curResultRec.Add("Remark", xr.GetAttribute("Remark"));
 							curResultRec.Add("ResultDeepLink", xr.GetAttribute("DeepLink"));
@@ -806,21 +828,26 @@ namespace CxAnalytix.TransformLogic
 							continue;
 						}
 
+						#region PathNode Element Extractions
+
 						if (xr.Name.CompareTo("FileName") == 0 && curPathNode != null)
 						{
-							curPathNode.Add("NodeFileName", xr.ReadElementContentAsString());
+							sinkFile = xr.ReadElementContentAsString();
+							curPathNode.Add("NodeFileName", sinkFile);
 							continue;
 						}
 
 						if (xr.Name.CompareTo("Line") == 0 && curPathNode != null && !inSnippet)
 						{
-							curPathNode.Add("NodeLine", xr.ReadElementContentAsString());
+							sinkLine = xr.ReadElementContentAsString();
+							curPathNode.Add("NodeLine", sinkLine);
 							continue;
 						}
 
 						if (xr.Name.CompareTo("Column") == 0 && curPathNode != null)
 						{
-							curPathNode.Add("NodeColumn", xr.ReadElementContentAsString());
+							sinkColumn = xr.ReadElementContentAsString();
+							curPathNode.Add("NodeColumn", sinkColumn);
 							continue;
 						}
 
@@ -859,6 +886,8 @@ namespace CxAnalytix.TransformLogic
 							curPathNode.Add("NodeCodeSnippet", xr.ReadElementContentAsString());
 							continue;
 						}
+
+						#endregion
 					}
 
 
@@ -878,19 +907,29 @@ namespace CxAnalytix.TransformLogic
 
 						if (xr.Name.CompareTo("Result") == 0)
 						{
+							writeQueue = null;
 							curResultRec = null;
 							continue;
 						}
 
 						if (xr.Name.CompareTo("Path") == 0)
 						{
+							while (writeQueue.Count > 0)
+							{
+								var curRec = writeQueue.Dequeue();
+								curRec.Add("SinkFileName", sinkFile);
+								curRec.Add("SinkLine", sinkLine);
+								curRec.Add("SinkColumn", sinkColumn);
+								trx.write(SastScanDetailOut, curRec);
+							}
+
 							curPath = null;
 							continue;
 						}
 
 						if (xr.Name.CompareTo("PathNode") == 0)
 						{
-							trx.write(SastScanDetailOut, curPathNode);
+							writeQueue.Enqueue(curPathNode);
 							curPathNode = null;
 							continue;
 						}

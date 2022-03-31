@@ -30,7 +30,6 @@
 
 	<ItemGroup>
 		<Folder Include="MNO\dto\" />
-		<Folder Include="OSA\" />
 		<Folder Include="SAST\" />
 	</ItemGroup>
 

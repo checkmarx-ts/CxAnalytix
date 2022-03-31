@@ -75,7 +75,10 @@ namespace RegressionTester
 					}
 
 					String uniqueId = BuildKey(UniqueIdentifierKeys, record);
-					retVal.AddRecord(uniqueId, src.Location, record);
+					if (!retVal.AddRecord(uniqueId, src.Location, record) )
+					{
+						OutputWriter.WriteLine($"Ignoring possible duplicate record with unique key with elements {Stringify(UniqueIdentifierKeys, ",")} [{uniqueId}] at {src.Location}");
+					}
 				}
 
 				return retVal;

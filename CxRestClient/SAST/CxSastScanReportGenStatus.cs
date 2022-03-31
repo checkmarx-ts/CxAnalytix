@@ -21,7 +21,8 @@ namespace CxRestClient.SAST
         {
             None,
             InProcess,
-            Created
+            Created,
+            Failed
         }
 
 

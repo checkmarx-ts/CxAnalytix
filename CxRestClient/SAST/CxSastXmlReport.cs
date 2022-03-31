@@ -48,7 +48,7 @@ namespace CxRestClient.SAST
                     return CxSastDownloadReport.GetVulnerabilities(ctx, token, reportId);
                 }
                 else
-                    throw new InvalidDataException("XML report stream is invalid.");
+                    throw new InvalidDataException($"XML report stream is invalid. Last generation status: {status}");
             }
             catch (HttpRequestException hex)
             {

@@ -1,4 +1,4 @@
-![Build Badge](https://circleci.com/gh/checkmarx-ts/CxAnalytix.svg?style=shield)
+[![build-ci](https://github.com/checkmarx-ts/CxAnalytix/actions/workflows/build-ci.yml/badge.svg)](https://github.com/checkmarx-ts/CxAnalytix/actions/workflows/build-ci.yml)
 
 # CxAnalytix
 
@@ -31,6 +31,14 @@ Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki
 
 
 ## Version History
+* 1.3.3
+	* BUG FIXES
+		* Performance fix - throttle the API I/O calls during scan crawl resolution to use only the configured number of concurrent threads.
+		* Issue 142 - Correct the SinkFileName, SinkLine, SinkColumn values in the scan detail output.
+		* Issue 135 - Avoid repeatedly calling OSA endpoints if OSA is not licensed.
+		* Issue 109 - The user agent now shows API requests with CxAnalytix and version in the user agent string.
+		* As of v1.3.3, CxAnalytix is no longer compatible with SAST versions prior to 9.0.
+
 * 1.3.2
 	* BUG FIXES
 		* Memory leak in M&O client REST API code fixed.

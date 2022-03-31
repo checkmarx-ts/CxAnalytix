@@ -7,6 +7,9 @@
 		<StartupObject>CxAnalytixCLI.Program</StartupObject>
 		<RootNamespace>CxAnalytixCLI</RootNamespace>
 		<Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
+		<Company>Checkmarx</Company>
+		<Authors>Checkmarx</Authors>
+		<Version>0.0.0</Version>
 	</PropertyGroup>
 
 

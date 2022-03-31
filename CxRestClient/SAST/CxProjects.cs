@@ -73,6 +73,7 @@ namespace CxRestClient.SAST
                 if (_reader != null)
                 {
                     _reader.Close();
+                    (_reader as IDisposable).Dispose();
                     _reader = null;
                 }
                 _ctx = null;
