@@ -22,8 +22,8 @@ jobs:
         with:
           binary-path: artifacts/win-x64
       - run: |
-        echo InferCsharp win-x64 Results > filtered-report.txt
-        cat infer-out/report.txt | grep -v ^\# >> filtered-report.txt
+          echo InferCsharp win-x64 Results > filtered-report.txt
+          cat infer-out/report.txt | grep -v ^\# >> filtered-report.txt
       - name: PR Comment for win-x64 results
         uses: marocchino/sticky-pull-request-comment@v2
         with:
@@ -35,8 +35,8 @@ jobs:
         with:
           binary-path: artifacts/linux-x64
       - run: |
-        echo InferCsharp linux-x64 Results > filtered-report.txt
-        cat infer-out/report.txt | grep -v ^\# >> filtered-report.txt
+          echo InferCsharp linux-x64 Results > filtered-report.txt
+          cat infer-out/report.txt | grep -v ^\# >> filtered-report.txt
       - name: PR Comment for linux-x64 results
         uses: marocchino/sticky-pull-request-comment@v2
         with:
