@@ -26,9 +26,9 @@ jobs:
       
   publish-prerelease:
     uses: ./.github/workflows/publish-build.yml
-      with:
-        tag: ${{ needs.create-tag.outputs.tag }}
-        prerelease: true
+    with:
+      tag: ${{ needs.create-tag.outputs.tag }}
+      prerelease: true
     needs: [create-tag]
       
     
