@@ -15,19 +15,28 @@ jobs:
 
   build-packages:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_REPO: docker.pkg.github.com/checkmarx-ts/cxanalytix/cxanalytix
     steps:
       - name: Fetch Code @ tag v${{ inputs.tag }}
         uses: actions/checkout@v2
         with:
           ref: refs/tags/v${{ inputs.tag }}
+
       - name: Dotnet Core 3.1 Install
         uses: actions/setup-dotnet@v1.7.2
         with:
           dotnet-version: 3.1
+
+      - name: Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@v1          
+          
       - name: Platform build win-x64
         run: dotnet publish -p:Version=${{ inputs.tag }}  -c ReleaseWindows -o artifacts/win-x64 -r win-x64
       - name: Platform build linux-x64
         run: dotnet publish -p:Version=${{ inputs.tag }}  -c ReleaseLinux -o artifacts/linux-x64 -r linux-x64
+      
       - name: Make win-x64 package
         run: |
           pushd artifacts/win-x64
@@ -38,23 +47,36 @@ jobs:
           pushd artifacts/linux-x64
           zip ../CxAnalytix-v${{ inputs.tag }}-linux-x64.zip *
           popd
-      - run: ls -l artifacts
+      - name: Build Docker Container
+        run: |
+          docker build -f Dockerfile -t $DOCKER_REPO:v${{ inputs.tag }} artifacts/linux-x64
+          echo ${{ inputs.prerelease }}
+          [ ${{ inputs.prerelease }} = false ] && docker tag $DOCKER_REPO:v${{ inputs.tag }} $DOCKER_REPO:latest
+          docker image ls
+          
+
+      - name: Generate publication notes
+        run: |
+          echo CxAnalytix v${{ inputs.tag }}\<P\> > release.md
+          sha256sum --tag $(ls artifacts/*win-x64.zip) >> release.md
+          echo \<BR\> >> release.md
+          sha256sum --tag $(ls artifacts/*linux-x64.zip) >> release.md
+          echo \<P\> >> release.md
+          echo docker pull docker.pkg.github.com/checkmarx-ts/cxanalytix/cxanalytix:v${{ inputs.tag }} >> release.md
+
       - name: Create GitHub Release
         id: create_release
         uses: ncipollo/release-action@v1
-#        env:
-#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           allowUpdates: true
           artifactErrorsFailBuild: true
           artifacts: artifacts/*.zip
           artifactContentType: application/zip
-#          bodyFile: release.md
+          bodyFile: release.md
           name: v${{ inputs.tag }}
           prerelease: ${{ inputs.prerelease }}
-#          replacesArtifacts: true
+          replacesArtifacts: true
           tag: v${{ inputs.tag }}
-#          token: ${{ secrets.GITHUB_TOKEN }}
           
           
           
