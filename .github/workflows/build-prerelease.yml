@@ -28,16 +28,16 @@ jobs:
           
   remove-tag-on-failure:
     runs-on: ubuntu-latest
-#    if: always() && ${{ needs.publish-prerelease.outputs.status }} == 'failure'
     if: always()
     needs: [create-tag, publish-prerelease]
     steps:
-      - run: echo ${{ needs.create-tag.outputs.tag }}
-      - run: echo ${{ needs.publish-prerelease.outputs.status }}
-#      - name: Fetch Code
-#        uses: actions/checkout@v2
-#      - name: Remove Prerelease Tag
-#        run: git push origin ':refs/tags/${{ needs.create-tag.outputs.tag }}'
+      - uses: technote-space/workflow-conclusion-action@v2
+      - name: Fetch Code
+        uses: actions/checkout@v2
+        if: env.WORKFLOW_CONCLUSION == 'failure'
+      - name: Remove Prerelease Tag
+        run: git push origin ':refs/tags/${{ needs.create-tag.outputs.tag }}'
+        if: env.WORKFLOW_CONCLUSION == 'failure'
   
       
   publish-prerelease:
