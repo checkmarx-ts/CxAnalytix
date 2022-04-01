@@ -15,7 +15,6 @@ jobs:
       packages: write
     outputs:
       tag: ${{ steps.create-tag.outputs.tag }}
-      status: ${{ job.status }}
     steps:
       - name: Create tag
         run: echo ::set-output name=tag::${{ github.event.inputs.version }}-$GITHUB_RUN_NUMBER-prerelease
@@ -29,7 +28,7 @@ jobs:
           
   un-tag-on-failure:
     runs-on: ubuntu-latest
-    if: always() && ${{ needs.create-tag.outputs.status }} == 'failure'
+    if: always() && ${{ needs.publish-prerelease.outputs.status }} == 'failure'
     needs: [create-tag, publish-prerelease]
     steps:
       - name: Fetch Code
@@ -40,6 +39,8 @@ jobs:
       
   publish-prerelease:
     uses: ./.github/workflows/publish-build.yml
+    outputs:
+      status: ${{ job.status }}
     with:
       tag: ${{ needs.create-tag.outputs.tag }}
       prerelease: true
