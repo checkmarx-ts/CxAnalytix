@@ -44,6 +44,9 @@ jobs:
     with:
       tag: ${{ needs.create-tag.outputs.tag }}
       prerelease: true
+    secrets:
+      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
+      PACKAGE_PAT: ${{ secrets.PACKAGE_PAT }}
     needs: [create-tag]
       
     
