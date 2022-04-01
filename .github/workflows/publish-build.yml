@@ -66,7 +66,8 @@ jobs:
       - name: Build and Push Docker Image
         run: |
           #docker build -f Dockerfile -t $DOCKER_REPO:v${{ inputs.tag }} artifacts/linux-x64
-          docker build -f Dockerfile -t cxanalytix:${{ inputs.tag }} artifacts/linux-x64
+          docker -D -l debug build -f Dockerfile -t cxanalytix:${{ inputs.tag }} artifacts/linux-x64
+          echo Exit code: $?
           [ ${{ inputs.prerelease }} = false ] && docker tag $DOCKER_REPO:v${{ inputs.tag }} $DOCKER_REPO:latest
           #docker push $DOCKER_REPO:v${{ inputs.tag }}
           [ ${{ inputs.prerelease }} = false ] && docker push $DOCKER_REPO:latest
