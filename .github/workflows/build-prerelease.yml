@@ -28,7 +28,7 @@ jobs:
           
   un-tag-on-failure:
     runs-on: ubuntu-latest
-    if: always() && ${{ needs.publish-prerelease.outputs.status }} == 'failure'
+    if: always() && ${{ needs.publish-prerelease.job.status }} == 'failure'
     needs: [create-tag, publish-prerelease]
     steps:
       - name: Fetch Code
@@ -39,8 +39,6 @@ jobs:
       
   publish-prerelease:
     uses: ./.github/workflows/publish-build.yml
-    outputs:
-      status: ${{ job.status }}
     with:
       tag: ${{ needs.create-tag.outputs.tag }}
       prerelease: true
