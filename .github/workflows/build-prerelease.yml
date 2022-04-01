@@ -7,8 +7,6 @@ on:
         required: true
         type: string
 
-permissions:
-  packages: write
       
 jobs:
   create-tag:
@@ -43,15 +41,9 @@ jobs:
       
   publish-prerelease:
     uses: ./.github/workflows/publish-build.yml
-    env:
-      package_user: ${{ secrets.PACKAGE_USER }}
-      package_pat: ${{ secrets.PACKAGE_PAT }}
-    
     with:
       tag: ${{ needs.create-tag.outputs.tag }}
       prerelease: true
-      package_user: $package_user
-      package_pat: $package_pat
     needs: [create-tag]
       
     

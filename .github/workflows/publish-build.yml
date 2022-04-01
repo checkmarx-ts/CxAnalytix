@@ -10,15 +10,7 @@ on:
         description: 'Set to true if published build is a prerelease'
         type: boolean
         required: true
-      package_user:
-        description: 'User account to use when publishing packages'
-        type: String
-        required: true
-      package_pat:
-        description: 'PAT to use when publishing packages'
-        type: String
-        required: true
-      
+     
         
 jobs:
 
@@ -35,8 +27,8 @@ jobs:
         uses: docker/login-action@v1
         with:
           registry: ghcr.io
-          username: ${{ inputs.package_user }}
-          password: ${{ inputs.package_pat }}
+          username: ${{ secrets.PACKAGE_USER }}
+          password: ${{ secrets.PACKAGE_PAT }}
 
       - name: Dotnet Core 3.1 Install
         uses: actions/setup-dotnet@v1.7.2
