@@ -26,15 +26,18 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
-  un-tag-on-failure:
+  remove-tag-on-failure:
     runs-on: ubuntu-latest
-    if: always() && ${{ needs.publish-prerelease.job.status }} == 'failure'
+#    if: always() && ${{ needs.publish-prerelease.job.status }} == 'failure'
+    if: always()
     needs: [create-tag, publish-prerelease]
     steps:
-      - name: Fetch Code
-        uses: actions/checkout@v2
-      - name: Remove Prerelease Tag
-        run: git push origin ':refs/tags/${{ needs.create-tag.outputs.tag }}'
+      - run: echo ${{ needs.create-tag.outputs.tag }}
+      - run: echo ${{ needs.publish-prerelease.job.status }}
+#      - name: Fetch Code
+#        uses: actions/checkout@v2
+#      - name: Remove Prerelease Tag
+#        run: git push origin ':refs/tags/${{ needs.create-tag.outputs.tag }}'
   
       
   publish-prerelease:
