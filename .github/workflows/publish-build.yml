@@ -16,7 +16,7 @@ jobs:
   build-packages:
     runs-on: ubuntu-latest
     env:
-      DOCKER_REPO: docker.pkg.github.com/checkmarx-ts/cxanalytix/cxanalytix
+      DOCKER_REPO: ghcr.io/checkmarx-ts/cxanalytix/cxanalytix
     steps:
       - name: Fetch Code @ tag v${{ inputs.tag }}
         uses: actions/checkout@v2
@@ -71,7 +71,7 @@ jobs:
           sha256sum --tag $(ls *linux-x64.zip) >> ../release.md
           popd
           echo \<P\> >> release.md
-          echo docker pull docker.pkg.github.com/checkmarx-ts/cxanalytix/cxanalytix:v${{ inputs.tag }} >> release.md
+          echo docker pull $DOCKER_REPO:v${{ inputs.tag }} >> release.md
 
       - name: Create GitHub Release
         id: create_release
