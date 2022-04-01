@@ -28,12 +28,12 @@ jobs:
           
   remove-tag-on-failure:
     runs-on: ubuntu-latest
-#    if: always() && ${{ needs.publish-prerelease.job.status }} == 'failure'
+#    if: always() && ${{ needs.publish-prerelease.outputs.status }} == 'failure'
     if: always()
     needs: [create-tag, publish-prerelease]
     steps:
       - run: echo ${{ needs.create-tag.outputs.tag }}
-      - run: echo ${{ needs.publish-prerelease.job.status }}
+      - run: echo ${{ needs.publish-prerelease.outputs.status }}
 #      - name: Fetch Code
 #        uses: actions/checkout@v2
 #      - name: Remove Prerelease Tag

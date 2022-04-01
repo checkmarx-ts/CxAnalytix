@@ -17,6 +17,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DOCKER_REPO: ghcr.io/checkmarx-ts/cxanalytix/cxanalytix
+    outputs:
+      status: ${{ job.status }}
     steps:
       - name: Fetch Code @ tag v${{ inputs.tag }}
         uses: actions/checkout@v2
