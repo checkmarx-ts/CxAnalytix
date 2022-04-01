@@ -6,13 +6,14 @@ on:
         description: 'The version tag to use in the form of x.x.x'
         required: true
         type: string
+
+permissions:
+  packages: write
       
 jobs:
   create-tag:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
-    permissions:
-      packages: write
     outputs:
       tag: ${{ steps.create-tag.outputs.tag }}
     steps:
