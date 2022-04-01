@@ -30,12 +30,12 @@ jobs:
   un-tag-on-failure:
     runs-on: ubuntu-latest
     if: always() && ${{ needs.create-tag.outputs.status }} == 'failure'
-    needs: [create-tag]
+    needs: [create-tag, publish-prerelease]
     steps:
       - name: Fetch Code
         uses: actions/checkout@v2
       - name: Remove Prerelease Tag
-        run: git push origin `:refs/tags/${{ needs.create-tag.outputs.tag }}'
+        run: git push origin ':refs/tags/${{ needs.create-tag.outputs.tag }}'
   
       
   publish-prerelease:
