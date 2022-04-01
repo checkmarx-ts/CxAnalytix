@@ -49,18 +49,20 @@ jobs:
           popd
       - name: Build Docker Container
         run: |
+          docker login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com
           docker build -f Dockerfile -t $DOCKER_REPO:v${{ inputs.tag }} artifacts/linux-x64
-          echo ${{ inputs.prerelease }}
           [ ${{ inputs.prerelease }} = false ] && docker tag $DOCKER_REPO:v${{ inputs.tag }} $DOCKER_REPO:latest
-          docker image ls
+          docker push $DOCKER_REPO:v${{ inputs.tag }}
+          [ ${{ inputs.prerelease }} = false ] && docker push $DOCKER_REPO:latest
           
 
       - name: Generate publication notes
         run: |
           echo CxAnalytix v${{ inputs.tag }}\<P\> > release.md
-          sha256sum --tag $(ls artifacts/*win-x64.zip) >> release.md
-          echo \<BR\> >> release.md
-          sha256sum --tag $(ls artifacts/*linux-x64.zip) >> release.md
+          pushd artifacts
+          sha256sum --tag $(ls *win-x64.zip) >> ../release.md
+          sha256sum --tag $(ls *linux-x64.zip) >> ../release.md
+          popd
           echo \<P\> >> release.md
           echo docker pull docker.pkg.github.com/checkmarx-ts/cxanalytix/cxanalytix:v${{ inputs.tag }} >> release.md
 
