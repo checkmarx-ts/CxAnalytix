@@ -11,8 +11,11 @@ jobs:
   create-tag:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/master'
+    permissions:
+      packages: write
     outputs:
       tag: ${{ steps.create-tag.outputs.tag }}
+      status: ${{ job.status }}
     steps:
       - name: Create tag
         run: echo ::set-output name=tag::${{ github.event.inputs.version }}-$GITHUB_RUN_NUMBER-prerelease
@@ -23,6 +26,17 @@ jobs:
           tag_name: v${{ steps.create-tag.outputs.tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+  un-tag-on-failure:
+    runs-on: ubuntu-latest
+    if: always() && ${{ needs.create-tag.outputs.status }} == 'failure'
+    needs: [create-tag]
+    steps:
+      - name: Fetch Code
+        uses: actions/checkout@v2
+      - name: Remove Prerelease Tag
+        run: git push origin `:refs/tags/${{ needs.create-tag.outputs.tag }}'
+  
       
   publish-prerelease:
     uses: ./.github/workflows/publish-build.yml
