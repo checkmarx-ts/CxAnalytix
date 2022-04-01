@@ -47,10 +47,17 @@ jobs:
           pushd artifacts/linux-x64
           zip ../CxAnalytix-v${{ inputs.tag }}-linux-x64.zip *
           popd
-      - name: Build Docker Container
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Build and Push Docker Image
         run: |
-          docker login -u ${{ github.actor }} -p ${{ secrets.GITHUB_TOKEN }} docker.pkg.github.com
           docker build -f Dockerfile -t $DOCKER_REPO:v${{ inputs.tag }} artifacts/linux-x64
+          docker image ls
           [ ${{ inputs.prerelease }} = false ] && docker tag $DOCKER_REPO:v${{ inputs.tag }} $DOCKER_REPO:latest
           docker push $DOCKER_REPO:v${{ inputs.tag }}
           [ ${{ inputs.prerelease }} = false ] && docker push $DOCKER_REPO:latest
