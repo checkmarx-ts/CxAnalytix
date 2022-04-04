@@ -1,0 +1,41 @@
+name: build-release
+on: 
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'The version tag to use in the form of x.x.x'
+        required: true
+        type: string
+
+      
+jobs:
+  create-tag:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/master'
+    outputs:
+      tag: ${{ steps.create-tag.outputs.tag }}
+    steps:
+      - name: Create tag
+        run: echo ::set-output name=tag::${{ github.event.inputs.version }}
+        id: create-tag
+      - name: Tag repo v${{ steps.create-tag.outputs.tag }}
+        uses: richardsimko/update-tag@v1
+        with:
+          tag_name: v${{ steps.create-tag.outputs.tag }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+  publish-release:
+    uses: ./.github/workflows/publish-build.yml
+    with:
+      tag: ${{ needs.create-tag.outputs.tag }}
+      prerelease: false
+    secrets:
+      PACKAGE_USER: ${{ secrets.PACKAGE_USER }}
+      PACKAGE_PAT: ${{ secrets.PACKAGE_PAT }}
+    needs: [create-tag]
+      
+    
+  
+  
+  
