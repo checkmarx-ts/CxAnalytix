@@ -32,7 +32,7 @@ namespace CxAnalytixCLI
             appLog.InfoFormat("CWD: {0}", Directory.GetCurrentDirectory () );
 
 
-            var builder = new CxRestContext.CxRestContextBuilder();
+            var builder = new CxSASTRestContext.CxSASTRestContextBuilder();
             builder.WithSASTServiceURL(Config.Connection.URL)
             .WithOpTimeout(Config.Connection.TimeoutSeconds)
             .WithSSLValidate(Config.Connection.ValidateCertificates)
@@ -45,7 +45,7 @@ namespace CxAnalytixCLI
             {
                 try
                 {
-                    CxRestContext ctx = builder.Build();
+                    CxSASTRestContext ctx = builder.Build();
                     Transformer.DoTransform(Config.Service.ConcurrentThreads,
                         Config.Service.StateDataStoragePath, Config.Service.InstanceIdentifier,
                         ctx,

@@ -14,13 +14,13 @@ namespace CxRestClient.MNO
 		private static readonly String URL_SUFFIX = "cxarm/policymanager/projects" +
 			"/{0}/violationscalculation";
 
-		public static bool CalculateViolations(CxRestContext ctx,
+		public static bool CalculateViolations(CxSASTRestContext ctx,
 				CancellationToken token, int projectId)
 		{
 			return WebOperation.ExecutePost<bool>(
 			ctx.Json.CreateMnoClient 
 			, (response) => response.StatusCode == HttpStatusCode.Created
-			, CxRestContext.MakeUrl(ctx.MnoUrl, String.Format(URL_SUFFIX, projectId))
+			, CxSASTRestContext.MakeUrl(ctx.MnoUrl, String.Format(URL_SUFFIX, projectId))
 			, null
 			, ctx
 			, token, apiVersion: null);

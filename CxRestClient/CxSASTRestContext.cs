@@ -12,27 +12,21 @@ using CxRestClient.IO;
 
 namespace CxRestClient
 {
-    public class CxRestContext
+    public class CxSASTRestContext : CxRestContextBase
     {
         private static readonly String LOGIN_URI_SUFFIX = "cxrestapi/auth/identity/connect/token";
         private static readonly String CLIENT_SECRET = "014DF517-39D1-4453-B7B3-9930C563627C";
 
+        private static ILog _log = LogManager.GetLogger(typeof(CxSASTRestContext));
 
-
-        private static ILog _log = LogManager.GetLogger(typeof(CxRestContext));
-
-        internal CxRestContext()
+        internal CxSASTRestContext()
         { }
 
         #region Public/Private Properties
 
-        public bool ValidateSSL { get; internal set; }
-        public String Url { get; internal set; }
         public String MnoUrl { get; internal set; }
-        public TimeSpan Timeout { get; internal set; }
         public CxClientFactory Json { get; internal set; }
         public CxClientFactory Xml { get; internal set; }
-        public int RetryLoop { get; internal set; }
 
 
         private readonly Object _tokenLock = new object();
@@ -80,7 +74,7 @@ namespace CxRestClient
 			}
         }
 
-        public void Reauthenticate()
+        public override void Reauthenticate()
 		{
             lock (_tokenLock)
             {
@@ -98,29 +92,7 @@ namespace CxRestClient
         }
 
 
-        #region Static methods
-        public static String MakeUrl(String url, String suffix)
-        {
-            if (url.EndsWith('/'))
-                return url + suffix;
-            else
-                return url + '/' + suffix;
-
-        }
-
-        public static String MakeQueryString(Dictionary<String, String> query)
-        {
-            LinkedList<String> p = new LinkedList<string>();
-
-            foreach (String k in query.Keys)
-                p.AddLast(String.Format("{0}={1}", k, query[k]));
-
-            return String.Join('&', p);
-        }
-
-        public static String MakeUrl(String url, String suffix, Dictionary<String, String> query)
-        => MakeUrl(url, suffix) + ((query.Count > 0) ? ("?" + MakeQueryString(query)) : (""));
-
+        #region Static utility methods
 
         private static LoginToken GetLoginToken(String url, HttpContent authContent)
         {
@@ -236,18 +208,18 @@ namespace CxRestClient
 
 
 
-        public class CxRestContextBuilder
+        public class CxSASTRestContextBuilder
         {
 
             private String _url;
-            public CxRestContextBuilder WithSASTServiceURL(String url)
+            public CxSASTRestContextBuilder WithSASTServiceURL(String url)
             {
                 _url = url;
                 return this;
             }
 
             private String _mnoUrl;
-            public CxRestContextBuilder WithMNOServiceURL(String url)
+            public CxSASTRestContextBuilder WithMNOServiceURL(String url)
             {
                 _mnoUrl = url;
                 return this;
@@ -255,14 +227,14 @@ namespace CxRestClient
 
 
             private int _timeout = 600;
-            public CxRestContextBuilder WithOpTimeout(int seconds)
+            public CxSASTRestContextBuilder WithOpTimeout(int seconds)
             {
                 _timeout = seconds;
                 return this;
             }
 
             private bool _validate = true;
-            public CxRestContextBuilder WithSSLValidate(bool validate)
+            public CxSASTRestContextBuilder WithSSLValidate(bool validate)
             {
                 _validate = validate;
                 return this;
@@ -270,28 +242,28 @@ namespace CxRestClient
 
 
             private String _user;
-            public CxRestContextBuilder WithUsername(String username)
+            public CxSASTRestContextBuilder WithUsername(String username)
             {
                 _user = username;
                 return this;
             }
 
             private String _pass;
-            public CxRestContextBuilder WithPassword(String pass)
+            public CxSASTRestContextBuilder WithPassword(String pass)
             {
                 _pass = pass;
                 return this;
             }
 
             private int _retryLoop;
-            public CxRestContextBuilder WithRetryLoop(int loopCount)
+            public CxSASTRestContextBuilder WithRetryLoop(int loopCount)
 			{
                 _retryLoop = loopCount;
                 return this;
 			}
 
 
-            public CxRestContext Build()
+            public CxSASTRestContext Build()
             {
                 if (_url == null)
                     throw new InvalidOperationException("Endpoint URL was not specified.");
@@ -312,7 +284,7 @@ namespace CxRestClient
 
                 HttpClientSingleton.Initialize(_validate, timeoutSpan);
 
-                CxRestContext retVal = new CxRestContext()
+                CxSASTRestContext retVal = new CxSASTRestContext()
                 {
                     SastToken = GetSASTLoginToken(_url, _user, _pass),
                     MNOToken =  String.IsNullOrEmpty(_mnoUrl) ? new Nullable<LoginToken> () : GetMNOLoginToken(_url, _user, _pass),

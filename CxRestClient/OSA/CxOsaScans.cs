@@ -126,13 +126,13 @@ namespace CxRestClient.OSA
 		}
 
 
-		public static IEnumerable<Scan> GetScans(CxRestContext ctx, CancellationToken token,
+		public static IEnumerable<Scan> GetScans(CxSASTRestContext ctx, CancellationToken token,
 			int projectId)
 		{
 			int curPage = 1;
 			List<Scan> osaScans = new List<Scan>();
 
-			Func<int, String> url = (pg) => CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
+			Func<int, String> url = (pg) => CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
 				{
 					{"projectId", Convert.ToString (projectId)  },
 					{ "page", Convert.ToString (pg) },

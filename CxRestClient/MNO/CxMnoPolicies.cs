@@ -54,7 +54,7 @@ namespace CxRestClient.MNO
             }
         }
 
-        public static String GetProjectPoliciesSingleField(CxRestContext ctx,
+        public static String GetProjectPoliciesSingleField(CxSASTRestContext ctx,
                 CancellationToken token, int projectId)
         {
             return WebOperation.ExecuteGet<String>(
@@ -69,12 +69,12 @@ namespace CxRestClient.MNO
                         return GetFlatPolicyNames(jt);
                     }
                 }
-                , CxRestContext.MakeUrl(ctx.MnoUrl, String.Format(PROJECT_POLICY_URL_SUFFIX, projectId))
+                , CxSASTRestContext.MakeUrl(ctx.MnoUrl, String.Format(PROJECT_POLICY_URL_SUFFIX, projectId))
                 , ctx
                 , token, apiVersion: null);
         }
 
-        private static PolicyCollection ParsePolicies(CxRestContext ctx,
+        private static PolicyCollection ParsePolicies(CxSASTRestContext ctx,
                 CancellationToken token, JToken policyPayload)
         {
 
@@ -114,7 +114,7 @@ namespace CxRestClient.MNO
             return result;
         }
 
-		public static PolicyCollection GetAllPolicies(CxRestContext ctx,
+		public static PolicyCollection GetAllPolicies(CxSASTRestContext ctx,
 				CancellationToken token)
 		{
 			return WebOperation.ExecuteGet<PolicyCollection>(
@@ -129,14 +129,14 @@ namespace CxRestClient.MNO
                         return ParsePolicies(ctx, token, jt);
                     }
 				}
-				, CxRestContext.MakeUrl(ctx.MnoUrl, POLICY_LIST_URL_SUFFIX)
+				, CxSASTRestContext.MakeUrl(ctx.MnoUrl, POLICY_LIST_URL_SUFFIX)
 				, ctx
 				, token
                 , apiVersion: null);
 		}
 
 
-		public static IEnumerable<int> GetPolicyIdsForProject(CxRestContext ctx,
+		public static IEnumerable<int> GetPolicyIdsForProject(CxSASTRestContext ctx,
                 CancellationToken token, int projectId)
         {
 			return WebOperation.ExecuteGet<IEnumerable<int>>(
@@ -160,7 +160,7 @@ namespace CxRestClient.MNO
                 }
 
 			}
-			, CxRestContext.MakeUrl(ctx.MnoUrl, String.Format(PROJECT_POLICY_URL_SUFFIX, projectId))
+			, CxSASTRestContext.MakeUrl(ctx.MnoUrl, String.Format(PROJECT_POLICY_URL_SUFFIX, projectId))
 			, ctx
 			, token, apiVersion: null);
 		}

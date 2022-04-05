@@ -58,10 +58,10 @@ namespace CxRestClient.OSA
 		}
 
 
-		public static ScanSummary GetReport(CxRestContext ctx, CancellationToken token,
+		public static ScanSummary GetReport(CxSASTRestContext ctx, CancellationToken token,
 			String scanId)
 		{
-			String url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
+			String url = CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
 				{
 				{"scanId", Convert.ToString (scanId)  }
 				});

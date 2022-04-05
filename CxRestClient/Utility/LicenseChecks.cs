@@ -36,7 +36,7 @@ namespace CxRestClient.Utility
         private static ILog _log = LogManager.GetLogger(typeof(LicenseChecks));
 
 
-        private static bool CheckIsOsaEnabledFromAPIResponseCode(CxRestContext ctx, CancellationToken token)
+        private static bool CheckIsOsaEnabledFromAPIResponseCode(CxSASTRestContext ctx, CancellationToken token)
 		{
             // 403 is returned when OSA is not licensed.
 			return WebOperation.ExecuteGet<bool>(
@@ -49,14 +49,14 @@ namespace CxRestClient.Utility
                     return false;
 
 			}
-			, CxRestContext.MakeUrl(ctx.Url, OSA_EXTENSIONS_API_PATH)
+			, CxSASTRestContext.MakeUrl(ctx.Url, OSA_EXTENSIONS_API_PATH)
 			, ctx, token, responseErrorLogic: (response) => 
             {
                 return !(response.StatusCode == System.Net.HttpStatusCode.Forbidden);
             });
 		}
 
-        private static bool CheckIsOsaEnabledFromLicenseSummary (CxRestContext ctx, CancellationToken token)
+        private static bool CheckIsOsaEnabledFromLicenseSummary (CxSASTRestContext ctx, CancellationToken token)
 		{
             var summary = WebOperation.ExecuteGet<LicenseSummary>(
             ctx.Json.CreateSastClient
@@ -68,7 +68,7 @@ namespace CxRestClient.Utility
                     return (LicenseSummary)new JsonSerializer().Deserialize(jtr, typeof(LicenseSummary));
                 }
             }
-            , CxRestContext.MakeUrl(ctx.Url, LICENSE_SUMMARY_API_PATH)
+            , CxSASTRestContext.MakeUrl(ctx.Url, LICENSE_SUMMARY_API_PATH)
             , ctx, token);
 
 
@@ -84,7 +84,7 @@ namespace CxRestClient.Utility
 		}
 
 
-		public static bool OsaIsLicensed(CxRestContext ctx, CancellationToken token)
+		public static bool OsaIsLicensed(CxSASTRestContext ctx, CancellationToken token)
 		{
 			_log.Info("Detecting OSA License...");
 

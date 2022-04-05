@@ -40,13 +40,13 @@ namespace CxRestClient.SAST
 
         }
 
-        public static String GetGeneratedReportId(CxRestContext ctx, CancellationToken token, String scanId)
+        public static String GetGeneratedReportId(CxSASTRestContext ctx, CancellationToken token, String scanId)
         {
             return GetGeneratedReportId(ctx, token, scanId, ReportTypes.XML);
         }
 
 
-        public static String GetGeneratedReportId(CxRestContext ctx, CancellationToken token,
+        public static String GetGeneratedReportId(CxSASTRestContext ctx, CancellationToken token,
             String scanId, ReportTypes type)
         {
             var dict = new Dictionary<String, String>()
@@ -66,7 +66,7 @@ namespace CxRestClient.SAST
 					return ReadReportId(jt);
 				}
 			}
-			, CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
+			, CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
 			, () => new FormUrlEncodedContent(dict)
 			, ctx
 			, token);

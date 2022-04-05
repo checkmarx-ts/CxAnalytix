@@ -38,7 +38,7 @@ namespace CxRestClient.SAST
         }
 
 
-        public static GenStatus GetReportGenerationStatus(CxRestContext ctx,
+        public static GenStatus GetReportGenerationStatus(CxSASTRestContext ctx,
             CancellationToken token, String reportId)
         {
 			return WebOperation.ExecuteGet<GenStatus>(
@@ -52,7 +52,7 @@ namespace CxRestClient.SAST
 					return ReadStatus(jt);
 				}
 			}
-			, CxRestContext.MakeUrl(ctx.Url, String.Format(URL_SUFFIX, reportId))
+			, CxSASTRestContext.MakeUrl(ctx.Url, String.Format(URL_SUFFIX, reportId))
 			, ctx
 			, token);
 		}

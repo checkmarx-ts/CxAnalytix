@@ -99,7 +99,7 @@ namespace CxRestClient.SAST
 			public String TeamName { get; internal set; }
 		}
 
-		public static IEnumerable<Team> GetTeams(CxRestContext ctx, CancellationToken token)
+		public static IEnumerable<Team> GetTeams(CxSASTRestContext ctx, CancellationToken token)
 		{
 
 			List<Team> retVal = new List<Team>();
@@ -115,7 +115,7 @@ namespace CxRestClient.SAST
 						return new TeamReader(jt);
 					}
 				}
-				, CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
+				, CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
 				, ctx
 				, token))
 			{

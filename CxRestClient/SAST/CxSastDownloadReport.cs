@@ -21,7 +21,7 @@ namespace CxRestClient.SAST
         private CxSastDownloadReport()
         { }
 
-        public static Stream GetVulnerabilities(CxRestContext ctx,
+        public static Stream GetVulnerabilities(CxSASTRestContext ctx,
             CancellationToken token, String reportId)
         {
 			return WebOperation.ExecuteGet<Stream>(
@@ -47,7 +47,7 @@ namespace CxRestClient.SAST
 
                 return mem;
             }
-			, CxRestContext.MakeUrl(ctx.Url, String.Format(URL_SUFFIX, reportId))
+			, CxSASTRestContext.MakeUrl(ctx.Url, String.Format(URL_SUFFIX, reportId))
 			, ctx
 			, token);
         }

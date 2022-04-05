@@ -109,7 +109,7 @@ namespace CxRestClient.MNO
             return violatedRules;
         }
 
-        public static ViolatedPolicyCollection GetViolations(CxRestContext ctx,
+        public static ViolatedPolicyCollection GetViolations(CxSASTRestContext ctx,
                 CancellationToken token, int projectId, PolicyCollection policies)
         {
             return WebOperation.ExecuteGet<ViolatedPolicyCollection>(
@@ -123,7 +123,7 @@ namespace CxRestClient.MNO
                         return ParseViolatedRules(policies, projectId, jt);
                     }
                 }
-                , CxRestContext.MakeUrl(ctx.MnoUrl, String.Format(URL_SUFFIX, projectId))
+                , CxSASTRestContext.MakeUrl(ctx.MnoUrl, String.Format(URL_SUFFIX, projectId))
                 , ctx
                 , token, apiVersion: null);
         }

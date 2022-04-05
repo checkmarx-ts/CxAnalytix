@@ -54,9 +54,9 @@ namespace CxRestClient.SAST
 
             private JToken _json;
             private JTokenReader _reader;
-            private CxRestContext _ctx;
+            private CxSASTRestContext _ctx;
             private CancellationToken _token;
-            internal ProjectReader(JToken json, CxRestContext ctx, CancellationToken token)
+            internal ProjectReader(JToken json, CxSASTRestContext ctx, CancellationToken token)
             {
                 _json = json;
                 _ctx = ctx;
@@ -142,7 +142,7 @@ namespace CxRestClient.SAST
         }
 
 
-        public static IEnumerable<Project> GetProjects(CxRestContext ctx, CancellationToken token)
+        public static IEnumerable<Project> GetProjects(CxSASTRestContext ctx, CancellationToken token)
         {
             using (var projectReader = WebOperation.ExecuteGet<ProjectReader>(
             ctx.Json.CreateSastClient
@@ -156,7 +156,7 @@ namespace CxRestClient.SAST
                     return new ProjectReader(jt, ctx, token);
                 }
             }
-            , CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
+            , CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
             , ctx
             , token, apiVersion: "2.0"))
                 return new List<Project>(projectReader);

@@ -13,13 +13,13 @@ namespace CxRestClient.IO
         private CxClientFactory()
         { }
 
-        internal CxClientFactory(String mediaType, CxRestContext ctx)
+        internal CxClientFactory(String mediaType, CxSASTRestContext ctx)
         {
             Context = ctx;
             MediaType = mediaType;
         }
 
-        private CxRestContext Context { get; set; }
+        private CxSASTRestContext Context { get; set; }
         private String MediaType { get; set; }
 
         public CxRestClient CreateSastClient(String apiVersion)

@@ -20,7 +20,7 @@ namespace CxRestClient.SAST
         private static ILog _log = LogManager.GetLogger(typeof (CxSastXmlReport) );
         private static int DELAY_MS = 10000;
 
-        public static Stream GetXmlReport(CxRestContext ctx, CancellationToken token, String scanId)
+        public static Stream GetXmlReport(CxSASTRestContext ctx, CancellationToken token, String scanId)
         {
             try
             {

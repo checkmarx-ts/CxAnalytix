@@ -124,11 +124,11 @@ namespace CxRestClient.OSA
             }
         }
 
-        public static IEnumerable<License> GetLicenses(CxRestContext ctx, CancellationToken token,
+        public static IEnumerable<License> GetLicenses(CxSASTRestContext ctx, CancellationToken token,
         String scanId)
         {
 
-            String url = CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
+            String url = CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
                 {
                     {"scanId", Convert.ToString (scanId)  }
                 });

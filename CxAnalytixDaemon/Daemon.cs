@@ -33,7 +33,7 @@ namespace CxAnalytixDaemon
 		{
 			_log.Info("Daemon start.");
 
-			var builder = new CxRestContext.CxRestContextBuilder();
+			var builder = new CxSASTRestContext.CxSASTRestContextBuilder();
 			builder.WithSASTServiceURL(Config.Connection.URL).
 			WithMNOServiceURL(Config.Connection.MNOUrl)
 			.WithOpTimeout(Config.Connection.TimeoutSeconds)

@@ -48,7 +48,7 @@ namespace CxAnalytix.TransformLogic
 
 		private DateTime CheckTime { get; set; } = DateTime.Now;
 
-		private CxRestContext RestContext { get; set; }
+		private CxSASTRestContext RestContext { get; set; }
 		private CancellationToken CancelToken { get; set; }
 
 		ParallelOptions ThreadOpts { get; set; }
@@ -288,7 +288,7 @@ namespace CxAnalytix.TransformLogic
 			trx.write(ScaScanSummaryOut, flat);
 		}
 
-		private Transformer(CxRestContext ctx, CancellationToken token,
+		private Transformer(CxSASTRestContext ctx, CancellationToken token,
 			String previousStatePath, IProjectFilter filter, bool includeMnO, bool includeOSA, ParallelOptions _topts)
 		{
 			ThreadOpts = _topts;
@@ -655,7 +655,7 @@ namespace CxAnalytix.TransformLogic
 		/// <param name="includeMnO">Set to true if all M&O interaction should be skipped.</param>
 		/// <param name="includeOSA">Set to true if all OSA interaction should be skipped.</param>
 		public static void DoTransform(int concurrentThreads, String previousStatePath, String instanceId,
-		CxRestContext ctx, IProjectFilter filter, RecordNames records, CancellationToken token, bool includeMnO, bool includeOSA)
+		CxSASTRestContext ctx, IProjectFilter filter, RecordNames records, CancellationToken token, bool includeMnO, bool includeOSA)
 		{
 			if (!includeMnO)
 				_log.Warn("Management & Orchestration data will not be crawled.");

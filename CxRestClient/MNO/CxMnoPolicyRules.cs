@@ -17,7 +17,7 @@ namespace CxRestClient.MNO
 
         private static readonly String URL_SUFFIX = "cxarm/policymanager/policies/{0}/rules";
 
-        private static IEnumerable<RuleDescriptor> ParseRules(CxRestContext ctx,
+        private static IEnumerable<RuleDescriptor> ParseRules(CxSASTRestContext ctx,
         CancellationToken token, JToken rulePayload)
         {
             using (var reader = new JTokenReader(rulePayload))
@@ -61,7 +61,7 @@ namespace CxRestClient.MNO
         }
 
 
-        public static IEnumerable<RuleDescriptor> GetRulesForPolicy(CxRestContext ctx,
+        public static IEnumerable<RuleDescriptor> GetRulesForPolicy(CxSASTRestContext ctx,
         CancellationToken token, int policyId)
         {
 			return WebOperation.ExecuteGet<IEnumerable<RuleDescriptor>>(
@@ -75,7 +75,7 @@ namespace CxRestClient.MNO
 					return ParseRules(ctx, token, jt);
 				}
 			}
-			, CxRestContext.MakeUrl(ctx.MnoUrl, String.Format(URL_SUFFIX, policyId))
+			, CxSASTRestContext.MakeUrl(ctx.MnoUrl, String.Format(URL_SUFFIX, policyId))
 			, ctx
 			, token, apiVersion: null);
         }

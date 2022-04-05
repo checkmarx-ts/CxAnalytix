@@ -138,12 +138,12 @@ namespace CxRestClient.OSA
 
 
 		public static IEnumerable<Vulnerability> GetVulnerabilities
-			(CxRestContext ctx, CancellationToken token, String scanId)
+			(CxSASTRestContext ctx, CancellationToken token, String scanId)
 		{
 			int curPage = 1;
 			List<Vulnerability> returnVulns = new List<Vulnerability>();
 
-			Func<int, String> url = (pg) => CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
+			Func<int, String> url = (pg) => CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
 				{
 					{"scanId", Convert.ToString (scanId)  },
 					{ "page", Convert.ToString (pg) },

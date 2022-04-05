@@ -134,14 +134,14 @@ namespace CxRestClient.OSA
 		}
 
 
-		public static IEnumerable<Library> GetLibraries(CxRestContext ctx, CancellationToken token,
+		public static IEnumerable<Library> GetLibraries(CxSASTRestContext ctx, CancellationToken token,
 		String scanId)
 		{
 			int curPage = 1;
 
 			List<Library> returnLibs = new List<Library>();
 
-			Func<int, String> url = (pg) => CxRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
+			Func<int, String> url = (pg) => CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
 				{
 				{"scanId", Convert.ToString (scanId)  },
 				{ "page", Convert.ToString (pg) },

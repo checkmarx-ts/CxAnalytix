@@ -81,7 +81,7 @@ namespace CxAnalytixService
             _cancelToken = new CancellationTokenSource();
 
 
-            var builder = new CxRestContext.CxRestContextBuilder();
+            var builder = new CxSASTRestContext.CxSASTRestContextBuilder();
             builder.WithSASTServiceURL(Config.Connection.URL).
             WithMNOServiceURL(Config.Connection.MNOUrl)
             .WithOpTimeout(Config.Connection.TimeoutSeconds)
