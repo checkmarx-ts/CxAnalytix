@@ -9,6 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using log4net;
 using CxRestClient.IO;
+using System.Runtime.CompilerServices;
 
 namespace CxRestClient
 {
@@ -28,7 +29,6 @@ namespace CxRestClient
         public CxClientFactory Json { get; internal set; }
         public CxClientFactory Xml { get; internal set; }
 
-
         private readonly Object _tokenLock = new object();
 
 
@@ -37,7 +37,7 @@ namespace CxRestClient
         {
             get
             {
-                ValidateToken(ref _sastToken);
+                ValidateToken(MakeUrl(Url, LOGIN_URI_SUFFIX), ref _sastToken);
                 return _sastToken;
             }
 
@@ -52,7 +52,7 @@ namespace CxRestClient
         {
             get
             {
-                ValidateToken(ref _mnoToken);
+                ValidateToken(MakeUrl(Url, LOGIN_URI_SUFFIX), ref _mnoToken);
                 return _mnoToken;
             }
 
@@ -62,112 +62,25 @@ namespace CxRestClient
             }
         }
 
-        #endregion
+
+		#endregion
 
 
-        private void ValidateToken(ref LoginToken token)
-        {
-            lock (_tokenLock)
-            {
-				if (DateTime.Now.CompareTo(token.ExpireTime) >= 0)
-					token = GetLoginToken(Url, token.ReauthContent);
-			}
-        }
 
+		[MethodImpl(MethodImplOptions.Synchronized)]
         public override void Reauthenticate()
 		{
-            lock (_tokenLock)
-            {
-                _sastToken.ExpireTime = DateTime.MinValue;
-                _mnoToken.ExpireTime = DateTime.MinValue;
-            }
-        }
-
-        internal struct LoginToken
-        {
-            public String TokenType { get; internal set; }
-            public DateTime ExpireTime { get; internal set; }
-            public String Token { get; internal set; }
-            internal HttpContent ReauthContent { get; set; }
-        }
-
-
-        #region Static utility methods
-
-        private static LoginToken GetLoginToken(String url, HttpContent authContent)
-        {
-            try
-            {
-                HttpClient c = HttpClientSingleton.GetClient();
-
-                var uri = new Uri(MakeUrl(url, LOGIN_URI_SUFFIX));
-
-                _log.Debug($"Login URL: {uri}");
-
-                var response = c.PostAsync(uri, authContent).Result;
-
-                if (response.StatusCode != HttpStatusCode.OK)
-                {
-                    if (_log.IsDebugEnabled)
-                        _log.Debug($"Response code [{response.StatusCode}]: " +
-                            $"{response.Content.ReadAsStringAsync().Result}");
-                    throw new InvalidOperationException(response.ReasonPhrase);
-                }
-                else
-                    _log.Debug("Successful login.");
-
-
-                using (JsonReader r = new JsonTextReader(new StreamReader
-                    (response.Content.ReadAsStreamAsync().Result)))
-                {
-
-                    var results = JsonSerializer.Create().Deserialize(r,
-                        typeof(Dictionary<String, String>)) as Dictionary<String, String>;
-
-                    return new LoginToken
-                    {
-                        TokenType = results["token_type"],
-                        ExpireTime = DateTime.Now.AddSeconds(Convert.ToDouble(results["expires_in"])),
-                        Token = results["access_token"],
-                        ReauthContent = authContent
-                    };
-                }
-            }
-            catch (HttpRequestException hex)
-            {
-                // Next operation will try to log in again due to expired token.
-                _log.Warn("Unable to obtain login token due to a communication problem. " +
-                    "Login will retry on next operation.", hex);
-                return GetNullToken(authContent);
-            }
-            catch (Exception ex)
-            {
-                _log.Warn("Unable to obtain login token due to an unexpected exception.  " +
-                    "Login will retry on the next operation.", ex);
-                return GetNullToken(authContent);
-            }
-
-        }
-
-        private static LoginToken GetNullToken(HttpContent authContent)
-        {
-            return new LoginToken
-            {
-                TokenType = null,
-                ExpireTime = DateTime.MinValue,
-                Token = null,
-                ReauthContent = authContent
-            };
-        }
-
-
-        private static LoginToken GetLoginToken(String url, Dictionary<string, string> headers)
-		{
-            return GetLoginToken(url, new FormUrlEncodedContent(headers));
+			_sastToken.ExpireTime = DateTime.MinValue;
+			_mnoToken.ExpireTime = DateTime.MinValue;
 		}
 
 
-        private static LoginToken GetSASTLoginToken(String url, String username, String password)
+
+		#region Static utility methods
+
+
+
+        private static LoginToken GetSASTLoginToken(String loginUrl, String username, String password)
         {
             _log.Debug($"Obtainting SAST login token");
 
@@ -182,11 +95,11 @@ namespace CxRestClient
             };
 
 
-            return GetLoginToken(url, requestContent);
+            return GetLoginToken(loginUrl, requestContent);
         }
 
 
-        private static LoginToken GetMNOLoginToken(String url, String username, String password)
+        private static LoginToken GetMNOLoginToken(String loginUrl, String username, String password)
         {
             _log.Debug($"Obtainting CxARM login token");
 
@@ -200,7 +113,7 @@ namespace CxRestClient
                 {"client_secret", CLIENT_SECRET}
             };
 
-            return GetLoginToken(url, requestContent);
+            return GetLoginToken(loginUrl, requestContent);
         }
 
 
@@ -286,8 +199,8 @@ namespace CxRestClient
 
                 CxSASTRestContext retVal = new CxSASTRestContext()
                 {
-                    SastToken = GetSASTLoginToken(_url, _user, _pass),
-                    MNOToken =  String.IsNullOrEmpty(_mnoUrl) ? new Nullable<LoginToken> () : GetMNOLoginToken(_url, _user, _pass),
+                    SastToken = GetSASTLoginToken(MakeUrl(_url, LOGIN_URI_SUFFIX), _user, _pass),
+                    MNOToken =  String.IsNullOrEmpty(_mnoUrl) ? new Nullable<LoginToken> () : GetMNOLoginToken(MakeUrl(_url, LOGIN_URI_SUFFIX), _user, _pass),
                     Url = _url,
                     MnoUrl = _mnoUrl,
                     ValidateSSL = _validate,
