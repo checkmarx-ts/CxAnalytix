@@ -3,59 +3,59 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30621.155
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Configuration", "Configuration\Configuration.csproj", "{C441FBE3-E188-4D4F-A990-2BE9D031BC60}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Configuration", "Libs\Configuration\Configuration.csproj", "{C441FBE3-E188-4D4F-A990-2BE9D031BC60}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxRestClient", "CxRestClient\CxRestClient.csproj", "{DC9E7B0E-AF07-4C23-8FAE-52AC6BAA5712}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxRestClient", "Libs\CxRestClient\CxRestClient.csproj", "{DC9E7B0E-AF07-4C23-8FAE-52AC6BAA5712}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAnalytixCLI", "CxAnalytixCLI\CxAnalytixCLI.csproj", "{C779934C-7FF2-41BC-8371-F074E5A54958}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAnalytixCLI", "Applications\CxAnalytixCLI\CxAnalytixCLI.csproj", "{C779934C-7FF2-41BC-8371-F074E5A54958}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAnalytixService", "CxAnalytixService\CxAnalytixService.csproj", "{2A83F8F6-A40F-4A68-845C-229051AE2A51}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAnalytixService", "Applications\CxAnalytixService\CxAnalytixService.csproj", "{2A83F8F6-A40F-4A68-845C-229051AE2A51}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Log4NetOutput", "Log4NetOutput\Log4NetOutput.csproj", "{628F0804-B5FA-449B-945C-38993513A79B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Log4NetOutput", "Output\Log4NetOutput\Log4NetOutput.csproj", "{628F0804-B5FA-449B-945C-38993513A79B}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogCleaner", "LogCleaner\LogCleaner.csproj", "{4B4FBC38-FB3A-47B1-B25D-8DE40A2FF687}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogCleaner", "Libs\LogCleaner\LogCleaner.csproj", "{4B4FBC38-FB3A-47B1-B25D-8DE40A2FF687}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogCleaner_Tests", "LogCleaner_Tests\LogCleaner_Tests.csproj", "{7BF32DE9-98CD-4795-8463-396D9A6A47BA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LogCleaner_Tests", "Tests\LogCleaner_Tests\LogCleaner_Tests.csproj", "{7BF32DE9-98CD-4795-8463-396D9A6A47BA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransformLogic", "TransformLogic\TransformLogic.csproj", "{B38B8205-16EE-4F75-B17F-2AC609551EA1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransformLogic", "Libs\TransformLogic\TransformLogic.csproj", "{B38B8205-16EE-4F75-B17F-2AC609551EA1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransformLogic_Tests", "TransformLogic_Tests\TransformLogic_Tests.csproj", "{FBCA5425-BE5B-4BA0-9714-26925BFFE273}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TransformLogic_Tests", "Tests\TransformLogic_Tests\TransformLogic_Tests.csproj", "{FBCA5425-BE5B-4BA0-9714-26925BFFE273}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxRestClient_Tests", "CxRestClient_Tests\CxRestClient_Tests.csproj", "{397852E9-467A-4098-983B-47C6888F85D1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxRestClient_Tests", "Tests\CxRestClient_Tests\CxRestClient_Tests.csproj", "{397852E9-467A-4098-983B-47C6888F85D1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAnalytixDaemon", "CxAnalytixDaemon\CxAnalytixDaemon.csproj", "{DF520E46-2739-4C28-BB4B-9DEBF8A551C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAnalytixDaemon", "Applications\CxAnalytixDaemon\CxAnalytixDaemon.csproj", "{DF520E46-2739-4C28-BB4B-9DEBF8A551C7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MongoDBOutput", "MongoDBOutput\MongoDBOutput.csproj", "{332A35DB-4ECA-4482-B93A-A9DBEAC5AF16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MongoDBOutput", "Output\MongoDBOutput\MongoDBOutput.csproj", "{332A35DB-4ECA-4482-B93A-A9DBEAC5AF16}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions_Test", "Extensions_Test\Extensions_Test.csproj", "{1546DA62-BCD4-4CD3-81B3-F02251B42A50}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions_Test", "Tests\Extensions_Test\Extensions_Test.csproj", "{1546DA62-BCD4-4CD3-81B3-F02251B42A50}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions", "Extensions\Extensions.csproj", "{06F7346C-CA7C-477D-A475-8177E84A51C4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Extensions", "Libs\Extensions\Extensions.csproj", "{06F7346C-CA7C-477D-A475-8177E84A51C4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StringFormatExamples", "StringFormatExamples\StringFormatExamples.csproj", "{A7121C35-FE42-4677-BBA4-CF633595F50F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StringFormatExamples", "SDK\StringFormatExamples\StringFormatExamples.csproj", "{A7121C35-FE42-4677-BBA4-CF633595F50F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAuditTrailsDB", "CxAuditTrailsDB\CxAuditTrailsDB.csproj", "{93C5C7C1-A7D5-4F79-A2A9-74C711AAB926}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAuditTrailsDB", "Libs\CxAuditTrailsDB\CxAuditTrailsDB.csproj", "{93C5C7C1-A7D5-4F79-A2A9-74C711AAB926}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Configuration_Tests", "Configuration_Tests\Configuration_Tests.csproj", "{25881CD3-C7C2-4103-97B3-0C4050C4C011}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Configuration_Tests", "Tests\Configuration_Tests\Configuration_Tests.csproj", "{25881CD3-C7C2-4103-97B3-0C4050C4C011}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAuditTrailsDirectDB", "CxAuditTrailsDirectDB\CxAuditTrailsDirectDB.csproj", "{9363739E-7D08-486D-8D64-1DB2B5D18245}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAuditTrailsDirectDB", "Libs\CxAuditTrailsDirectDB\CxAuditTrailsDirectDB.csproj", "{9363739E-7D08-486D-8D64-1DB2B5D18245}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAuditTrailsCrawler", "CxAuditTrailsCrawler\CxAuditTrailsCrawler.csproj", "{74B9951B-B5A3-468A-A3B5-6CBA056E5090}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAuditTrailsCrawler", "Libs\CxAuditTrailsCrawler\CxAuditTrailsCrawler.csproj", "{74B9951B-B5A3-468A-A3B5-6CBA056E5090}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Interfaces", "Interfaces\Interfaces.csproj", "{3ADD8828-7E89-4705-B450-9A27D6356DF1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Interfaces", "Libs\Interfaces\Interfaces.csproj", "{3ADD8828-7E89-4705-B450-9A27D6356DF1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAuditTrailsCrawler_Tests", "CxAuditTrailsCrawler_Tests\CxAuditTrailsCrawler_Tests.csproj", "{A56B0752-F02A-4238-A61B-04A11328A24A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CxAuditTrailsCrawler_Tests", "Tests\CxAuditTrailsCrawler_Tests\CxAuditTrailsCrawler_Tests.csproj", "{A56B0752-F02A-4238-A61B-04A11328A24A}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Exceptions", "Exceptions\Exceptions.csproj", "{73E0F5C9-87DC-47C3-AB74-0D87BC62674D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Exceptions", "Libs\Exceptions\Exceptions.csproj", "{73E0F5C9-87DC-47C3-AB74-0D87BC62674D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilities", "Utilities\Utilities.csproj", "{3EDC0325-BDBA-48BB-B21B-AC1F4C6B34C2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilities", "Libs\Utilities\Utilities.csproj", "{3EDC0325-BDBA-48BB-B21B-AC1F4C6B34C2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilities_Tests", "Utilities_Tests\Utilities_Tests.csproj", "{1271C27B-0F36-4842-8297-205A955AC0A6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Utilities_Tests", "Tests\Utilities_Tests\Utilities_Tests.csproj", "{1271C27B-0F36-4842-8297-205A955AC0A6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RegressionTester", "RegressionTester\RegressionTester.csproj", "{3ACA5FFA-7228-4BF1-85C8-A71187691593}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RegressionTester", "QA\RegressionTester\RegressionTester.csproj", "{3ACA5FFA-7228-4BF1-85C8-A71187691593}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectFilter", "ProjectFilter\ProjectFilter.csproj", "{66CA66AA-62EE-423B-BC82-EB4399E6D055}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectFilter", "Libs\ProjectFilter\ProjectFilter.csproj", "{66CA66AA-62EE-423B-BC82-EB4399E6D055}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectFilter_Tests", "ProjectFilter_Tests\ProjectFilter_Tests.csproj", "{8CD2E905-87F6-45ED-AB4F-2F55E9FC52B6}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ProjectFilter_Tests", "Tests\ProjectFilter_Tests\ProjectFilter_Tests.csproj", "{8CD2E905-87F6-45ED-AB4F-2F55E9FC52B6}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "config_files", "config_files", "{1A6250A3-C2ED-42F5-B77E-0FB1DD226C2F}"
 	ProjectSection(SolutionItems) = preProject
@@ -63,9 +63,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "config_files", "config_file
 		config_files\log.log4net = config_files\log.log4net
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutputBootstrapper", "OutputBootstrapper\OutputBootstrapper.csproj", "{DA3F5BED-5CEB-47DD-8148-CCDBE5B4B99E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutputBootstrapper", "Libs\OutputBootstrapper\OutputBootstrapper.csproj", "{DA3F5BED-5CEB-47DD-8148-CCDBE5B4B99E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AMQPOutput", "AMQPOutput\AMQPOutput.csproj", "{2A53DAD5-E238-4AEA-9BDE-78EF4D794AFF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AMQPOutput", "Output\AMQPOutput\AMQPOutput.csproj", "{2A53DAD5-E238-4AEA-9BDE-78EF4D794AFF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SDK", "SDK", "{C3D3927F-5DA8-4014-BB68-A266E3DEB978}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "QA", "QA", "{18B3DC61-B17E-4891-A4CB-E93AE768538C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -750,6 +754,10 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A7121C35-FE42-4677-BBA4-CF633595F50F} = {C3D3927F-5DA8-4014-BB68-A266E3DEB978}
+		{3ACA5FFA-7228-4BF1-85C8-A71187691593} = {18B3DC61-B17E-4891-A4CB-E93AE768538C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {103FD3A6-4F85-4DC0-B65F-7E974EA202FE}
