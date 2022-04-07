@@ -33,7 +33,7 @@ namespace CxAnalytixCLI
 
 
             var builder = new CxSASTRestContext.CxSASTRestContextBuilder();
-            builder.WithSASTServiceURL(Config.Connection.URL)
+            builder.WithServiceURL(Config.Connection.URL)
             .WithOpTimeout(Config.Connection.TimeoutSeconds)
             .WithSSLValidate(Config.Connection.ValidateCertificates)
             .WithUsername(Config.Credentials.Username)

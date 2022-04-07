@@ -114,28 +114,14 @@ namespace CxRestClient
 
 
 
-        public class CxSASTRestContextBuilder
+        public class CxSASTRestContextBuilder : CxRestContextBuilderCommon<CxSASTRestContextBuilder>
         {
 
-            private String _url;
-            public CxSASTRestContextBuilder WithSASTServiceURL(String url)
-            {
-                _url = url;
-                return this;
-            }
 
             private String _mnoUrl;
             public CxSASTRestContextBuilder WithMNOServiceURL(String url)
             {
                 _mnoUrl = url;
-                return this;
-            }
-
-
-            private int _timeout = 600;
-            public CxSASTRestContextBuilder WithOpTimeout(int seconds)
-            {
-                _timeout = seconds;
                 return this;
             }
 
@@ -146,59 +132,32 @@ namespace CxRestClient
                 return this;
             }
 
-
-            private String _user;
-            public CxSASTRestContextBuilder WithUsername(String username)
-            {
-                _user = username;
-                return this;
-            }
-
-            private String _pass;
-            public CxSASTRestContextBuilder WithPassword(String pass)
-            {
-                _pass = pass;
-                return this;
-            }
-
-            private int _retryLoop;
-            public CxSASTRestContextBuilder WithRetryLoop(int loopCount)
+			internal override void Validate()
 			{
-                _retryLoop = loopCount;
-                return this;
-			}
+				base.Validate();
 
+                if (!String.IsNullOrEmpty(_mnoUrl) && !Uri.IsWellFormedUriString(_mnoUrl, UriKind.Absolute) )
+                    throw new InvalidOperationException("M&O Endpoint URL is invalid.");
+
+            }
 
             public CxSASTRestContext Build()
             {
-                if (_url == null)
-                    throw new InvalidOperationException("Endpoint URL was not specified.");
+                Validate();
 
-                if (_user == null)
-                    throw new InvalidOperationException("Username was not specified.");
-
-                if (_pass == null)
-                    throw new InvalidOperationException("Password was not specified.");
-
-                if (_retryLoop < 0)
-                    throw new InvalidOperationException("Retry loop can't be < 0.");
-
-                if (_timeout < 0)
-                    throw new InvalidOperationException("Timeout can't be < 0.");
-
-                var timeoutSpan = new TimeSpan(0, 0, _timeout);
+                var timeoutSpan = new TimeSpan(0, 0, Timeout);
 
                 HttpClientSingleton.Initialize(_validate, timeoutSpan);
 
                 CxSASTRestContext retVal = new CxSASTRestContext()
                 {
-                    SastToken = GetSASTLoginToken(MakeUrl(_url, LOGIN_URI_SUFFIX), _user, _pass),
-                    MNOToken =  String.IsNullOrEmpty(_mnoUrl) ? new Nullable<LoginToken> () : GetMNOLoginToken(MakeUrl(_url, LOGIN_URI_SUFFIX), _user, _pass),
-                    Url = _url,
+                    SastToken = GetSASTLoginToken(MakeUrl(Url, LOGIN_URI_SUFFIX), User, Password),
+                    MNOToken =  String.IsNullOrEmpty(_mnoUrl) ? new Nullable<LoginToken> () : GetMNOLoginToken(MakeUrl(Url, LOGIN_URI_SUFFIX), User, Password),
+                    Url = Url,
                     MnoUrl = _mnoUrl,
                     ValidateSSL = _validate,
                     Timeout = timeoutSpan,
-                    RetryLoop = _retryLoop
+                    RetryLoop = RetryLoop
                 };
 
                 retVal.Json = new CxSASTClientFactory("application/json", retVal);

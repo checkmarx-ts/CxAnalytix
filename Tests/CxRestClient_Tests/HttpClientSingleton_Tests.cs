@@ -4,6 +4,7 @@ using CxRestClient.IO;
 
 namespace CxRestClient_Tests
 {
+    [SingleThreaded]
     public class HttpClientSingleton_Tests
     {
         [Test]
