@@ -35,7 +35,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
+		<ProjectReference Include="..\..\Libs\TransformLogic\TransformLogic.csproj" />
 	</ItemGroup>
 
 </Project>

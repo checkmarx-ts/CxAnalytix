@@ -31,11 +31,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Configuration\Configuration.csproj" />
-		<ProjectReference Include="..\Exceptions\Exceptions.csproj" />
-		<ProjectReference Include="..\Extensions\Extensions.csproj" />
-		<ProjectReference Include="..\Interfaces\Interfaces.csproj" />
-		<ProjectReference Include="..\Utilities\Utilities.csproj" />
+		<ProjectReference Include="..\..\Libs\Configuration\Configuration.csproj" />
+		<ProjectReference Include="..\..\Libs\Exceptions\Exceptions.csproj" />
+		<ProjectReference Include="..\..\Libs\Extensions\Extensions.csproj" />
+		<ProjectReference Include="..\..\Libs\Interfaces\Interfaces.csproj" />
+		<ProjectReference Include="..\..\Libs\Utilities\Utilities.csproj" />
 	</ItemGroup>
 
 </Project>

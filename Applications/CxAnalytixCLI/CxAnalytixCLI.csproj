@@ -36,16 +36,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\AMQPOutput\AMQPOutput.csproj" />
-		<ProjectReference Include="..\Configuration\Configuration.csproj" />
-		<ProjectReference Include="..\CxAuditTrailsCrawler\CxAuditTrailsCrawler.csproj" />
-		<ProjectReference Include="..\CxRestClient\CxRestClient.csproj" />
-		<ProjectReference Include="..\Extensions\Extensions.csproj" />
-		<ProjectReference Include="..\Log4NetOutput\Log4NetOutput.csproj" />
-		<ProjectReference Include="..\MongoDBOutput\MongoDBOutput.csproj" />
-		<ProjectReference Include="..\OutputBootstrapper\OutputBootstrapper.csproj" />
-		<ProjectReference Include="..\ProjectFilter\ProjectFilter.csproj" />
-		<ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
+		<ProjectReference Include="..\..\Libs\Configuration\Configuration.csproj" />
+		<ProjectReference Include="..\..\Libs\CxAuditTrailsCrawler\CxAuditTrailsCrawler.csproj" />
+		<ProjectReference Include="..\..\Libs\CxRestClient\CxRestClient.csproj" />
+		<ProjectReference Include="..\..\Libs\Extensions\Extensions.csproj" />
+		<ProjectReference Include="..\..\Libs\OutputBootstrapper\OutputBootstrapper.csproj" />
+		<ProjectReference Include="..\..\Libs\ProjectFilter\ProjectFilter.csproj" />
+		<ProjectReference Include="..\..\Libs\TransformLogic\TransformLogic.csproj" />
+		<ProjectReference Include="..\..\Output\AMQPOutput\AMQPOutput.csproj" />
+		<ProjectReference Include="..\..\Output\Log4NetOutput\Log4NetOutput.csproj" />
+		<ProjectReference Include="..\..\Output\MongoDBOutput\MongoDBOutput.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -58,8 +58,8 @@
 	</ItemGroup>
 
 	<Target Name="CopyConfigs" AfterTargets="Build">
-    <Copy SourceFiles="$(ProjectDir)../config_files/dotnet.exe.config;$(ProjectDir)../config_files/log.log4net" DestinationFiles="$(TargetDir)/dotnet.exe.config;$(TargetDir)/CxAnalytixCLI.log4net" />
-    <Copy SourceFiles="$(ProjectDir)../config_files/dotnet.exe.config;$(ProjectDir)../config_files/log.log4net" DestinationFiles="$(PublishDir)/dotnet.exe.config;$(PublishDir)/CxAnalytixCLI.log4net" />
+    <Copy SourceFiles="$(ProjectDir)../../config_files/dotnet.exe.config;$(ProjectDir)../../config_files/log.log4net" DestinationFiles="$(TargetDir)/dotnet.exe.config;$(TargetDir)/CxAnalytixCLI.log4net" />
+    <Copy SourceFiles="$(ProjectDir)../../config_files/dotnet.exe.config;$(ProjectDir)../../config_files/log.log4net" DestinationFiles="$(PublishDir)/dotnet.exe.config;$(PublishDir)/CxAnalytixCLI.log4net" />
 	</Target>
 
 </Project>

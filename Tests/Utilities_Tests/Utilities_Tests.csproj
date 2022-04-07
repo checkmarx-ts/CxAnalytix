@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Utilities\Utilities.csproj" />
+    <ProjectReference Include="..\..\Libs\Utilities\Utilities.csproj" />
   </ItemGroup>
 
 </Project>

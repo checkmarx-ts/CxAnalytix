@@ -33,7 +33,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\CxRestClient\CxRestClient.csproj" />
+		<ProjectReference Include="..\..\Libs\CxRestClient\CxRestClient.csproj" />
 	</ItemGroup>
 
 </Project>

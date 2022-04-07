@@ -32,7 +32,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\LogCleaner\LogCleaner.csproj" />
+		<ProjectReference Include="..\..\Libs\LogCleaner\LogCleaner.csproj" />
 	</ItemGroup>
 
 </Project>
