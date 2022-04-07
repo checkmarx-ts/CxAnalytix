@@ -5,15 +5,15 @@ using System.Text;
 
 namespace CxRestClient.IO
 {
-    public class CxClientFactory
+    public class CxSASTClientFactory
     {
 
-        private static ILog _log = LogManager.GetLogger(typeof(CxClientFactory));
+        private static ILog _log = LogManager.GetLogger(typeof(CxSASTClientFactory));
 
-        private CxClientFactory()
+        private CxSASTClientFactory()
         { }
 
-        internal CxClientFactory(String mediaType, CxSASTRestContext ctx)
+        internal CxSASTClientFactory(String mediaType, CxSASTRestContext ctx)
         {
             Context = ctx;
             MediaType = mediaType;
