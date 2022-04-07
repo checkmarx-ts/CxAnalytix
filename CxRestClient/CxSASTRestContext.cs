@@ -1,12 +1,5 @@
-﻿using Newtonsoft.Json;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net;
-using System.Net.Http;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using log4net;
 using CxRestClient.IO;
 using System.Runtime.CompilerServices;
@@ -26,8 +19,8 @@ namespace CxRestClient
         #region Public/Private Properties
 
         public String MnoUrl { get; internal set; }
-        public CxClientFactory Json { get; internal set; }
-        public CxClientFactory Xml { get; internal set; }
+        public CxSASTClientFactory Json { get; internal set; }
+        public CxSASTClientFactory Xml { get; internal set; }
 
         private readonly Object _tokenLock = new object();
 
@@ -208,8 +201,8 @@ namespace CxRestClient
                     RetryLoop = _retryLoop
                 };
 
-                retVal.Json = new CxClientFactory("application/json", retVal);
-                retVal.Xml = new CxClientFactory("application/xml", retVal);
+                retVal.Json = new CxSASTClientFactory("application/json", retVal);
+                retVal.Xml = new CxSASTClientFactory("application/xml", retVal);
 
                 return retVal;
             }
