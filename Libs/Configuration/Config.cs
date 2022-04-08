@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace CxAnalytix.Configuration
@@ -70,7 +71,11 @@ namespace CxAnalytix.Configuration
 			}
 			catch (Exception ex)
 			{
-				_log.Error("Exception trying to save application config, this is normal on Linux.", ex);
+				if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+					_log.Error("Exception trying to save application config.", ex);
+				else
+					_log.Warn("Sensitive configuration data can't be encrypted on this platform.  Use environment variables if possible.", ex);
+
 			}
 		}
 
