@@ -1,22 +1,24 @@
-﻿using System;
+﻿using CxAnalytix.Configuration.Contracts;
+using CxAnalytix.Configuration.Utils;
+using System;
 using System.Collections.Generic;
+using System.Composition;
 using System.Configuration;
 using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 
-namespace CxAnalytix.Configuration
+namespace CxAnalytix.Configuration.Impls
 {
 	[SecureConfigSection(SensitiveStringProp = "Password") ]
 	[SecureConfigSection(SensitiveStringProp = "Token")]
-	public sealed class CxCredentials : EnvAwareConfigurationSection
+	[Export(typeof(ICxCredentials))]
+	internal sealed class CxCredentials : EnvAwareConfigurationSection, ICxCredentials
 	{
-		internal CxCredentials()
+		public CxCredentials()
 		{
-
+			Config.AutoInit(this);
 		}
-
-		public static readonly String SECTION_NAME = "CxCredentials";
 
 		[ConfigurationProperty("Username", IsRequired = false)]
 		public String Username
@@ -31,13 +33,5 @@ namespace CxAnalytix.Configuration
 			get => (String)this["Password"];
 			set { this["Password"] = value; }
 		}
-
-		[ConfigurationProperty("Token", IsRequired = false)]
-		public String Token
-		{
-			get => (String)this["Token"];
-			set { this["Token"] = value; }
-		}
-
 	}
 }

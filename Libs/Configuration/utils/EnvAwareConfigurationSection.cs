@@ -1,8 +1,9 @@
-﻿using System;
+﻿using CxAnalytix.Configuration.Impls;
+using System;
 using System.Configuration;
 
 
-namespace CxAnalytix.Configuration
+namespace CxAnalytix.Configuration.Utils
 {
     public class EnvAwareConfigurationSection : ConfigurationSection
     {

@@ -1,18 +1,20 @@
-﻿using log4net;
+﻿using CxAnalytix.Configuration.Utils;
+using log4net;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Text;
+using System.Linq;
+using System.Reflection;
 
-namespace CxAnalytix.Configuration
+namespace CxAnalytix.Configuration.Impls
 {
-    public class Config
+    internal class Config
     {
         private static System.Configuration.Configuration _cfgManager;
         private static ILog _log = LogManager.GetLogger(typeof (Config) );
+		private static Boolean _boostrapped;
 
         static Config()
 		{
@@ -27,10 +29,36 @@ namespace CxAnalytix.Configuration
 			_cfgManager = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.None);
 
 			EncryptSensitiveSections();
+			_boostrapped = true;
+		}
 
-			Credentials = GetConfig<CxCredentials>(CxCredentials.SECTION_NAME);
-			Connection = GetConfig<CxConnection>(CxConnection.SECTION_NAME);
-			Service = GetConfig<CxAnalyticsService>(CxAnalyticsService.SECTION_NAME);
+
+		internal static void AutoInit<T>(T dest) where T : ConfigurationSection
+		{
+			if (!_boostrapped)
+				return;
+
+			foreach (var section in _cfgManager.Sections)
+				if (section.GetType() == typeof(T))
+				{
+					var classProps = section.GetType().FindMembers(System.Reflection.MemberTypes.Property,
+						System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, (f,x) =>
+						{
+							var propInfo = ((PropertyInfo)f);
+							return propInfo.CanWrite && propInfo.CanRead && propInfo.DeclaringType == typeof(T);
+						}, null);
+
+					foreach (PropertyInfo pi in classProps)
+					{
+						var gm = pi.GetGetMethod(); 
+						var sm = pi.GetSetMethod();
+
+						object curVal = typeof(T).InvokeMember(gm.Name, BindingFlags.InvokeMethod, null, section, null);
+
+						typeof(T).InvokeMember(sm.Name, BindingFlags.InvokeMethod, null, dest, new object[] { curVal });
+
+					}
+				}
 		}
 
 		private static void EncryptSensitiveSections()
@@ -79,29 +107,6 @@ namespace CxAnalytix.Configuration
 			}
 		}
 
-		public static CxCredentials Credentials
-        {
-            get;
-            private set;
-        }
-
-        public static CxConnection Connection
-        {
-            get;
-            private set;
-        }
-
-        public static CxAnalyticsService Service
-        {
-            get;
-            private set;
-        }
-
-
-        public static T GetConfig<T>(String sectionName) where T : ConfigurationSection
-        {
-            return _cfgManager.Sections[sectionName] as T;
-        }
         
     }
 }

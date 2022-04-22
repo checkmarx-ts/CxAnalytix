@@ -1,18 +1,21 @@
-﻿using System;
+﻿using CxAnalytix.Configuration.Contracts;
+using CxAnalytix.Configuration.Utils;
+using System;
 using System.Collections.Generic;
+using System.Composition;
 using System.Configuration;
 using System.Text;
 
-namespace CxAnalytix.Configuration
+namespace CxAnalytix.Configuration.Impls
 {
-    public sealed class CxAnalyticsService : EnvAwareConfigurationSection
+    [Export(typeof(ICxAnalytixService))]
+    internal sealed class CxAnalyticsService : EnvAwareConfigurationSection, ICxAnalytixService
     {
-        internal CxAnalyticsService ()
-        {
 
-        }
-
-        public static readonly String SECTION_NAME = "CxAnalyticsService";
+        public CxAnalyticsService()
+		{
+            Config.AutoInit(this);
+		}
 
         [ConfigurationProperty("EnablePseudoTransactions", IsRequired = false, DefaultValue = false)]
         public bool EnablePseudoTransactions

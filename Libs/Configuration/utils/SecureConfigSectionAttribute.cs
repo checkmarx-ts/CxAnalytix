@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 
 [assembly: InternalsVisibleTo("Configuration_Tests")]
-namespace CxAnalytix.Configuration
+namespace CxAnalytix.Configuration.Utils
 {
 	[System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
 	public sealed class SecureConfigSectionAttribute : System.Attribute

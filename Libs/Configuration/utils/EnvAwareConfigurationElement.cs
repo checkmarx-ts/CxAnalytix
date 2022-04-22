@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Text;
 
-namespace CxAnalytix.Configuration
+namespace CxAnalytix.Configuration.Utils
 {
 	public class EnvAwareConfigurationElement : ConfigurationElement
 	{

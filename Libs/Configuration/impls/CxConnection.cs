@@ -1,17 +1,15 @@
-﻿using System;
+﻿using CxAnalytix.Configuration.Utils;
+using System;
 using System.Collections.Generic;
+using System.Composition;
 using System.Configuration;
 using System.Text;
 
-namespace CxAnalytix.Configuration
+namespace CxAnalytix.Configuration.Impls
 {
-    public sealed class CxConnection : EnvAwareConfigurationSection
+    //[Export(typeof(IConfiguration))]
+    internal sealed class CxConnection : EnvAwareConfigurationSection
     {
-        internal CxConnection ()
-        {
-
-        }
-
         public static readonly String SECTION_NAME = "CxConnection";
 
         [ConfigurationProperty("URL", IsRequired = true)]
@@ -48,6 +46,5 @@ namespace CxAnalytix.Configuration
             get => (int)this["RetryLoop"];
             set { this["RetryLoop"] = value; }
         }
-
-    }
+	}
 }

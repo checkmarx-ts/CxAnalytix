@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Composition;
 using System.Configuration;
 using System.Text;
 
-namespace CxAnalytix.Configuration
+namespace CxAnalytix.Configuration.Impls
 {
-	public class CxFilter : ConfigurationSection
+    //[Export(typeof(ConfigurationSection))]
+    internal class CxFilter : ConfigurationSection
 	{
         [ConfigurationProperty("Team", IsRequired = false)]
         public String TeamRegex
