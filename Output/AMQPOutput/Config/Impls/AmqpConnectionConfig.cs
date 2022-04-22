@@ -1,17 +1,21 @@
-﻿using CxAnalytix.Configuration;
+﻿using CxAnalytix.Configuration.Utils;
+using CxAnalytix.Out.AMQPOutput.Config.Contracts;
 using System;
-using System.Collections.Generic;
+using System.Composition;
 using System.Configuration;
-using System.Text;
 
-namespace CxAnalytix.Out.AMQPOutput.Config
+namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 {
 
 	[SecureConfigSection(SensitiveStringProp = "Password")]
-	public class AmqpConnectionConfig : EnvAwareConfigurationSection
+	[Export(typeof(IAmqpConnectionConfig))]
+	internal class AmqpConnectionConfig : EnvAwareConfigurationSection, IAmqpConnectionConfig
 	{
 
-		public static readonly String SECTION_NAME = "AMQPConnection";
+		public AmqpConnectionConfig()
+		{
+			CxAnalytix.Configuration.Impls.Config.AutoInit(this);
+		}
 
 
 		[ConfigurationProperty("UserName", IsRequired = false)]

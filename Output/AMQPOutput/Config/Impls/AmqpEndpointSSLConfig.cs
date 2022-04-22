@@ -4,7 +4,7 @@ using System.Configuration;
 using System.Security.Authentication;
 using System.Text;
 
-namespace CxAnalytix.Out.AMQPOutput.Config
+namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 {
 	public class AmqpEndpointSSLConfig : ConfigurationElement
 	{

@@ -10,7 +10,7 @@ using System.Reflection;
 
 namespace CxAnalytix.Configuration.Impls
 {
-    internal class Config
+    public class Config
     {
         private static System.Configuration.Configuration _cfgManager;
         private static ILog _log = LogManager.GetLogger(typeof (Config) );
@@ -33,7 +33,7 @@ namespace CxAnalytix.Configuration.Impls
 		}
 
 
-		internal static void AutoInit<T>(T dest) where T : ConfigurationSection
+		public static void AutoInit<T>(T dest) where T : ConfigurationSection
 		{
 			if (!_boostrapped)
 				return;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Text;
 
-namespace CxAnalytix.Out.AMQPOutput.Config
+namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 {
 	public class AmqpFieldCollection : ConfigurationElementCollection, ISet<AmqpFieldCollection.AmqpField>
 	{

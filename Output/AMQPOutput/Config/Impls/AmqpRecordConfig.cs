@@ -1,10 +1,8 @@
-﻿using CxAnalytix.Configuration;
+﻿using CxAnalytix.Configuration.Utils;
 using System;
-using System.Collections.Generic;
 using System.Configuration;
-using System.Text;
 
-namespace CxAnalytix.Out.AMQPOutput.Config
+namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 {
 	public class AmqpRecordConfig : EnvAwareConfigurationElement
 	{

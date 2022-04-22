@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Text;
 
-namespace CxAnalytix.Out.AMQPOutput.Config
+namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 {
 	public class AmqpEndpointCollection : ConfigurationElementCollection, IList<AmqpTcpEndpoint>
 	{

@@ -9,6 +9,13 @@ namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 	[Export(typeof(IAmqpConfig))]
 	internal class AmqpConfig : EnvAwareConfigurationSection, IAmqpConfig
 	{
+
+		public AmqpConfig()
+		{
+			CxAnalytix.Configuration.Impls.Config.AutoInit(this);
+		}
+
+
 		[ConfigurationProperty("DefaultExchange", IsRequired = true)]
 		public String Exchange
 		{
