@@ -4,7 +4,7 @@ using System;
 using System.Composition;
 using System.Configuration;
 
-namespace CxAnalytix.Out.AMQPOutput.Config
+namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 {
 	[Export(typeof(IAmqpConfig))]
 	internal class AmqpConfig : EnvAwareConfigurationSection, IAmqpConfig
