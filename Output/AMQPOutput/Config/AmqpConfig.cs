@@ -1,15 +1,14 @@
-﻿using CxAnalytix.Configuration;
+﻿using CxAnalytix.Configuration.Utils;
+using CxAnalytix.Out.AMQPOutput.Config.Contracts;
 using System;
-using System.Collections.Generic;
+using System.Composition;
 using System.Configuration;
-using System.Text;
 
 namespace CxAnalytix.Out.AMQPOutput.Config
 {
-	public class AmqpConfig : EnvAwareConfigurationSection
+	[Export(typeof(IAmqpConfig))]
+	internal class AmqpConfig : EnvAwareConfigurationSection, IAmqpConfig
 	{
-		public static readonly String SECTION_NAME = "AMQPConfig";
-
 		[ConfigurationProperty("DefaultExchange", IsRequired = true)]
 		public String Exchange
 		{
