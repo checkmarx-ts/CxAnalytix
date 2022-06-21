@@ -1,5 +1,4 @@
-﻿using CxAnalytix.Configuration.Impls;
-using System;
+﻿using System;
 using System.Configuration;
 
 

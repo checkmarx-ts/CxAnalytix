@@ -1,26 +1,14 @@
-﻿using CxAnalytix.Configuration.Contracts;
-using CxAnalytix.Configuration.Utils;
+﻿using CxAnalytix.Configuration.Utils;
 using System;
-using System.Collections.Generic;
-using System.Composition;
 using System.Configuration;
-using System.Text;
-using System.Xml;
-using System.Xml.Serialization;
 
 namespace CxAnalytix.Configuration.Impls
 {
 	[SecureConfigSection(SensitiveStringProp = "Password") ]
-	[SecureConfigSection(SensitiveStringProp = "Token")]
-	[Export(typeof(ICxCredentials))]
-	internal sealed class CxCredentials : EnvAwareConfigurationSection, ICxCredentials
+	internal sealed class CxCredentials : EnvAwareConfigurationSection
 	{
-		public CxCredentials()
-		{
-			Config.AutoInit(this);
-		}
 
-		[ConfigurationProperty("Username", IsRequired = false)]
+        [ConfigurationProperty("Username", IsRequired = false)]
 		public String Username
 		{
 			get => (String)this["Username"];

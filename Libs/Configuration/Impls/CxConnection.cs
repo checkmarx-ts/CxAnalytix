@@ -1,13 +1,9 @@
 ﻿using CxAnalytix.Configuration.Utils;
 using System;
-using System.Collections.Generic;
-using System.Composition;
 using System.Configuration;
-using System.Text;
 
 namespace CxAnalytix.Configuration.Impls
 {
-    //[Export(typeof(IConfiguration))]
     internal sealed class CxConnection : EnvAwareConfigurationSection
     {
         public static readonly String SECTION_NAME = "CxConnection";

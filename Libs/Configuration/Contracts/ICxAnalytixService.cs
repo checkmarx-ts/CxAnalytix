@@ -1,24 +1,22 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace CxAnalytix.Configuration.Contracts
 {
 	public interface ICxAnalytixService
 	{
-		bool EnablePseudoTransactions { get; set; }
-		String InstanceIdentifier { get; set; }
-		int ConcurrentThreads { get; set; }
-		String StateDataStoragePath { get; set; }
-		String OutputFactoryClassPath { get; set; }
+		bool EnablePseudoTransactions { get; }
+		String InstanceIdentifier { get; }
+		int ConcurrentThreads { get; }
+		String StateDataStoragePath { get; }
+		String OutputFactoryClassPath { get; }
 		String OutputAssembly { get; }
 		String OutputClass { get; }
-		String SASTScanSummaryRecordName { get; set; }
-		String SASTScanDetailRecordName { get; set; }
-		String SCAScanSummaryRecordName { get; set; }
-		String SCAScanDetailRecordName { get; set; }
-		String ProjectInfoRecordName { get; set; }
-		String PolicyViolationsRecordName { get; set; }
-		int ProcessPeriodMinutes { get; set; }
+		String SASTScanSummaryRecordName { get;  }
+		String SASTScanDetailRecordName { get; }
+		String SCAScanSummaryRecordName { get; }
+		String SCAScanDetailRecordName { get; }
+		String ProjectInfoRecordName { get; }
+		String PolicyViolationsRecordName { get; }
+		int ProcessPeriodMinutes { get; }
 	}
 }

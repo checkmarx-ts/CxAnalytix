@@ -1,21 +1,12 @@
-﻿using CxAnalytix.Configuration.Contracts;
-using CxAnalytix.Configuration.Utils;
+﻿using CxAnalytix.Configuration.Utils;
 using System;
-using System.Collections.Generic;
-using System.Composition;
 using System.Configuration;
-using System.Text;
 
 namespace CxAnalytix.Configuration.Impls
 {
-    [Export(typeof(ICxAnalytixService))]
-    internal sealed class CxAnalyticsService : EnvAwareConfigurationSection, ICxAnalytixService
+    internal sealed class CxAnalyticsService : EnvAwareConfigurationSection
     {
 
-        public CxAnalyticsService()
-		{
-            Config.AutoInit(this);
-		}
 
         [ConfigurationProperty("EnablePseudoTransactions", IsRequired = false, DefaultValue = false)]
         public bool EnablePseudoTransactions
@@ -122,7 +113,6 @@ namespace CxAnalytix.Configuration.Impls
             get => (int)this["ProcessPeriodMinutes"];
             set { this["ProcessPeriodMinutes"] = value; }
         }
-        
 
     }
 }

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netcoreapp3.1</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 		<RootNamespace>CxAnalytix.Configuration</RootNamespace>
 		<Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
 	</PropertyGroup>
@@ -31,7 +31,6 @@
 
 	<ItemGroup>
 	  <Folder Include="impls\" />
-	  <Folder Include="utils\" />
 	</ItemGroup>
 
 </Project>

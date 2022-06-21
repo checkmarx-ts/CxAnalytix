@@ -7,6 +7,8 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Linq;
 using System.Reflection;
+using System.Composition.Hosting;
+using System.Composition;
 
 namespace CxAnalytix.Configuration.Impls
 {
@@ -14,13 +16,19 @@ namespace CxAnalytix.Configuration.Impls
     {
         private static System.Configuration.Configuration _cfgManager;
         private static ILog _log = LogManager.GetLogger(typeof (Config) );
-		private static Boolean _boostrapped;
+		private static readonly String CONFIG_FILE_NAME = "cxanalytix.config";
+		private static readonly String CONFIG_PATH_VARIABLE = "CXANALYTIX_CONFIG_PATH";
+		private static readonly String DEFAULT_FOLDER_NAME = "cxanalytix";
+		private static readonly String DEFAULT_LINUX_PATH = $"/etc/{DEFAULT_FOLDER_NAME}";
 
-        static Config()
+		public static dynamic GetSection(String sectionName) => _cfgManager.GetSection(sectionName);
+
+		
+
+		static Config()
 		{
 			ExeConfigurationFileMap map = new ExeConfigurationFileMap();
-			var process = Process.GetCurrentProcess();
-			map.ExeConfigFilename = process.MainModule.ModuleName + ".config";
+			map.ExeConfigFilename = FindConfigFilePath();
 			_log.DebugFormat("Loading configuration from [{0}]", map.ExeConfigFilename);
 
 			if (!File.Exists(map.ExeConfigFilename))
@@ -28,38 +36,55 @@ namespace CxAnalytix.Configuration.Impls
 
 			_cfgManager = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.None);
 
-			EncryptSensitiveSections();
-			_boostrapped = true;
+			if (OperatingSystem.IsWindows())
+				EncryptSensitiveSections();
+			else
+				_log.Warn("This platform does not support encrypting credentials in the configuration file.  Your credentials may be stored in plain text.");
 		}
 
 
-		public static void AutoInit<T>(T dest) where T : ConfigurationSection
-		{
-			if (!_boostrapped)
-				return;
-
-			foreach (var section in _cfgManager.Sections)
-				if (section.GetType() == typeof(T))
-				{
-					var classProps = section.GetType().FindMembers(System.Reflection.MemberTypes.Property,
-						System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public, (f,x) =>
-						{
-							var propInfo = ((PropertyInfo)f);
-							return propInfo.CanWrite && propInfo.CanRead && propInfo.DeclaringType == typeof(T);
-						}, null);
-
-					foreach (PropertyInfo pi in classProps)
-					{
-						var gm = pi.GetGetMethod(); 
-						var sm = pi.GetSetMethod();
-
-						object curVal = typeof(T).InvokeMember(gm.Name, BindingFlags.InvokeMethod, null, section, null);
-
-						typeof(T).InvokeMember(sm.Name, BindingFlags.InvokeMethod, null, dest, new object[] { curVal });
-
-					}
-				}
+		public static void InjectMyConfigs<T>(T inst, Assembly execAssembly)
+        {
+			var cfg = new ContainerConfiguration().WithAssembly(execAssembly);
+			using (var container = cfg.CreateContainer())
+				container.SatisfyImports(inst);
 		}
+
+		public static void InjectServiceConfigs<T>(T inst)
+        {
+			InjectMyConfigs(inst, Assembly.GetExecutingAssembly());
+
+		}
+
+
+		private static String FindConfigFilePath()
+        {
+			String cwd = Path.Combine(Directory.GetCurrentDirectory(), CONFIG_FILE_NAME);
+
+            if (File.Exists(cwd))
+                return cwd;
+
+            if (Environment.GetEnvironmentVariables()[CONFIG_PATH_VARIABLE] != null)
+			{
+				String env = Path.Combine(Environment.GetEnvironmentVariables()[CONFIG_PATH_VARIABLE] as String, CONFIG_FILE_NAME);
+				if (File.Exists(env))
+					return env;
+			}
+
+			String os = String.Empty;
+
+            if (OperatingSystem.IsWindows())
+                os = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), DEFAULT_FOLDER_NAME, CONFIG_FILE_NAME);
+            else
+                os = Path.Combine(DEFAULT_LINUX_PATH, CONFIG_FILE_NAME);
+
+            if (File.Exists(os))
+				return os;
+
+			throw new FileNotFoundException($"Configuration file {CONFIG_FILE_NAME} could not be located.");
+        }
+
+
 
 		private static void EncryptSensitiveSections()
 		{
@@ -93,18 +118,7 @@ namespace CxAnalytix.Configuration.Impls
 				}
 			}
 
-			try
-			{
-				_cfgManager.Save(ConfigurationSaveMode.Modified);
-			}
-			catch (Exception ex)
-			{
-				if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-					_log.Error("Exception trying to save application config.", ex);
-				else
-					_log.Warn("Sensitive configuration data can't be encrypted on this platform.  Use environment variables if possible.", ex);
-
-			}
+            _cfgManager.Save(ConfigurationSaveMode.Modified);
 		}
 
         

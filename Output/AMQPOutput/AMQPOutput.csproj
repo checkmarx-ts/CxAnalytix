@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <RootNamespace>CxAnalytix.Out.AMQPOutput</RootNamespace>
     <Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
   </PropertyGroup>
@@ -14,7 +14,7 @@
     <PackageReference Include="log4net" Version="2.0.14" />
     <PackageReference Include="Microsoft.Composition" Version="1.0.31" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-    <PackageReference Include="RabbitMQ.Client" Version="6.2.4" />
+    <PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
   </ItemGroup>
 
   <ItemGroup>
