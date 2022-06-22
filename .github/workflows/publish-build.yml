@@ -36,10 +36,10 @@ jobs:
           username: ${{ secrets.PACKAGE_USER }}
           password: ${{ secrets.PACKAGE_PAT }}
 
-      - name: Dotnet Core 3.1 Install
+      - name: Dotnet Core Install
         uses: actions/setup-dotnet@v1.7.2
         with:
-          dotnet-version: 3.1
+          dotnet-version: 6.0
          
           
       - name: Fetch Code @ tag v${{ inputs.tag }}
