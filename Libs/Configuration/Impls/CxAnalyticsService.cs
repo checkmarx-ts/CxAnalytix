@@ -1,10 +1,11 @@
-﻿using CxAnalytix.Configuration.Utils;
+﻿using CxAnalytix.Configuration.Contracts;
+using CxAnalytix.Configuration.Utils;
 using System;
 using System.Configuration;
 
 namespace CxAnalytix.Configuration.Impls
 {
-    internal sealed class CxAnalyticsService : EnvAwareConfigurationSection
+    internal sealed class CxAnalyticsService : EnvAwareConfigurationSection, ICxAnalytixService
     {
 
 

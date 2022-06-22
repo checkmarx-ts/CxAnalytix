@@ -1,9 +1,10 @@
-﻿using System;
+﻿using CxAnalytix.Configuration.Contracts;
+using System;
 using System.Configuration;
 
 namespace CxAnalytix.Configuration.Impls
 {
-    internal class CxFilter : ConfigurationSection
+    internal class CxFilter : ConfigurationSection, ICxFilter
 	{
         [ConfigurationProperty("Team", IsRequired = false)]
         public String TeamRegex

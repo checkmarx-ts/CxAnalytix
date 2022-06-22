@@ -4,7 +4,7 @@ using System.Configuration;
 
 namespace CxAnalytix.Configuration.Impls
 {
-    internal sealed class CxConnection : EnvAwareConfigurationSection
+    internal sealed class CxConnection : EnvAwareConfigurationSection, ICxConnection
     {
         public static readonly String SECTION_NAME = "CxConnection";
 

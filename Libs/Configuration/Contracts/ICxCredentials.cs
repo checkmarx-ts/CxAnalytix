@@ -6,7 +6,7 @@ namespace CxAnalytix.Configuration.Contracts
 {
 	public interface ICxCredentials
 	{
-		String Username { get; set; }
-		String Password { get; set; }
+		String Username { get; }
+		String Password { get; }
 	}
 }

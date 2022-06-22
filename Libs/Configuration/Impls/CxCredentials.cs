@@ -1,11 +1,12 @@
-﻿using CxAnalytix.Configuration.Utils;
+﻿using CxAnalytix.Configuration.Contracts;
+using CxAnalytix.Configuration.Utils;
 using System;
 using System.Configuration;
 
 namespace CxAnalytix.Configuration.Impls
 {
 	[SecureConfigSection(SensitiveStringProp = "Password") ]
-	internal sealed class CxCredentials : EnvAwareConfigurationSection
+	internal sealed class CxCredentials : EnvAwareConfigurationSection, ICxCredentials
 	{
 
         [ConfigurationProperty("Username", IsRequired = false)]
