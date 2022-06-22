@@ -42,7 +42,9 @@ namespace CxAnalytix.Out.Log4NetOutput
 
             _task = Task.Run(async () =>
             {
-                var cfg = Config.GetConfig<LogOutputConfig>(CONFIG_SECTION);
+                // TODO: FIX THIS
+                //var cfg = Config.GetConfig<LogOutputConfig>(CONFIG_SECTION);
+                LogOutputConfig cfg = null;
 
                 while (!_token.IsCancellationRequested)
                 {

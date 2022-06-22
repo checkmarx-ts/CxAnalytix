@@ -1,23 +1,32 @@
 ﻿using CxAnalytix.Configuration.Contracts;
+using CxAnalytix.Configuration.Utils;
 using System;
+using System.Composition;
 using System.Configuration;
 
 namespace CxAnalytix.Configuration.Impls
 {
-    internal class CxFilter : ConfigurationSection, ICxFilter
+    [Export(typeof(ICxFilter))]
+    public class CxFilter : MEFableConfigurationSection, ICxFilter
 	{
+
+        public CxFilter() { }
+
+        [ImportingConstructor]
+        public CxFilter(IConfigSectionResolver resolver) : base(resolver) { }
+
         [ConfigurationProperty("Team", IsRequired = false)]
         public String TeamRegex
         {
-            get => (String)this["Team"];
-            set { this["Team"] = value; }
+            get => (String)Instance<CxFilter>()["Team"];
+            set { Instance<CxFilter>()["Team"] = value; }
         }
 
         [ConfigurationProperty("Project", IsRequired = false)]
         public String ProjectRegex
         {
-            get => (String)this["Project"];
-            set { this["Project"] = value; }
+            get => (String)Instance<CxFilter>()["Project"];
+            set { Instance<CxFilter>()["Project"] = value; }
         }
     }
 }

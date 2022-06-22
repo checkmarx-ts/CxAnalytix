@@ -11,6 +11,9 @@ using CxAnalytix.Interfaces.Audit;
 using log4net;
 using OutputBootstrapper;
 using System.Threading.Tasks;
+using CxAnalytix.AuditTrails.Crawler.Contracts;
+using System.Composition;
+using CxAnalytix.Configuration.Contracts;
 
 namespace CxAnalytix.AuditTrails.Crawler
 {
@@ -20,18 +23,30 @@ namespace CxAnalytix.AuditTrails.Crawler
 		private Dictionary<String, IRecordRef> _outMappings = new Dictionary<string, IRecordRef>();
 		private CxAuditTrailTableNameConsts _constsInstance = new CxAuditTrailTableNameConsts();
 		private static readonly ILog _log = LogManager.GetLogger(typeof(AuditTrailCrawler));
+		private string StorageFile;
 
+		[Import]
+		private ICxAuditTrailRecordNameMap _outmap { get; set; }
+
+		[Import]
+		private ICxAuditTrailSuppressions _suppressions { get; set; }
+
+        [Import]
+        private ICxAnalytixService Service { get; set; }
 
 		private AuditTrailCrawler ()
 		{
-			ReadSinceDate();
+			CxAnalytix.Configuration.Impls.Config.InjectMyConfigs(this, Assembly.GetExecutingAssembly() );
+			CxAnalytix.Configuration.Impls.Config.InjectServiceConfigs(this);
+
+            StorageFile = Path.Combine(Service.StateDataStoragePath, STORAGE_FILE);
+
+            ReadSinceDate();
 			InitOutputMappings();
 		}
 
 		private void InitOutputMappings ()
 		{
-			var outmap = CxAnalytix.Configuration.Config.GetConfig<CxAuditTrailRecordNameMap>(CxAuditTrailRecordNameMap.SECTION_NAME);
-
 			var fields = typeof(CxAuditTrailTableNameConsts).GetFields();
 			Dictionary<String, FieldInfo> fieldLookup = new Dictionary<string, FieldInfo>();
 			foreach (var f in fields)
@@ -42,13 +57,12 @@ namespace CxAnalytix.AuditTrails.Crawler
 			{
 				if (fieldLookup.ContainsKey (prop.Name))
 					_outMappings.Add(fieldLookup[prop.Name].Name, 
-						Output.RegisterRecord(GetPropertyValue<CxAuditTrailRecordNameMap, String>(prop.Name, outmap)));
+						Output.RegisterRecord(GetPropertyValue<ICxAuditTrailRecordNameMap, String>(prop.Name, _outmap)));
 			}
 		}
 
-		private static string StorageFile = Path.Combine(CxAnalytix.Configuration.Config.Service.StateDataStoragePath, STORAGE_FILE);
 
-		private void ReadSinceDate()
+        private void ReadSinceDate()
 		{
 			SinceDate = DateTime.UnixEpoch;
 
@@ -94,22 +108,20 @@ namespace CxAnalytix.AuditTrails.Crawler
 			if (crawler.IsDisabled)
 				return;
 
-			var supressions = Configuration.Config.GetConfig<CxAuditTrailSupressions>(CxAuditTrailSupressions.SECTION_NAME);
-
-			using (var trx = Output.StartTransaction())
+            using (var trx = Output.StartTransaction())
 			{
 				Parallel.ForEach(typeof(CxAuditTrailTableNameConsts).GetFields(),
 					new ParallelOptions
 					{
 						CancellationToken = token,
-						MaxDegreeOfParallelism = Configuration.Config.Service.ConcurrentThreads
+                        MaxDegreeOfParallelism = crawlInvoker.Service.ConcurrentThreads
 					},
 					(field) =>
 				{
 					if (token.IsCancellationRequested)
 						return;
 
-					if (GetPropertyValue<CxAuditTrailSupressions, bool>(field.Name, supressions))
+					if (GetPropertyValue<ICxAuditTrailSuppressions, bool>(field.Name, crawlInvoker._suppressions))
 					{
 						_log.Debug($"{field.Name} logging has been suppressed via configuration.");
 						return;

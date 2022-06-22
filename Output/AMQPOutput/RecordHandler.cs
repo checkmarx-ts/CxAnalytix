@@ -5,10 +5,14 @@ using CxAnalytix.Extensions;
 using System;
 using System.Collections.Generic;
 using RabbitMQ.Client;
-using static CxAnalytix.Out.AMQPOutput.Config.AmqpFieldCollection;
 using System.Text;
 using Newtonsoft.Json;
 using CxAnalytix.Utilities.Json;
+using CxAnalytix.Out.AMQPOutput.Config.Impls;
+using static CxAnalytix.Out.AMQPOutput.Config.Impls.AmqpFieldCollection;
+using System.Reflection;
+using CxAnalytix.Out.AMQPOutput.Config.Contracts;
+using System.Composition;
 
 namespace CxAnalytix.Out.AMQPOutput
 {
@@ -26,15 +30,21 @@ namespace CxAnalytix.Out.AMQPOutput
 		private static int MAX_ROUTING_KEY_SIZE = 255;
 		private static String GENERATION_KEY = "Generation";
 
+		[Import]
+		private IAmqpConfig _cfg {get; set;}
+
+
 		public RecordHandler(String recordName)
 		{
+			CxAnalytix.Configuration.Impls.Config.InjectMyConfigs(this, Assembly.GetExecutingAssembly());
+
+
+
 			_recordName = recordName;
 
-			var cfg = Configuration.Config.GetConfig<AmqpConfig>(AmqpConfig.SECTION_NAME);
-
-			_exchange = cfg.Exchange;
+			_exchange = _cfg.Exchange;
 			_topic = recordName;
-			var record_cfg = cfg.Records[recordName];
+			var record_cfg = _cfg.Records[recordName];
 
 
 			if (record_cfg != null)

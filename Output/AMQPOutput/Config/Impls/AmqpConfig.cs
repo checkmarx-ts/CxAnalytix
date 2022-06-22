@@ -1,4 +1,5 @@
-﻿using CxAnalytix.Configuration.Utils;
+﻿using CxAnalytix.Configuration.Contracts;
+using CxAnalytix.Configuration.Utils;
 using CxAnalytix.Out.AMQPOutput.Config.Contracts;
 using System;
 using System.Composition;
@@ -10,10 +11,10 @@ namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 	internal class AmqpConfig : EnvAwareConfigurationSection, IAmqpConfig
 	{
 
-		public AmqpConfig()
-		{
-			CxAnalytix.Configuration.Impls.Config.AutoInit(this);
-		}
+		public AmqpConfig() {}
+
+		[ImportingConstructor]
+		public AmqpConfig(IConfigSectionResolver resolver) : base(resolver) { }
 
 
 		[ConfigurationProperty("DefaultExchange", IsRequired = true)]

@@ -1,19 +1,25 @@
 ﻿using System;
+using System.Composition;
 using System.Configuration;
-using CxAnalytix.Configuration;
+using CxAnalytix.Configuration.Contracts;
+using CxAnalytix.Configuration.Utils;
+using CxAnalytix.CxAuditTrails.DB.Contracts;
 
 namespace CxAnalytix.CxAuditTrails.DB.Config
 {
-	[SecureConfigSection(SensitiveStringProp = "ConnectionString")]
-	class CxAuditDBConnection : EnvAwareConfigurationSection
+	[Export(typeof(ICxAuditDBConnection))]
+	[SecureConfigSection("ConnectionString")]
+	class CxAuditDBConnection : EnvAwareConfigurationSection, ICxAuditDBConnection
 	{
-		public static readonly String SECTION_NAME = "CxDB";
+		public CxAuditDBConnection() { }
+
+		public CxAuditDBConnection(IConfigSectionResolver resolver) : base(resolver) { }
 
 		[ConfigurationProperty("ConnectionString", IsRequired = true)]
 		public String ConnectionString
 		{
-			get => (String)this["ConnectionString"];
-			set { this["ConnectionString"] = value; }
+			get => (String)Instance<CxAuditDBConnection>()["ConnectionString"];
+			set { Instance<CxAuditDBConnection>()["ConnectionString"] = value; }
 		}
 
 	}

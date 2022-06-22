@@ -2,10 +2,7 @@
 using log4net;
 using System;
 using System.Configuration;
-using System.Diagnostics;
 using System.IO;
-using System.Runtime.InteropServices;
-using System.Linq;
 using System.Reflection;
 using System.Composition.Hosting;
 using System.Composition;
@@ -21,9 +18,6 @@ namespace CxAnalytix.Configuration.Impls
 		private static readonly String DEFAULT_FOLDER_NAME = "cxanalytix";
 		private static readonly String DEFAULT_LINUX_PATH = $"/etc/{DEFAULT_FOLDER_NAME}";
 
-		public static dynamic GetSection(String sectionName) => _cfgManager.GetSection(sectionName);
-
-		
 
 		static Config()
 		{
@@ -42,12 +36,28 @@ namespace CxAnalytix.Configuration.Impls
 				_log.Warn("This platform does not support encrypting credentials in the configuration file.  Your credentials may be stored in plain text.");
 		}
 
+		internal static System.Configuration.ConfigurationSectionCollection Sections => _cfgManager.Sections;
+
+		private static ContainerConfiguration ContConfig(Assembly execAssembly)
+        {
+			return new ContainerConfiguration().WithAssembly(execAssembly);
+		}
 
 		public static void InjectMyConfigs<T>(T inst, Assembly execAssembly)
         {
-			var cfg = new ContainerConfiguration().WithAssembly(execAssembly);
-			using (var container = cfg.CreateContainer())
+			using (var container = ContConfig(execAssembly).CreateContainer())
 				container.SatisfyImports(inst);
+		}
+
+		public static T GetConfig<T>(Assembly execAssembly)
+        {
+			using (var container = ContConfig(execAssembly).CreateContainer())
+				return container.GetExport<T>();
+		}
+		public static T GetConfig<T>()
+		{
+			using (var container = ContConfig(Assembly.GetExecutingAssembly() ).CreateContainer())
+				return container.GetExport<T>();
 		}
 
 		public static void InjectServiceConfigs<T>(T inst)

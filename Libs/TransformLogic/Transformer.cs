@@ -110,8 +110,10 @@ namespace CxAnalytix.TransformLogic
 			{
 				_log.Warn($"Error attempting to retrieve the SAST XML report for {scan.ScanId}" +
 					$" in project {scan.Project.ProjectId}: {scan.Project.ProjectName}. ", ex);
-				throw ex;
-			}
+#pragma warning disable CA2200 // Rethrow to preserve stack details
+                throw ex;
+#pragma warning restore CA2200 // Rethrow to preserve stack details
+            }
 		}
 
 		private void ScaReportOutput(IOutputTransaction trx, ScanDescriptor sd)

@@ -1,4 +1,5 @@
-﻿using CxAnalytix.Configuration.Utils;
+﻿using CxAnalytix.Configuration.Contracts;
+using CxAnalytix.Configuration.Utils;
 using CxAnalytix.Out.AMQPOutput.Config.Contracts;
 using System;
 using System.Composition;
@@ -7,15 +8,17 @@ using System.Configuration;
 namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 {
 
-	[SecureConfigSection(SensitiveStringProp = "Password")]
+	[SecureConfigSection("Password")]
 	[Export(typeof(IAmqpConnectionConfig))]
 	internal class AmqpConnectionConfig : EnvAwareConfigurationSection, IAmqpConnectionConfig
 	{
 
 		public AmqpConnectionConfig()
 		{
-			CxAnalytix.Configuration.Impls.Config.AutoInit(this);
 		}
+
+		[ImportingConstructor]
+		public AmqpConnectionConfig(IConfigSectionResolver resolver) : base(resolver) { }
 
 
 		[ConfigurationProperty("UserName", IsRequired = false)]

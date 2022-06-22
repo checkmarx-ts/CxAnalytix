@@ -1,11 +1,11 @@
 ﻿using CxAnalytix.Interfaces.Outputs;
-using CxAnalytix.Out.AMQPOutput.Config;
+using CxAnalytix.Out.AMQPOutput.Config.Contracts;
 using log4net;
 using RabbitMQ.Client;
-using RabbitMQ.Client.Exceptions;
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Composition;
+using System.Reflection;
 
 namespace CxAnalytix.Out.AMQPOutput
 {
@@ -17,13 +17,17 @@ namespace CxAnalytix.Out.AMQPOutput
 		private static ConnectionFactory _amqpFactory = new ConnectionFactory();
 		private IConnection _connection;
 
+        [Import]
+		private IAmqpConnectionConfig _conCfg { get; set; }
+
 		public AMQPOutFactory()
 		{
-			var connection = Configuration.Config.GetConfig<AmqpConnectionConfig>(AmqpConnectionConfig.SECTION_NAME);
-			_amqpFactory.UserName = connection.UserName;
-			_amqpFactory.Password = connection.Password;
+			CxAnalytix.Configuration.Impls.Config.InjectMyConfigs(this, Assembly.GetExecutingAssembly());
 
-			var endpoints = connection.Endpoints;
+			_amqpFactory.UserName = _conCfg.UserName;
+			_amqpFactory.Password = _conCfg.Password;
+
+			var endpoints = _conCfg.Endpoints;
 
 			foreach (var ep in endpoints as IEnumerable<AmqpTcpEndpoint>)
 				_log.Info($"AMQP endpoint: {ep.HostName}:{ep.Port} SSL: {ep.Ssl.Enabled}");

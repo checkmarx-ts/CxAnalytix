@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CxAnalytix.Out.AMQPOutput.Config.Impls;
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Text;

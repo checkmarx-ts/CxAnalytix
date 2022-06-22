@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Composition;
+using System.Reflection;
 using CxAnalytix.CxAuditTrails.DB.Config;
+using CxAnalytix.CxAuditTrails.DB.Contracts;
 using CxAnalytix.Extensions;
 using log4net;
 using Microsoft.Data.SqlClient;
@@ -10,12 +13,15 @@ namespace CxAnalytix.CxAuditTrails.DB
 	{
 		private static ILog _log = LogManager.GetLogger(typeof(DbAccess));
 		private String _conStr;
-		private CxAuditDBConnection _cfg;
+
+        [Import]
+		private ICxAuditDBConnection _cfg { get; set; }
 
 
 		public DbAccess()
 		{
-			_cfg = CxAnalytix.Configuration.Config.GetConfig<CxAuditDBConnection>(CxAuditDBConnection.SECTION_NAME);
+
+			CxAnalytix.Configuration.Impls.Config.InjectMyConfigs(this, Assembly.GetExecutingAssembly());
 			_conStr = _cfg.ConnectionString;
 
 		}
@@ -24,7 +30,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 		{
 			get
 			{
-				return !_cfg.ElementInformation.IsPresent;
+				return !(_cfg == null);
 			}
 		}
 
@@ -55,8 +61,10 @@ namespace CxAnalytix.CxAuditTrails.DB
 				catch (Exception ex)
 				{
 					_log.Error($"Error probing for {dbName}.{schemaName}.{tableName} existence.", ex);
-					throw ex;
-				}
+#pragma warning disable CA2200 // Rethrow to preserve stack details
+                    throw ex;
+#pragma warning restore CA2200 // Rethrow to preserve stack details
+                }
 			}
 
 			return retVal;

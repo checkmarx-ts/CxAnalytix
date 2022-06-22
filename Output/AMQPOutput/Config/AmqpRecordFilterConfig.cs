@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
+using CxAnalytix.Out.AMQPOutput.Config.Impls;
 using System.Configuration;
-using System.Text;
 using static CxAnalytix.Utilities.DictFilters.DictionaryFilterFactory;
 
 namespace CxAnalytix.Out.AMQPOutput.Config

@@ -1,13 +1,14 @@
-﻿using System;
+﻿using CxAnalytix.AuditTrails.Crawler.Contracts;
+using System;
 using System.Collections.Generic;
+using System.Composition;
 using System.Text;
 
 namespace CxAnalytix.AuditTrails.Crawler.Config
 {
-	public class CxAuditTrailSupressions : CxAuditTrailOpts<bool>
+	[Export(typeof(ICxAuditTrailSuppressions))]
+	public class CxAuditTrailSupressions : CxAuditTrailOpts<bool>, ICxAuditTrailSuppressions
 	{
-		public const String SECTION_NAME = "CxAuditTrailSupressions";
-
 		CxAuditTrailSupressions () : base ((x) => false)
 		{
 		}

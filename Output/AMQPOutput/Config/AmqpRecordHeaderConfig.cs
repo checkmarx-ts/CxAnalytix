@@ -1,4 +1,4 @@
-﻿using CxAnalytix.Configuration;
+﻿using CxAnalytix.Configuration.Utils;
 using System;
 using System.Collections.Generic;
 using System.Configuration;

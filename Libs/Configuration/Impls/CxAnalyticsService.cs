@@ -1,49 +1,57 @@
 ﻿using CxAnalytix.Configuration.Contracts;
 using CxAnalytix.Configuration.Utils;
 using System;
+using System.Composition;
 using System.Configuration;
 
 namespace CxAnalytix.Configuration.Impls
 {
-    internal sealed class CxAnalyticsService : EnvAwareConfigurationSection, ICxAnalytixService
+
+    [Export(typeof(ICxAnalytixService))]
+    public sealed class CxAnalyticsService : EnvAwareConfigurationSection, ICxAnalytixService
     {
+        public CxAnalyticsService() {}
+
+
+        [ImportingConstructor]
+        public CxAnalyticsService(IConfigSectionResolver resolver) : base(resolver) {}
 
 
         [ConfigurationProperty("EnablePseudoTransactions", IsRequired = false, DefaultValue = false)]
         public bool EnablePseudoTransactions
         {
-            get => (bool)this["EnablePseudoTransactions"];
-            set { this["EnablePseudoTransactions"] = value; }
+            get => (bool)Instance<CxAnalyticsService>()["EnablePseudoTransactions"];
+            set { Instance<CxAnalyticsService>()["EnablePseudoTransactions"] = value; }
         }
 
 
         [ConfigurationProperty("InstanceId", IsRequired = false)]
         public String InstanceIdentifier
         {
-            get => (String)this["InstanceId"];
-            set { this["InstanceId"] = value; }
+            get => (String)Instance<CxAnalyticsService>()["InstanceId"];
+            set { Instance<CxAnalyticsService>()["InstanceId"] = value; }
         }
 
 
         [ConfigurationProperty("ConcurrentThreads", IsRequired = true)]
         public int ConcurrentThreads
         {
-            get => (int)this["ConcurrentThreads"];
-            set { this["ConcurrentThreads"] = value; }
+            get => (int)Instance<CxAnalyticsService>()["ConcurrentThreads"];
+            set { Instance<CxAnalyticsService>()["ConcurrentThreads"] = value; }
         }
 
         [ConfigurationProperty("StateDataStoragePath", IsRequired = true)]
         public String StateDataStoragePath
         {
-            get => (String)this["StateDataStoragePath"];
-            set { this["StateDataStoragePath"] = value; }
+            get => (String)Instance<CxAnalyticsService>()["StateDataStoragePath"];
+            set { Instance<CxAnalyticsService>()["StateDataStoragePath"] = value; }
         }
 
         [ConfigurationProperty("OutputFactoryClassPath", IsRequired = true)]
         public String OutputFactoryClassPath
         {
-            get => (String)this["OutputFactoryClassPath"];
-            set { this["OutputFactoryClassPath"] = value; }
+            get => (String)Instance<CxAnalyticsService>()["OutputFactoryClassPath"];
+            set { Instance<CxAnalyticsService>()["OutputFactoryClassPath"] = value; }
         }
 
         public String OutputAssembly
@@ -69,50 +77,50 @@ namespace CxAnalytix.Configuration.Impls
         [ConfigurationProperty("SASTScanSummaryRecordName", IsRequired = true)]
         public String SASTScanSummaryRecordName
         {
-            get => (String)this["SASTScanSummaryRecordName"];
-            set { this["SASTScanSummaryRecordName"] = value; }
+            get => (String)Instance<CxAnalyticsService>()["SASTScanSummaryRecordName"];
+            set { Instance<CxAnalyticsService>()["SASTScanSummaryRecordName"] = value; }
         }
 
         [ConfigurationProperty("SASTScanDetailRecordName", IsRequired = true)]
         public String SASTScanDetailRecordName
         {
-            get => (String)this["SASTScanDetailRecordName"];
-            set { this["SASTScanDetailRecordName"] = value; }
+            get => (String)Instance<CxAnalyticsService>()["SASTScanDetailRecordName"];
+            set { Instance<CxAnalyticsService>()["SASTScanDetailRecordName"] = value; }
         }
 
         [ConfigurationProperty("SCAScanSummaryRecordName", IsRequired = true)]
         public String SCAScanSummaryRecordName
         {
-            get => (String)this["SCAScanSummaryRecordName"];
-            set { this["SCAScanSummaryRecordName"] = value; }
+            get => (String)Instance<CxAnalyticsService>()["SCAScanSummaryRecordName"];
+            set { Instance<CxAnalyticsService>()["SCAScanSummaryRecordName"] = value; }
         }
 
         [ConfigurationProperty("SCAScanDetailRecordName", IsRequired = true)]
         public String SCAScanDetailRecordName
         {
-            get => (String)this["SCAScanDetailRecordName"];
-            set { this["SCAScanDetailRecordName"] = value; }
+            get => (String)Instance<CxAnalyticsService>()["SCAScanDetailRecordName"];
+            set { Instance<CxAnalyticsService>()["SCAScanDetailRecordName"] = value; }
         }
 
         [ConfigurationProperty("ProjectInfoRecordName", IsRequired = true)]
         public String ProjectInfoRecordName
         {
-            get => (String)this["ProjectInfoRecordName"];
-            set { this["ProjectInfoRecordName"] = value; }
+            get => (String)Instance<CxAnalyticsService>()["ProjectInfoRecordName"];
+            set { Instance<CxAnalyticsService>()["ProjectInfoRecordName"] = value; }
         }
 
         [ConfigurationProperty("PolicyViolationsRecordName", IsRequired = true)]
         public String PolicyViolationsRecordName
         {
-            get => (String)this["PolicyViolationsRecordName"];
-            set { this["PolicyViolationsRecordName"] = value; }
+            get => (String)Instance<CxAnalyticsService>()["PolicyViolationsRecordName"];
+            set { Instance<CxAnalyticsService>()["PolicyViolationsRecordName"] = value; }
         }
 
         [ConfigurationProperty("ProcessPeriodMinutes", IsRequired = true)]
         public int ProcessPeriodMinutes
         {
-            get => (int)this["ProcessPeriodMinutes"];
-            set { this["ProcessPeriodMinutes"] = value; }
+            get => (int)Instance<CxAnalyticsService>()["ProcessPeriodMinutes"];
+            set { Instance<CxAnalyticsService>()["ProcessPeriodMinutes"] = value; }
         }
 
     }

@@ -1,14 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
+﻿using CxAnalytix.AuditTrails.Crawler.Contracts;
+using System;
+using System.Composition;
 using System.Text;
 
 namespace CxAnalytix.AuditTrails.Crawler.Config
 {
-	public class CxAuditTrailRecordNameMap : CxAuditTrailOpts<String>
+	[Export(typeof(ICxAuditTrailRecordNameMap))]
+	public class CxAuditTrailRecordNameMap : CxAuditTrailOpts<String>, ICxAuditTrailRecordNameMap
 	{
-		public const String SECTION_NAME = "CxAuditTrailRecords";
-
 		private static String DefaultRecordName (String name)
 		{
 			StringBuilder sb = new StringBuilder("RECORD_");

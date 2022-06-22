@@ -7,7 +7,16 @@ namespace CxAnalytix.Configuration.Utils
 	[System.AttributeUsage(System.AttributeTargets.Class, AllowMultiple = true, Inherited = true)]
 	public sealed class SecureConfigSectionAttribute : System.Attribute
 	{
-		public String SensitiveStringProp { get; set; }
+		public SecureConfigSectionAttribute()
+		{
+		}
+
+		public SecureConfigSectionAttribute(string sensitiveStringProp)
+        {
+            SensitiveStringProp = sensitiveStringProp;
+        }
+
+        private String SensitiveStringProp { get; set; }
 
 		internal bool IsPropSet(Type objType, Object obj)
 		{

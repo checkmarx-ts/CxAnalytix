@@ -1,4 +1,5 @@
 ﻿using CxAnalytix.Configuration;
+using CxAnalytix.Configuration.Utils;
 using System;
 using System.Linq;
 using Xunit;
@@ -20,13 +21,13 @@ namespace Test.Configuration
 		{
 		}
 
-		[SecureConfigSectionAttribute(SensitiveStringProp = "prop2") ]
+		[SecureConfigSectionAttribute("prop2") ]
 		class OnePropSpecified : BaseProps
 		{
 		}
 
-		[SecureConfigSectionAttribute(SensitiveStringProp = "prop2")]
-		[SecureConfigSectionAttribute(SensitiveStringProp = "prop1")]
+		[SecureConfigSectionAttribute("prop2")]
+		[SecureConfigSectionAttribute("prop1")]
 		class TwoPropSpecified : BaseProps
 		{
 		}
