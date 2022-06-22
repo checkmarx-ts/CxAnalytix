@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Composition;
+using CxAnalytix.Configuration.Contracts;
 using CxAnalytix.Exceptions;
 using CxAnalytix.Interfaces.Outputs;
 
@@ -8,6 +10,15 @@ namespace CxAnalytix.Out.Log4NetOutput
     public sealed class LoggerOutFactory : IOutputFactory
     {
 		private HashSet<String> _recs = new HashSet<String>();
+
+
+        [Import]
+		private ICxAnalytixService Service { get; set; }
+
+		public LoggerOutFactory()
+        {
+			CxAnalytix.Configuration.Impls.Config.InjectServiceConfigs(this);
+        }
 
 		internal class Ref : IRecordRef
 		{
@@ -25,7 +36,7 @@ namespace CxAnalytix.Out.Log4NetOutput
 
 		public IOutputTransaction StartTransaction()
 		{
-			if (Configuration.Config.Service.EnablePseudoTransactions)
+			if (Service.EnablePseudoTransactions)
 				return new LoggerOutTransaction<TransactionalLoggerOut>(_recs);
 			else
 				return new LoggerOutTransaction<LoggerOut>(_recs);

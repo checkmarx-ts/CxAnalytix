@@ -20,8 +20,8 @@ namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 		[ConfigurationProperty("DefaultExchange", IsRequired = true)]
 		public String Exchange
 		{
-			get => (String)base["DefaultExchange"];
-			set => base["DefaultExchange"] = value;
+			get => (String)Instance<AmqpConfig>()["DefaultExchange"];
+			set => Instance<AmqpConfig>()["DefaultExchange"] = value;
 		}
 
 
@@ -31,12 +31,12 @@ namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 		{
 			get
 			{
-				return (AmqpRecordConfigCollection)base["RecordSpecs"];
+				return (AmqpRecordConfigCollection)Instance<AmqpConfig>()["RecordSpecs"];
 			}
 
 			set
 			{
-				base["RecordSpecs"] = value;
+				Instance<AmqpConfig>()["RecordSpecs"] = value;
 			}
 		}
 

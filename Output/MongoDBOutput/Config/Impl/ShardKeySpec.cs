@@ -3,16 +3,16 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Text;
 
-namespace CxAnalytix.Out.MongoDBOutput
+namespace CxAnalytix.Out.MongoDBOutput.Config.Impl
 {
     public class ShardKeySpec : ConfigurationElement
     {
 
 
         [ConfigurationProperty("KeyName", IsRequired = true)]
-        public String Key
+        public string Key
         {
-            get => (String)this["KeyName"];
+            get => (string)this["KeyName"];
             set
             {
                 this["KeyName"] = value;
@@ -21,9 +21,9 @@ namespace CxAnalytix.Out.MongoDBOutput
 
 
         [ConfigurationProperty("CollectionName", IsRequired = true)]
-        public String Collection
+        public string Collection
         {
-            get => (String)this["CollectionName"];
+            get => (string)this["CollectionName"];
             set
             {
                 this["CollectionName"] = value;
@@ -32,9 +32,9 @@ namespace CxAnalytix.Out.MongoDBOutput
 
 
         [ConfigurationProperty("FormatSpec", IsRequired = true)]
-        public String Format
+        public string Format
         {
-            get => (String)this["FormatSpec"];
+            get => (string)this["FormatSpec"];
             set
             {
                 this["FormatSpec"] = value;
@@ -54,7 +54,7 @@ namespace CxAnalytix.Out.MongoDBOutput
 
         public override string ToString()
         {
-            return String.Format("Collection [{0}] Key [{1}] FormatSpec [{2}] [{3}]", Collection, Key, Format, (!NoHash) ? ("HASHED") : ("RAW") );
+            return string.Format("Collection [{0}] Key [{1}] FormatSpec [{2}] [{3}]", Collection, Key, Format, !NoHash ? "HASHED" : "RAW");
         }
     }
 }

@@ -26,12 +26,12 @@ namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 		{
 			get
 			{
-				return (String)base["UserName"];
+				return (String)Instance<AmqpConnectionConfig>()["UserName"];
 			}
 
 			set
 			{
-				base["UserName"] = value;
+				Instance<AmqpConnectionConfig>()["UserName"] = value;
 			}
 		}
 
@@ -41,12 +41,12 @@ namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 		{
 			get
 			{
-				return (String)base["Password"];
+				return (String)Instance<AmqpConnectionConfig>()["Password"];
 			}
 
 			set
 			{
-				base["Password"] = value;
+				Instance<AmqpConnectionConfig>()["Password"] = value;
 			}
 		}
 
@@ -58,12 +58,12 @@ namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 		{
 			get
 			{
-				return (AmqpEndpointCollection)base["ClusterNodes"];
+				return (AmqpEndpointCollection)Instance<AmqpConnectionConfig>()["ClusterNodes"];
 			}
 
 			set
 			{
-				base["ClusterNodes"] = value;
+				Instance<AmqpConnectionConfig>()["ClusterNodes"] = value;
 			}
 		}
 

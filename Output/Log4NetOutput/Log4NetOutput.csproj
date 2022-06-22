@@ -8,6 +8,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="log4net" Version="2.0.14" />
+		<PackageReference Include="Microsoft.Composition" Version="1.0.31" />
 		<PackageReference Include="Microsoft.Extensions.Configuration" Version="6.0.1" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 	</ItemGroup>
@@ -36,6 +37,11 @@
 		<ProjectReference Include="..\..\Libs\Interfaces\Interfaces.csproj" />
 		<ProjectReference Include="..\..\Libs\LogCleaner\LogCleaner.csproj" />
 		<ProjectReference Include="..\..\Libs\Utilities\Utilities.csproj" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <Folder Include="Config\Impl\" />
 	</ItemGroup>
 
 </Project>

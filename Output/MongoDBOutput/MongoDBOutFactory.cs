@@ -5,17 +5,24 @@ using System;
 using System.Collections.Generic;
 using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.Exceptions;
+using CxAnalytix.Out.MongoDBOutput.Config.Impl;
+using CxAnalytix.Out.MongoDBOutput.Config.Contracts;
+using System.Reflection;
+using CxAnalytix.Configuration.Contracts;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
-	public sealed class MongoDBOutFactory : IOutputFactory
+    public sealed class MongoDBOutFactory : IOutputFactory
 	{
 		private static ILog _log = LogManager.GetLogger(typeof(MongoDBOutFactory));
 
-		private static MongoOutConfig _outputConfig;
-		internal static MongoOutConfig OutConfig { get => _outputConfig; }
+		internal static IMongoOutConfig OutConfig { get; set; }
 
-		private static MongoConnectionConfig _conConfig;
+		internal static IMongoConnectionConfig ConConfig { get; set; }
+
+		private static ICxAnalytixService Service { get; set; }
+
+
 		private static MongoClient _client;
 		internal static MongoClient Client { get => _client; }
 
@@ -37,16 +44,17 @@ namespace CxAnalytix.Out.MongoDBOutput
 		{
 			try
 			{
-				_outputConfig = Config.GetConfig<MongoOutConfig>(MongoOutConfig.SECTION_NAME);
-				_conConfig = Config.GetConfig<MongoConnectionConfig>(MongoConnectionConfig.SECTION_NAME);
+				OutConfig = CxAnalytix.Configuration.Impls.Config.GetConfig<IMongoOutConfig>(Assembly.GetExecutingAssembly());
+				ConConfig = CxAnalytix.Configuration.Impls.Config.GetConfig<IMongoConnectionConfig>(Assembly.GetExecutingAssembly());
+				Service = CxAnalytix.Configuration.Impls.Config.GetConfig<ICxAnalytixService>();
 
 
 				if (_log.IsDebugEnabled)
-					foreach (var spec in _outputConfig.ShardKeys)
+					foreach (var spec in OutConfig.ShardKeys)
 						_log.DebugFormat("Shard Key: {0}", spec);
 
-				if (_outputConfig.ShardKeys.Count > 0)
-					_log.InfoFormat("{0} calculated shard keys have been defined.", _outputConfig.ShardKeys.Count);
+				if (OutConfig.ShardKeys.Count > 0)
+					_log.InfoFormat("{0} calculated shard keys have been defined.", OutConfig.ShardKeys.Count);
 
 				MongoUrl mu = GetMongoConnectionString();
 
@@ -59,23 +67,23 @@ namespace CxAnalytix.Out.MongoDBOutput
 
 				// It is a violation of OOP principles for this component to know about these records.  At some point the schema
 				// creation may be moved to an installer that initializes the DB prior to running the application.
-				_schemas.Add(Config.Service.SASTScanDetailRecordName,
-					MongoDBOut.CreateInstance<SastDetailSchema>(_db, Config.Service.SASTScanDetailRecordName, _outputConfig.ShardKeys[Config.Service.SASTScanDetailRecordName]));
+				_schemas.Add(Service.SASTScanDetailRecordName,
+					MongoDBOut.CreateInstance<SastDetailSchema>(_db, Service.SASTScanDetailRecordName, OutConfig.ShardKeys[Service.SASTScanDetailRecordName]));
 
-				_schemas.Add(Config.Service.SASTScanSummaryRecordName, MongoDBOut.CreateInstance<SastSummarySchema>(_db, Config.Service.SASTScanSummaryRecordName,
-					_outputConfig.ShardKeys[Config.Service.SASTScanSummaryRecordName]));
+				_schemas.Add(Service.SASTScanSummaryRecordName, MongoDBOut.CreateInstance<SastSummarySchema>(_db, Service.SASTScanSummaryRecordName,
+					OutConfig.ShardKeys[Service.SASTScanSummaryRecordName]));
 
-				_schemas.Add(Config.Service.SCAScanSummaryRecordName, MongoDBOut.CreateInstance<SCASummarySchema>(_db, Config.Service.SCAScanSummaryRecordName,
-					_outputConfig.ShardKeys[Config.Service.SCAScanSummaryRecordName]));
+				_schemas.Add(Service.SCAScanSummaryRecordName, MongoDBOut.CreateInstance<SCASummarySchema>(_db, Service.SCAScanSummaryRecordName,
+					OutConfig.ShardKeys[Service.SCAScanSummaryRecordName]));
 
-				_schemas.Add(Config.Service.SCAScanDetailRecordName, MongoDBOut.CreateInstance<SCADetailSchema>(_db, Config.Service.SCAScanDetailRecordName,
-					_outputConfig.ShardKeys[Config.Service.SCAScanDetailRecordName]));
+				_schemas.Add(Service.SCAScanDetailRecordName, MongoDBOut.CreateInstance<SCADetailSchema>(_db, Service.SCAScanDetailRecordName,
+					OutConfig.ShardKeys[Service.SCAScanDetailRecordName]));
 
-				_schemas.Add(Config.Service.ProjectInfoRecordName, MongoDBOut.CreateInstance<ProjectInfoSchema>(_db, Config.Service.ProjectInfoRecordName,
-					_outputConfig.ShardKeys[Config.Service.ProjectInfoRecordName]));
+				_schemas.Add(Service.ProjectInfoRecordName, MongoDBOut.CreateInstance<ProjectInfoSchema>(_db, Service.ProjectInfoRecordName,
+					OutConfig.ShardKeys[Service.ProjectInfoRecordName]));
 
-				_schemas.Add(Config.Service.PolicyViolationsRecordName, MongoDBOut.CreateInstance<PolicyViolationsSchema>(_db, Config.Service.PolicyViolationsRecordName,
-					_outputConfig.ShardKeys[Config.Service.PolicyViolationsRecordName]));
+				_schemas.Add(Service.PolicyViolationsRecordName, MongoDBOut.CreateInstance<PolicyViolationsSchema>(_db, Service.PolicyViolationsRecordName,
+					OutConfig.ShardKeys[Service.PolicyViolationsRecordName]));
 			}
 			catch (Exception ex)
 			{
@@ -84,33 +92,11 @@ namespace CxAnalytix.Out.MongoDBOutput
 			}
 		}
 
-		private static MongoUrl GetMongoConnectionString()
-		{
-			MongoUrl mu = null;
-
-			if (!String.IsNullOrEmpty(_outputConfig.ConnectionString))
-			{
-				mu = new MongoUrl(_outputConfig.ConnectionString);
-				_log.Warn($"Using the ConnectionString attribute in the {MongoOutConfig.SECTION_NAME} configuration element is deprecated.  " +
-					$"Please consider using the {MongoConnectionConfig.SECTION_NAME} element to configure the connection string.");
-			}
-
-			if (!String.IsNullOrEmpty(_conConfig.ConnectionString))
-			{
-				if (mu != null)
-					_log.Warn($"Using the Mongo connecton string defined in the {MongoConnectionConfig.SECTION_NAME} configuration element, " +
-						$"which overrides the connection string found in the {MongoOutConfig.SECTION_NAME} configuration element.");
-
-				mu = new MongoUrl(_conConfig.ConnectionString);
-			}
-
-			return mu;
-		}
-
+		private static MongoUrl GetMongoConnectionString() => new MongoUrl(ConConfig.ConnectionString);
 
 		public IOutputTransaction StartTransaction()
 		{
-			if (Config.Service.EnablePseudoTransactions)
+			if (Service.EnablePseudoTransactions)
 				return new MongoOutputTransaction(this);
 			else
 				return new MongoOutputNoTransaction(this);
@@ -124,7 +110,7 @@ namespace CxAnalytix.Out.MongoDBOutput
 			lock (_schemas)
 				if (!_schemas.ContainsKey(recordName))
 				{
-					_schemas.Add(recordName, MongoDBOut.CreateInstance<GenericSchema>(_db, recordName, _outputConfig.ShardKeys[recordName]));
+					_schemas.Add(recordName, MongoDBOut.CreateInstance<GenericSchema>(_db, recordName, OutConfig.ShardKeys[recordName]));
 
 					return _schemas[recordName];
 				}

@@ -7,6 +7,7 @@ using CxAnalytix.Extensions;
 using System.Security.Cryptography;
 using CxAnalytix.Interfaces.Outputs;
 using System.IO;
+using CxAnalytix.Out.MongoDBOutput.Config.Impl;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
