@@ -19,6 +19,11 @@ namespace CxAnalytix.AuditTrails.Crawler.Config
 			_default = createDefault;
 		}
 
+		public CxAuditTrailOpts(Func<String, T> createDefault, IConfigSectionResolver resolver) : base(resolver)
+		{
+			_default = createDefault;
+		}
+
 		private T GetPropertyValue (String key)
 		{
 			if (!Instance<CxAuditTrailOpts<T>>().Properties.Contains(key))

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Text;
 
-namespace CxAnalytix.Out.Log4NetOutput
+namespace CxAnalytix.Out.Log4NetOutput.Config.Impl
 {
     public class FileSpecElement : ConfigurationElement
     {

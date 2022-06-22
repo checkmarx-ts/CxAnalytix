@@ -1,4 +1,5 @@
 ﻿using CxAnalytix.AuditTrails.Crawler.Contracts;
+using CxAnalytix.Configuration.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Composition;
@@ -9,9 +10,13 @@ namespace CxAnalytix.AuditTrails.Crawler.Config
 	[Export(typeof(ICxAuditTrailSuppressions))]
 	public class CxAuditTrailSupressions : CxAuditTrailOpts<bool>, ICxAuditTrailSuppressions
 	{
-		CxAuditTrailSupressions () : base ((x) => false)
-		{
-		}
+
+		public CxAuditTrailSupressions() { }
+
+		[ImportingConstructor]
+		public CxAuditTrailSupressions(IConfigSectionResolver resolver) : base((x) => false, resolver) { }
+
+
 
 	}
 }
