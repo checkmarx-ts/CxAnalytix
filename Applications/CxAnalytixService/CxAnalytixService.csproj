@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
-		<TargetFramework>net6.0</TargetFramework>
+		<TargetFramework>net6.0-windows</TargetFramework>
 		<Authors>Checkmarx</Authors>
 		<Company>Checkmarx</Company>
 		<Description>Exports static analysis and software composition results to a form suitable for use by data analytics platforms.</Description>
@@ -35,26 +35,13 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="log4net" Version="2.0.14" />
 		<PackageReference Include="Microsoft.Windows.Compatibility" Version="6.0.0" />
 		<PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\..\Libs\Configuration\Configuration.csproj" />
-		<ProjectReference Include="..\..\Libs\CxAuditTrailsCrawler\CxAuditTrailsCrawler.csproj" />
-		<ProjectReference Include="..\..\Libs\CxRestClient\CxRestClient.csproj" />
-		<ProjectReference Include="..\..\Libs\Exceptions\Exceptions.csproj" />
-		<ProjectReference Include="..\..\Libs\Extensions\Extensions.csproj" />
-		<ProjectReference Include="..\..\Libs\OutputBootstrapper\OutputBootstrapper.csproj" />
-		<ProjectReference Include="..\..\Libs\ProjectFilter\ProjectFilter.csproj" />
-		<ProjectReference Include="..\..\Libs\TransformLogic\TransformLogic.csproj" />
-		<ProjectReference Include="..\..\Output\AMQPOutput\AMQPOutput.csproj" />
-		<ProjectReference Include="..\..\Output\Log4NetOutput\Log4NetOutput.csproj" />
-		<ProjectReference Include="..\..\Output\MongoDBOutput\MongoDBOutput.csproj" />
-	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\Libs\Executive\Executive.csproj" />
 	</ItemGroup>
 
 	<Target Name="CopyConfigs" AfterTargets="Build">

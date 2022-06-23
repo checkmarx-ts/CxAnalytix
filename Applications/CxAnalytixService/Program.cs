@@ -1,6 +1,4 @@
-﻿using CxAnalytix.Configuration;
-using log4net;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.IO;
 using System.ServiceProcess;
@@ -10,7 +8,6 @@ namespace CxAnalytixService
 {
     class Program
     {
-        private static ILog _log = LogManager.GetLogger(typeof (Program));
 
         internal static CancellationTokenSource _progToken = new CancellationTokenSource();
 
@@ -23,9 +20,8 @@ namespace CxAnalytixService
                 _progToken.Token.Register(() => srv.Stop());
                 ServiceBase.Run(srv);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                _log.Error("Unhandled exception caught, service quit.", ex);
             }
         }
     }
