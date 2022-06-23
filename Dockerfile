@@ -18,7 +18,7 @@ RUN apt update && apt install -y xmlstarlet && \
 	rm -f /etc/cxanalytix/cxanalytix.log4net && \
 	mv /etc/cxanalytix/logtmp.xml /etc/cxanalytix/cxanalytix.log4net && \
 	for v in $(xmlstarlet sel -T -t -v "//appender/file[contains(@value, 'logs')]/@value" /etc/cxanalytix/cxanalytix.log4net); do export newv=$(echo $v | sed "s/logs\//\/var\/logs\/cxanalytix\//g"); sed -i "s.$v.$newv.g" /etc/cxanalytix/cxanalytix.log4net; done && \
-	apt remove -y xmlstarlet \
+	apt remove -y xmlstarlet && \
 	apt clean
 
 	
