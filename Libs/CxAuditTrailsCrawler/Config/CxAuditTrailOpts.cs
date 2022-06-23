@@ -12,7 +12,7 @@ namespace CxAnalytix.AuditTrails.Crawler.Config
 
 		public CxAuditTrailOpts(IConfigSectionResolver resolver) : base(resolver) {}
 
-		private Func<String, T> _default;
+		private Func<String, T> _default = (x) => default(T);
 
 		public CxAuditTrailOpts(Func<String, T> createDefault)
 		{

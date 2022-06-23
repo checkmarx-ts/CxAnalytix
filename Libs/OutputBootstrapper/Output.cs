@@ -21,7 +21,7 @@ namespace OutputBootstrapper
 
 		static Output()
 		{
-			Service = Config.GetConfig<ICxAnalytixService>(Assembly.GetExecutingAssembly());
+			Service = Config.GetConfig<ICxAnalytixService>();
 			try
 			{
 				Assembly outAssembly = Assembly.Load(Service.OutputAssembly);

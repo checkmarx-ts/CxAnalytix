@@ -36,7 +36,7 @@ namespace CxAnalytix.Out.AMQPOutput
 
 		public RecordHandler(String recordName)
 		{
-			CxAnalytix.Configuration.Impls.Config.InjectMyConfigs(this, Assembly.GetExecutingAssembly());
+			CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
 
 
 

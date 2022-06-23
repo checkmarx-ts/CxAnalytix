@@ -44,8 +44,8 @@ namespace CxAnalytix.Out.MongoDBOutput
 		{
 			try
 			{
-				OutConfig = CxAnalytix.Configuration.Impls.Config.GetConfig<IMongoOutConfig>(Assembly.GetExecutingAssembly());
-				ConConfig = CxAnalytix.Configuration.Impls.Config.GetConfig<IMongoConnectionConfig>(Assembly.GetExecutingAssembly());
+				OutConfig = CxAnalytix.Configuration.Impls.Config.GetConfig<IMongoOutConfig>();
+				ConConfig = CxAnalytix.Configuration.Impls.Config.GetConfig<IMongoConnectionConfig>();
 				Service = CxAnalytix.Configuration.Impls.Config.GetConfig<ICxAnalytixService>();
 
 

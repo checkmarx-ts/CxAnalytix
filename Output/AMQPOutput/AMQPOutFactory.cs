@@ -22,7 +22,7 @@ namespace CxAnalytix.Out.AMQPOutput
 
 		public AMQPOutFactory()
 		{
-			CxAnalytix.Configuration.Impls.Config.InjectMyConfigs(this, Assembly.GetExecutingAssembly());
+			CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
 
 			_amqpFactory.UserName = _conCfg.UserName;
 			_amqpFactory.Password = _conCfg.Password;

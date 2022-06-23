@@ -21,7 +21,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 		public DbAccess()
 		{
 
-			CxAnalytix.Configuration.Impls.Config.InjectMyConfigs(this, Assembly.GetExecutingAssembly());
+			CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
 			_conStr = _cfg.ConnectionString;
 
 		}

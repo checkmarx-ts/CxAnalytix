@@ -24,7 +24,7 @@ namespace CxAnalytix.Out.AMQPOutput
 
 		public TransactionHandler(IModel amqpChannel)
 		{
-			CxAnalytix.Configuration.Impls.Config.InjectServiceConfigs(this);
+			CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
 
 			_channel = amqpChannel;
 			_channel.ContinuationTimeout = new TimeSpan(0, 0, Connection.TimeoutSeconds);

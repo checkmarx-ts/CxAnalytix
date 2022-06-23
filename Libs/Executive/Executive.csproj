@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>CxAnalytix.Executive</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.14" />
+    <PackageReference Include="Microsoft.Composition" Version="1.0.31" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Output\AMQPOutput\AMQPOutput.csproj" />
+    <ProjectReference Include="..\..\Output\Log4NetOutput\Log4NetOutput.csproj" />
+    <ProjectReference Include="..\..\Output\MongoDBOutput\MongoDBOutput.csproj" />
+    <ProjectReference Include="..\Configuration\Configuration.csproj" />
+    <ProjectReference Include="..\CxAuditTrailsCrawler\CxAuditTrailsCrawler.csproj" />
+    <ProjectReference Include="..\CxRestClient\CxRestClient.csproj" />
+    <ProjectReference Include="..\Exceptions\Exceptions.csproj" />
+    <ProjectReference Include="..\Extensions\Extensions.csproj" />
+    <ProjectReference Include="..\OutputBootstrapper\OutputBootstrapper.csproj" />
+    <ProjectReference Include="..\ProjectFilter\ProjectFilter.csproj" />
+    <ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
+  </ItemGroup>
+
+</Project>

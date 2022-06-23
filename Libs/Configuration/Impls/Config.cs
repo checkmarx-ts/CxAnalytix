@@ -6,6 +6,7 @@ using System.IO;
 using System.Reflection;
 using System.Composition.Hosting;
 using System.Composition;
+using System.Collections.Generic;
 
 namespace CxAnalytix.Configuration.Impls
 {
@@ -38,32 +39,27 @@ namespace CxAnalytix.Configuration.Impls
 
 		internal static System.Configuration.ConfigurationSectionCollection Sections => _cfgManager.Sections;
 
-		private static ContainerConfiguration ContConfig(Assembly execAssembly)
+		private static ContainerConfiguration ContConfig(params Assembly[] execAssembly)
         {
-			return new ContainerConfiguration().WithAssembly(execAssembly);
+			return new ContainerConfiguration().WithAssemblies(execAssembly);
 		}
 
-		public static void InjectMyConfigs<T>(T inst, Assembly execAssembly)
+		private static Assembly[] GetAssembliesWith(Assembly other)
         {
-			using (var container = ContConfig(execAssembly).CreateContainer())
-				container.SatisfyImports(inst);
-		}
+			return new Assembly[] { other, Assembly.GetExecutingAssembly() };
+        }
 
-		public static T GetConfig<T>(Assembly execAssembly)
-        {
-			using (var container = ContConfig(execAssembly).CreateContainer())
-				return container.GetExport<T>();
-		}
+
 		public static T GetConfig<T>()
-		{
-			using (var container = ContConfig(Assembly.GetExecutingAssembly() ).CreateContainer())
+        {
+			using (var container = ContConfig(GetAssembliesWith(Assembly.GetCallingAssembly())).CreateContainer())
 				return container.GetExport<T>();
 		}
 
-		public static void InjectServiceConfigs<T>(T inst)
-        {
-			InjectMyConfigs(inst, Assembly.GetExecutingAssembly());
-
+		public static void InjectConfigs<T>(T inst)
+		{
+			using (var container = ContConfig(GetAssembliesWith(Assembly.GetCallingAssembly())).CreateContainer())
+				container.SatisfyImports(inst);
 		}
 
 

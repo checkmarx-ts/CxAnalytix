@@ -31,6 +31,7 @@ namespace CxAnalytix.Out.Log4NetOutput
 
         public LoggerOut(String recordType)
         {
+            CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
             _recordType = recordType;
             _recordLog = LogManager.Exists(Assembly.GetExecutingAssembly(), recordType);
             if (_recordLog == null)
@@ -41,7 +42,7 @@ namespace CxAnalytix.Out.Log4NetOutput
 
         static LoggerOut()
         {
-            _cfg = CxAnalytix.Configuration.Impls.Config.GetConfig<ILogOutputConfig>(Assembly.GetExecutingAssembly() );
+            _cfg = CxAnalytix.Configuration.Impls.Config.GetConfig<ILogOutputConfig>();
 
             _token = new CancellationTokenSource();
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;

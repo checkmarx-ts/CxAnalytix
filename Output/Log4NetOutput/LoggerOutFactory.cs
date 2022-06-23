@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Composition;
+using System.Reflection;
 using CxAnalytix.Configuration.Contracts;
 using CxAnalytix.Exceptions;
 using CxAnalytix.Interfaces.Outputs;
@@ -17,8 +18,8 @@ namespace CxAnalytix.Out.Log4NetOutput
 
 		public LoggerOutFactory()
         {
-			CxAnalytix.Configuration.Impls.Config.InjectServiceConfigs(this);
-        }
+			CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
+		}
 
 		internal class Ref : IRecordRef
 		{

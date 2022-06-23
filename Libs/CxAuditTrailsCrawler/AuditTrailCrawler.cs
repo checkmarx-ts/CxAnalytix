@@ -36,8 +36,7 @@ namespace CxAnalytix.AuditTrails.Crawler
 
 		private AuditTrailCrawler ()
 		{
-			CxAnalytix.Configuration.Impls.Config.InjectMyConfigs(this, Assembly.GetExecutingAssembly() );
-			CxAnalytix.Configuration.Impls.Config.InjectServiceConfigs(this);
+			CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
 
             StorageFile = Path.Combine(Service.StateDataStoragePath, STORAGE_FILE);
 

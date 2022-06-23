@@ -36,16 +36,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\Libs\Configuration\Configuration.csproj" />
-		<ProjectReference Include="..\..\Libs\CxAuditTrailsCrawler\CxAuditTrailsCrawler.csproj" />
-		<ProjectReference Include="..\..\Libs\CxRestClient\CxRestClient.csproj" />
-		<ProjectReference Include="..\..\Libs\Extensions\Extensions.csproj" />
-		<ProjectReference Include="..\..\Libs\OutputBootstrapper\OutputBootstrapper.csproj" />
-		<ProjectReference Include="..\..\Libs\ProjectFilter\ProjectFilter.csproj" />
-		<ProjectReference Include="..\..\Libs\TransformLogic\TransformLogic.csproj" />
-		<ProjectReference Include="..\..\Output\AMQPOutput\AMQPOutput.csproj" />
-		<ProjectReference Include="..\..\Output\Log4NetOutput\Log4NetOutput.csproj" />
-		<ProjectReference Include="..\..\Output\MongoDBOutput\MongoDBOutput.csproj" />
+	  <ProjectReference Include="..\..\Libs\Executive\Executive.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
