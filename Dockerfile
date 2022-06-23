@@ -7,7 +7,7 @@ ENV CHECKMARX_STATE_PATH=$CHECKMARX_STATE_PATH
 COPY ./ App/
 WORKDIR /App
 
-RUN apt-get update && apt-get install -y xmlstarlet && \
+RUN apt update && apt install -y xmlstarlet && \
 	mkdir -p /etc/cxanalytix && \
 	mkdir -p /var/cxanalytix && \
 	mkdir -p /var/log/cxanalytix && \
@@ -18,8 +18,8 @@ RUN apt-get update && apt-get install -y xmlstarlet && \
 	rm -f /etc/cxanalytix/cxanalytix.log4net && \
 	mv /etc/cxanalytix/logtmp.xml /etc/cxanalytix/cxanalytix.log4net && \
 	for v in $(xmlstarlet sel -T -t -v "//appender/file[contains(@value, 'logs')]/@value" /etc/cxanalytix/cxanalytix.log4net); do export newv=$(echo $v | sed "s/logs\//\/var\/logs\/cxanalytix\//g"); sed -i "s.$v.$newv.g" /etc/cxanalytix/cxanalytix.log4net; done && \
-	apt-get remove -y xmlstarlet \
-	apt-get clean
+	apt remove -y xmlstarlet \
+	apt clean
 
 	
 ENTRYPOINT ["CxAnalytixDaemon"]
