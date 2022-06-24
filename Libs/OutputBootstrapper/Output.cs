@@ -1,13 +1,20 @@
-﻿using CxAnalytix.Configuration.Contracts;
+﻿using Autofac;
+using Autofac.Core.Registration;
+using CxAnalytix.Configuration.Contracts;
 using CxAnalytix.Configuration.Impls;
 using CxAnalytix.Exceptions;
 using CxAnalytix.Extensions;
 using CxAnalytix.Interfaces.Outputs;
 using log4net;
 using System;
+using System.Collections.Generic;
 using System.Composition;
+using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Linq;
+using SDK;
 
 namespace OutputBootstrapper
 {
@@ -15,31 +22,58 @@ namespace OutputBootstrapper
 	{
 		private static readonly ILog _log = LogManager.GetLogger(typeof(Output));
 		private static IOutputFactory _outFactory;
+		private static IContainer _outContainer;
+
 
 		[Import]
 		private static ICxAnalytixService Service { get; set; }
 
+		private static Assembly[] GetOutputAssemblies()
+        {
+			string[] runtimeAssemblies = Directory.GetFiles(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "*.dll");
+			List<Assembly> retVal = new List<Assembly>();
+
+            foreach (var path in runtimeAssemblies)
+            {
+				try
+				{
+					var asm = Assembly.LoadFrom(path);
+					retVal.Add(asm);
+				}
+				catch (BadImageFormatException)
+                {
+					continue;
+                }
+            }
+
+            return retVal.ToArray();
+        }
+
 		static Output()
 		{
 			Service = Config.GetConfig<ICxAnalytixService>();
+
+			var builder = new ContainerBuilder();
+			builder.RegisterAssemblyModules(typeof(IOutputFactory), GetOutputAssemblies());
+			_outContainer = builder.Build();
+
 			try
 			{
-				Assembly outAssembly = Assembly.Load(Service.OutputAssembly);
-				_log.DebugFormat("outAssembly loaded: {0}", outAssembly.FullName);
-				_outFactory = outAssembly.CreateInstance(Service.OutputClass) as IOutputFactory;
-
-				if (_outFactory == null)
-					throw new ProcessFatalException($"Could not load the output factory with the name {Service.OutputClass} in assembly {outAssembly.FullName}");
-
-				_log.Debug("IOutputFactory instance created.");
+				_outFactory = _outContainer.ResolveNamed<IOutputFactory>(Service.OutputModuleName.ToLower() );
 			}
-			catch (Exception ex)
-			{
-				throw new ProcessFatalException("Error loading output factory.", ex);
+			catch (ComponentNotRegisteredException ex)
+            {
+				_log.Error($"Output module with name '{Service.OutputModuleName}' not found, name must be one of: [{String.Join(",", Registrar.ModuleRegistry.ModuleNames)}]");
+				throw new ProcessFatalException($"Unknown output module '{Service.OutputModuleName}'", ex);
 			}
 		}
 
-		[MethodImpl(MethodImplOptions.Synchronized)]
+        private static void ComponentRegistryBuilder_Registered(object sender, Autofac.Core.ComponentRegisteredEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
 
 		public static IOutputTransaction StartTransaction()
 		{

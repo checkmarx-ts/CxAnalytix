@@ -47,31 +47,11 @@ namespace CxAnalytix.Configuration.Impls
             set { Instance<CxAnalyticsService>()["StateDataStoragePath"] = value; }
         }
 
-        [ConfigurationProperty("OutputFactoryClassPath", IsRequired = true)]
-        public String OutputFactoryClassPath
+        [ConfigurationProperty("OutputModuleName", IsRequired = true)]
+        public String OutputModuleName
         {
-            get => (String)Instance<CxAnalyticsService>()["OutputFactoryClassPath"];
-            set { Instance<CxAnalyticsService>()["OutputFactoryClassPath"] = value; }
-        }
-
-        public String OutputAssembly
-        {
-            get
-            {
-                String [] components = OutputFactoryClassPath.Split(',');
-
-                if (components.Length < 2)
-                    throw new Exception(String.Format ("OutputClassPath value [{0}] does not specify the assembly.", 
-                        OutputFactoryClassPath) );
-
-                return components[1];
-
-            }
-        }
-
-        public String OutputClass
-        {
-            get => OutputFactoryClassPath.Split(',')[0];
+            get => (String)Instance<CxAnalyticsService>()["OutputModuleName"];
+            set { Instance<CxAnalyticsService>()["OutputModuleName"] = value; }
         }
 
         [ConfigurationProperty("SASTScanSummaryRecordName", IsRequired = true)]

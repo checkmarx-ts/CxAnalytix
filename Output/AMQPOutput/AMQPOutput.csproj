@@ -21,7 +21,6 @@
 
   <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.14" />
-    <PackageReference Include="Microsoft.Composition" Version="1.0.31" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="RabbitMQ.Client" Version="6.4.0" />
   </ItemGroup>
@@ -32,6 +31,7 @@
     <ProjectReference Include="..\..\Libs\Extensions\Extensions.csproj" />
     <ProjectReference Include="..\..\Libs\Interfaces\Interfaces.csproj" />
     <ProjectReference Include="..\..\Libs\Utilities\Utilities.csproj" />
+    <ProjectReference Include="..\SDK\SDK.csproj" />
   </ItemGroup>
 
 </Project>

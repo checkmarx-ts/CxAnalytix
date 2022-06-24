@@ -1,4 +1,5 @@
-﻿using CxAnalytix.Interfaces.Outputs;
+﻿using Autofac;
+using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.Out.AMQPOutput.Config.Contracts;
 using log4net;
 using RabbitMQ.Client;
@@ -10,40 +11,48 @@ using System.Reflection;
 namespace CxAnalytix.Out.AMQPOutput
 {
 
-	public class AMQPOutFactory : IOutputFactory, IDisposable
+	public class AMQPOutFactory : SDK.OutputModule, IDisposable
 	{
 		private static ILog _log = LogManager.GetLogger(typeof(AMQPOutFactory));
 
 		private static ConnectionFactory _amqpFactory = new ConnectionFactory();
-		private IConnection _connection;
+
+
+		private IConnection _connection = null;
+		private IConnection Connection { 
+			get
+			{
+				if (_connection == null)
+				{
+					foreach (var ep in _conCfg.Endpoints as IEnumerable<AmqpTcpEndpoint>)
+						_log.Info($"AMQP endpoint: {ep.HostName}:{ep.Port} SSL: {ep.Ssl.Enabled}");
+
+					_connection = _amqpFactory.CreateConnection(_conCfg.Endpoints, Assembly.GetEntryAssembly().GetName().ToString());
+				}
+
+				return _connection;
+			}
+		}
 
         [Import]
 		private IAmqpConnectionConfig _conCfg { get; set; }
 
-		public AMQPOutFactory()
+		public AMQPOutFactory() : base("AMQP", typeof(AMQPOutFactory))
 		{
 			CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
 
 			_amqpFactory.UserName = _conCfg.UserName;
 			_amqpFactory.Password = _conCfg.Password;
-
-			var endpoints = _conCfg.Endpoints;
-
-			foreach (var ep in endpoints as IEnumerable<AmqpTcpEndpoint>)
-				_log.Info($"AMQP endpoint: {ep.HostName}:{ep.Port} SSL: {ep.Ssl.Enabled}");
-
-			_connection = _amqpFactory.CreateConnection(endpoints, "CxAnalytix");
 		}
 
-
-	public IRecordRef RegisterRecord(string recordName)
+        public override IRecordRef RegisterRecord(string recordName)
 		{
 			return new RecordHandler(recordName);
 		}
 
-		public IOutputTransaction StartTransaction()
+		public override IOutputTransaction StartTransaction()
 		{
-			return new TransactionHandler(_connection.CreateModel() );
+			return new TransactionHandler(Connection.CreateModel() );
 		}
 
 		public void Dispose()

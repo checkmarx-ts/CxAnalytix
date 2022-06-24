@@ -1,22 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Composition;
-using System.Reflection;
 using CxAnalytix.Configuration.Contracts;
-using CxAnalytix.Exceptions;
 using CxAnalytix.Interfaces.Outputs;
 
 namespace CxAnalytix.Out.Log4NetOutput
 {
-    public sealed class LoggerOutFactory : IOutputFactory
+    public sealed class LoggerOutFactory : SDK.OutputModule
     {
 		private HashSet<String> _recs = new HashSet<String>();
-
 
         [Import]
 		private ICxAnalytixService Service { get; set; }
 
-		public LoggerOutFactory()
+		public LoggerOutFactory() : base("Log4Net", typeof(LoggerOutFactory) )
         {
 			CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
 		}
@@ -26,7 +23,7 @@ namespace CxAnalytix.Out.Log4NetOutput
 			public String RecordName { get; internal set; }
 		};
 
-		public IRecordRef RegisterRecord(string recordName)
+		public override IRecordRef RegisterRecord(string recordName)
 		{
 			if (String.IsNullOrEmpty(recordName))
 				throw new InvalidOperationException("Creating a logger with a blank record type is not valid.");
@@ -35,7 +32,7 @@ namespace CxAnalytix.Out.Log4NetOutput
 			return new Ref() { RecordName = recordName };
 		}
 
-		public IOutputTransaction StartTransaction()
+		public override IOutputTransaction StartTransaction()
 		{
 			if (Service.EnablePseudoTransactions)
 				return new LoggerOutTransaction<TransactionalLoggerOut>(_recs);
@@ -43,5 +40,5 @@ namespace CxAnalytix.Out.Log4NetOutput
 				return new LoggerOutTransaction<LoggerOut>(_recs);
 		}
 
-	}
+    }
 }

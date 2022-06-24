@@ -1,19 +1,16 @@
-﻿using CxAnalytix.Configuration;
-using log4net;
+﻿using log4net;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.Exceptions;
-using CxAnalytix.Out.MongoDBOutput.Config.Impl;
 using CxAnalytix.Out.MongoDBOutput.Config.Contracts;
-using System.Reflection;
 using CxAnalytix.Configuration.Contracts;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
-    public sealed class MongoDBOutFactory : IOutputFactory
-	{
+    public sealed class MongoDBOutFactory : SDK.OutputModule
+    {
 		private static ILog _log = LogManager.GetLogger(typeof(MongoDBOutFactory));
 
 		internal static IMongoOutConfig OutConfig { get; set; }
@@ -23,32 +20,10 @@ namespace CxAnalytix.Out.MongoDBOutput
 		private static ICxAnalytixService Service { get; set; }
 
 
-		private static MongoClient _client;
-		internal static MongoClient Client { get => _client; }
-
-
-		private static IMongoDatabase _db;
-
-		private static Dictionary<String, MongoDBOut> _schemas = new Dictionary<string, MongoDBOut>();
-		internal MongoDBOut this[String name] => _schemas[name];
-
-		private class Dummy : GenericSchema
-		{
-			public override void write(IClientSessionHandle session, IDictionary<string, object> record)
-			{
-			}
-		}
-
-
-		static MongoDBOutFactory()
-		{
+		private static void Init()
+        {
 			try
 			{
-				OutConfig = CxAnalytix.Configuration.Impls.Config.GetConfig<IMongoOutConfig>();
-				ConConfig = CxAnalytix.Configuration.Impls.Config.GetConfig<IMongoConnectionConfig>();
-				Service = CxAnalytix.Configuration.Impls.Config.GetConfig<ICxAnalytixService>();
-
-
 				if (_log.IsDebugEnabled)
 					foreach (var spec in OutConfig.ShardKeys)
 						_log.DebugFormat("Shard Key: {0}", spec);
@@ -89,12 +64,47 @@ namespace CxAnalytix.Out.MongoDBOutput
 			{
 				_log.Error("Error initializing MongoDB connectivity.", ex);
 				_client = null;
+#pragma warning disable CA2200 // Rethrow to preserve stack details
+                throw ex;
+#pragma warning restore CA2200 // Rethrow to preserve stack details
+            }
+		}
+
+		private static MongoClient _client;
+		internal static MongoClient Client { 
+			get
+            {
+				if (_client == null)
+					Init();
+
+				return _client;
+            } 
+		}
+
+
+		private static IMongoDatabase _db;
+
+		private static Dictionary<String, MongoDBOut> _schemas = new Dictionary<string, MongoDBOut>();
+		internal MongoDBOut this[String name] => _schemas[name];
+
+		private class Dummy : GenericSchema
+		{
+			public override void write(IClientSessionHandle session, IDictionary<string, object> record)
+			{
 			}
+		}
+
+
+        public MongoDBOutFactory() : base("MongoDB", typeof(MongoDBOutFactory))
+		{
+			OutConfig = CxAnalytix.Configuration.Impls.Config.GetConfig<IMongoOutConfig>();
+			ConConfig = CxAnalytix.Configuration.Impls.Config.GetConfig<IMongoConnectionConfig>();
+			Service = CxAnalytix.Configuration.Impls.Config.GetConfig<ICxAnalytixService>();
 		}
 
 		private static MongoUrl GetMongoConnectionString() => new MongoUrl(ConConfig.ConnectionString);
 
-		public IOutputTransaction StartTransaction()
+		public override IOutputTransaction StartTransaction()
 		{
 			if (Service.EnablePseudoTransactions)
 				return new MongoOutputTransaction(this);
@@ -102,7 +112,7 @@ namespace CxAnalytix.Out.MongoDBOutput
 				return new MongoOutputNoTransaction(this);
 		}
 
-		public IRecordRef RegisterRecord(string recordName)
+		public override IRecordRef RegisterRecord(string recordName)
 		{
 			if (_client == null)
 				throw new ProcessFatalException("The connection to MongoDB could not be established.");

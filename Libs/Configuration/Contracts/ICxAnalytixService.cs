@@ -8,9 +8,7 @@ namespace CxAnalytix.Configuration.Contracts
 		String InstanceIdentifier { get; }
 		int ConcurrentThreads { get; }
 		String StateDataStoragePath { get; }
-		String OutputFactoryClassPath { get; }
-		String OutputAssembly { get; }
-		String OutputClass { get; }
+		String OutputModuleName { get; }
 		String SASTScanSummaryRecordName { get;  }
 		String SASTScanDetailRecordName { get; }
 		String SCAScanSummaryRecordName { get; }

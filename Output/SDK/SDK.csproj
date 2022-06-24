@@ -1,8 +1,11 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
-    <Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+	  <Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
+
 	  <Company>Checkmarx</Company>
 	  <Authors>Checkmarx</Authors>
 	  <Version>0.0.0</Version>
@@ -11,21 +14,16 @@
 	  <PackageProjectUrl>https://github.com/checkmarx-ts/CxAnalytix/wiki</PackageProjectUrl>
 	  <PackageReadmeFile>$(SolutionDir)README.md</PackageReadmeFile>
 	  <RepositoryUrl>https://github.com/checkmarx-ts/CxAnalytix</RepositoryUrl>
+	  <PackageId>CxAnalytix.Out.SDK</PackageId>
 
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Autofac" Version="6.4.0" />
-    <PackageReference Include="log4net" Version="2.0.14" />
-    <PackageReference Include="System.Reflection.MetadataLoadContext" Version="6.0.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Output\SDK\SDK.csproj" />
-    <ProjectReference Include="..\Configuration\Configuration.csproj" />
-    <ProjectReference Include="..\Exceptions\Exceptions.csproj" />
-    <ProjectReference Include="..\Extensions\Extensions.csproj" />
-    <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
+    <ProjectReference Include="..\..\Libs\Interfaces\Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

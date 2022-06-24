@@ -34,7 +34,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="log4net" Version="2.0.14" />
-		<PackageReference Include="Microsoft.Composition" Version="1.0.31" />
 		<PackageReference Include="MongoDB.Driver" Version="2.16.1" />
 		<PackageReference Include="MongoDB.Bson" Version="2.16.1" />
 		<PackageReference Include="MongoDB.Driver.Core" Version="2.16.1" />
@@ -46,6 +45,7 @@
 		<ProjectReference Include="..\..\Libs\Extensions\Extensions.csproj" />
 		<ProjectReference Include="..\..\Libs\Interfaces\Interfaces.csproj" />
 		<ProjectReference Include="..\..\Libs\Utilities\Utilities.csproj" />
+		<ProjectReference Include="..\SDK\SDK.csproj" />
 	</ItemGroup>
 
 </Project>
