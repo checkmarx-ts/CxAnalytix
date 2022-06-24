@@ -1,12 +1,10 @@
-﻿using CxAnalytix.Configuration.Utils;
+﻿using Autofac;
+using CxAnalytix.Configuration.Utils;
 using log4net;
 using System;
 using System.Configuration;
 using System.IO;
 using System.Reflection;
-using System.Composition.Hosting;
-using System.Composition;
-using System.Collections.Generic;
 
 namespace CxAnalytix.Configuration.Impls
 {
@@ -18,6 +16,8 @@ namespace CxAnalytix.Configuration.Impls
 		private static readonly String CONFIG_PATH_VARIABLE = "CXANALYTIX_CONFIG_PATH";
 		private static readonly String DEFAULT_FOLDER_NAME = "cxanalytix";
 		private static readonly String DEFAULT_LINUX_PATH = $"/etc/{DEFAULT_FOLDER_NAME}";
+
+		private static IContainer _configDI;
 
 
 		static Config()
@@ -35,32 +35,21 @@ namespace CxAnalytix.Configuration.Impls
 				EncryptSensitiveSections();
 			else
 				_log.Warn("This platform does not support encrypting credentials in the configuration file.  Your credentials may be stored in plain text.");
+
+			var builder = new ContainerBuilder();
+
+			foreach(var sec in _cfgManager.Sections)
+            {
+				builder.RegisterInstance(sec).As(sec.GetType()).ExternallyOwned();
+            }
+			_configDI = builder.Build();
+
 		}
-
-		internal static System.Configuration.ConfigurationSectionCollection Sections => _cfgManager.Sections;
-
-		private static ContainerConfiguration ContConfig(params Assembly[] execAssembly)
-        {
-			return new ContainerConfiguration().WithAssemblies(execAssembly);
-		}
-
-		private static Assembly[] GetAssembliesWith(Assembly other)
-        {
-			return new Assembly[] { other, Assembly.GetExecutingAssembly() };
-        }
-
 
 		public static T GetConfig<T>()
         {
-			using (var container = ContConfig(GetAssembliesWith(Assembly.GetCallingAssembly())).CreateContainer())
-				return container.GetExport<T>();
-		}
-
-		public static void InjectConfigs<T>(T inst)
-		{
-			using (var container = ContConfig(GetAssembliesWith(Assembly.GetCallingAssembly())).CreateContainer())
-				container.SatisfyImports(inst);
-		}
+			return _configDI.Resolve<T>();
+        }
 
 
 		private static String FindConfigFilePath()

@@ -1,6 +1,5 @@
 ﻿using Autofac;
 using Autofac.Core.Registration;
-using CxAnalytix.Configuration.Contracts;
 using CxAnalytix.Configuration.Impls;
 using CxAnalytix.Exceptions;
 using CxAnalytix.Extensions;
@@ -8,12 +7,9 @@ using CxAnalytix.Interfaces.Outputs;
 using log4net;
 using System;
 using System.Collections.Generic;
-using System.Composition;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Linq;
 using SDK;
 
 namespace OutputBootstrapper
@@ -25,8 +21,7 @@ namespace OutputBootstrapper
 		private static IContainer _outContainer;
 
 
-		[Import]
-		private static ICxAnalytixService Service { get; set; }
+		private static CxAnalytixService Service => Config.GetConfig<CxAnalytixService>();
 
 		private static Assembly[] GetOutputAssemblies()
         {
@@ -51,8 +46,6 @@ namespace OutputBootstrapper
 
 		static Output()
 		{
-			Service = Config.GetConfig<ICxAnalytixService>();
-
 			var builder = new ContainerBuilder();
 			builder.RegisterAssemblyModules(typeof(IOutputFactory), GetOutputAssemblies());
 			_outContainer = builder.Build();

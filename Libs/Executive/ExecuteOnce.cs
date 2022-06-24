@@ -1,18 +1,13 @@
-﻿using System.IO;
-using System.Reflection;
+﻿using System.Reflection;
 using log4net;
 using CxAnalytix.TransformLogic;
-using System.Threading;
 using CxRestClient;
 using CxAnalytix.Configuration.Impls;
 using System;
-using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.AuditTrails.Crawler;
-using CxAnalytix.Exceptions;
 using ProjectFilter;
 using OutputBootstrapper;
 using CxRestClient.Utility;
-using CxAnalytix.Configuration.Contracts;
 
 
 
@@ -27,11 +22,10 @@ namespace CxAnalytix.Executive
     public class ExecuteOnce
     {
 
-        protected static ICxConnection Connection { get; set; }
-        protected static ICxCredentials Credentials { get; set; }
-        protected static ICxAnalytixService Service { get; set; }
-        protected static ICxFilter Filter { get; set; }
-
+        protected static CxConnection Connection => Config.GetConfig<CxConnection>();
+        protected static CxCredentials Credentials => Config.GetConfig<CxCredentials>();
+        protected static CxAnalytixService Service => Config.GetConfig<CxAnalytixService>();
+        protected static CxFilter Filter => Config.GetConfig<CxFilter>();
         private static CxSASTRestContext _ctx;
 
         private static CancellationTokenSource _defaultCancelToken = new CancellationTokenSource();
@@ -39,10 +33,6 @@ namespace CxAnalytix.Executive
 
         static ExecuteOnce()
         {
-            Service = Config.GetConfig<ICxAnalytixService>();
-            Connection = Config.GetConfig<ICxConnection>();
-            Credentials = Config.GetConfig<ICxCredentials>();
-            Filter = Config.GetConfig<ICxFilter>();
 
             var builder = new CxSASTRestContext.CxSASTRestContextBuilder();
             builder.WithServiceURL(Connection.URL)

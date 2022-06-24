@@ -1,16 +1,11 @@
-﻿using CxAnalytix.AuditTrails.Crawler.Contracts;
-using CxAnalytix.Configuration.Contracts;
-using CxAnalytix.Configuration.Utils;
-using System;
+﻿using System;
 using System.Configuration;
 
 namespace CxAnalytix.AuditTrails.Crawler.Config
 {
-	public class CxAuditTrailOpts<T> : MEFableConfigurationSection, ICxAuditTrailOpts<T>
+	public class CxAuditTrailOpts<T> : ConfigurationSection
 	{
 		public CxAuditTrailOpts() {}
-
-		public CxAuditTrailOpts(IConfigSectionResolver resolver) : base(resolver) {}
 
 		private Func<String, T> _default = (x) => default(T);
 
@@ -19,22 +14,17 @@ namespace CxAnalytix.AuditTrails.Crawler.Config
 			_default = createDefault;
 		}
 
-		public CxAuditTrailOpts(Func<String, T> createDefault, IConfigSectionResolver resolver) : base(resolver)
-		{
-			_default = createDefault;
-		}
-
 		private T GetPropertyValue (String key)
 		{
-			if (!Instance<CxAuditTrailOpts<T>>().Properties.Contains(key))
+			if (!this.Properties.Contains(key))
 				return _default(key);
 
-			return (T)Instance<CxAuditTrailOpts<T>>()[key];
+			return (T)this[key];
 		}
 
 		private void SetPropertyValue (String key, T val)
 		{
-			Instance<CxAuditTrailOpts<T>>()[key] = val;
+			this[key] = val;
 		}
 
 		protected override void InitializeDefault()
@@ -53,7 +43,7 @@ namespace CxAnalytix.AuditTrails.Crawler.Config
 
 
 				GetType ().InvokeMember(prop.Name, System.Reflection.BindingFlags.SetProperty, 
-					null, Instance<CxAuditTrailOpts<T>>(), new Object[] { _default(defaultKeyVal) } );
+					null, this, new Object[] { _default(defaultKeyVal) } );
 
 			}
 		}

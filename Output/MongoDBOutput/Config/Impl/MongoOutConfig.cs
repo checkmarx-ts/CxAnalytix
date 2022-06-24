@@ -1,35 +1,26 @@
-﻿using CxAnalytix.Configuration.Contracts;
-using CxAnalytix.Configuration.Utils;
-using CxAnalytix.Out.MongoDBOutput.Config.Contracts;
-using System;
-using System.Composition;
+﻿using System;
 using System.Configuration;
 
 namespace CxAnalytix.Out.MongoDBOutput.Config.Impl
 {
-    [Export(typeof(IMongoOutConfig))]
-    public class MongoOutConfig : MEFableConfigurationSection, IMongoOutConfig
+    public class MongoOutConfig : ConfigurationSection
     {
 
         public MongoOutConfig() { }
 
-        [ImportingConstructor]
-        public MongoOutConfig(IConfigSectionResolver resolver) : base(resolver) { }
-
 
         [ConfigurationProperty("GeneratedShardKeys", IsDefaultCollection = false, IsRequired = false)]
-        [ConfigurationCollection(typeof(ShardKeySpecConfig),
-            AddItemName = "Spec")]
+        [ConfigurationCollection(typeof(ShardKeySpecConfig), AddItemName = "Spec")]
         public ShardKeySpecConfig ShardKeys
         {
             get
             {
-                return (ShardKeySpecConfig)Instance<MongoOutConfig>()["GeneratedShardKeys"];
+                return (ShardKeySpecConfig)this["GeneratedShardKeys"];
             }
 
             set
             {
-                Instance<MongoOutConfig>()["GeneratedShardKeys"] = value;
+                this["GeneratedShardKeys"] = value;
             }
         }
 

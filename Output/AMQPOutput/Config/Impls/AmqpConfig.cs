@@ -1,27 +1,19 @@
-﻿using CxAnalytix.Configuration.Contracts;
-using CxAnalytix.Configuration.Utils;
-using CxAnalytix.Out.AMQPOutput.Config.Contracts;
+﻿using CxAnalytix.Configuration.Utils;
 using System;
-using System.Composition;
 using System.Configuration;
 
 namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 {
-	[Export(typeof(IAmqpConfig))]
-	internal class AmqpConfig : EnvAwareConfigurationSection, IAmqpConfig
+	internal class AmqpConfig : EnvAwareConfigurationSection
 	{
 
 		public AmqpConfig() {}
 
-		[ImportingConstructor]
-		public AmqpConfig(IConfigSectionResolver resolver) : base(resolver) { }
-
-
 		[ConfigurationProperty("DefaultExchange", IsRequired = true)]
 		public String Exchange
 		{
-			get => (String)Instance<AmqpConfig>()["DefaultExchange"];
-			set => Instance<AmqpConfig>()["DefaultExchange"] = value;
+			get => (String)this["DefaultExchange"];
+			set => this["DefaultExchange"] = value;
 		}
 
 
@@ -31,12 +23,12 @@ namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 		{
 			get
 			{
-				return (AmqpRecordConfigCollection)Instance<AmqpConfig>()["RecordSpecs"];
+				return (AmqpRecordConfigCollection)this["RecordSpecs"];
 			}
 
 			set
 			{
-				Instance<AmqpConfig>()["RecordSpecs"] = value;
+				this["RecordSpecs"] = value;
 			}
 		}
 

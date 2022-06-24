@@ -1,12 +1,10 @@
-﻿using CxAnalytix.Configuration.Contracts;
+﻿using CxAnalytix.Configuration.Impls;
 using CxAnalytix.Exceptions;
 using CxAnalytix.Interfaces.Outputs;
 using log4net;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
-using System.Composition;
-using System.Text;
 
 namespace CxAnalytix.Out.AMQPOutput
 {
@@ -18,14 +16,11 @@ namespace CxAnalytix.Out.AMQPOutput
 		private bool _committed = false;
 		private bool _noRollback = false;
 
-        [Import]
-		ICxConnection Connection { get; set; }
+		CxConnection Connection => CxAnalytix.Configuration.Impls.Config.GetConfig<CxConnection>();
 
 
 		public TransactionHandler(IModel amqpChannel)
 		{
-			CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
-
 			_channel = amqpChannel;
 			_channel.ContinuationTimeout = new TimeSpan(0, 0, Connection.TimeoutSeconds);
 			_channel.TxSelect();

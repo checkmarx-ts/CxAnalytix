@@ -11,9 +11,7 @@ using CxAnalytix.Interfaces.Audit;
 using log4net;
 using OutputBootstrapper;
 using System.Threading.Tasks;
-using CxAnalytix.AuditTrails.Crawler.Contracts;
-using System.Composition;
-using CxAnalytix.Configuration.Contracts;
+using CxAnalytix.Configuration.Impls;
 
 namespace CxAnalytix.AuditTrails.Crawler
 {
@@ -25,19 +23,14 @@ namespace CxAnalytix.AuditTrails.Crawler
 		private static readonly ILog _log = LogManager.GetLogger(typeof(AuditTrailCrawler));
 		private string StorageFile;
 
-		[Import]
-		private ICxAuditTrailRecordNameMap _outmap { get; set; }
+		private CxAuditTrailRecordNameMap _outmap => CxAnalytix.Configuration.Impls.Config.GetConfig<CxAuditTrailRecordNameMap>();
 
-		[Import]
-		private ICxAuditTrailSuppressions _suppressions { get; set; }
+		private CxAuditTrailSuppressions _suppressions => CxAnalytix.Configuration.Impls.Config.GetConfig<CxAuditTrailSuppressions>();
 
-        [Import]
-        private ICxAnalytixService Service { get; set; }
+        private CxAnalytixService Service => CxAnalytix.Configuration.Impls.Config.GetConfig<CxAnalytixService>();
 
 		private AuditTrailCrawler ()
 		{
-			CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
-
             StorageFile = Path.Combine(Service.StateDataStoragePath, STORAGE_FILE);
 
             ReadSinceDate();
@@ -56,7 +49,7 @@ namespace CxAnalytix.AuditTrails.Crawler
 			{
 				if (fieldLookup.ContainsKey (prop.Name))
 					_outMappings.Add(fieldLookup[prop.Name].Name, 
-						Output.RegisterRecord(GetPropertyValue<ICxAuditTrailRecordNameMap, String>(prop.Name, _outmap)));
+						Output.RegisterRecord(GetPropertyValue<CxAuditTrailRecordNameMap, String>(prop.Name, _outmap)));
 			}
 		}
 
@@ -120,7 +113,7 @@ namespace CxAnalytix.AuditTrails.Crawler
 					if (token.IsCancellationRequested)
 						return;
 
-					if (GetPropertyValue<ICxAuditTrailSuppressions, bool>(field.Name, crawlInvoker._suppressions))
+					if (GetPropertyValue<CxAuditTrailSuppressions, bool>(field.Name, crawlInvoker._suppressions))
 					{
 						_log.Debug($"{field.Name} logging has been suppressed via configuration.");
 						return;

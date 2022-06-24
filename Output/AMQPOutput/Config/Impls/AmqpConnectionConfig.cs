@@ -1,37 +1,29 @@
-﻿using CxAnalytix.Configuration.Contracts;
-using CxAnalytix.Configuration.Utils;
-using CxAnalytix.Out.AMQPOutput.Config.Contracts;
+﻿using CxAnalytix.Configuration.Utils;
 using System;
-using System.Composition;
 using System.Configuration;
 
 namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 {
 
 	[SecureConfigSection("Password")]
-	[Export(typeof(IAmqpConnectionConfig))]
-	internal class AmqpConnectionConfig : EnvAwareConfigurationSection, IAmqpConnectionConfig
+	internal class AmqpConnectionConfig : EnvAwareConfigurationSection
 	{
 
 		public AmqpConnectionConfig()
 		{
 		}
 
-		[ImportingConstructor]
-		public AmqpConnectionConfig(IConfigSectionResolver resolver) : base(resolver) { }
-
-
 		[ConfigurationProperty("UserName", IsRequired = false)]
 		public String UserName
 		{
 			get
 			{
-				return (String)Instance<AmqpConnectionConfig>()["UserName"];
+				return (String)this["UserName"];
 			}
 
 			set
 			{
-				Instance<AmqpConnectionConfig>()["UserName"] = value;
+				this["UserName"] = value;
 			}
 		}
 
@@ -41,12 +33,12 @@ namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 		{
 			get
 			{
-				return (String)Instance<AmqpConnectionConfig>()["Password"];
+				return (String)this["Password"];
 			}
 
 			set
 			{
-				Instance<AmqpConnectionConfig>()["Password"] = value;
+				this["Password"] = value;
 			}
 		}
 
@@ -58,12 +50,12 @@ namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 		{
 			get
 			{
-				return (AmqpEndpointCollection)Instance<AmqpConnectionConfig>()["ClusterNodes"];
+				return (AmqpEndpointCollection)this["ClusterNodes"];
 			}
 
 			set
 			{
-				Instance<AmqpConnectionConfig>()["ClusterNodes"] = value;
+				this["ClusterNodes"] = value;
 			}
 		}
 

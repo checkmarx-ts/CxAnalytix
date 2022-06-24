@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Composition;
-using CxAnalytix.Configuration.Contracts;
+using CxAnalytix.Configuration.Impls;
 using CxAnalytix.Interfaces.Outputs;
 
 namespace CxAnalytix.Out.Log4NetOutput
@@ -10,12 +9,10 @@ namespace CxAnalytix.Out.Log4NetOutput
     {
 		private HashSet<String> _recs = new HashSet<String>();
 
-        [Import]
-		private ICxAnalytixService Service { get; set; }
+		private CxAnalytixService Service => CxAnalytix.Configuration.Impls.Config.GetConfig<CxAnalytixService>();
 
 		public LoggerOutFactory() : base("Log4Net", typeof(LoggerOutFactory) )
         {
-			CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
 		}
 
 		internal class Ref : IRecordRef

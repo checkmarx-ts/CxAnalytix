@@ -11,8 +11,6 @@ using CxAnalytix.Utilities.Json;
 using CxAnalytix.Out.AMQPOutput.Config.Impls;
 using static CxAnalytix.Out.AMQPOutput.Config.Impls.AmqpFieldCollection;
 using System.Reflection;
-using CxAnalytix.Out.AMQPOutput.Config.Contracts;
-using System.Composition;
 
 namespace CxAnalytix.Out.AMQPOutput
 {
@@ -30,21 +28,15 @@ namespace CxAnalytix.Out.AMQPOutput
 		private static int MAX_ROUTING_KEY_SIZE = 255;
 		private static String GENERATION_KEY = "Generation";
 
-		[Import]
-		private IAmqpConfig _cfg {get; set;}
-
+		private AmqpConfig QueueConfig => CxAnalytix.Configuration.Impls.Config.GetConfig<AmqpConfig>();
 
 		public RecordHandler(String recordName)
 		{
-			CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
-
-
-
 			_recordName = recordName;
 
-			_exchange = _cfg.Exchange;
+			_exchange = QueueConfig.Exchange;
 			_topic = recordName;
-			var record_cfg = _cfg.Records[recordName];
+			var record_cfg = QueueConfig.Records[recordName];
 
 
 			if (record_cfg != null)
@@ -96,7 +88,8 @@ namespace CxAnalytix.Out.AMQPOutput
 					props.Headers.Add(headerSpec.Key, record.ComposeString(headerSpec.Value));
 
 
-			channel.BasicPublish(_exchange, record.ComposeString(_topic).Truncate(MAX_ROUTING_KEY_SIZE), props, Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict, Defs.serializerSettings) ) );
+			channel.BasicPublish(_exchange, record.ComposeString(_topic).Truncate(MAX_ROUTING_KEY_SIZE), props, 
+				Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict, Defs.serializerSettings) ) );
 		}
 	}
 }

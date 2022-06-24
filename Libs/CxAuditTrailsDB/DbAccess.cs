@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Composition;
-using System.Reflection;
 using CxAnalytix.CxAuditTrails.DB.Config;
-using CxAnalytix.CxAuditTrails.DB.Contracts;
 using CxAnalytix.Extensions;
 using log4net;
 using Microsoft.Data.SqlClient;
@@ -12,25 +9,14 @@ namespace CxAnalytix.CxAuditTrails.DB
 	public class DbAccess
 	{
 		private static ILog _log = LogManager.GetLogger(typeof(DbAccess));
-		private String _conStr;
 
-        [Import]
-		private ICxAuditDBConnection _cfg { get; set; }
-
-
-		public DbAccess()
-		{
-
-			CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
-			_conStr = _cfg.ConnectionString;
-
-		}
+		private CxAuditDBConnection ConConfig => CxAnalytix.Configuration.Impls.Config.GetConfig<CxAuditDBConnection>();
 
 		public bool IsDisabled
 		{
 			get
 			{
-				return !(_cfg == null);
+				return !(ConConfig == null);
 			}
 		}
 
@@ -38,7 +24,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 		{
 			bool retVal = false;
 
-			using (SqlConnection con = new SqlConnection(_conStr))
+			using (SqlConnection con = new SqlConnection(ConConfig.ConnectionString))
 			{
 				var cmd = con.CreateCommand();
 
@@ -85,7 +71,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 				throw new TableDoesNotExistException(db, schema, table);
 			}
 
-			SqlConnection con = new SqlConnection(_conStr);
+			SqlConnection con = new SqlConnection(ConConfig.ConnectionString);
 
 			con.Open();
 			con.ChangeDatabase(db);

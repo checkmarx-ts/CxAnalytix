@@ -4,8 +4,8 @@ using System;
 using System.Collections.Generic;
 using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.Exceptions;
-using CxAnalytix.Out.MongoDBOutput.Config.Contracts;
-using CxAnalytix.Configuration.Contracts;
+using CxAnalytix.Configuration.Impls;
+using CxAnalytix.Out.MongoDBOutput.Config.Impl;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
@@ -13,11 +13,11 @@ namespace CxAnalytix.Out.MongoDBOutput
     {
 		private static ILog _log = LogManager.GetLogger(typeof(MongoDBOutFactory));
 
-		internal static IMongoOutConfig OutConfig { get; set; }
+		internal static MongoOutConfig OutConfig => CxAnalytix.Configuration.Impls.Config.GetConfig<MongoOutConfig>();
 
-		internal static IMongoConnectionConfig ConConfig { get; set; }
+		internal static MongoConnectionConfig ConConfig => CxAnalytix.Configuration.Impls.Config.GetConfig<MongoConnectionConfig>();
 
-		private static ICxAnalytixService Service { get; set; }
+		private static CxAnalytixService Service => CxAnalytix.Configuration.Impls.Config.GetConfig<CxAnalytixService>();
 
 
 		private static void Init()
@@ -97,9 +97,6 @@ namespace CxAnalytix.Out.MongoDBOutput
 
         public MongoDBOutFactory() : base("MongoDB", typeof(MongoDBOutFactory))
 		{
-			OutConfig = CxAnalytix.Configuration.Impls.Config.GetConfig<IMongoOutConfig>();
-			ConConfig = CxAnalytix.Configuration.Impls.Config.GetConfig<IMongoConnectionConfig>();
-			Service = CxAnalytix.Configuration.Impls.Config.GetConfig<ICxAnalytixService>();
 		}
 
 		private static MongoUrl GetMongoConnectionString() => new MongoUrl(ConConfig.ConnectionString);

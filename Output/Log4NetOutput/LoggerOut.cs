@@ -8,7 +8,6 @@ using LogCleaner;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.Composition;
 using System.Reflection;
 using System.Text;
 using System.Threading;
@@ -25,13 +24,10 @@ namespace CxAnalytix.Out.Log4NetOutput
         protected readonly String _recordType;
         protected readonly ILog _recordLog = null;
 
-
-        [Import]
-        private static ILogOutputConfig _cfg { get; set; }
+        private static LogOutputConfig OutConfig => CxAnalytix.Configuration.Impls.Config.GetConfig<LogOutputConfig>();
 
         public LoggerOut(String recordType)
         {
-            CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
             _recordType = recordType;
             _recordLog = LogManager.Exists(Assembly.GetExecutingAssembly(), recordType);
             if (_recordLog == null)
@@ -42,7 +38,6 @@ namespace CxAnalytix.Out.Log4NetOutput
 
         static LoggerOut()
         {
-            _cfg = CxAnalytix.Configuration.Impls.Config.GetConfig<ILogOutputConfig>();
 
             _token = new CancellationTokenSource();
             AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
@@ -53,9 +48,9 @@ namespace CxAnalytix.Out.Log4NetOutput
 
                 while (!_token.IsCancellationRequested)
                 {
-                    foreach (FileSpecElement spec in _cfg.PurgeSpecs)
+                    foreach (FileSpecElement spec in OutConfig.PurgeSpecs)
                     {
-                        Cleaner.CleanOldFiles(_cfg.OutputRoot, spec.MatchSpec, _cfg.DataRetentionDays);
+                        Cleaner.CleanOldFiles(OutConfig.OutputRoot, spec.MatchSpec, OutConfig.DataRetentionDays);
                     }
                     await Task.Delay(60000 * 60, _token.Token);
 

@@ -1,18 +1,11 @@
-﻿using CxAnalytix.Configuration.Contracts;
-using CxAnalytix.Configuration.Impls;
-using System;
-using System.Composition;
+﻿using System;
 using System.Configuration;
 
 
 namespace CxAnalytix.Configuration.Utils
 {
-    public class EnvAwareConfigurationSection : MEFableConfigurationSection
+    public class EnvAwareConfigurationSection : ConfigurationSection
     {
-
-        public EnvAwareConfigurationSection() {}
-
-        public EnvAwareConfigurationSection(IConfigSectionResolver resolver) : base(resolver) {}
 
         protected new object this[string propertyName]
         {

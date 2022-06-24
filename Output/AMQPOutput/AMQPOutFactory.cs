@@ -1,11 +1,10 @@
 ﻿using Autofac;
 using CxAnalytix.Interfaces.Outputs;
-using CxAnalytix.Out.AMQPOutput.Config.Contracts;
+using CxAnalytix.Out.AMQPOutput.Config.Impls;
 using log4net;
 using RabbitMQ.Client;
 using System;
 using System.Collections.Generic;
-using System.Composition;
 using System.Reflection;
 
 namespace CxAnalytix.Out.AMQPOutput
@@ -24,25 +23,23 @@ namespace CxAnalytix.Out.AMQPOutput
 			{
 				if (_connection == null)
 				{
-					foreach (var ep in _conCfg.Endpoints as IEnumerable<AmqpTcpEndpoint>)
+					foreach (var ep in ConConfig.Endpoints as IEnumerable<AmqpTcpEndpoint>)
 						_log.Info($"AMQP endpoint: {ep.HostName}:{ep.Port} SSL: {ep.Ssl.Enabled}");
 
-					_connection = _amqpFactory.CreateConnection(_conCfg.Endpoints, Assembly.GetEntryAssembly().GetName().ToString());
+					_connection = _amqpFactory.CreateConnection(ConConfig.Endpoints, Assembly.GetEntryAssembly().GetName().ToString());
 				}
 
 				return _connection;
 			}
 		}
 
-        [Import]
-		private IAmqpConnectionConfig _conCfg { get; set; }
+		private AmqpConnectionConfig ConConfig => CxAnalytix.Configuration.Impls.Config.GetConfig<AmqpConnectionConfig>();
 
 		public AMQPOutFactory() : base("AMQP", typeof(AMQPOutFactory))
 		{
-			CxAnalytix.Configuration.Impls.Config.InjectConfigs(this);
 
-			_amqpFactory.UserName = _conCfg.UserName;
-			_amqpFactory.Password = _conCfg.Password;
+			_amqpFactory.UserName = ConConfig.UserName;
+			_amqpFactory.Password = ConConfig.Password;
 		}
 
         public override IRecordRef RegisterRecord(string recordName)
