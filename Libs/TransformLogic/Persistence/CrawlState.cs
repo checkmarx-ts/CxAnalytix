@@ -104,7 +104,7 @@ namespace CxAnalytix.TransformLogic.Persistence
 			Persist();
 		}
 
-		public CrawlState (String storageFilePath)
+		public CrawlState (String storageFilePath, String storageFileName)
 		{
             _storageFile = Path.Combine(storageFilePath, STORAGE_FILE);
             _tempStorageFile = $"{_storageFile}.tmp";
