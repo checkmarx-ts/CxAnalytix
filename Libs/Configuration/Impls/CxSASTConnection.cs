@@ -4,9 +4,9 @@ using System.Configuration;
 
 namespace CxAnalytix.Configuration.Impls
 {
-    public sealed class CxConnection : EnvAwareConfigurationSection
+    public sealed class CxSASTConnection : EnvAwareConfigurationSection
     {
-        public CxConnection() { }
+        public CxSASTConnection() { }
 
 
         [ConfigurationProperty("URL", IsRequired = true)]

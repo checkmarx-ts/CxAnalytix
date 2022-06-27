@@ -1,9 +1,8 @@
-﻿using CxRestClient.MNO.dto;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace CxAnalytix.TransformLogic.Data
+namespace SDK.Modules.Transformer.Data
 {
     /// <summary>
     /// A data object used to describe a scan.
@@ -17,7 +16,7 @@ namespace CxAnalytix.TransformLogic.Data
             SCA
 		}
 
-        internal ScanDescriptor()
+        public ScanDescriptor()
         {
             SeverityCounts = new Dictionary<string, long>();
         }
@@ -25,19 +24,19 @@ namespace CxAnalytix.TransformLogic.Data
         /// <summary>
         /// The descriptor for the project that owns the scan.
         /// </summary>
-        public ProjectDescriptor Project {get; set;}
+        public ProjectDescriptor? Project {get; set;}
         /// <summary>
         /// The type of scan that was performed.
         /// </summary>
-        public String ScanType { get; set; }
+        public String? ScanType { get; set; }
         /// <summary>
         /// The product that performed the scan.
         /// </summary>
-        public ScanProductType ScanProduct { get; set; }
+        public ScanProductType? ScanProduct { get; set; }
         /// <summary>
         /// The scan identifier according to the product.
         /// </summary>
-        public String ScanId { get; set; }
+        public String? ScanId { get; set; }
         /// <summary>
         /// The timestamp of when the scan finished.
         /// </summary>
@@ -46,20 +45,20 @@ namespace CxAnalytix.TransformLogic.Data
         /// The name of the preset used for this scan, which may differ from
         /// the preset that is currently configured for the project.
         /// </summary>
-        public String Preset { get; set; }
+        public String? Preset { get; set; }
         /// <summary>
         /// Stores the counts for each severity.
         /// </summary>
         public Dictionary<String, long> SeverityCounts { get; private set; }
 
-        public String Initiator { get; set; }
-        public String DeepLink { get; set; }
-        public String ScanTime { get; set; }
+        public String? Initiator { get; set; }
+        public String? DeepLink { get; set; }
+        public String? ScanTime { get; set; }
         public DateTime ReportCreateTime { get; set; }
-        public String Comments { get; set; }
-        public String SourceOrigin { get; set; }
+        public String? Comments { get; set; }
+        public String? SourceOrigin { get; set; }
 
-        public String Engine { get; set; }
+        public String? Engine { get; set; }
 
         /// <summary>
         /// Increases the count of a severity with a given name.
@@ -84,7 +83,7 @@ namespace CxAnalytix.TransformLogic.Data
 
         public bool HasPoliciesApplied { get; private set; }
 
-        public void IncrementPolicyViolations (IEnumerable<ViolatedRuleDescriptor> rules)
+        public void IncrementPolicyViolations (IEnumerable<PolicyRuleDescriptor> rules)
         {
             if (rules == null)
                 return;

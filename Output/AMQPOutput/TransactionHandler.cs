@@ -16,7 +16,7 @@ namespace CxAnalytix.Out.AMQPOutput
 		private bool _committed = false;
 		private bool _noRollback = false;
 
-		CxConnection Connection => CxAnalytix.Configuration.Impls.Config.GetConfig<CxConnection>();
+		CxSASTConnection Connection => CxAnalytix.Configuration.Impls.Config.GetConfig<CxSASTConnection>();
 
 
 		public TransactionHandler(IModel amqpChannel)

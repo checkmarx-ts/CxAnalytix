@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CxRestClient.MNO.dto
+namespace SDK.Modules.Transformer.Data
 {
     public class PolicyCollection
     {

@@ -3,10 +3,10 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.IO;
-using System.Net.Http;
 using System.Threading;
 using CxRestClient.Utility;
 using CxRestClient.MNO.dto;
+using SDK.Modules.Transformer.Data;
 
 namespace CxRestClient.MNO
 {

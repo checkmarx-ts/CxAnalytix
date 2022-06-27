@@ -1,17 +1,15 @@
-﻿using CxRestClient;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
-using static CxAnalytix.TransformLogic.Data.ScanDescriptor;
+using static SDK.Modules.Transformer.Data.ScanDescriptor;
 
-namespace CxAnalytix.TransformLogic.Data
+namespace SDK.Modules.Transformer.Data
 {
     /// <summary>
     /// A data object used to describe a project.
     /// </summary>
     public class ProjectDescriptor
     {
-        internal ProjectDescriptor()
+        public ProjectDescriptor()
         {
             ScanCountByProduct = new Dictionary<ScanProductType, int>();
             LatestScanDateByProduct = new Dictionary<ScanProductType, DateTime>();
@@ -35,7 +33,7 @@ namespace CxAnalytix.TransformLogic.Data
         /// Custom fields assigned to the project.
         /// </summary>
         [JsonIgnore]
-        public IDictionary<String, String> CustomFields { get; set; }
+        public IDictionary<String, String>? CustomFields { get; set; }
         /// <summary>
         /// The project id as it is stored in the SAST system.
         /// </summary>
@@ -43,15 +41,15 @@ namespace CxAnalytix.TransformLogic.Data
         /// <summary>
         /// The name of the project.
         /// </summary>
-        public String ProjectName { get; set; }
+        public String? ProjectName { get; set; }
         /// <summary>
         /// The GUID or integer that identifies the team that owns the project.
         /// </summary>
-        public String TeamId { get; set; }
+        public String? TeamId { get; set; }
         /// <summary>
         /// A human-readable name for the team.
         /// </summary>
-        public String TeamName { get; set; }
+        public String? TeamName { get; set; }
         /// <summary>
         /// A numeric identifier of the preset configured for the project.
         /// </summary>
@@ -60,12 +58,12 @@ namespace CxAnalytix.TransformLogic.Data
         /// A human-eadable name for the preset.
         /// </summary>
         [JsonIgnore]
-        public String PresetName { get; set; }
+        public String? PresetName { get; set; }
         /// <summary>
         /// The M&O policies assigned to the project, if any.
         /// </summary>
         [JsonIgnore]
-        public String Policies { get; set; }
+        public String? Policies { get; set; }
         /// <summary>
         /// A dictionary showing the number of scans for the project by product.
         /// SAST and SCA scans (and maybe others in the future) are not restricted

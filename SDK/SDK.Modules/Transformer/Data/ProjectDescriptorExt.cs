@@ -1,9 +1,9 @@
 ﻿using System;
 
 
-namespace CxAnalytix.TransformLogic.Data
+namespace SDK.Modules.Transformer.Data
 {
-    internal class ProjectDescriptorExt : ProjectDescriptor
+    public class ProjectDescriptorExt : ProjectDescriptor
     {
         internal ProjectDescriptorExt (ProjectDescriptor src, ProjectDescriptorExt merge) : base (src)
         {

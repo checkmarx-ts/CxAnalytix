@@ -1,22 +1,21 @@
 ﻿using CxAnalytix.Interfaces.Transform;
+using SDK.Modules.Transformer;
 using System;
 using System.Threading;
 
 namespace ScaTransformer
 {
-	public class Transformer : ITransformer
+	public class Transformer : TransformerModule
 	{
+		private static readonly String STATE_STORAGE_FILE = "CxAnalytixExportState_SCA.json";
 
-		public Transformer()
+		public Transformer() : base("SAST-SCA", typeof(Transformer), STATE_STORAGE_FILE)
 		{
-			// TODO: Instance-specific config goes here....
-
 		}
 
-
-		public void DoTransform(int concurrentThreads, string previousStatePath, string instanceId, IProjectFilter filter, CancellationToken token)
+		public override void DoTransform(CancellationToken token)
 		{
 			throw new NotImplementedException();
 		}
-	}
+    }
 }

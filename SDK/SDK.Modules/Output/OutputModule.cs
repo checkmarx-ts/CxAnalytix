@@ -1,29 +1,16 @@
 ﻿using Autofac;
 using CxAnalytix.Interfaces.Outputs;
 
-namespace SDK.Modules
+namespace SDK.Modules.Output
 {
-    public abstract class OutputModule : Module, IOutputFactory
+    public abstract class OutputModule : Common.CxAnalytixModule<IOutputFactory>, IOutputFactory
     {
-        private String _name;
-        private Type _type;
 
-        public OutputModule(String moduleName, Type moduleImplType)
+        public OutputModule(String moduleName, Type moduleImplType) : base(moduleName, moduleImplType)
         {
-            _name = moduleName;
-            _type = moduleImplType;
         }
 
         public abstract IRecordRef RegisterRecord(string recordName);
         public abstract IOutputTransaction StartTransaction();
-
-        protected override void Load(ContainerBuilder builder)
-        {
-            base.Load(builder);
-            builder.RegisterType(_type).Named<IOutputFactory>(_name.ToLower()).Named<IOutputFactory>(_name);
-            Registrar.ModuleRegistry.RegisterModule<IOutputFactory>(_name);
-        }
-
-
     }
 }

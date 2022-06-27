@@ -1,24 +1,19 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Runtime.CompilerServices;
-using CxAnalytix.Exceptions;
-using CxAnalytix.TransformLogic.Data;
+﻿using CxAnalytix.Exceptions;
 using log4net;
 using Newtonsoft.Json;
-using static CxAnalytix.TransformLogic.Data.ScanDescriptor;
+using SDK.Modules.Transformer.Data;
+using System;
+using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
+using static SDK.Modules.Transformer.Data.ScanDescriptor;
 
 [assembly: InternalsVisibleTo("TransformLogic_Tests")]
-namespace CxAnalytix.TransformLogic.Persistence
+namespace SDK.Modules.Transformer
 {
-
-	internal class CrawlState
+	public class CrawlStateBase
 	{
+		private static readonly ILog _log = LogManager.GetLogger(typeof(CrawlStateBase));
 
-
-		public static readonly String STORAGE_FILE = "CxAnalytixExportState.json";
 
 		// Holds the current state of crawls per project.
 		private ConcurrentDictionary<int, ProjectDescriptorExt> _currentState = new ConcurrentDictionary<int, ProjectDescriptorExt>();
@@ -31,8 +26,6 @@ namespace CxAnalytix.TransformLogic.Persistence
 		public int NewProjects { get; private set; }
 
 		public int DeletedProjects { get; private set; }
-
-		private static ILog _log = LogManager.GetLogger(typeof(CrawlState));
 
         private String _storageFile;
         private String _tempStorageFile;
@@ -104,9 +97,9 @@ namespace CxAnalytix.TransformLogic.Persistence
 			Persist();
 		}
 
-		public CrawlState (String storageFilePath, String storageFileName)
+		public CrawlStateBase (String storageFilePath, String storageFileName)
 		{
-            _storageFile = Path.Combine(storageFilePath, STORAGE_FILE);
+            _storageFile = Path.Combine(storageFilePath, storageFileName);
             _tempStorageFile = $"{_storageFile}.tmp";
 			_recoveryStorageFile = $"{_storageFile}.recovery";
 

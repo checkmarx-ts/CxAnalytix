@@ -38,11 +38,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="MNO\dto\" />
 		<Folder Include="SAST\" />
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\SDK\SDK.Modules\SDK.Modules.csproj" />
 	  <ProjectReference Include="..\Exceptions\Exceptions.csproj" />
 	  <ProjectReference Include="..\Extensions\Extensions.csproj" />
 	  <ProjectReference Include="..\Utilities\Utilities.csproj" />

@@ -1,15 +1,16 @@
-﻿using System;
+﻿using SDK.Modules.Transformer.Data;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace CxRestClient.MNO.dto
 {
-    public class ViolatedRuleDescriptor : RuleDescriptor
+    public class ViolatedRuleDescriptor : MNORuleDescriptor
     {
-        private ViolatedRuleDescriptor ()
+        internal ViolatedRuleDescriptor ()
         { }
 
-        public ViolatedRuleDescriptor (RuleDescriptor src)
+        public ViolatedRuleDescriptor (PolicyRuleDescriptor src)
         {
             this.CreatedOn = src.CreatedOn;
             this.Description = src.Description;
@@ -19,7 +20,6 @@ namespace CxRestClient.MNO.dto
             this.ScanProduct = src.ScanProduct;
         }
 
-        public int PolicyId { get; internal set; }
         public int ProjectId { get; internal set; }
 
         public DateTime FirstDetectionDate { get; internal set; }

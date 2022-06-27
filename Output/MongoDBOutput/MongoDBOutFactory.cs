@@ -9,7 +9,7 @@ using CxAnalytix.Out.MongoDBOutput.Config.Impl;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
-    public sealed class MongoDBOutFactory : SDK.Modules.OutputModule
+    public sealed class MongoDBOutFactory : SDK.Modules.Output.OutputModule
 	{
 		private static ILog _log = LogManager.GetLogger(typeof(MongoDBOutFactory));
 

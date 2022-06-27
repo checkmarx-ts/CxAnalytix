@@ -21,30 +21,25 @@ namespace CxAnalytix.Executive
 {
     public class ExecuteOnce
     {
-
-        protected static CxConnection Connection => Config.GetConfig<CxConnection>();
-        protected static CxCredentials Credentials => Config.GetConfig<CxCredentials>();
         protected static CxAnalytixService Service => Config.GetConfig<CxAnalytixService>();
-        protected static CxFilter Filter => Config.GetConfig<CxFilter>();
-        private static CxSASTRestContext _ctx;
 
         private static CancellationTokenSource _defaultCancelToken = new CancellationTokenSource();
 
 
-        static ExecuteOnce()
-        {
+        //static ExecuteOnce()
+        //{
 
-            var builder = new CxSASTRestContext.CxSASTRestContextBuilder();
-            builder.WithServiceURL(Connection.URL)
-            .WithOpTimeout(Connection.TimeoutSeconds)
-            .WithSSLValidate(Connection.ValidateCertificates)
-            .WithUsername(Credentials.Username)
-            .WithPassword(Credentials.Password)
-            .WithMNOServiceURL(Connection.MNOUrl)
-            .WithRetryLoop(Connection.RetryLoop);
+        //    var builder = new CxSASTRestContext.CxSASTRestContextBuilder();
+        //    builder.WithServiceURL(Connection.URL)
+        //    .WithOpTimeout(Connection.TimeoutSeconds)
+        //    .WithSSLValidate(Connection.ValidateCertificates)
+        //    .WithUsername(Credentials.Username)
+        //    .WithPassword(Credentials.Password)
+        //    .WithMNOServiceURL(Connection.MNOUrl)
+        //    .WithRetryLoop(Connection.RetryLoop);
 
-            _ctx = builder.Build();
-        }
+        //    _ctx = builder.Build();
+        //}
 
         private static readonly ILog appLog = LogManager.GetLogger(typeof(ExecuteOnce));
 
@@ -64,22 +59,22 @@ namespace CxAnalytix.Executive
             appLog.Info("Starting data transformation.");
 
 
-            Transformer.DoTransform(Service.ConcurrentThreads,
-                Service.StateDataStoragePath, Service.InstanceIdentifier,
-                _ctx,
-                new FilterImpl(Filter.TeamRegex, Filter.ProjectRegex),
-                new RecordNames()
-                {
-                    SASTScanSummary = Service.SASTScanSummaryRecordName,
-                    SASTScanDetail = Service.SASTScanDetailRecordName,
-                    SCAScanSummary = Service.SCAScanSummaryRecordName,
-                    SCAScanDetail = Service.SCAScanDetailRecordName,
-                    ProjectInfo = Service.ProjectInfoRecordName,
-                    PolicyViolations = Service.PolicyViolationsRecordName
-                },
-                t.Token,
-                !String.IsNullOrEmpty(Connection.MNOUrl),
-                LicenseChecks.OsaIsLicensed(_ctx, t.Token));
+            //Transformer.DoTransform(Service.ConcurrentThreads,
+            //    Service.StateDataStoragePath, Service.InstanceIdentifier,
+            //    _ctx,
+            //    new FilterImpl(Filter.TeamRegex, Filter.ProjectRegex),
+            //    new RecordNames()
+            //    {
+            //        SASTScanSummary = Service.SASTScanSummaryRecordName,
+            //        SASTScanDetail = Service.SASTScanDetailRecordName,
+            //        SCAScanSummary = Service.SCAScanSummaryRecordName,
+            //        SCAScanDetail = Service.SCAScanDetailRecordName,
+            //        ProjectInfo = Service.ProjectInfoRecordName,
+            //        PolicyViolations = Service.PolicyViolationsRecordName
+            //    },
+            //    t.Token,
+            //    !String.IsNullOrEmpty(Connection.MNOUrl),
+            //    LicenseChecks.OsaIsLicensed(_ctx, t.Token));
 
 
             appLog.InfoFormat("Vulnerability data transformation finished in {0:0.00} minutes.",

@@ -1,11 +1,9 @@
 ﻿using System;
-using CxRestClient.MNO.dto;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 
-namespace CxAnalytix.TransformLogic.Data
+namespace SDK.Modules.Transformer.Data
 {
-    class ProjectPolicyIndex : PolicyCollection
+    public class ProjectPolicyIndex : PolicyCollection
     {
 
         public ProjectPolicyIndex(PolicyCollection src)

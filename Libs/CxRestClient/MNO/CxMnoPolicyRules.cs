@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading;
 using CxRestClient.Utility;
 using CxRestClient.MNO.dto;
+using SDK.Modules.Transformer.Data;
 
 namespace CxRestClient.MNO
 {
@@ -17,16 +18,16 @@ namespace CxRestClient.MNO
 
         private static readonly String URL_SUFFIX = "cxarm/policymanager/policies/{0}/rules";
 
-        private static IEnumerable<RuleDescriptor> ParseRules(CxSASTRestContext ctx,
+        private static IEnumerable<PolicyRuleDescriptor> ParseRules(CxSASTRestContext ctx,
         CancellationToken token, JToken rulePayload)
         {
             using (var reader = new JTokenReader(rulePayload))
             {
-                LinkedList<RuleDescriptor> rules = new LinkedList<RuleDescriptor>();
+                LinkedList<PolicyRuleDescriptor> rules = new LinkedList<PolicyRuleDescriptor>();
 
                 while (JsonUtils.MoveToNextProperty(reader, "ruleId"))
                 {
-                    RuleDescriptor rule = new RuleDescriptor()
+                    PolicyRuleDescriptor rule = new MNORuleDescriptor()
                     {
                         RuleId = Convert.ToInt32(((JProperty)reader.CurrentToken).Value)
                     };
@@ -61,10 +62,10 @@ namespace CxRestClient.MNO
         }
 
 
-        public static IEnumerable<RuleDescriptor> GetRulesForPolicy(CxSASTRestContext ctx,
+        public static IEnumerable<PolicyRuleDescriptor> GetRulesForPolicy(CxSASTRestContext ctx,
         CancellationToken token, int policyId)
         {
-			return WebOperation.ExecuteGet<IEnumerable<RuleDescriptor>>(
+			return WebOperation.ExecuteGet<IEnumerable<PolicyRuleDescriptor>>(
 			ctx.Json.CreateMnoClient
 			, (response) =>
 			{

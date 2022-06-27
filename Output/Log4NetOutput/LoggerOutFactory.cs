@@ -5,7 +5,7 @@ using CxAnalytix.Interfaces.Outputs;
 
 namespace CxAnalytix.Out.Log4NetOutput
 {
-    public sealed class LoggerOutFactory : SDK.Modules.OutputModule
+    public sealed class LoggerOutFactory : SDK.Modules.Output.OutputModule
 	{
 		private HashSet<String> _recs = new HashSet<String>();
 

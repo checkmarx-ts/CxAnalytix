@@ -43,11 +43,6 @@ namespace OutputBootstrapper
 			}
 		}
 
-        private static void ComponentRegistryBuilder_Registered(object sender, Autofac.Core.ComponentRegisteredEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
         [MethodImpl(MethodImplOptions.Synchronized)]
 
 		public static IOutputTransaction StartTransaction()

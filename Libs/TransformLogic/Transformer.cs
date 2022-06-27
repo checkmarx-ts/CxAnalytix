@@ -11,24 +11,29 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Text;
-using CxAnalytix.TransformLogic.Data;
 using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.Interfaces.Transform;
 using CxRestClient.MNO.dto;
-using CxAnalytix.TransformLogic.Persistence;
-using static CxAnalytix.TransformLogic.Data.ScanDescriptor;
 using OutputBootstrapper;
 using CxAnalytix.Extensions;
 using CxAnalytix.Exceptions;
+using SDK.Modules.Transformer;
+using CxAnalytix.Configuration.Impls;
+using ProjectFilter;
+using CxRestClient.Utility;
+using SDK.Modules.Transformer.Data;
+using static SDK.Modules.Transformer.Data.ScanDescriptor;
 
 namespace CxAnalytix.TransformLogic
 {
 	/// <summary>
 	/// A class that implements the data transformation.
 	/// </summary>
-	public class Transformer : ITransformer
+	public class Transformer : TransformerModule
 	{
 		private static readonly ILog _log = LogManager.GetLogger(typeof(Transformer));
+		private static readonly String STATE_STORAGE_FILE = "CxAnalytixExportState.json";
+
 
 		private IEnumerable<ScanDescriptor> ScanDescriptors { get; set; }
 
@@ -43,7 +48,7 @@ namespace CxAnalytix.TransformLogic
 
 		private ConcurrentDictionary<int, ProjectDescriptor> _loadedProjects = new ConcurrentDictionary<int, ProjectDescriptor>();
 
-		private CrawlState _state;
+		private CrawlStateBase _state;
 
 
 		private DateTime CheckTime { get; set; } = DateTime.Now;
@@ -290,34 +295,67 @@ namespace CxAnalytix.TransformLogic
 			trx.write(ScaScanSummaryOut, flat);
 		}
 
-		private Transformer(CxSASTRestContext ctx, CancellationToken token,
-			String previousStatePath, IProjectFilter filter, bool includeMnO, bool includeOSA, ParallelOptions _topts)
+		public Transformer() : base("SAST", typeof(Transformer), STATE_STORAGE_FILE)
+        {
+        }
+
+
+		public override void DoTransform(CancellationToken token)
 		{
-			ThreadOpts = _topts;
-			IncludeMNO = includeMnO;
-			IncludeOSA = includeOSA;
-			RestContext = ctx;
 			CancelToken = token;
-			Filter = filter;
-			_state = new CrawlState(previousStatePath);
 
-			ResolveScans().Wait();
+			var conCfg = Config.GetConfig<CxSASTConnection>();
+            var serviceCfg = Config.GetConfig<CxAnalytixService>();
+            var creds = Config.GetConfig<CxCredentials>();
 
-		}
 
-		public void DoTransform(int concurrentThreads, string previousStatePath, string instanceId, IProjectFilter filter, CancellationToken token)
-		{
-			throw new NotImplementedException();
-		}
+			var builder = new CxSASTRestContext.CxSASTRestContextBuilder();
+            builder.WithServiceURL(conCfg.URL)
+            .WithOpTimeout(conCfg.TimeoutSeconds)
+            .WithSSLValidate(conCfg.ValidateCertificates)
+            .WithUsername(creds.Username)
+            .WithPassword(creds.Password)
+            .WithMNOServiceURL(conCfg.MNOUrl)
+            .WithRetryLoop(conCfg.RetryLoop);
+
+			RestContext = builder.Build();
+
+			IncludeMNO = !String.IsNullOrEmpty(conCfg.MNOUrl);
+			IncludeOSA = LicenseChecks.OsaIsLicensed(RestContext, CancelToken);
+			InstanceId = serviceCfg.InstanceIdentifier;
+			ThreadOpts = new ParallelOptions()
+			{
+				CancellationToken = token,
+				MaxDegreeOfParallelism = serviceCfg.ConcurrentThreads
+			};
+			Filter = new FilterImpl(Config.GetConfig<CxFilter>().TeamRegex,
+				Config.GetConfig<CxFilter>().ProjectRegex);
+
+			ProjectInfoOut = Output.RegisterRecord(serviceCfg.ProjectInfoRecordName);
+			SastScanSummaryOut = Output.RegisterRecord(serviceCfg.SASTScanSummaryRecordName);
+			SastScanDetailOut = Output.RegisterRecord(serviceCfg.SASTScanDetailRecordName);
+			PolicyViolationDetailOut = Output.RegisterRecord(serviceCfg.PolicyViolationsRecordName);
+			ScaScanSummaryOut = Output.RegisterRecord(serviceCfg.SCAScanSummaryRecordName);
+			ScaScanDetailOut = Output.RegisterRecord(serviceCfg.SCAScanDetailRecordName);
+
+
+			// TODO: FIX
+			_state = new CrawlStateBase(serviceCfg.StateDataStoragePath, StorageFilename);
+
+            ResolveScans().Wait();
+
+			ExecuteSweep();
+
+        }
 
 		public static void DoTransform(int concurrentThreads, String previousStatePath, String instanceId,
 		CxSASTRestContext ctx, IProjectFilter filter, RecordNames records, CancellationToken token, bool includeMnO, bool includeOSA)
 		{
-			if (!includeMnO)
-				_log.Warn("Management & Orchestration data will not be crawled.");
+			//if (!includeMnO)
+			//	_log.Warn("Management & Orchestration data will not be crawled.");
 
-			if (!includeOSA)
-				_log.Warn("OSA data will not be crawled.");
+			//if (!includeOSA)
+			//	_log.Warn("OSA data will not be crawled.");
 
 			Transformer xform = new Transformer(ctx, token, previousStatePath, filter, includeMnO, includeOSA,
 				new ParallelOptions()
@@ -570,6 +608,14 @@ namespace CxAnalytix.TransformLogic
 
 		private void ExecuteSweep()
 		{
+
+
+			if (!IncludeMNO)
+				_log.Warn("Management & Orchestration data will not be crawled.");
+
+			if (!IncludeOSA)
+				_log.Warn("OSA data will not be crawled.");
+
 
 			if (_state.Projects == null)
 			{

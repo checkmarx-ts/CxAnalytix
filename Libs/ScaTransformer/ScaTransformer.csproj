@@ -15,6 +15,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\SDK\SDK.Modules\SDK.Modules.csproj" />
     <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
   </ItemGroup>
 

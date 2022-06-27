@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace CxRestClient.MNO.dto
+namespace SDK.Modules.Transformer.Data
 {
     public class PolicyDescriptor
     {
-        internal PolicyDescriptor ()
+        public PolicyDescriptor ()
         {
         }
 
@@ -20,26 +20,26 @@ namespace CxRestClient.MNO.dto
 
 
         public int PolicyId { get; set; }
-        public String Name { get; set; }
-        public String Description { get; set; }
+        public String? Name { get; set; }
+        public String? Description { get; set; }
         public Boolean isActive { get; set; }
         public DateTime CreatedOn { get; set; }
 
 
-        private Dictionary<int, RuleDescriptor> _rules = new Dictionary<int, RuleDescriptor>();
-        public IReadOnlyDictionary<int, RuleDescriptor> Rules
+        private Dictionary<int, PolicyRuleDescriptor> _rules = new Dictionary<int, PolicyRuleDescriptor>();
+        public IReadOnlyDictionary<int, PolicyRuleDescriptor> Rules
         {
             get => _rules;
         }
         
 
-        public void AddRule (RuleDescriptor rule)
+        public void AddRule (PolicyRuleDescriptor rule)
         {
             _rules.Add(rule.RuleId, rule);
         }
 
 
-        public void AddRule(IEnumerable<RuleDescriptor> rules)
+        public void AddRule(IEnumerable<PolicyRuleDescriptor> rules)
         {
             foreach (var rule in rules)
                 AddRule(rule);

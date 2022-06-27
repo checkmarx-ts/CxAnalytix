@@ -10,7 +10,7 @@ using System.Reflection;
 namespace CxAnalytix.Out.AMQPOutput
 {
 
-	public class AMQPOutFactory : SDK.Modules.OutputModule, IDisposable
+	public class AMQPOutFactory : SDK.Modules.Output.OutputModule, IDisposable
 	{
 		private static ILog _log = LogManager.GetLogger(typeof(AMQPOutFactory));
 
