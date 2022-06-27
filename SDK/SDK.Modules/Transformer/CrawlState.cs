@@ -10,9 +10,9 @@ using static SDK.Modules.Transformer.Data.ScanDescriptor;
 [assembly: InternalsVisibleTo("TransformLogic_Tests")]
 namespace SDK.Modules.Transformer
 {
-	public class CrawlStateBase
+	public class CrawlState
 	{
-		private static readonly ILog _log = LogManager.GetLogger(typeof(CrawlStateBase));
+		private static readonly ILog _log = LogManager.GetLogger(typeof(CrawlState));
 
 
 		// Holds the current state of crawls per project.
@@ -97,7 +97,7 @@ namespace SDK.Modules.Transformer
 			Persist();
 		}
 
-		public CrawlStateBase (String storageFilePath, String storageFileName)
+		public CrawlState (String storageFilePath, String storageFileName)
 		{
             _storageFile = Path.Combine(storageFilePath, storageFileName);
             _tempStorageFile = $"{_storageFile}.tmp";

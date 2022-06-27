@@ -48,7 +48,7 @@ namespace CxAnalytix.TransformLogic
 
 		private ConcurrentDictionary<int, ProjectDescriptor> _loadedProjects = new ConcurrentDictionary<int, ProjectDescriptor>();
 
-		private CrawlStateBase _state;
+		private CrawlState _state;
 
 
 		private DateTime CheckTime { get; set; } = DateTime.Now;
@@ -338,44 +338,13 @@ namespace CxAnalytix.TransformLogic
 			ScaScanSummaryOut = Output.RegisterRecord(serviceCfg.SCAScanSummaryRecordName);
 			ScaScanDetailOut = Output.RegisterRecord(serviceCfg.SCAScanDetailRecordName);
 
-
-			// TODO: FIX
-			_state = new CrawlStateBase(serviceCfg.StateDataStoragePath, StorageFilename);
+			_state = new CrawlState(serviceCfg.StateDataStoragePath, StorageFilename);
 
             ResolveScans().Wait();
 
 			ExecuteSweep();
 
         }
-
-		public static void DoTransform(int concurrentThreads, String previousStatePath, String instanceId,
-		CxSASTRestContext ctx, IProjectFilter filter, RecordNames records, CancellationToken token, bool includeMnO, bool includeOSA)
-		{
-			//if (!includeMnO)
-			//	_log.Warn("Management & Orchestration data will not be crawled.");
-
-			//if (!includeOSA)
-			//	_log.Warn("OSA data will not be crawled.");
-
-			Transformer xform = new Transformer(ctx, token, previousStatePath, filter, includeMnO, includeOSA,
-				new ParallelOptions()
-				{
-					CancellationToken = token,
-					MaxDegreeOfParallelism = concurrentThreads
-				})
-			{
-				ProjectInfoOut = Output.RegisterRecord(records.ProjectInfo),
-				SastScanSummaryOut = Output.RegisterRecord(records.SASTScanSummary),
-				SastScanDetailOut = Output.RegisterRecord(records.SASTScanDetail),
-				PolicyViolationDetailOut = Output.RegisterRecord(records.PolicyViolations),
-				ScaScanSummaryOut = Output.RegisterRecord(records.SCAScanSummary),
-				ScaScanDetailOut = Output.RegisterRecord(records.SCAScanDetail),
-				InstanceId = instanceId
-			};
-
-			xform.ExecuteSweep();
-		}
-
 
 		private async Task ResolveScans()
 		{
@@ -522,7 +491,6 @@ namespace CxAnalytix.TransformLogic
 				});
 		}
 
-
 		private async Task<ConcurrentDictionary<String, String>> PopulateTeams()
 		{
 			return await Task.Run(() =>
@@ -602,7 +570,6 @@ namespace CxAnalytix.TransformLogic
 
 			return null;
 		}
-
 
 
 

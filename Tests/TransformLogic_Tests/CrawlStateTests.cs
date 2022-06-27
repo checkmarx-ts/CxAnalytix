@@ -1,5 +1,5 @@
-﻿using CxAnalytix.TransformLogic.Data;
-using CxAnalytix.TransformLogic.Persistence;
+﻿using SDK.Modules.Transformer;
+using SDK.Modules.Transformer.Data;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -46,7 +46,7 @@ namespace TransformLogic_Tests
 		[Fact]
 		public void TestAddProjectWhenEmpty()
 		{
-			var crawlState = new CrawlState(Path.Combine (_fixture.TestPath, "empty_test"));
+			var crawlState = new CrawlState(_fixture.TestPath, "empty_test");
 
 
 			Assert.Equal(0, crawlState.ProjectCount);
@@ -55,7 +55,7 @@ namespace TransformLogic_Tests
 		[Fact]
 		public void NoScansWithoutScansAdded()
 		{
-			var crawlState = new CrawlState(_fixture.TestPath);
+			var crawlState = new CrawlState(_fixture.TestPath, "empty_test");
 
 			List<ProjectDescriptor> list1 = new List<ProjectDescriptor>
 			{
@@ -81,7 +81,7 @@ namespace TransformLogic_Tests
 		[Fact]
 		public void CannotAskForScansWithoutProjectsAdded()
 		{
-			var crawlState = new CrawlState(_fixture.TestPath);
+			var crawlState = new CrawlState(_fixture.TestPath, "emtpy_test");
 
 			try
 			{
@@ -102,7 +102,7 @@ namespace TransformLogic_Tests
 		public void CannotConfirmProjectsTwice()
 		{
 
-			var crawlState = new CrawlState(_fixture.TestPath);
+			var crawlState = new CrawlState(_fixture.TestPath, "empty_test");
 
 			List<ProjectDescriptor> list1 = new List<ProjectDescriptor>
 			{
