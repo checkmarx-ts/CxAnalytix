@@ -13,10 +13,10 @@ using System.Xml;
 using System.Text;
 using CxAnalytix.TransformLogic.Data;
 using CxAnalytix.Interfaces.Outputs;
+using CxAnalytix.Interfaces.Transform;
 using CxRestClient.MNO.dto;
 using CxAnalytix.TransformLogic.Persistence;
 using static CxAnalytix.TransformLogic.Data.ScanDescriptor;
-using CxAnalytix.Interfaces.Transform;
 using OutputBootstrapper;
 using CxAnalytix.Extensions;
 using CxAnalytix.Exceptions;
@@ -26,7 +26,7 @@ namespace CxAnalytix.TransformLogic
 	/// <summary>
 	/// A class that implements the data transformation.
 	/// </summary>
-	public class Transformer
+	public class Transformer : ITransformer
 	{
 		private static readonly ILog _log = LogManager.GetLogger(typeof(Transformer));
 
@@ -303,6 +303,39 @@ namespace CxAnalytix.TransformLogic
 
 			ResolveScans().Wait();
 
+		}
+
+		public void DoTransform(int concurrentThreads, string previousStatePath, string instanceId, IProjectFilter filter, CancellationToken token)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static void DoTransform(int concurrentThreads, String previousStatePath, String instanceId,
+		CxSASTRestContext ctx, IProjectFilter filter, RecordNames records, CancellationToken token, bool includeMnO, bool includeOSA)
+		{
+			if (!includeMnO)
+				_log.Warn("Management & Orchestration data will not be crawled.");
+
+			if (!includeOSA)
+				_log.Warn("OSA data will not be crawled.");
+
+			Transformer xform = new Transformer(ctx, token, previousStatePath, filter, includeMnO, includeOSA,
+				new ParallelOptions()
+				{
+					CancellationToken = token,
+					MaxDegreeOfParallelism = concurrentThreads
+				})
+			{
+				ProjectInfoOut = Output.RegisterRecord(records.ProjectInfo),
+				SastScanSummaryOut = Output.RegisterRecord(records.SASTScanSummary),
+				SastScanDetailOut = Output.RegisterRecord(records.SASTScanDetail),
+				PolicyViolationDetailOut = Output.RegisterRecord(records.PolicyViolations),
+				ScaScanSummaryOut = Output.RegisterRecord(records.SCAScanSummary),
+				ScaScanDetailOut = Output.RegisterRecord(records.SCAScanDetail),
+				InstanceId = instanceId
+			};
+
+			xform.ExecuteSweep();
 		}
 
 
@@ -640,49 +673,6 @@ namespace CxAnalytix.TransformLogic
 
 
 
-		/// <summary>
-		/// The main logic for invoking a transformation.  It does not return until a sweep
-		/// for new scans is performed across all projects.
-		/// </summary>
-		/// <param name="concurrentThreads">The number of concurrent scan transformation threads.</param>
-		/// <param name="previousStatePath">A folder path where files will be created to store any state
-		/// data required to resume operations across program runs.</param>
-		/// <param name="instanceId">The identifier of the SAST instance that is being crawled</param>
-		/// <param name="ctx"></param>
-		/// <param name="filter">The project filtering implementation.</param>
-		/// <param name="records">The names of the supported record types that will be used by 
-		/// the IOutputFactory to create the correct output implementation instance.</param>
-		/// <param name="token">A cancellation token that can be used to stop processing of data if
-		/// the task needs to be interrupted.</param>
-		/// <param name="includeMnO">Set to true if all M&O interaction should be skipped.</param>
-		/// <param name="includeOSA">Set to true if all OSA interaction should be skipped.</param>
-		public static void DoTransform(int concurrentThreads, String previousStatePath, String instanceId,
-		CxSASTRestContext ctx, IProjectFilter filter, RecordNames records, CancellationToken token, bool includeMnO, bool includeOSA)
-		{
-			if (!includeMnO)
-				_log.Warn("Management & Orchestration data will not be crawled.");
-
-			if (!includeOSA)
-				_log.Warn("OSA data will not be crawled.");
-
-			Transformer xform = new Transformer(ctx, token, previousStatePath, filter, includeMnO, includeOSA,
-				new ParallelOptions()
-				{
-					CancellationToken = token,
-					MaxDegreeOfParallelism = concurrentThreads
-				})
-			{
-				ProjectInfoOut = Output.RegisterRecord (records.ProjectInfo),
-				SastScanSummaryOut = Output.RegisterRecord(records.SASTScanSummary),
-				SastScanDetailOut = Output.RegisterRecord(records.SASTScanDetail),
-				PolicyViolationDetailOut = Output.RegisterRecord(records.PolicyViolations),
-				ScaScanSummaryOut = Output.RegisterRecord(records.SCAScanSummary),
-				ScaScanDetailOut = Output.RegisterRecord(records.SCAScanDetail),
-				InstanceId = instanceId
-			};
-
-			xform.ExecuteSweep();
-		}
 
 		private void OutputPolicyViolationDetails(IOutputTransaction trx, ScanDescriptor scan)
 		{
@@ -1042,5 +1032,6 @@ namespace CxAnalytix.TransformLogic
 
 			return b.ToString();
 		}
-	}
+
+    }
 }

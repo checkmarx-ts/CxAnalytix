@@ -45,7 +45,7 @@
 		<ProjectReference Include="..\..\Libs\Interfaces\Interfaces.csproj" />
 		<ProjectReference Include="..\..\Libs\LogCleaner\LogCleaner.csproj" />
 		<ProjectReference Include="..\..\Libs\Utilities\Utilities.csproj" />
-		<ProjectReference Include="..\SDK\SDK.csproj" />
+		<ProjectReference Include="..\..\SDK\SDK.Modules\SDK.Modules.csproj" />
 	</ItemGroup>
 
 

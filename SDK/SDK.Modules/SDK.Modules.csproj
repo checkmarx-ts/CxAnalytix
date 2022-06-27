@@ -26,4 +26,8 @@
     <ProjectReference Include="..\..\Libs\Interfaces\Interfaces.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Output\" />
+  </ItemGroup>
+
 </Project>

@@ -1,7 +1,7 @@
 ﻿using Autofac;
 using CxAnalytix.Interfaces.Outputs;
 
-namespace SDK
+namespace SDK.Modules
 {
     public abstract class OutputModule : Module, IOutputFactory
     {
@@ -21,7 +21,7 @@ namespace SDK
         {
             base.Load(builder);
             builder.RegisterType(_type).Named<IOutputFactory>(_name.ToLower()).Named<IOutputFactory>(_name);
-            Registrar.ModuleRegistry.RegisterModule(_name);
+            Registrar.ModuleRegistry.RegisterModule<IOutputFactory>(_name);
         }
 
 

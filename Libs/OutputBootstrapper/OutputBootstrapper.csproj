@@ -21,11 +21,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\Output\SDK\SDK.csproj" />
+    <ProjectReference Include="..\..\SDK\SDK.Modules\SDK.Modules.csproj" />
     <ProjectReference Include="..\Configuration\Configuration.csproj" />
     <ProjectReference Include="..\Exceptions\Exceptions.csproj" />
     <ProjectReference Include="..\Extensions\Extensions.csproj" />
     <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
+    <ProjectReference Include="..\Utilities\Utilities.csproj" />
   </ItemGroup>
 
 </Project>

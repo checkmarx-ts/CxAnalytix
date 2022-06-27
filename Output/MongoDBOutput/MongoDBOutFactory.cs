@@ -9,8 +9,8 @@ using CxAnalytix.Out.MongoDBOutput.Config.Impl;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
-    public sealed class MongoDBOutFactory : SDK.OutputModule
-    {
+    public sealed class MongoDBOutFactory : SDK.Modules.OutputModule
+	{
 		private static ILog _log = LogManager.GetLogger(typeof(MongoDBOutFactory));
 
 		internal static MongoOutConfig OutConfig => CxAnalytix.Configuration.Impls.Config.GetConfig<MongoOutConfig>();

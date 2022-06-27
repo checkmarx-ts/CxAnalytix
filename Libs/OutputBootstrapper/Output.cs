@@ -10,7 +10,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using SDK;
+using SDK.Modules;
+using CxAnalytix.Utilities;
 
 namespace OutputBootstrapper
 {
@@ -23,31 +24,11 @@ namespace OutputBootstrapper
 
 		private static CxAnalytixService Service => Config.GetConfig<CxAnalytixService>();
 
-		private static Assembly[] GetOutputAssemblies()
-        {
-			string[] runtimeAssemblies = Directory.GetFiles(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "*.dll");
-			List<Assembly> retVal = new List<Assembly>();
-
-            foreach (var path in runtimeAssemblies)
-            {
-				try
-				{
-					var asm = Assembly.LoadFrom(path);
-					retVal.Add(asm);
-				}
-				catch (BadImageFormatException)
-                {
-					continue;
-                }
-            }
-
-            return retVal.ToArray();
-        }
 
 		static Output()
 		{
 			var builder = new ContainerBuilder();
-			builder.RegisterAssemblyModules(typeof(IOutputFactory), GetOutputAssemblies());
+			builder.RegisterAssemblyModules(typeof(IOutputFactory), Reflection.GetOutputAssemblies());
 			_outContainer = builder.Build();
 
 			try
@@ -56,7 +37,8 @@ namespace OutputBootstrapper
 			}
 			catch (ComponentNotRegisteredException ex)
             {
-				_log.Error($"Output module with name '{Service.OutputModuleName}' not found, name must be one of: [{String.Join(",", Registrar.ModuleRegistry.ModuleNames)}]");
+				String availableModules = String.Join(",", Registrar.ModuleRegistry.GetModuleNames<IOutputFactory>());
+				_log.Error($"Output module with name '{Service.OutputModuleName}' not found, name must be one of: [{availableModules}]");
 				throw new ProcessFatalException($"Unknown output module '{Service.OutputModuleName}'", ex);
 			}
 		}
