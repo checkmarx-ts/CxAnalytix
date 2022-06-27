@@ -96,5 +96,21 @@ namespace CxAnalytix.Configuration.Impls
             set { this["ProcessPeriodMinutes"] = value; }
         }
 
+        [ConfigurationProperty("EnabledTransformers", IsDefaultCollection = false, IsRequired = true)]
+        [ConfigurationCollection(typeof(EnabledTransformersCollection), AddItemName = "Transformer")]
+        public EnabledTransformersCollection Transformers
+        {
+            get
+            {
+                return (EnabledTransformersCollection)this["EnabledTransformers"];
+            }
+
+            set
+            {
+                this["EnabledTransformers"] = value;
+            }
+        }
+
+
     }
 }

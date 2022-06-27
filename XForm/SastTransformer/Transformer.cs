@@ -24,7 +24,7 @@ using CxRestClient.Utility;
 using SDK.Modules.Transformer.Data;
 using static SDK.Modules.Transformer.Data.ScanDescriptor;
 
-namespace CxAnalytix.TransformLogic
+namespace CxAnalytix.XForm.SastTransformer
 {
 	/// <summary>
 	/// A class that implements the data transformation.
@@ -33,6 +33,8 @@ namespace CxAnalytix.TransformLogic
 	{
 		private static readonly ILog _log = LogManager.GetLogger(typeof(Transformer));
 		private static readonly String STATE_STORAGE_FILE = "CxAnalytixExportState.json";
+		private static readonly String MODULE_NAME = "SAST";
+
 
 
 		private IEnumerable<ScanDescriptor> ScanDescriptors { get; set; }
@@ -74,8 +76,9 @@ namespace CxAnalytix.TransformLogic
 		private ConcurrentDictionary<int, ViolatedPolicyCollection> PolicyViolations { get; set; } =
 			new ConcurrentDictionary<int, ViolatedPolicyCollection>();
 
+        public override string DisplayName => MODULE_NAME;
 
-		private void SastReportOutput(IOutputTransaction trx, ScanDescriptor scan)
+        private void SastReportOutput(IOutputTransaction trx, ScanDescriptor scan)
 		{
 
 			_log.Debug($"Retrieving XML Report for scan {scan.ScanId}");
@@ -295,7 +298,7 @@ namespace CxAnalytix.TransformLogic
 			trx.write(ScaScanSummaryOut, flat);
 		}
 
-		public Transformer() : base("SAST", typeof(Transformer), STATE_STORAGE_FILE)
+		public Transformer() : base(MODULE_NAME, typeof(Transformer), STATE_STORAGE_FILE)
         {
         }
 
@@ -338,7 +341,7 @@ namespace CxAnalytix.TransformLogic
 			ScaScanSummaryOut = Output.RegisterRecord(serviceCfg.SCAScanSummaryRecordName);
 			ScaScanDetailOut = Output.RegisterRecord(serviceCfg.SCAScanDetailRecordName);
 
-			_state = new CrawlState(serviceCfg.StateDataStoragePath, StorageFilename);
+			_state = new CrawlState(serviceCfg.StateDataStoragePath, StateStorageFilename);
 
             ResolveScans().Wait();
 

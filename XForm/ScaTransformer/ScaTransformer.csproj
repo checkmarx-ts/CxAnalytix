@@ -11,12 +11,13 @@
 	  <PackageReadmeFile>$(SolutionDir)README.md</PackageReadmeFile>
 	  <RepositoryUrl>https://github.com/checkmarx-ts/CxAnalytix</RepositoryUrl>
 	  <Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
+	  <RootNamespace>CxAnalytix.XForm.ScaTransformer</RootNamespace>
 
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Libs\Interfaces\Interfaces.csproj" />
     <ProjectReference Include="..\..\SDK\SDK.Modules\SDK.Modules.csproj" />
-    <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
   </ItemGroup>
 
 </Project>

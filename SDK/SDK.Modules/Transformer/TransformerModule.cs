@@ -9,11 +9,13 @@ namespace SDK.Modules.Transformer
 {
     public abstract class TransformerModule : Common.CxAnalytixModule<ITransformer>, ITransformer
     {
-        protected String StorageFilename { get; private set; }
+        protected String StateStorageFilename { get; private set; }
 
-        public TransformerModule(string moduleName, Type moduleImplType, String storageFileName) : base(moduleName, moduleImplType)
+        public abstract string DisplayName { get; }
+
+        public TransformerModule(string moduleName, Type moduleImplType, String stateStorageFileName) : base(moduleName, moduleImplType)
         {
-            StorageFilename = storageFileName;
+            StateStorageFilename = stateStorageFileName;
         }
 
         public abstract void DoTransform(CancellationToken token);

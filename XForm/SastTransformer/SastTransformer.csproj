@@ -2,7 +2,7 @@
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
-		<RootNamespace>CxAnalytix.TransformLogic</RootNamespace>
+		<RootNamespace>CxAnalytix.XForm.SastTransformer</RootNamespace>
 		<Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
 		<Company>Checkmarx</Company>
 		<Authors>Checkmarx</Authors>
@@ -39,13 +39,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Configuration\Configuration.csproj" />
-		<ProjectReference Include="..\CxRestClient\CxRestClient.csproj" />
-		<ProjectReference Include="..\Exceptions\Exceptions.csproj" />
-		<ProjectReference Include="..\Extensions\Extensions.csproj" />
-		<ProjectReference Include="..\Interfaces\Interfaces.csproj" />
-		<ProjectReference Include="..\OutputBootstrapper\OutputBootstrapper.csproj" />
-		<ProjectReference Include="..\ProjectFilter\ProjectFilter.csproj" />
+		<ProjectReference Include="..\..\Libs\Configuration\Configuration.csproj" />
+		<ProjectReference Include="..\..\Libs\CxRestClient\CxRestClient.csproj" />
+		<ProjectReference Include="..\..\Libs\Exceptions\Exceptions.csproj" />
+		<ProjectReference Include="..\..\Libs\Extensions\Extensions.csproj" />
+		<ProjectReference Include="..\..\Libs\Interfaces\Interfaces.csproj" />
+		<ProjectReference Include="..\..\Libs\OutputBootstrapper\OutputBootstrapper.csproj" />
+		<ProjectReference Include="..\..\Libs\ProjectFilter\ProjectFilter.csproj" />
 	</ItemGroup>
 
 </Project>

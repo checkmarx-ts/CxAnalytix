@@ -1,15 +1,7 @@
-﻿using CxAnalytix.Configuration;
-using CxAnalytix.TransformLogic;
-using CxRestClient;
-using log4net;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.Hosting;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using CxAnalytix.AuditTrails.Crawler;
-using CxAnalytix.Exceptions;
-using ProjectFilter;
-using CxRestClient.Utility;
 using CxAnalytix.Executive;
 
 namespace CxAnalytixDaemon

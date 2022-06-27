@@ -25,6 +25,8 @@
     <ProjectReference Include="..\..\Output\AMQPOutput\AMQPOutput.csproj" />
     <ProjectReference Include="..\..\Output\Log4NetOutput\Log4NetOutput.csproj" />
     <ProjectReference Include="..\..\Output\MongoDBOutput\MongoDBOutput.csproj" />
+    <ProjectReference Include="..\..\XForm\SastTransformer\SastTransformer.csproj" />
+    <ProjectReference Include="..\..\XForm\ScaTransformer\ScaTransformer.csproj" />
     <ProjectReference Include="..\Configuration\Configuration.csproj" />
     <ProjectReference Include="..\CxAuditTrailsCrawler\CxAuditTrailsCrawler.csproj" />
     <ProjectReference Include="..\CxRestClient\CxRestClient.csproj" />
@@ -32,7 +34,6 @@
     <ProjectReference Include="..\Extensions\Extensions.csproj" />
     <ProjectReference Include="..\OutputBootstrapper\OutputBootstrapper.csproj" />
     <ProjectReference Include="..\ProjectFilter\ProjectFilter.csproj" />
-    <ProjectReference Include="..\TransformLogic\TransformLogic.csproj" />
   </ItemGroup>
 
 </Project>

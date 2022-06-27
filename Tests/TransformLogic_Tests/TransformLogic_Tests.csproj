@@ -34,8 +34,9 @@
 		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
 	</ItemGroup>
 
+
 	<ItemGroup>
-		<ProjectReference Include="..\..\Libs\TransformLogic\TransformLogic.csproj" />
+	  <ProjectReference Include="..\..\SDK\SDK.Modules\SDK.Modules.csproj" />
 	</ItemGroup>
 
 </Project>

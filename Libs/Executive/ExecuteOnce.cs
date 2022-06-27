@@ -1,16 +1,15 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 using log4net;
-using CxAnalytix.TransformLogic;
-using CxRestClient;
 using CxAnalytix.Configuration.Impls;
-using System;
 using CxAnalytix.AuditTrails.Crawler;
-using ProjectFilter;
 using OutputBootstrapper;
-using CxRestClient.Utility;
-
-
-
+using Autofac;
+using CxAnalytix.Utilities;
+using CxAnalytix.Interfaces.Transform;
+using Autofac.Core.Registration;
+using SDK.Modules;
+using CxAnalytix.Exceptions;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: CxAnalytix.Extensions.LogTrace()]
@@ -19,29 +18,47 @@ using CxRestClient.Utility;
 
 namespace CxAnalytix.Executive
 {
+
+
+
     public class ExecuteOnce
     {
+        private static IContainer _xformersContainer;
+
         protected static CxAnalytixService Service => Config.GetConfig<CxAnalytixService>();
 
         private static CancellationTokenSource _defaultCancelToken = new CancellationTokenSource();
 
+        private static readonly ILog _log = LogManager.GetLogger(typeof(ExecuteOnce));
 
-        //static ExecuteOnce()
-        //{
 
-        //    var builder = new CxSASTRestContext.CxSASTRestContextBuilder();
-        //    builder.WithServiceURL(Connection.URL)
-        //    .WithOpTimeout(Connection.TimeoutSeconds)
-        //    .WithSSLValidate(Connection.ValidateCertificates)
-        //    .WithUsername(Credentials.Username)
-        //    .WithPassword(Credentials.Password)
-        //    .WithMNOServiceURL(Connection.MNOUrl)
-        //    .WithRetryLoop(Connection.RetryLoop);
+        static ExecuteOnce()
+        {
 
-        //    _ctx = builder.Build();
-        //}
+            var builder = new ContainerBuilder();
+            builder.RegisterAssemblyModules(typeof(ITransformer), Reflection.GetOutputAssemblies());
+            _xformersContainer = builder.Build();
+        }
 
-        private static readonly ILog appLog = LogManager.GetLogger(typeof(ExecuteOnce));
+        private static IEnumerable<ITransformer> LoadTransformers()
+        {
+            var retVal = new LinkedList<ITransformer>();
+            foreach (EnabledTransformer requestedXform in Service.Transformers)
+            {
+                try
+                {
+                    retVal.AddLast(_xformersContainer.ResolveNamed<ITransformer>(requestedXform.Name.ToLower()));
+                }
+                catch (ComponentNotRegisteredException ex)
+                {
+                    String availableModules = String.Join(",", Registrar.ModuleRegistry.GetModuleNames<ITransformer>());
+                    _log.Error($"Transformer with name '{requestedXform.Name}' not found, name must be one of: [{availableModules}]");
+                    throw new ProcessFatalException($"Unknown transformer module '{requestedXform.Name}'", ex);
+                }
+            }
+
+            return retVal;
+        }
 
         public static void Execute(CancellationTokenSource? t = null)
         {
@@ -51,33 +68,24 @@ namespace CxAnalytix.Executive
             var entry = Assembly.GetEntryAssembly();
 
 
-            appLog.Info($"Start via [{(entry != null ? entry.GetName() : "UNKNOWN")}]");
+            _log.Info($"Start via [{(entry != null ? entry.GetName() : "UNKNOWN")}]");
 
-            appLog.InfoFormat("CWD: {0}", Directory.GetCurrentDirectory());
+            _log.InfoFormat("CWD: {0}", Directory.GetCurrentDirectory());
 
             DateTime start = DateTime.Now;
-            appLog.Info("Starting data transformation.");
+            _log.Info($"Starting data transformation with {Service.Transformers.Count} transformers.");
 
+            Parallel.ForEach<ITransformer>(LoadTransformers(), new ParallelOptions() { CancellationToken = t.Token
+            }, 
+            (xformer) => {
 
-            //Transformer.DoTransform(Service.ConcurrentThreads,
-            //    Service.StateDataStoragePath, Service.InstanceIdentifier,
-            //    _ctx,
-            //    new FilterImpl(Filter.TeamRegex, Filter.ProjectRegex),
-            //    new RecordNames()
-            //    {
-            //        SASTScanSummary = Service.SASTScanSummaryRecordName,
-            //        SASTScanDetail = Service.SASTScanDetailRecordName,
-            //        SCAScanSummary = Service.SCAScanSummaryRecordName,
-            //        SCAScanDetail = Service.SCAScanDetailRecordName,
-            //        ProjectInfo = Service.ProjectInfoRecordName,
-            //        PolicyViolations = Service.PolicyViolationsRecordName
-            //    },
-            //    t.Token,
-            //    !String.IsNullOrEmpty(Connection.MNOUrl),
-            //    LicenseChecks.OsaIsLicensed(_ctx, t.Token));
+                _log.Info($"Begin executing data transformer for module: {xformer.DisplayName}");
+                xformer.DoTransform(t.Token);
+                _log.Info($"Finished executing data transformer for module: {xformer.DisplayName}");
 
+            });
 
-            appLog.InfoFormat("Vulnerability data transformation finished in {0:0.00} minutes.",
+            _log.InfoFormat("Data transformation finished in {0:0.00} minutes.",
                 DateTime.Now.Subtract(start).TotalMinutes);
 
             start = DateTime.Now;
@@ -91,11 +99,11 @@ namespace CxAnalytix.Executive
                         auditTrx.Commit();
                 }
 
-            appLog.InfoFormat("Audit data transformation finished in {0:0.00} minutes.",
+            _log.InfoFormat("Audit data transformation finished in {0:0.00} minutes.",
                 DateTime.Now.Subtract(start).TotalMinutes);
 
 
-            appLog.Info("End");
+            _log.Info("End");
         }
     }
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace CxAnalytix.TransformLogic
+namespace CxAnalytix.XForm.SastTransformer
 {
     /// <summary>
     /// Common property keys that can be re-used across record types
