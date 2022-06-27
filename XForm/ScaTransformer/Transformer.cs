@@ -1,11 +1,12 @@
 ﻿using CxAnalytix.Interfaces.Transform;
+using CxAnalytix.XForm.Common;
 using SDK.Modules.Transformer;
 using System;
 using System.Threading;
 
 namespace CxAnalytix.XForm.ScaTransformer
 {
-	public class Transformer : TransformerModule
+	public class Transformer : BaseTransformer
 	{
 		private static readonly String STATE_STORAGE_FILE = "CxAnalytixExportState_SCA.json";
 		private static readonly String MODULE_NAME = "SCA";

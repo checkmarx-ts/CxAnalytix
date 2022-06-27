@@ -23,19 +23,15 @@ using ProjectFilter;
 using CxRestClient.Utility;
 using SDK.Modules.Transformer.Data;
 using static SDK.Modules.Transformer.Data.ScanDescriptor;
+using CxAnalytix.XForm.Common;
 
 namespace CxAnalytix.XForm.SastTransformer
 {
-	/// <summary>
-	/// A class that implements the data transformation.
-	/// </summary>
-	public class Transformer : TransformerModule
+	public class Transformer : BaseTransformer
 	{
 		private static readonly ILog _log = LogManager.GetLogger(typeof(Transformer));
 		private static readonly String STATE_STORAGE_FILE = "CxAnalytixExportState.json";
 		private static readonly String MODULE_NAME = "SAST";
-
-
 
 		private IEnumerable<ScanDescriptor> ScanDescriptors { get; set; }
 
@@ -50,28 +46,16 @@ namespace CxAnalytix.XForm.SastTransformer
 
 		private ConcurrentDictionary<int, ProjectDescriptor> _loadedProjects = new ConcurrentDictionary<int, ProjectDescriptor>();
 
-		private CrawlState _state;
-
 
 		private DateTime CheckTime { get; set; } = DateTime.Now;
 
 		private CxSASTRestContext RestContext { get; set; }
 		private CancellationToken CancelToken { get; set; }
 
-		ParallelOptions ThreadOpts { get; set; }
 
 		bool IncludeMNO { get; set; }
 		bool IncludeOSA { get; set; }
 
-		public String InstanceId { get; set; }
-
-		public IRecordRef ProjectInfoOut { get; internal set; }
-		public IRecordRef SastScanSummaryOut { get; internal set; }
-		public IRecordRef SastScanDetailOut { get; internal set; }
-		public IRecordRef ScaScanSummaryOut { get; internal set; }
-		public IRecordRef ScaScanDetailOut { get; internal set; }
-		public IRecordRef PolicyViolationDetailOut { get; internal set; }
-		public IProjectFilter Filter { get; private set; }
 
 		private ConcurrentDictionary<int, ViolatedPolicyCollection> PolicyViolations { get; set; } =
 			new ConcurrentDictionary<int, ViolatedPolicyCollection>();
@@ -305,15 +289,13 @@ namespace CxAnalytix.XForm.SastTransformer
 
 		public override void DoTransform(CancellationToken token)
 		{
-			CancelToken = token;
+			ThreadOpts.CancellationToken = CancelToken = token;
 
 			var conCfg = Config.GetConfig<CxSASTConnection>();
-            var serviceCfg = Config.GetConfig<CxAnalytixService>();
             var creds = Config.GetConfig<CxCredentials>();
 
-
-			var builder = new CxSASTRestContext.CxSASTRestContextBuilder();
-            builder.WithServiceURL(conCfg.URL)
+			var restBuilder = new CxSASTRestContext.CxSASTRestContextBuilder();
+            restBuilder.WithServiceURL(conCfg.URL)
             .WithOpTimeout(conCfg.TimeoutSeconds)
             .WithSSLValidate(conCfg.ValidateCertificates)
             .WithUsername(creds.Username)
@@ -321,32 +303,14 @@ namespace CxAnalytix.XForm.SastTransformer
             .WithMNOServiceURL(conCfg.MNOUrl)
             .WithRetryLoop(conCfg.RetryLoop);
 
-			RestContext = builder.Build();
+			RestContext = restBuilder.Build();
 
 			IncludeMNO = !String.IsNullOrEmpty(conCfg.MNOUrl);
 			IncludeOSA = LicenseChecks.OsaIsLicensed(RestContext, CancelToken);
-			InstanceId = serviceCfg.InstanceIdentifier;
-			ThreadOpts = new ParallelOptions()
-			{
-				CancellationToken = token,
-				MaxDegreeOfParallelism = serviceCfg.ConcurrentThreads
-			};
-			Filter = new FilterImpl(Config.GetConfig<CxFilter>().TeamRegex,
-				Config.GetConfig<CxFilter>().ProjectRegex);
-
-			ProjectInfoOut = Output.RegisterRecord(serviceCfg.ProjectInfoRecordName);
-			SastScanSummaryOut = Output.RegisterRecord(serviceCfg.SASTScanSummaryRecordName);
-			SastScanDetailOut = Output.RegisterRecord(serviceCfg.SASTScanDetailRecordName);
-			PolicyViolationDetailOut = Output.RegisterRecord(serviceCfg.PolicyViolationsRecordName);
-			ScaScanSummaryOut = Output.RegisterRecord(serviceCfg.SCAScanSummaryRecordName);
-			ScaScanDetailOut = Output.RegisterRecord(serviceCfg.SCAScanDetailRecordName);
-
-			_state = new CrawlState(serviceCfg.StateDataStoragePath, StateStorageFilename);
 
             ResolveScans().Wait();
 
 			ExecuteSweep();
-
         }
 
 		private async Task ResolveScans()
@@ -450,16 +414,16 @@ namespace CxAnalytix.XForm.SastTransformer
 
 
 			// _loadedProjects has a collection of projects loaded from the SAST system
-			_state.ConfirmProjects(new List<ProjectDescriptor>(_loadedProjects.Values));
+			State.ConfirmProjects(new List<ProjectDescriptor>(_loadedProjects.Values));
 
-			_log.Info($"{_state.ProjectCount} projects are targets to check for new scans. Since last scan: {_state.DeletedProjects}"
-				+ $" projects removed, {_state.NewProjects} new projects.");
+			_log.Info($"{State.ProjectCount} projects are targets to check for new scans. Since last scan: {State.DeletedProjects}"
+				+ $" projects removed, {State.NewProjects} new projects.");
 
 
 			_log.Debug("Resolving scans.");
 
 			// Load the scans for each project
-			Parallel.ForEach(_state.Projects, ThreadOpts,
+			Parallel.ForEach(State.Projects, ThreadOpts,
 				(p) =>
 				{
 
@@ -471,7 +435,7 @@ namespace CxAnalytix.XForm.SastTransformer
 						// Add to crawl state.
 						if (_log.IsTraceEnabled())
 							_log.Trace($"SAST scan record: {s}");
-						_state.AddScan(s.ProjectId, s.ScanType, ScanProductType.SAST, s.ScanId, s.FinishTime, s.Engine);
+						State.AddScan(s.ProjectId, s.ScanType, ScanProductType.SAST, s.ScanId, s.FinishTime, s.Engine);
 						SastScanCache.TryAdd(s.ScanId, s);
 					}
 
@@ -485,7 +449,7 @@ namespace CxAnalytix.XForm.SastTransformer
 							// Add to crawl state.
 							if (_log.IsTraceEnabled())
 								_log.Trace($"OSA scan record: {s}");
-							_state.AddScan(s.ProjectId, "Composition", ScanProductType.SCA, s.ScanId, s.FinishTime, "N/A");
+							State.AddScan(s.ProjectId, "Composition", ScanProductType.SCA, s.ScanId, s.FinishTime, "N/A");
 							ScaScanCache.TryAdd(s.ScanId, s);
 						}
 					}
@@ -575,7 +539,6 @@ namespace CxAnalytix.XForm.SastTransformer
 		}
 
 
-
 		private void ExecuteSweep()
 		{
 
@@ -587,22 +550,22 @@ namespace CxAnalytix.XForm.SastTransformer
 				_log.Warn("OSA data will not be crawled.");
 
 
-			if (_state.Projects == null)
+			if (State.Projects == null)
 			{
 				_log.Error("Scans to crawl do not appear to be resolved, unable to crawl scan data.");
 				return;
 			}
 
 
-			_log.Info($"Crawling {_state.ScanCount} scans.");
+			_log.Info($"Crawling {State.ScanCount} scans.");
 
 
 			// Lookup policy violations, report the project information records.
-			Parallel.ForEach<ProjectDescriptor>(_state.Projects, ThreadOpts,
+			Parallel.ForEach<ProjectDescriptor>(State.Projects, ThreadOpts,
 			(project) =>
 			{
 				// Do not output project info if a project has no scans.
-				if (_state.GetScanCountForProject(project.ProjectId) <= 0)
+				if (State.GetScanCountForProject(project.ProjectId) <= 0)
 				{
 					_log.Info($"Project {project.ProjectId}:{project.TeamName}:{project.ProjectName} has no new scans to process.");
 					return;
@@ -635,7 +598,7 @@ namespace CxAnalytix.XForm.SastTransformer
 
 				// One transaction per scan since the entire set of scan records should be output
 				// before the scan date is updated.
-				foreach (var scan in _state.GetScansForProject(project.ProjectId))
+				foreach (var scan in State.GetScansForProject(project.ProjectId))
 				{
 					if (CancelToken.IsCancellationRequested)
 						break;
@@ -666,7 +629,7 @@ namespace CxAnalytix.XForm.SastTransformer
 							// Persist the date of this scan since it has been output.
 							if (!CancelToken.IsCancellationRequested && scanTrx.Commit())
 							{
-								_state.ScanCompleted(scan);
+								State.ScanCompleted(scan);
 								continue;
 							}
 						}
@@ -686,9 +649,6 @@ namespace CxAnalytix.XForm.SastTransformer
 
 
 		}
-
-
-
 
 		private void OutputPolicyViolationDetails(IOutputTransaction trx, ScanDescriptor scan)
 		{
@@ -1029,8 +989,8 @@ namespace CxAnalytix.XForm.SastTransformer
 			flat.Add(PropertyKeys.KEY_PROJECTID, rec.ProjectId);
 			flat.Add(PropertyKeys.KEY_PROJECTNAME, rec.ProjectName);
 			flat.Add(PropertyKeys.KEY_TEAMNAME, rec.TeamName);
-			if (!String.IsNullOrEmpty(InstanceId))
-				flat.Add(PropertyKeys.KEY_INSTANCEID, InstanceId);
+			if (!String.IsNullOrEmpty(Service.InstanceIdentifier))
+				flat.Add(PropertyKeys.KEY_INSTANCEID, Service.InstanceIdentifier);
 		}
 
 		private static String GetFlatPolicyNames(PolicyCollection policies,

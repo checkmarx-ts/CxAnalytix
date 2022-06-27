@@ -46,6 +46,7 @@
 		<ProjectReference Include="..\..\Libs\Interfaces\Interfaces.csproj" />
 		<ProjectReference Include="..\..\Libs\OutputBootstrapper\OutputBootstrapper.csproj" />
 		<ProjectReference Include="..\..\Libs\ProjectFilter\ProjectFilter.csproj" />
+		<ProjectReference Include="..\Common\Common.csproj" />
 	</ItemGroup>
 
 </Project>

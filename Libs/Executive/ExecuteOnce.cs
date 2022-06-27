@@ -80,7 +80,16 @@ namespace CxAnalytix.Executive
             (xformer) => {
 
                 _log.Info($"Begin executing data transformer for module: {xformer.DisplayName}");
-                xformer.DoTransform(t.Token);
+                try
+                {
+                    xformer.DoTransform(t.Token);
+                }
+                catch (Exception ex)
+                {
+                    _log.Error($"Unhandled exception when executing transformer module: {xformer.DisplayName}", ex);
+
+                }
+
                 _log.Info($"Finished executing data transformer for module: {xformer.DisplayName}");
 
             });
