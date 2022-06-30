@@ -20,6 +20,8 @@ namespace CxAnalytix.XForm.ScaTransformer
 
 		public override void DoTransform(CancellationToken token)
 		{
+
+
 			throw new NotImplementedException();
 		}
     }

@@ -5,18 +5,17 @@ using System.Configuration;
 namespace CxAnalytix.Configuration.Impls
 {
 	[SecureConfigSection("Password") ]
-	public sealed class CxCredentials : EnvAwareConfigurationSection
+	public class CxCredentials : EnvAwareConfigurationSection
 	{
-		public CxCredentials() { }
 
-		[ConfigurationProperty("Username", IsRequired = false)]
+		[ConfigurationProperty("Username", IsRequired = true)]
 		public String Username
 		{
 			get => (String)this["Username"];
 			set { this["Username"] = value; }
 		}
 
-		[ConfigurationProperty("Password", IsRequired = false)]
+		[ConfigurationProperty("Password", IsRequired = true)]
 		public String Password
 		{
 			get => (String)this["Password"];
