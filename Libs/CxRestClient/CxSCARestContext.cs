@@ -75,7 +75,8 @@ namespace CxRestClient
                     _InternalLoginUrl = _loginUrl,
                     ValidateSSL = _validate,
                     Timeout = timeoutSpan,
-                    RetryLoop = RetryLoop
+                    RetryLoop = RetryLoop,
+                    Tenant = _tenant
                 };
 
                 retVal.Json = new CxRestClientFactory("application/json", retVal);

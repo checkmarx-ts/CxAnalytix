@@ -10,10 +10,7 @@ namespace CxRestClient.Utility
     {
         public static String MakeUrl(String url, String suffix)
         {
-            if (url.EndsWith('/'))
-                return url + suffix;
-            else
-                return url + '/' + suffix;
+            return $"{url.TrimEnd('/')}/{suffix.TrimStart('/')}";
 
         }
 

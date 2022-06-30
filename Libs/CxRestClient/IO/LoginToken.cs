@@ -13,5 +13,10 @@ namespace CxRestClient.IO
         public DateTime ExpireTime { get; internal set; }
         public String Token { get; internal set; }
         internal HttpContent ReauthContent { get; set; }
+
+        public override string ToString()
+        {
+            return $"LoginToken: Type: {TokenType} Len: {Token.Length} Expires: {ExpireTime.ToLongDateString()} {ExpireTime.ToLongTimeString()}";
+        }
     }
 }
