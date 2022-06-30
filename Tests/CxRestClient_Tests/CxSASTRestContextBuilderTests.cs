@@ -17,7 +17,7 @@ namespace CxRestClient_Tests
 					.WithUsername("user")
 					.WithPassword("pass")
 					.WithMNOServiceURL("not_a_url")
-					.WithServiceURL("http://www.foo.com")
+					.WithApiURL("http://www.foo.com")
 					.Validate();
 			}
 			catch (Exception)

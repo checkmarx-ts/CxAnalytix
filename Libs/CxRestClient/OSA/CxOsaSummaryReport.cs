@@ -61,13 +61,13 @@ namespace CxRestClient.OSA
 		public static ScanSummary GetReport(CxSASTRestContext ctx, CancellationToken token,
 			String scanId)
 		{
-			String url = CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
+			String url = UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX, new Dictionary<String, String>()
 				{
 				{"scanId", Convert.ToString (scanId)  }
 				});
 
 			return WebOperation.ExecuteGet<ScanSummary>(
-				ctx.Json.CreateSastClient
+				ctx.Sast.Json.CreateClient
 				, (response) =>
 				{
 					using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -78,7 +78,7 @@ namespace CxRestClient.OSA
 					}
 				}
 				, url
-				, ctx
+				, ctx.Sast
 				, token);
 		}
 	}

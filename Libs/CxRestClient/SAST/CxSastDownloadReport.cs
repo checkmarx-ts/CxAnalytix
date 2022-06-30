@@ -25,7 +25,7 @@ namespace CxRestClient.SAST
             CancellationToken token, String reportId)
         {
 			return WebOperation.ExecuteGet<Stream>(
-			ctx.Xml.CreateSastClient
+			ctx.Sast.Xml.CreateClient
 			, (response) =>
             {
                 var report = response.Content.ReadAsStreamAsync().Result;
@@ -47,8 +47,8 @@ namespace CxRestClient.SAST
 
                 return mem;
             }
-			, CxSASTRestContext.MakeUrl(ctx.Url, String.Format(URL_SUFFIX, reportId))
-			, ctx
+			, UrlUtils.MakeUrl(ctx.Sast.ApiUrl, String.Format(URL_SUFFIX, reportId))
+			, ctx.Sast
 			, token);
         }
     }

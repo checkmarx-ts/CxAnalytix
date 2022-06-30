@@ -93,7 +93,7 @@ namespace CxRestClient.SAST
         public static IEnumerable<Preset> GetPresets(CxSASTRestContext ctx, CancellationToken token)
         {
 			using (var presetReader = WebOperation.ExecuteGet<PresetReader>(
-				ctx.Json.CreateSastClient
+				ctx.Sast.Json.CreateClient
 				, (response) =>
 				{
 					using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -103,8 +103,8 @@ namespace CxRestClient.SAST
 						return new PresetReader(jt);
 					}
 				}
-				, CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
-				, ctx
+				, UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX)
+				, ctx.Sast
 				, token))
 				return new List<Preset>(presetReader);
 		}

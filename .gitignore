@@ -15,3 +15,5 @@ artifacts/
 
 .build_tools/
 **/TestResults
+
+**/DELETE*

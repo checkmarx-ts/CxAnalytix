@@ -145,7 +145,7 @@ namespace CxRestClient.SAST
         public static IEnumerable<Project> GetProjects(CxSASTRestContext ctx, CancellationToken token)
         {
             using (var projectReader = WebOperation.ExecuteGet<ProjectReader>(
-            ctx.Json.CreateSastClient
+            ctx.Sast.Json.CreateClient
             , (response) =>
             {
                 using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -156,8 +156,8 @@ namespace CxRestClient.SAST
                     return new ProjectReader(jt, ctx, token);
                 }
             }
-            , CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
-            , ctx
+            , UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX)
+            , ctx.Sast
             , token, apiVersion: "2.0"))
                 return new List<Project>(projectReader);
         }

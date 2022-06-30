@@ -74,7 +74,7 @@ namespace CxRestClient.IO
             lock (_lock)
             {
                 if (_client != null)
-                    throw new InvalidOperationException("HttpClient is already initialized.");
+                    return;
 
                 HttpClientHandler h = GetClientHandler();
                 if (!doSSLValidate)

@@ -143,7 +143,7 @@ namespace CxRestClient.OSA
 			int curPage = 1;
 			List<Vulnerability> returnVulns = new List<Vulnerability>();
 
-			Func<int, String> url = (pg) => CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
+			Func<int, String> url = (pg) => UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX, new Dictionary<String, String>()
 				{
 					{"scanId", Convert.ToString (scanId)  },
 					{ "page", Convert.ToString (pg) },
@@ -159,7 +159,7 @@ namespace CxRestClient.OSA
 				var beforeCount = returnVulns.Count;
 
 				returnVulns.AddRange(WebOperation.ExecuteGet<IEnumerable<Vulnerability>>(
-					ctx.Json.CreateSastClient
+					ctx.Sast.Json.CreateClient
 					, (response) =>
 					{
 						using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -170,7 +170,7 @@ namespace CxRestClient.OSA
 						}
 					}
 					, url(curPage++)
-					, ctx
+					, ctx.Sast
 					, token));
 
 				if (returnVulns.Count == beforeCount)

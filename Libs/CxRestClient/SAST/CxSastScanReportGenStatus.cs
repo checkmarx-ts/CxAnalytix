@@ -42,7 +42,7 @@ namespace CxRestClient.SAST
             CancellationToken token, String reportId)
         {
 			return WebOperation.ExecuteGet<GenStatus>(
-			ctx.Json.CreateSastClient
+			ctx.Sast.Json.CreateClient
 			, (response) =>
 			{
 				using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -52,8 +52,8 @@ namespace CxRestClient.SAST
 					return ReadStatus(jt);
 				}
 			}
-			, CxSASTRestContext.MakeUrl(ctx.Url, String.Format(URL_SUFFIX, reportId))
-			, ctx
+			, UrlUtils.MakeUrl(ctx.Sast.ApiUrl, String.Format(URL_SUFFIX, reportId))
+			, ctx.Sast
 			, token);
 		}
 	}

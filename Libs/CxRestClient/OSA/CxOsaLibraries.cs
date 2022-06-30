@@ -141,7 +141,7 @@ namespace CxRestClient.OSA
 
 			List<Library> returnLibs = new List<Library>();
 
-			Func<int, String> url = (pg) => CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
+			Func<int, String> url = (pg) => UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX, new Dictionary<String, String>()
 				{
 				{"scanId", Convert.ToString (scanId)  },
 				{ "page", Convert.ToString (pg) },
@@ -153,7 +153,7 @@ namespace CxRestClient.OSA
 				var beforeCount = returnLibs.Count;
 
 				using (var libReader = WebOperation.ExecuteGet<LibrariesReader>(
-				ctx.Json.CreateSastClient
+				ctx.Sast.Json.CreateClient
 				, (response) =>
 				{
 					using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -164,7 +164,7 @@ namespace CxRestClient.OSA
 					}
 				}
 				, url(curPage++)
-				, ctx
+				, ctx.Sast
 				, token))
 					returnLibs.AddRange(libReader);
 

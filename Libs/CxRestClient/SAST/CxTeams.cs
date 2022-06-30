@@ -105,7 +105,7 @@ namespace CxRestClient.SAST
 			List<Team> retVal = new List<Team>();
 
 			using (var teamReader = WebOperation.ExecuteGet<TeamReader>(
-				ctx.Json.CreateSastClient
+				ctx.Sast.Json.CreateClient
 				, (response) =>
 				{
 					using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -115,8 +115,8 @@ namespace CxRestClient.SAST
 						return new TeamReader(jt);
 					}
 				}
-				, CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
-				, ctx
+				, UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX)
+				, ctx.Sast
 				, token))
 			{
 				retVal.AddRange(teamReader);

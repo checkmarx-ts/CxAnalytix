@@ -12,7 +12,14 @@ namespace CxRestClient
             Timeout = 600;
 		}
 
-		protected int Timeout { get; private set; }
+        protected bool _validate = true;
+        public virtual T WithSSLValidate(bool validate)
+        {
+            _validate = validate;
+            return this as T;
+        }
+
+        protected int Timeout { get; private set; }
         public virtual T WithOpTimeout(int seconds)
         {
             Timeout = seconds;
@@ -40,10 +47,10 @@ namespace CxRestClient
             return this as T;
         }
 
-        protected String Url { get; private set; }
-        public virtual T WithServiceURL(String url)
+        protected String ApiUrl { get; private set; }
+        public virtual T WithApiURL(String url)
         {
-            Url = url;
+            ApiUrl = url;
             return this as T;
         }
 

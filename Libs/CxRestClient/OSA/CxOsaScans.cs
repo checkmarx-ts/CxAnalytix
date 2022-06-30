@@ -132,7 +132,7 @@ namespace CxRestClient.OSA
 			int curPage = 1;
 			List<Scan> osaScans = new List<Scan>();
 
-			Func<int, String> url = (pg) => CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
+			Func<int, String> url = (pg) => UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX, new Dictionary<String, String>()
 				{
 					{"projectId", Convert.ToString (projectId)  },
 					{ "page", Convert.ToString (pg) },
@@ -148,7 +148,7 @@ namespace CxRestClient.OSA
 				var beforeCount = osaScans.Count;
 
 
-				using (var scans = WebOperation.ExecuteGet<ScansReader>(ctx.Json.CreateSastClient
+				using (var scans = WebOperation.ExecuteGet<ScansReader>(ctx.Sast.Json.CreateClient
 				, (response) =>
 				{
 					using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -160,7 +160,7 @@ namespace CxRestClient.OSA
 
 				}
 				, url(curPage++)
-				, ctx
+				, ctx.Sast
 				, token
 				, (response) =>
 				{

@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using log4net;
 using CxRestClient.IO;
-using System.Runtime.CompilerServices;
+using CxRestClient.Utility;
 
 namespace CxRestClient
 {
-    public class CxSASTRestContext : CxRestContextBase
+    public class CxSASTRestContext
     {
         private static readonly String LOGIN_URI_SUFFIX = "cxrestapi/auth/identity/connect/token";
         private static readonly String CLIENT_SECRET = "014DF517-39D1-4453-B7B3-9930C563627C";
@@ -17,70 +17,43 @@ namespace CxRestClient
         { }
 
         #region Public/Private Properties
+        public CxSimpleRestContext Sast { get; private set; }
+        public CxSimpleRestContext Mno { get; private set; }
 
-        public String MnoUrl { get; internal set; }
-        public CxSASTClientFactory Json { get; internal set; }
-        public CxSASTClientFactory Xml { get; internal set; }
-
-        private readonly Object _tokenLock = new object();
+        #endregion
 
 
-        private LoginToken _sastToken;
-        internal LoginToken SastToken
+        #region SAST REST Context Implementation
+        private class SASTRestContext : CxSimpleRestContext
         {
-            get
+            public override string LoginUrl => UrlUtils.MakeUrl(_InternalUrl, LOGIN_URI_SUFFIX);
+
+            public override string ApiUrl => _InternalUrl;
+
+            internal String _InternalUrl { get; set; }
+
+            private LoginToken _token = null;
+            public override LoginToken Token
             {
-                ValidateToken(MakeUrl(Url, LOGIN_URI_SUFFIX), ref _sastToken);
-                return _sastToken;
+                get
+                {
+                    if (_token == null)
+                        _token = GetSASTLoginToken();
+
+                    ValidateToken(ref _token);
+                    return _token;
+
+                }
             }
 
-            set
+            private LoginToken GetSASTLoginToken()
             {
-                _sastToken = value;
-            }
-        }
+                _log.Debug($"Obtainting SAST login token");
 
-        private LoginToken _mnoToken;
-        internal LoginToken? MNOToken
-        {
-            get
+                var requestContent = new Dictionary<string, string>()
             {
-                ValidateToken(MakeUrl(Url, LOGIN_URI_SUFFIX), ref _mnoToken);
-                return _mnoToken;
-            }
-
-            set
-            {
-                _mnoToken = value.GetValueOrDefault();
-            }
-        }
-
-
-		#endregion
-
-
-
-		[MethodImpl(MethodImplOptions.Synchronized)]
-        public override void Reauthenticate()
-		{
-			_sastToken.ExpireTime = DateTime.MinValue;
-			_mnoToken.ExpireTime = DateTime.MinValue;
-		}
-
-
-
-		#region Static utility methods
-
-
-
-        private static LoginToken GetSASTLoginToken(String loginUrl, String username, String password)
-        {
-            _log.Debug($"Obtainting SAST login token");
-
-            var requestContent = new Dictionary<string, string>()
-            {
-                {"username", username},
-                {"password", password},
+                {"username", User},
+                {"password", Password},
                 {"grant_type", "password"},
                 {"scope", "sast_api"},
                 {"client_id", "resource_owner_sast_client"},
@@ -88,30 +61,58 @@ namespace CxRestClient
             };
 
 
-            return GetLoginToken(loginUrl, requestContent);
+                return GetLoginToken(requestContent);
+            }
         }
+        #endregion
 
-
-        private static LoginToken GetMNOLoginToken(String loginUrl, String username, String password)
+        #region MNO REST Context Implementation
+        private class MNORestContext : CxSimpleRestContext
         {
-            _log.Debug($"Obtainting CxARM login token");
+            public override string LoginUrl => UrlUtils.MakeUrl(_LoginUrl, LOGIN_URI_SUFFIX);
 
-            var requestContent = new Dictionary<string, string>()
+            public override string ApiUrl => _MnoUrl;
+
+
+            internal String _MnoUrl { get; set; }
+            internal String _LoginUrl { get; set; }
+
+
+            private LoginToken _token = null;
+            public override LoginToken Token
             {
-                {"username", username},
-                {"password", password},
+                get
+                {
+                    if (_MnoUrl == null)
+                        return null;
+
+                    if (_token == null)
+                        _token = GetMNOLoginToken();
+
+                    ValidateToken(ref _token);
+                    return _token;
+                }
+            }
+
+            private LoginToken GetMNOLoginToken()
+            {
+                _log.Debug($"Obtainting CxARM login token");
+
+                var requestContent = new Dictionary<string, string>()
+            {
+                {"username", User},
+                {"password", Password},
                 {"grant_type", "password"},
                 {"scope", "sast_rest_api cxarm_api"},
                 {"client_id", "resource_owner_client"},
                 {"client_secret", CLIENT_SECRET}
             };
 
-            return GetLoginToken(loginUrl, requestContent);
+                return GetLoginToken(requestContent);
+            }
+
         }
-
-
         #endregion
-
 
 
         public class CxSASTRestContextBuilder : CxRestContextBuilderCommon<CxSASTRestContextBuilder>
@@ -125,12 +126,6 @@ namespace CxRestClient
                 return this;
             }
 
-            private bool _validate = true;
-            public CxSASTRestContextBuilder WithSSLValidate(bool validate)
-            {
-                _validate = validate;
-                return this;
-            }
 
 			internal override void Validate()
 			{
@@ -149,19 +144,33 @@ namespace CxRestClient
 
                 HttpClientSingleton.Initialize(_validate, timeoutSpan);
 
+
+
                 CxSASTRestContext retVal = new CxSASTRestContext()
                 {
-                    SastToken = GetSASTLoginToken(MakeUrl(Url, LOGIN_URI_SUFFIX), User, Password),
-                    MNOToken =  String.IsNullOrEmpty(_mnoUrl) ? new Nullable<LoginToken> () : GetMNOLoginToken(MakeUrl(Url, LOGIN_URI_SUFFIX), User, Password),
-                    Url = Url,
-                    MnoUrl = _mnoUrl,
-                    ValidateSSL = _validate,
-                    Timeout = timeoutSpan,
-                    RetryLoop = RetryLoop
-                };
 
-                retVal.Json = new CxSASTClientFactory("application/json", retVal);
-                retVal.Xml = new CxSASTClientFactory("application/xml", retVal);
+                    Sast = new SASTRestContext()
+                    {
+                        User = User,
+                        Password = Password,
+                        _InternalUrl = ApiUrl,
+                        ValidateSSL = _validate,
+                        Timeout = timeoutSpan,
+                        RetryLoop = RetryLoop
+
+                    },
+                    Mno = new MNORestContext()
+                    {
+                        User = User,
+                        Password = Password,
+                        _MnoUrl = _mnoUrl,
+                        _LoginUrl = ApiUrl,
+                        ValidateSSL = _validate,
+                        Timeout = timeoutSpan,
+                        RetryLoop = RetryLoop
+
+                    }
+                };
 
                 return retVal;
             }

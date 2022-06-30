@@ -128,7 +128,7 @@ namespace CxRestClient.OSA
         String scanId)
         {
 
-            String url = CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX, new Dictionary<String, String>()
+            String url = UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX, new Dictionary<String, String>()
                 {
                     {"scanId", Convert.ToString (scanId)  }
                 });
@@ -136,7 +136,7 @@ namespace CxRestClient.OSA
             List<License> retVal = new List<License>();
 
             using (var licReader = WebOperation.ExecuteGet<LicensesReader>(
-            ctx.Json.CreateSastClient
+            ctx.Sast.Json.CreateClient
             , (response) =>
             {
                 using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -147,7 +147,7 @@ namespace CxRestClient.OSA
                 }
             }
             , url
-            , ctx
+            , ctx.Sast
             , token))
             {
                 retVal.AddRange(licReader);

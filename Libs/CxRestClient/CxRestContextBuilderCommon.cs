@@ -21,11 +21,11 @@ namespace CxRestClient
             if (Timeout < 0)
                 throw new InvalidOperationException("Timeout can't be < 0.");
 
-            if (String.IsNullOrEmpty(Url) )
-                throw new InvalidOperationException("Endpoint URL was not specified.");
+            if (String.IsNullOrEmpty(ApiUrl) )
+                throw new InvalidOperationException("API URL was not specified.");
 
-            if (!Uri.IsWellFormedUriString(Url, UriKind.Absolute))
-                throw new InvalidOperationException("Endpoint URL is invalid.");
+            if (!Uri.IsWellFormedUriString(ApiUrl, UriKind.Absolute))
+                throw new InvalidOperationException("API URL is invalid.");
         }
     }
 }

@@ -27,7 +27,7 @@ namespace CxRestClient.SAST
                 String reportId = CxSastGenerateScanReport.GetGeneratedReportId(ctx, token, scanId);
 
                 CxSastScanReportGenStatus.GenStatus status = CxSastScanReportGenStatus.GenStatus.None;
-                DateTime quitTime = DateTime.Now.Add(ctx.Timeout);
+                DateTime quitTime = DateTime.Now.Add(ctx.Sast.Timeout);
                 do
                 {
                     Task.Delay(DELAY_MS, token).Wait ();
@@ -35,7 +35,7 @@ namespace CxRestClient.SAST
                     if (DateTime.Now.CompareTo(quitTime) > 0)
                     {
                         _log.Warn($"Failed to retrive scan " +
-                            $"report {reportId} for scan id {scanId}. The report failed to generate in less than {ctx.Timeout.TotalSeconds} seconds." +
+                            $"report {reportId} for scan id {scanId}. The report failed to generate in less than {ctx.Sast.Timeout.TotalSeconds} seconds." +
                             $"Vulnerability details will not be available.");
                         break;
                     }

@@ -38,8 +38,6 @@ namespace CxRestClient_Tests
 					.WithUsername("user")
 					.WithPassword("pass")
 					.WithTenant("tenant")
-					.WithEUEnvironment()
-					.WithUSEnvironment()
 					.Validate();
 			}
 			catch (Exception)
@@ -61,9 +59,7 @@ namespace CxRestClient_Tests
 					.WithUsername("user")
 					.WithPassword("pass")
 					.WithTenant("tenant")
-					.WithEUEnvironment()
-					.WithUSEnvironment()
-					.WithServiceURL("http://foo.com:8080")
+					.WithApiURL("http://foo.com:8080")
 					.Validate();
 			}
 			catch (Exception)

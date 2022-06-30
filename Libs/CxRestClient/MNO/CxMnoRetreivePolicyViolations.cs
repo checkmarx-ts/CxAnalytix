@@ -113,7 +113,7 @@ namespace CxRestClient.MNO
                 CancellationToken token, int projectId, PolicyCollection policies)
         {
             return WebOperation.ExecuteGet<ViolatedPolicyCollection>(
-                ctx.Json.CreateMnoClient
+                ctx.Mno.Json.CreateClient
                 , (response) =>
                 {
                     using (var sr = new StreamReader (response.Content.ReadAsStreamAsync().Result))
@@ -123,8 +123,8 @@ namespace CxRestClient.MNO
                         return ParseViolatedRules(policies, projectId, jt);
                     }
                 }
-                , CxSASTRestContext.MakeUrl(ctx.MnoUrl, String.Format(URL_SUFFIX, projectId))
-                , ctx
+                , UrlUtils.MakeUrl(ctx.Mno.ApiUrl, String.Format(URL_SUFFIX, projectId))
+                , ctx.Mno
                 , token, apiVersion: null);
         }
     }

@@ -56,7 +56,7 @@ namespace CxRestClient.SAST
                 };
 
 			return WebOperation.ExecutePost<String>(
-			ctx.Json.CreateSastClient
+			ctx.Sast.Json.CreateClient
 			, (response) =>
 			{
 				using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -66,9 +66,9 @@ namespace CxRestClient.SAST
 					return ReadReportId(jt);
 				}
 			}
-			, CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX)
+			, UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX)
 			, () => new FormUrlEncodedContent(dict)
-			, ctx
+			, ctx.Sast
 			, token);
 		}
 	}

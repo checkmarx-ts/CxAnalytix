@@ -39,7 +39,7 @@ namespace CxRestClient_Tests
 			{
 				new T()
 					.WithPassword("pass")
-					.WithServiceURL("http://www.foo.com")
+					.WithApiURL("http://www.foo.com")
 					.Validate();
 			}
 			catch (Exception)
@@ -58,7 +58,7 @@ namespace CxRestClient_Tests
 			{
 				new T()
 					.WithUsername("user")
-					.WithServiceURL("http://www.foo.com")
+					.WithApiURL("http://www.foo.com")
 					.Validate();
 			}
 			catch (Exception)
@@ -80,7 +80,7 @@ namespace CxRestClient_Tests
 				new T()
 					.WithUsername("user")
 					.WithPassword("pass")
-					.WithServiceURL("http://www.foo.com")
+					.WithApiURL("http://www.foo.com")
 					.Validate();
 			}
 			catch (Exception)
@@ -102,7 +102,7 @@ namespace CxRestClient_Tests
 				new T()
 					.WithUsername("user")
 					.WithPassword("pass")
-					.WithServiceURL("not_a_url")
+					.WithApiURL("not_a_url")
 					.Validate();
 			}
 			catch (Exception)
@@ -124,7 +124,7 @@ namespace CxRestClient_Tests
 				new T()
 					.WithUsername("user")
 					.WithPassword("pass")
-					.WithServiceURL("http://www.foo.com")
+					.WithApiURL("http://www.foo.com")
 					.WithRetryLoop(0)
 					.Validate();
 			}
@@ -146,7 +146,7 @@ namespace CxRestClient_Tests
 				new T()
 					.WithUsername("user")
 					.WithPassword("pass")
-					.WithServiceURL("http://www.foo.com")
+					.WithApiURL("http://www.foo.com")
 					.WithRetryLoop(1)
 					.Validate();
 			}
@@ -168,7 +168,7 @@ namespace CxRestClient_Tests
 				new T()
 					.WithUsername("user")
 					.WithPassword("pass")
-					.WithServiceURL("http://www.foo.com")
+					.WithApiURL("http://www.foo.com")
 					.WithRetryLoop(-1)
 					.Validate();
 			}
@@ -190,7 +190,7 @@ namespace CxRestClient_Tests
 				new T()
 					.WithUsername("user")
 					.WithPassword("pass")
-					.WithServiceURL("http://www.foo.com")
+					.WithApiURL("http://www.foo.com")
 					.WithOpTimeout(0)
 					.Validate();
 			}
@@ -211,7 +211,7 @@ namespace CxRestClient_Tests
 				new T()
 					.WithUsername("user")
 					.WithPassword("pass")
-					.WithServiceURL("http://www.foo.com")
+					.WithApiURL("http://www.foo.com")
 					.WithOpTimeout(1)
 					.Validate();
 			}
@@ -233,7 +233,7 @@ namespace CxRestClient_Tests
 				new T()
 					.WithUsername("user")
 					.WithPassword("pass")
-					.WithServiceURL("http://www.foo.com")
+					.WithApiURL("http://www.foo.com")
 					.WithOpTimeout(-1)
 					.Validate();
 			}

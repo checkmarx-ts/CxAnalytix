@@ -31,7 +31,6 @@ namespace SDK.Modules.Transformer.Data
         {
             get => _rules;
         }
-        
 
         public void AddRule (PolicyRuleDescriptor rule)
         {
@@ -43,6 +42,11 @@ namespace SDK.Modules.Transformer.Data
         {
             foreach (var rule in rules)
                 AddRule(rule);
+        }
+
+        public override string? ToString()
+        {
+            return $"{(isActive ? "ACTIVE" : "INACTIVE")} {PolicyId}: {Name} [{Description}] ({CreatedOn})";
         }
     }
 }

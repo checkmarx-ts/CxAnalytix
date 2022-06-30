@@ -1,5 +1,6 @@
 ﻿using CxAnalytix.Exceptions;
 using CxAnalytix.Extensions;
+using CxRestClient.Interfaces;
 using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -23,7 +24,7 @@ namespace CxRestClient.Utility
 
 
 		private static T ExecuteOperation<T>(Func<String, CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
-			Func<CxRestClient.IO.CxRestClient, HttpResponseMessage> opExecutor, CxSASTRestContext ctx, CancellationToken token,
+			Func<CxRestClient.IO.CxRestClient, HttpResponseMessage> opExecutor, ICxRestContext ctx, CancellationToken token,
 			Func<HttpResponseMessage, Boolean> responseErrorLogic, Func<Exception, Boolean> exceptionErrorLogic, String apiVersion)
 		{
 			int loopsLeft = ctx.RetryLoop;
@@ -161,7 +162,7 @@ namespace CxRestClient.Utility
 		}
 
 		public static T ExecuteGet<T>(Func<String, CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
-			String url, CxSASTRestContext ctx, CancellationToken token, Func<HttpResponseMessage, Boolean> responseErrorLogic = null,
+			String url, ICxRestContext ctx, CancellationToken token, Func<HttpResponseMessage, Boolean> responseErrorLogic = null,
 			Func<Exception, Boolean> exceptionErrorLogic = null, String apiVersion = "1.0")
 		{
 			return ExecuteOperation<T>(
@@ -205,7 +206,7 @@ namespace CxRestClient.Utility
 
 
 		public static T ExecutePost<T>(Func<String, CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
-			String url, Func<HttpContent> contentFactory, CxSASTRestContext ctx, CancellationToken token,
+			String url, Func<HttpContent> contentFactory, ICxRestContext ctx, CancellationToken token,
 			Func<HttpResponseMessage, Boolean> responseErrorLogic = null, Func<Exception, Boolean> exceptionErrorLogic = null, String apiVersion = "1.0")
 		{
 			return ExecuteOperation<T>(

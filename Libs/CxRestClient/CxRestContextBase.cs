@@ -1,4 +1,5 @@
-﻿using CxRestClient.IO;
+﻿using CxRestClient.Interfaces;
+using CxRestClient.IO;
 using log4net;
 using Newtonsoft.Json;
 using System;
@@ -10,7 +11,7 @@ using System.Runtime.CompilerServices;
 
 namespace CxRestClient
 {
-	public abstract class CxRestContextBase
+	public abstract class CxRestContextBase : ICxRestContext
 	{
 
 		private static ILog _log = LogManager.GetLogger(typeof(CxRestContextBase));
@@ -18,41 +19,38 @@ namespace CxRestClient
 		#region Public/Private Properties
 
 		public bool ValidateSSL { get; internal set; }
-		public String Url { get; internal set; }
-		public TimeSpan Timeout { get; internal set; }
+		public abstract String LoginUrl { get; }
+        public abstract String ApiUrl { get; }
+        public TimeSpan Timeout { get; internal set; }
 		public int RetryLoop { get; internal set; }
         #endregion
 
 
-        internal struct LoginToken
+        #region Context Control Methods
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        public void Reauthenticate()
         {
-            public String TokenType { get; internal set; }
-            public DateTime ExpireTime { get; internal set; }
-            public String Token { get; internal set; }
-            internal HttpContent ReauthContent { get; set; }
+            Token.ExpireTime = DateTime.MinValue;
         }
 
-
-
-        #region Context Control Methods
-        
-        public abstract void Reauthenticate();
+        public abstract LoginToken Token { get; }
 
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-        internal void ValidateToken(String loginUrl, ref LoginToken token)
+        protected virtual void ValidateToken(ref LoginToken token)
         {
                 if (DateTime.Now.CompareTo(token.ExpireTime) >= 0)
-                    token = GetLoginToken(loginUrl, token.ReauthContent);
+                    token = GetLoginToken(token.ReauthContent);
         }
 
-        internal static LoginToken GetLoginToken(String loginUrl, HttpContent authContent)
+        protected LoginToken GetLoginToken(HttpContent authContent)
         {
             try
             {
                 HttpClient c = HttpClientSingleton.GetClient();
 
-                var uri = new Uri(loginUrl);
+                var uri = new Uri(LoginUrl);
 
                 _log.Debug($"Login URL: {uri}");
 
@@ -101,7 +99,7 @@ namespace CxRestClient
 
         }
 
-        internal static LoginToken GetNullToken(HttpContent authContent)
+        protected LoginToken GetNullToken(HttpContent authContent)
         {
             return new LoginToken
             {
@@ -113,38 +111,10 @@ namespace CxRestClient
         }
 
 
-        internal static LoginToken GetLoginToken(String loginUrl, Dictionary<string, string> headers)
+        protected LoginToken GetLoginToken(Dictionary<string, string> headers)
         {
-            return GetLoginToken(loginUrl, new FormUrlEncodedContent(headers));
+            return GetLoginToken(new FormUrlEncodedContent(headers));
         }
-
-
-
-        #endregion
-
-
-        #region Static utility methods
-        public static String MakeUrl(String url, String suffix)
-        {
-            if (url.EndsWith('/'))
-                return url + suffix;
-            else
-                return url + '/' + suffix;
-
-        }
-
-        public static String MakeQueryString(Dictionary<String, String> query)
-        {
-            LinkedList<String> p = new LinkedList<string>();
-
-            foreach (String k in query.Keys)
-                p.AddLast(String.Format("{0}={1}", k, query[k]));
-
-            return String.Join('&', p);
-        }
-
-        public static String MakeUrl(String url, String suffix, Dictionary<String, String> query)
-        => MakeUrl(url, suffix) + ((query.Count > 0) ? ("?" + MakeQueryString(query)) : (""));
 
         #endregion
 

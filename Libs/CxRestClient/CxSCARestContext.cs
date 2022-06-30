@@ -1,85 +1,104 @@
-﻿using System;
+﻿using CxRestClient.IO;
+using CxRestClient.Utility;
+using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace CxRestClient
 {
-	public class CxSCARestContext : CxRestContextBase
-	{
-		public override void Reauthenticate()
-		{
-			throw new NotImplementedException();
-		}
+    public class CxSCARestContext : CxSimpleRestContext
+    {
+        private static readonly String LOGIN_SUFFIX = "/identity/connect/token";
 
-		internal CxSCARestContext()
-		{ }
+        public override string LoginUrl => UrlUtils.MakeUrl(_InternalLoginUrl, LOGIN_SUFFIX);
+        public override string ApiUrl => _InternalApiUrl;
+        internal String Tenant { get; set; }
 
+        private String _InternalLoginUrl { get; set; }
+        private String _InternalApiUrl { get; set; }
+
+        internal CxSCARestContext()
+        { }
+
+        private LoginToken _token = null;
+        public override LoginToken Token
+        {
+            get
+            {
+                if (_token == null)
+                    _token = GetLoginToken(new Dictionary<string, string>()
+                        {
+                            {"username", User},
+                            {"password", Password},
+                            {"acr_values", $"Tenant:{Tenant}"},
+                            {"scope", "sca_api"},
+                            {"client_id", "sca_resource_owner"},
+                            {"grant_type", "password"}
+                        }
+                    );
+                
+                ValidateToken(ref _token);
+                return _token;
+            }
+        }
 
         public class CxSCARestContextBuilder : CxRestContextBuilderCommon<CxSCARestContextBuilder>
         {
-
-            private bool _usSelected;
-
-            public CxSCARestContextBuilder WithUSEnvironment()
-			{
-                _usSelected = true;
-                return base.WithServiceURL("https://platform.checkmarx.net");
-			}
-
-            private bool _euSelected;
-            public CxSCARestContextBuilder WithEUEnvironment()
-            {
-                _euSelected = true;
-                return base.WithServiceURL("https://eu.platform.checkmarx.net");
-            }
-
             private String _tenant;
             public CxSCARestContextBuilder WithTenant(String tenant)
-			{
+            {
                 _tenant = tenant;
                 return this;
-			}
+            }
+
+            private String _loginUrl;
+            public CxSCARestContextBuilder WithLoginUrl(String url)
+            {
+                _loginUrl = url;
+                return this;
+            }
 
             public CxSCARestContext Build()
             {
                 Validate();
-/*
-                var timeoutSpan = new TimeSpan(0, 0, _timeout);
+
+                var timeoutSpan = new TimeSpan(0, 0, Timeout);
 
                 HttpClientSingleton.Initialize(_validate, timeoutSpan);
 
-                CxSASTRestContext retVal = new CxSASTRestContext()
+                CxSCARestContext retVal = new CxSCARestContext()
                 {
-                    SastToken = GetSASTLoginToken(MakeUrl(_url, LOGIN_URI_SUFFIX), _user, _pass),
-                    MNOToken = String.IsNullOrEmpty(_mnoUrl) ? new Nullable<LoginToken>() : GetMNOLoginToken(MakeUrl(_url, LOGIN_URI_SUFFIX), _user, _pass),
-                    Url = _url,
-                    MnoUrl = _mnoUrl,
+                    User = User,
+                    Password = Password,
+                    _InternalApiUrl = ApiUrl,
+                    _InternalLoginUrl = _loginUrl,
                     ValidateSSL = _validate,
                     Timeout = timeoutSpan,
-                    RetryLoop = _retryLoop
+                    RetryLoop = RetryLoop
                 };
 
-                retVal.Json = new CxSASTClientFactory("application/json", retVal);
-                retVal.Xml = new CxSASTClientFactory("application/xml", retVal);
-*/
-                return null;
+                retVal.Json = new CxRestClientFactory("application/json", retVal);
+                retVal.Xml = new CxRestClientFactory("application/xml", retVal);
+
+                return retVal;
             }
 
-			internal override void Validate()
-			{
-				base.Validate();
+            internal override void Validate()
+            {
+                base.Validate();
+                if (String.IsNullOrEmpty(_tenant))
+                    throw new InvalidOperationException("Tenant was not provided is invalid.");
 
-                if (_usSelected && _euSelected)
-                    throw new InvalidOperationException("Only one regional service endpoint can be selected.");
+                if (String.IsNullOrEmpty(_loginUrl))
+                    throw new InvalidOperationException("Login URL was not specified.");
+
+                if (!Uri.IsWellFormedUriString(_loginUrl, UriKind.Absolute))
+                    throw new InvalidOperationException("Login URL is invalid.");
+
+
             }
-
-            public override CxSCARestContextBuilder WithServiceURL(string url)
-			{
-                _usSelected = _euSelected = false;
-
-				return base.WithServiceURL(url);
-			}
-		}
+        }
 
     }
 }

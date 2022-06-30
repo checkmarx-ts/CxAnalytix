@@ -295,7 +295,7 @@ namespace CxAnalytix.XForm.SastTransformer
             var creds = Config.GetConfig<CxCredentials>();
 
 			var restBuilder = new CxSASTRestContext.CxSASTRestContextBuilder();
-            restBuilder.WithServiceURL(conCfg.URL)
+            restBuilder.WithApiURL(conCfg.URL)
             .WithOpTimeout(conCfg.TimeoutSeconds)
             .WithSSLValidate(conCfg.ValidateCertificates)
             .WithUsername(creds.Username)

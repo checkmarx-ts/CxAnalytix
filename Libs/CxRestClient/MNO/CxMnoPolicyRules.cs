@@ -66,7 +66,7 @@ namespace CxRestClient.MNO
         CancellationToken token, int policyId)
         {
 			return WebOperation.ExecuteGet<IEnumerable<PolicyRuleDescriptor>>(
-			ctx.Json.CreateMnoClient
+			ctx.Mno.Json.CreateClient
 			, (response) =>
 			{
 				using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -76,8 +76,8 @@ namespace CxRestClient.MNO
 					return ParseRules(ctx, token, jt);
 				}
 			}
-			, CxSASTRestContext.MakeUrl(ctx.MnoUrl, String.Format(URL_SUFFIX, policyId))
-			, ctx
+			, UrlUtils.MakeUrl(ctx.Mno.ApiUrl, String.Format(URL_SUFFIX, policyId))
+			, ctx.Mno
 			, token, apiVersion: null);
         }
     }

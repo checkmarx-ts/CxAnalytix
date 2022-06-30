@@ -197,10 +197,10 @@ namespace CxRestClient.SAST
 			if (projectId != null && projectId.HasValue)
 				args.Add("projectId", Convert.ToString(projectId.Value));
 
-			url = CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX, args);
+			url = UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX, args);
 
 			using (var scansReader = WebOperation.ExecuteGet<ScansReader>(
-			ctx.Json.CreateSastClient
+			ctx.Sast.Json.CreateClient
 			, (response) =>
 			{
 				using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -212,7 +212,7 @@ namespace CxRestClient.SAST
 				}
 			}
 			, url
-			, ctx
+			, ctx.Sast
 			, token))
 				return new List<Scan>(scansReader);
 		}

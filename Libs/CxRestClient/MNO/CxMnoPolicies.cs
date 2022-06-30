@@ -57,7 +57,7 @@ namespace CxRestClient.MNO
                 CancellationToken token, int projectId)
         {
             return WebOperation.ExecuteGet<String>(
-                ctx.Json.CreateMnoClient
+                ctx.Mno.Json.CreateClient
                 , (response) =>
                 {
                     using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -68,8 +68,8 @@ namespace CxRestClient.MNO
                         return GetFlatPolicyNames(jt);
                     }
                 }
-                , CxSASTRestContext.MakeUrl(ctx.MnoUrl, String.Format(PROJECT_POLICY_URL_SUFFIX, projectId))
-                , ctx
+                , UrlUtils.MakeUrl(ctx.Mno.ApiUrl, String.Format(PROJECT_POLICY_URL_SUFFIX, projectId))
+                , ctx.Mno
                 , token, apiVersion: null);
         }
 
@@ -117,7 +117,7 @@ namespace CxRestClient.MNO
 				CancellationToken token)
 		{
 			return WebOperation.ExecuteGet<PolicyCollection>(
-				ctx.Json.CreateMnoClient
+				ctx.Mno.Json.CreateClient
 				, (response) =>
 				{
                     using (var sr = new StreamReader (response.Content.ReadAsStreamAsync().Result))
@@ -128,8 +128,8 @@ namespace CxRestClient.MNO
                         return ParsePolicies(ctx, token, jt);
                     }
 				}
-				, CxSASTRestContext.MakeUrl(ctx.MnoUrl, POLICY_LIST_URL_SUFFIX)
-				, ctx
+				, UrlUtils.MakeUrl(ctx.Mno.ApiUrl, POLICY_LIST_URL_SUFFIX)
+				, ctx.Mno
 				, token
                 , apiVersion: null);
 		}
@@ -139,7 +139,7 @@ namespace CxRestClient.MNO
                 CancellationToken token, int projectId)
         {
 			return WebOperation.ExecuteGet<IEnumerable<int>>(
-			ctx.Json.CreateMnoClient
+			ctx.Mno.Json.CreateClient
 			, (response) =>
 			{
                 using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -159,8 +159,8 @@ namespace CxRestClient.MNO
                 }
 
 			}
-			, CxSASTRestContext.MakeUrl(ctx.MnoUrl, String.Format(PROJECT_POLICY_URL_SUFFIX, projectId))
-			, ctx
+			, UrlUtils.MakeUrl(ctx.Mno.ApiUrl, String.Format(PROJECT_POLICY_URL_SUFFIX, projectId))
+			, ctx.Mno
 			, token, apiVersion: null);
 		}
 	}

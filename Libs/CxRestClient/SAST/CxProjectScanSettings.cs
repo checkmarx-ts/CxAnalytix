@@ -65,10 +65,10 @@ namespace CxRestClient.SAST
 
         public static ScanSettings GetScanSettings(CxSASTRestContext ctx, CancellationToken token, int projectId)
         {
-            String restUrl = CxSASTRestContext.MakeUrl(ctx.Url, URL_SUFFIX);
+            String restUrl = UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX);
 
             return WebOperation.ExecuteGet<ScanSettings>(
-                ctx.Json.CreateSastClient
+                ctx.Sast.Json.CreateClient
                 , (response) =>
                 {
                     using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -78,8 +78,8 @@ namespace CxRestClient.SAST
                         return new ScanSettings(jt);
                     }
                 }
-                , CxSASTRestContext.MakeUrl(restUrl, Convert.ToString(projectId))
-                , ctx
+                , UrlUtils.MakeUrl(restUrl, Convert.ToString(projectId))
+                , ctx.Sast
                 , token);
         }
     }

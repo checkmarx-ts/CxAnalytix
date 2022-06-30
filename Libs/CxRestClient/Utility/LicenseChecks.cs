@@ -40,7 +40,7 @@ namespace CxRestClient.Utility
 		{
             // 403 is returned when OSA is not licensed.
 			return WebOperation.ExecuteGet<bool>(
-			ctx.Xml.CreateSastClient
+			ctx.Sast.Xml.CreateClient
 			, (response) =>
 			{
                 if (response.IsSuccessStatusCode)
@@ -49,8 +49,8 @@ namespace CxRestClient.Utility
                     return false;
 
 			}
-			, CxSASTRestContext.MakeUrl(ctx.Url, OSA_EXTENSIONS_API_PATH)
-			, ctx, token, responseErrorLogic: (response) => 
+			, UrlUtils.MakeUrl(ctx.Sast.ApiUrl, OSA_EXTENSIONS_API_PATH)
+			, ctx.Sast, token, responseErrorLogic: (response) => 
             {
                 return !(response.StatusCode == System.Net.HttpStatusCode.Forbidden);
             });
@@ -59,7 +59,7 @@ namespace CxRestClient.Utility
         private static bool CheckIsOsaEnabledFromLicenseSummary (CxSASTRestContext ctx, CancellationToken token)
 		{
             var summary = WebOperation.ExecuteGet<LicenseSummary>(
-            ctx.Json.CreateSastClient
+            ctx.Sast.Json.CreateClient
             , (response) =>
             {
                 using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
@@ -68,8 +68,8 @@ namespace CxRestClient.Utility
                     return (LicenseSummary)new JsonSerializer().Deserialize(jtr, typeof(LicenseSummary));
                 }
             }
-            , CxSASTRestContext.MakeUrl(ctx.Url, LICENSE_SUMMARY_API_PATH)
-            , ctx, token);
+            , UrlUtils.MakeUrl(ctx.Sast.ApiUrl, LICENSE_SUMMARY_API_PATH)
+            , ctx.Sast, token);
 
 
             if (summary != null)
