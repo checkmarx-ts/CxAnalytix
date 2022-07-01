@@ -163,5 +163,18 @@ namespace CxRestClient_Tests
             Assert.True(firstRead && !JsonUtils.MoveToNextProperty(_reader, "RootString"));
         }
 
+
+        [Test]
+        public void NullDateNormalizedToMinValue()
+        {
+            Assert.True(JsonUtils.NormalizeDateParse(null) == DateTime.MinValue);
+        }
+
+        [Test]
+        public void EmptyDateNormalizedToMinValue()
+        {
+            Assert.True(JsonUtils.NormalizeDateParse("") == DateTime.MinValue);
+        }
+
     }
 }
