@@ -1,6 +1,8 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -33,12 +35,12 @@ namespace CxRestClient.Utility
         }
 
 
-        public static DateTime LocalEpochTimeToDateTime (long epochTime)
+        public static DateTime LocalEpochTimeToDateTime(long epochTime)
         {
             return EpochTimeToDateTime(epochTime, DateTimeKind.Local);
         }
 
-        public static DateTime EpochTimeToDateTime (long epochTime, DateTimeKind valueKind)
+        public static DateTime EpochTimeToDateTime(long epochTime, DateTimeKind valueKind)
         {
             DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, valueKind);
             return epoch.AddSeconds(epochTime);
@@ -55,6 +57,22 @@ namespace CxRestClient.Utility
                 return DateTime.MinValue;
             else
                 return DateTime.Parse(isoDate);
+        }
+
+
+        public static T DeserializeFromStream<T>(Stream jsonStream)
+        {
+            using (var sr = new StreamReader(jsonStream))
+            using (var jtr = new JsonTextReader(sr))
+            {
+                var jt = JToken.Load(jtr);
+                using (var reader = jt.CreateReader())
+                {
+                    return (T)new JsonSerializer().Deserialize(reader, typeof(T));
+                }
+
+            }
+
         }
 
 
