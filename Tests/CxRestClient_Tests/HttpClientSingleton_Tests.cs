@@ -8,7 +8,7 @@ namespace CxRestClient_Tests
     public class HttpClientSingleton_Tests
     {
         [Test]
-        public void TestDoubleInitializeThrowsError ()
+        public void TestDoubleInitializeSuccess ()
         {
             HttpClientSingleton.Initialize(true, TimeSpan.FromSeconds(600));
 
@@ -19,13 +19,13 @@ namespace CxRestClient_Tests
             catch (InvalidOperationException)
             {
                 HttpClientSingleton.Clear();
-
-                Assert.Pass();
+                Assert.Fail();
                 return;
             }
 
             HttpClientSingleton.Clear();
-            Assert.Fail();
+            Assert.Pass();
+
         }
 
 

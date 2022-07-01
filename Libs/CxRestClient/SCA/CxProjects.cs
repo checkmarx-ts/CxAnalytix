@@ -3,6 +3,7 @@ using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,35 +23,46 @@ namespace CxRestClient.SCA
         { }
 
 
+        [JsonObject(MemberSerialization.OptIn)]
 
-        public static String GetProjects(CxSCARestContext ctx, CancellationToken token)
+        public class Project
+        {
+            [JsonProperty(PropertyName = "id")]
+            public String ProjectId { get; internal set; }
+            [JsonProperty(PropertyName = "name")]
+            public String ProjectName { get; internal set; }
+            [JsonProperty(PropertyName = "isManaged")]
+            public Boolean Managed { get; internal set; }
+            [JsonProperty(PropertyName = "createdOn")]
+            internal String _created { get; set; }
+            public DateTime Created => JsonUtils.NormalizeDateParse(_created);
+
+            [JsonProperty(PropertyName = "tenantId")]
+            public String TenantId { get; internal set; }
+            [JsonProperty(PropertyName = "branch")]
+            public String Branch { get; internal set; }
+            [JsonProperty(PropertyName = "assignedTeams")]
+            public List<String> Teams{ get; internal set; }
+            [JsonProperty(PropertyName = "lastSuccessfulScanId")]
+            public String LastSuccessfulScanId { get; internal set; }
+            [JsonProperty(PropertyName = "tags")]
+            public Dictionary<String, String> Tags { get; internal set; }
+            [JsonProperty(PropertyName = "latestScanId")]
+            public String LatestScanId { get; internal set; }
+
+            public override string ToString() =>
+                $"{ProjectId}:{ProjectName} [Teams: [{String.Join(',', Teams)}] Managed: {Managed}]";
+
+        }
+
+        public static IEnumerable<Project> GetProjects(CxSCARestContext ctx, CancellationToken token)
         {
 
-            return WebOperation.ExecuteGet<String>(ctx.Json.CreateClient, (response) => { 
-                var reader = new StreamReader(response.Content.ReadAsStreamAsync().Result);
+            using (var r = WebOperation.ExecuteGet<JsonResponseArrayReader<Project>>(ctx.Json.CreateClient, 
+                (response) => new JsonResponseArrayReader<Project>(response.Content.ReadAsStreamAsync().Result),
+                UrlUtils.MakeUrl(ctx.ApiUrl, URL_SUFFIX), ctx, token))
+                return new List<Project>(r);
 
-                return reader.ReadToEnd();
-            
-            }, 
-                UrlUtils.MakeUrl(ctx.ApiUrl, URL_SUFFIX), ctx, token);
-
-
-            //using (var projectReader = WebOperation.ExecuteGet<ProjectReader>(
-            //ctx.Json.CreateClient
-            //, (response) =>
-            //{
-            //    using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
-            //    using (var jtr = new JsonTextReader(sr))
-            //    {
-            //        JToken jt = JToken.Load(jtr);
-
-            //        return new ProjectReader(jt, ctx, token);
-            //    }
-            //}
-            //, UrlUtils.MakeUrl(ctx.ApiUrl, URL_SUFFIX)
-            //, ctx
-            //, token, apiVersion: "2.0"))
-            //    return new List<Project>(projectReader);
         }
 
     }

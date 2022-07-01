@@ -30,13 +30,6 @@ namespace CxRestClient.SAST
             Failed
         }
 
-        public static DateTime NormalizeDateParse (String isoDate)
-        {
-            if (String.IsNullOrEmpty(isoDate))
-                return DateTime.MinValue;
-            else
-                return DateTime.Parse(isoDate);
-        }
 
         [JsonObject(MemberSerialization.OptIn)]
         public class Scan
@@ -48,10 +41,10 @@ namespace CxRestClient.SAST
             internal Dictionary<String, Object> project { get; set; }
             [JsonProperty(PropertyName = "dateAndTime")]
             internal Dictionary<String, String> date_times { get; set; }
-            public DateTime StartTime { get => NormalizeDateParse (date_times["startedOn"]); }
-            public DateTime FinishTime { get => NormalizeDateParse (date_times["finishedOn"]); }
-            public DateTime EngineStartTime { get => NormalizeDateParse (date_times["engineStartedOn"]); }
-            public DateTime EngineFinishTime { get => NormalizeDateParse (date_times["engineFinishedOn"]); }
+            public DateTime StartTime { get => JsonUtils.NormalizeDateParse (date_times["startedOn"]); }
+            public DateTime FinishTime { get => JsonUtils.NormalizeDateParse (date_times["finishedOn"]); }
+            public DateTime EngineStartTime { get => JsonUtils.NormalizeDateParse (date_times["engineStartedOn"]); }
+            public DateTime EngineFinishTime { get => JsonUtils.NormalizeDateParse (date_times["engineFinishedOn"]); }
             [JsonProperty(PropertyName = "scanState")]
             internal Dictionary<String, Object> scan_state { get; set; }
             public int FileCount { get => Convert.ToInt32(scan_state["filesCount"]); }

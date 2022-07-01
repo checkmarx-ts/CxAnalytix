@@ -49,5 +49,14 @@ namespace CxRestClient.Utility
             return EpochTimeToDateTime(epochTime, DateTimeKind.Utc);
         }
 
+        public static DateTime NormalizeDateParse(String isoDate)
+        {
+            if (String.IsNullOrEmpty(isoDate))
+                return DateTime.MinValue;
+            else
+                return DateTime.Parse(isoDate);
+        }
+
+
     }
 }
