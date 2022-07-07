@@ -2,6 +2,7 @@
 using CxAnalytix.Interfaces.Outputs;
 using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace CxAnalytix.Out.Log4NetOutput
@@ -34,6 +35,7 @@ namespace CxAnalytix.Out.Log4NetOutput
 				logger.Dispose();
 		}
 
+		[MethodImpl(MethodImplOptions.Synchronized)]
 		public void write(IRecordRef which, IDictionary<string, object> record)
 		{
 			if (!_records.Contains(which.RecordName))

@@ -32,5 +32,10 @@ namespace ProjectFilter
 		{
 			return Matches(Team, teamName) && Matches(Project, projectName);
 		}
-	}
+
+        public bool Matches(string projectName)
+        {
+            return Matches(Project, projectName);
+        }
+    }
 }

@@ -1,7 +1,5 @@
-﻿using SDK.Modules.Transformer.Data;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System;
+using CxRestClient.MNO.Collections;
 
 namespace CxRestClient.MNO.dto
 {

@@ -16,6 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Libs\CxRestClient\CxRestClient.csproj" />
     <ProjectReference Include="..\..\Libs\Interfaces\Interfaces.csproj" />
     <ProjectReference Include="..\..\SDK\SDK.Modules\SDK.Modules.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />

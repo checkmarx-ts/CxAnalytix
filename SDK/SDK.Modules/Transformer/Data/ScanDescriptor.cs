@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 namespace SDK.Modules.Transformer.Data
@@ -78,33 +77,30 @@ namespace SDK.Modules.Transformer.Data
         public int RulesViolated { get; private set; }
         public int Violations { get; private set; }
 
-        private HashSet<int> _policyViolations = new HashSet<int>();
-        private HashSet<int> _ruleViolations = new HashSet<int>();
+        private HashSet<String> _policyViolations = new HashSet<String>();
+        private HashSet<String> _ruleViolations = new HashSet<String>();
 
         public bool HasPoliciesApplied { get; private set; }
 
-        public void IncrementPolicyViolations (IEnumerable<PolicyRuleDescriptor> rules)
+        public void IncrementPolicyViolation (String policyId, String ruleId)
         {
-            if (rules == null)
+            if (policyId == null || ruleId == null)
                 return;
             else
                 HasPoliciesApplied = true;
 
-            foreach (var rule in rules)
+            Violations++;
+
+            if (!_policyViolations.Contains (policyId))
             {
-                Violations++;
+                PoliciesViolated++;
+                _policyViolations.Add(policyId);
+            }
 
-                if (!_policyViolations.Contains (rule.PolicyId))
-                {
-                    PoliciesViolated++;
-                    _policyViolations.Add(rule.PolicyId);
-                }
-
-                if (!_ruleViolations.Contains(rule.RuleId))
-                {
-                    RulesViolated++;
-                    _ruleViolations.Add(rule.RuleId);
-                }
+            if (!_ruleViolations.Contains(ruleId))
+            {
+                RulesViolated++;
+                _ruleViolations.Add(ruleId);
             }
 
         }

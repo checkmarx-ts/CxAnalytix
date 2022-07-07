@@ -61,19 +61,19 @@ namespace TransformLogic_Tests
 			{
 				new ProjectDescriptor ()
 				{
-					ProjectId = 1
+					ProjectId = "1"
 					, TeamId="1"
 				}
 				, new ProjectDescriptor ()
 				{
-					ProjectId = 2
+					ProjectId = "2"
 					, TeamId= "2"
 				}
 			};
 
 			crawlState.ConfirmProjects(list1);
 
-			var scans = crawlState.GetScansForProject(1);
+			var scans = crawlState.GetScansForProject("1");
 
 			Assert.False(scans.GetEnumerator().MoveNext () ) ;
 		}
@@ -85,7 +85,7 @@ namespace TransformLogic_Tests
 
 			try
 			{
-				crawlState.GetScansForProject(1);
+				crawlState.GetScansForProject("1");
 			}
 			catch (KeyNotFoundException)
 			{
@@ -108,12 +108,12 @@ namespace TransformLogic_Tests
 			{
 				new ProjectDescriptor ()
 				{
-					ProjectId = 1
+					ProjectId = "1"
 					, TeamId="1"
 				}
 				, new ProjectDescriptor ()
 				{
-					ProjectId = 2
+					ProjectId = "2"
 					, TeamId= "2"
 				}
 			};
@@ -122,7 +122,7 @@ namespace TransformLogic_Tests
 			List<ProjectDescriptor> list2 = new List<ProjectDescriptor>(list1);
 			list2.Add(new ProjectDescriptor()
 			{
-				ProjectId = 3,
+				ProjectId = "3",
 				TeamId = "3"});
 
 

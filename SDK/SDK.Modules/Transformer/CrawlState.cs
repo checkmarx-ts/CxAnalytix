@@ -5,7 +5,6 @@ using SDK.Modules.Transformer.Data;
 using System;
 using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
-using static SDK.Modules.Transformer.Data.ScanDescriptor;
 
 [assembly: InternalsVisibleTo("TransformLogic_Tests")]
 namespace SDK.Modules.Transformer
@@ -16,10 +15,10 @@ namespace SDK.Modules.Transformer
 
 
 		// Holds the current state of crawls per project.
-		private ConcurrentDictionary<int, ProjectDescriptorExt> _currentState = new ConcurrentDictionary<int, ProjectDescriptorExt>();
-		private ConcurrentDictionary<int, ProjectDescriptorExt> _confirmedProjects = new ConcurrentDictionary<int, ProjectDescriptorExt>();
+		private ConcurrentDictionary<String, ProjectDescriptorExt> _currentState = new ConcurrentDictionary<String, ProjectDescriptorExt>();
+		private ConcurrentDictionary<String, ProjectDescriptorExt> _confirmedProjects = new ConcurrentDictionary<String, ProjectDescriptorExt>();
 		private ConcurrentDictionary<String, ScanDescriptor> _scans = new ConcurrentDictionary<string, ScanDescriptor>();
-		private ConcurrentDictionary<int, SortedSet<ScanDescriptor>> _projectScanIndex = new ConcurrentDictionary<int, SortedSet<ScanDescriptor>>();
+		private ConcurrentDictionary<String, SortedSet<ScanDescriptor>> _projectScanIndex = new ConcurrentDictionary<String, SortedSet<ScanDescriptor>>();
 
 		public int ScanCount { get => _scans.Count;  }
 
@@ -49,7 +48,7 @@ namespace SDK.Modules.Transformer
 			if (_confirmed)
 				throw new InvalidOperationException("The crawl state has already been confirmed.");
 
-			var currentStateClone = new ConcurrentDictionary<int, ProjectDescriptorExt>(_currentState);
+			var currentStateClone = new ConcurrentDictionary<String, ProjectDescriptorExt>(_currentState);
 
 			foreach (var project in projects)
 			{
@@ -154,22 +153,22 @@ namespace SDK.Modules.Transformer
 		}
 
 
-		private static ConcurrentDictionary<int, ProjectDescriptorExt> loadCrawlState(String filePath)
+		private static ConcurrentDictionary<String, ProjectDescriptorExt> loadCrawlState(String filePath)
         {
             var serializer = JsonSerializer.Create();
             using (var sr = new StreamReader (filePath) )
 				return serializer.Deserialize(sr,
-					typeof(ConcurrentDictionary<int, ProjectDescriptorExt>))
-					as ConcurrentDictionary<int, ProjectDescriptorExt>;
+					typeof(ConcurrentDictionary<String, ProjectDescriptorExt>))
+					as ConcurrentDictionary<String, ProjectDescriptorExt>;
 		}
 
-		public IEnumerable<ScanDescriptor> GetScansForProject(int projectId)
+		public IEnumerable<ScanDescriptor> GetScansForProject(String projectId)
 			=> _projectScanIndex[projectId];
 
-		public int GetScanCountForProject(int projectId) => _projectScanIndex[projectId].Count;
+		public int GetScanCountForProject(String projectId) => _projectScanIndex[projectId].Count;
 
 
-		public bool AddScan(int projectId, String scanType, ScanProductType scanProduct, String scanId, DateTime finishTime, String engine)
+		public bool AddScan(String projectId, String scanType, ScanDescriptor.ScanProductType scanProduct, String scanId, DateTime finishTime, String engine)
 		{
 			if (!_confirmed)
 				throw new InvalidOperationException("The crawl state has not yet been confirmed.");

@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 
-namespace SDK.Modules.Transformer.Data
+namespace CxRestClient.MNO.Collections
 {
     public class ProjectPolicyIndex : PolicyCollection
     {

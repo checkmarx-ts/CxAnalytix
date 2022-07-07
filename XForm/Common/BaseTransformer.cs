@@ -4,6 +4,7 @@ using CxAnalytix.Interfaces.Transform;
 using OutputBootstrapper;
 using ProjectFilter;
 using SDK.Modules.Transformer;
+using SDK.Modules.Transformer.Data;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -50,5 +51,53 @@ namespace CxAnalytix.XForm.Common
 
             State = new CrawlState(Service.StateDataStoragePath, StateStorageFilename);
         }
+
+
+        protected void AddInstanceIdentifier(IDictionary<String, Object> flat)
+        {
+            if (!String.IsNullOrEmpty(Service.InstanceIdentifier))
+                flat.Add("InstanceId", Service.InstanceIdentifier);
+        }
+
+        protected void AddPrimaryKeyElements(ProjectDescriptor rec, IDictionary<String, Object> flat)
+        {
+            flat.Add("ProjectId", rec.ProjectId);
+            if (rec.ProjectName != null)
+                flat.Add("ProjectName", rec.ProjectName);
+            if (rec.TeamName != null)
+                flat.Add("TeamName", rec.TeamName);
+            AddInstanceIdentifier(flat);
+        }
+
+
+        protected void OutputProjectInfoRecords(IOutputTransaction trx, ProjectDescriptor project)
+        {
+            var flat = new SortedDictionary<String, Object>();
+            AddPrimaryKeyElements(project, flat);
+
+            flat.Add("LastCrawlDate", DateTime.Now);
+
+            if (project.PresetName != null)
+                flat.Add("Preset", project.PresetName);
+
+
+            if (project.Policies != null)
+                flat.Add("Policies", project.Policies);
+
+            foreach (var lastScanProduct in project.LatestScanDateByProduct.Keys)
+                flat.Add($"{lastScanProduct}_LastScanDate",
+                    project.LatestScanDateByProduct[lastScanProduct]);
+
+            foreach (var scanCountProduct in project.ScanCountByProduct.Keys)
+                flat.Add($"{scanCountProduct}_Scans",
+                    project.ScanCountByProduct[scanCountProduct]);
+
+            if (project.CustomFields != null && project.CustomFields.Count > 0)
+                flat.Add("CustomFields", project.CustomFields);
+
+            trx.write(ProjectInfoOut, flat);
+        }
+
+
     }
 }

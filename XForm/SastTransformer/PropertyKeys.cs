@@ -16,13 +16,7 @@ namespace CxAnalytix.XForm.SastTransformer
         public static readonly String KEY_SCANSTART = "ScanStart";
         public static readonly String KEY_SCANRISK = "ScanRisk";
         public static readonly String KEY_SCANRISKSEV = "ScanRiskSeverity";
-        public static readonly String KEY_PRESET = "Preset";
-        public static readonly String KEY_PROJECTID = "ProjectId";
-        public static readonly String KEY_PROJECTNAME = "ProjectName";
-        public static readonly String KEY_TEAMNAME = "TeamName";
         public static readonly String KEY_SIMILARITYID = "SimilarityId";
-        public static readonly String KEY_INSTANCEID = "InstanceId";
-        public static readonly String KEY_CUSTOMFIELDS = "CustomFields";
         public static readonly String KEY_ENGINESTART = "EngineStart";
         public static readonly String KEY_ENGINEFINISH = "EngineFinished";
     }

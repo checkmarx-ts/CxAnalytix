@@ -24,6 +24,8 @@ using CxRestClient.Utility;
 using SDK.Modules.Transformer.Data;
 using static SDK.Modules.Transformer.Data.ScanDescriptor;
 using CxAnalytix.XForm.Common;
+using CxRestClient.MNO.Collections;
+using System.Linq;
 
 namespace CxAnalytix.XForm.SastTransformer
 {
@@ -50,7 +52,6 @@ namespace CxAnalytix.XForm.SastTransformer
 		private DateTime CheckTime { get; set; } = DateTime.Now;
 
 		private CxSASTRestContext RestContext { get; set; }
-		private CancellationToken CancelToken { get; set; }
 
 
 		bool IncludeMNO { get; set; }
@@ -69,7 +70,7 @@ namespace CxAnalytix.XForm.SastTransformer
 			try
 			{
 				using (var report = CxSastXmlReport.GetXmlReport(RestContext,
-					CancelToken, scan.ScanId))
+					ThreadOpts.CancellationToken, scan.ScanId))
 				{
 					_log.Debug($"XML Report for scan {scan.ScanId} retrieved.");
 					ProcessSASTReport(trx, scan, report);
@@ -118,7 +119,7 @@ namespace CxAnalytix.XForm.SastTransformer
 
 			try
 			{
-				var licenses = CxOsaLicenses.GetLicenses(RestContext, CancelToken, sd.ScanId);
+				var licenses = CxOsaLicenses.GetLicenses(RestContext, ThreadOpts.CancellationToken, sd.ScanId);
 
 				foreach (var l in licenses)
 				{
@@ -147,7 +148,7 @@ namespace CxAnalytix.XForm.SastTransformer
 
 			try
 			{
-				var libraries = CxOsaLibraries.GetLibraries(RestContext, CancelToken, sd.ScanId);
+				var libraries = CxOsaLibraries.GetLibraries(RestContext, ThreadOpts.CancellationToken, sd.ScanId);
 
 				foreach (var lib in libraries)
 					libraryIndex.Add(lib.LibraryId, lib);
@@ -175,7 +176,7 @@ namespace CxAnalytix.XForm.SastTransformer
 			try
 			{
 				var vulns = CxOsaVulnerabilities.GetVulnerabilities(RestContext,
-					CancelToken, sd.ScanId);
+					ThreadOpts.CancellationToken, sd.ScanId);
 
 				var header = new SortedDictionary<String, Object>();
 				AddPrimaryKeyElements(sd.Project, header);
@@ -255,7 +256,7 @@ namespace CxAnalytix.XForm.SastTransformer
 
 			try
 			{
-				var summary = CxOsaSummaryReport.GetReport(RestContext, CancelToken, sd.ScanId);
+				var summary = CxOsaSummaryReport.GetReport(RestContext, ThreadOpts.CancellationToken, sd.ScanId);
 
 				flat.Add("HighVulnerabilityLibraries", summary.HighVulnerabilityLibraries);
 				flat.Add("LowVulnerabilityLibraries", summary.LowVulnerabilityLibraries);
@@ -289,7 +290,7 @@ namespace CxAnalytix.XForm.SastTransformer
 
 		public override void DoTransform(CancellationToken token)
 		{
-			ThreadOpts.CancellationToken = CancelToken = token;
+			ThreadOpts.CancellationToken = token;
 
 			var conCfg = Config.GetConfig<CxSASTConnection>();
             var creds = Config.GetConfig<CxCredentials>();
@@ -306,7 +307,7 @@ namespace CxAnalytix.XForm.SastTransformer
 			RestContext = restBuilder.Build();
 
 			IncludeMNO = !String.IsNullOrEmpty(conCfg.MNOUrl);
-			IncludeOSA = LicenseChecks.OsaIsLicensed(RestContext, CancelToken);
+			IncludeOSA = LicenseChecks.OsaIsLicensed(RestContext, ThreadOpts.CancellationToken);
 
             ResolveScans().Wait();
 
@@ -321,7 +322,7 @@ namespace CxAnalytix.XForm.SastTransformer
 
 			var teamsTask = PopulateTeams();
 
-			var projectsTask = Task.Run(() => CxProjects.GetProjects(RestContext, CancelToken), CancelToken);
+			var projectsTask = Task.Run(() => CxProjects.GetProjects(RestContext, ThreadOpts.CancellationToken), ThreadOpts.CancellationToken);
 
 			Policies = await policyTask;
 			Teams = await teamsTask;
@@ -342,7 +343,7 @@ namespace CxAnalytix.XForm.SastTransformer
 					try
 					{
 						IEnumerable<int> projectPolicyList = CxMnoPolicies.GetPolicyIdsForProject
-							(RestContext, CancelToken, p.ProjectId);
+							(RestContext, ThreadOpts.CancellationToken, p.ProjectId);
 
 						if (projectPolicyList != null)
 						{
@@ -393,11 +394,11 @@ namespace CxAnalytix.XForm.SastTransformer
 				if (!_loadedProjects.TryAdd(p.ProjectId,
 					new ProjectDescriptor()
 					{
-						ProjectId = p.ProjectId,
+						ProjectId = Convert.ToString(p.ProjectId),
 						ProjectName = p.ProjectName,
 						TeamName = teamName,
 						TeamId = p.TeamId,
-						PresetId = p.PresetId,
+						PresetId = Convert.ToString(p.PresetId),
 						PresetName = presetName,
 						Policies = combinedPolicyNames,
 						CustomFields = cfDict
@@ -416,7 +417,7 @@ namespace CxAnalytix.XForm.SastTransformer
 			// _loadedProjects has a collection of projects loaded from the SAST system
 			State.ConfirmProjects(new List<ProjectDescriptor>(_loadedProjects.Values));
 
-			_log.Info($"{State.ProjectCount} projects are targets to check for new scans. Since last scan: {State.DeletedProjects}"
+			_log.Info($"{State.ProjectCount} projects are targets to check for new scans. Since last crawl: {State.DeletedProjects}"
 				+ $" projects removed, {State.NewProjects} new projects.");
 
 
@@ -428,14 +429,14 @@ namespace CxAnalytix.XForm.SastTransformer
 				{
 
 					// SAST Scans
-					var sastScans = CxSastScans.GetScans(RestContext, CancelToken, CxSastScans.ScanStatus.Finished, p.ProjectId);
+					var sastScans = CxSastScans.GetScans(RestContext, ThreadOpts.CancellationToken, CxSastScans.ScanStatus.Finished, Convert.ToInt32(p.ProjectId));
 
 					foreach (var s in sastScans)
 					{
 						// Add to crawl state.
 						if (_log.IsTraceEnabled())
 							_log.Trace($"SAST scan record: {s}");
-						State.AddScan(s.ProjectId, s.ScanType, ScanProductType.SAST, s.ScanId, s.FinishTime, s.Engine);
+						State.AddScan(Convert.ToString(s.ProjectId), s.ScanType, ScanProductType.SAST, s.ScanId, s.FinishTime, s.Engine);
 						SastScanCache.TryAdd(s.ScanId, s);
 					}
 
@@ -443,13 +444,13 @@ namespace CxAnalytix.XForm.SastTransformer
 					if (IncludeOSA)
 					{
 						// OSA scans
-						var osaScans = CxOsaScans.GetScans(RestContext, CancelToken, p.ProjectId);
+						var osaScans = CxOsaScans.GetScans(RestContext, ThreadOpts.CancellationToken, Convert.ToInt32(p.ProjectId));
 						foreach (var s in osaScans)
 						{
 							// Add to crawl state.
 							if (_log.IsTraceEnabled())
 								_log.Trace($"OSA scan record: {s}");
-							State.AddScan(s.ProjectId, "Composition", ScanProductType.SCA, s.ScanId, s.FinishTime, "N/A");
+							State.AddScan(Convert.ToString(s.ProjectId), "Composition", ScanProductType.SCA, s.ScanId, s.FinishTime, "N/A");
 							ScaScanCache.TryAdd(s.ScanId, s);
 						}
 					}
@@ -467,7 +468,7 @@ namespace CxAnalytix.XForm.SastTransformer
 
 				ConcurrentDictionary<String, String> retVal = new ConcurrentDictionary<string, string>();
 
-				var teamEnum = CxTeams.GetTeams(RestContext, CancelToken);
+				var teamEnum = CxTeams.GetTeams(RestContext, ThreadOpts.CancellationToken);
 
 				foreach (var team in teamEnum)
 				{
@@ -480,7 +481,7 @@ namespace CxAnalytix.XForm.SastTransformer
 
 				return retVal;
 
-			}, CancelToken);
+			}, ThreadOpts.CancellationToken);
 		}
 
 		private async Task<ConcurrentDictionary<int, String>> PopulatePresets()
@@ -491,7 +492,7 @@ namespace CxAnalytix.XForm.SastTransformer
 
 			   ConcurrentDictionary<int, String> retVal = new ConcurrentDictionary<int, string>();
 
-			   var presetEnum = CxPresets.GetPresets(RestContext, CancelToken);
+			   var presetEnum = CxPresets.GetPresets(RestContext, ThreadOpts.CancellationToken);
 
 			   foreach (var preset in presetEnum)
 			   {
@@ -503,7 +504,7 @@ namespace CxAnalytix.XForm.SastTransformer
 			   }
 
 			   return retVal;
-		   }, CancelToken);
+		   }, ThreadOpts.CancellationToken);
 		}
 
 		private async Task<ProjectPolicyIndex> PopulatePolicies()
@@ -518,9 +519,9 @@ namespace CxAnalytix.XForm.SastTransformer
 						{
 							_log.Debug("Retrieving policies, if available.");
 
-							return new ProjectPolicyIndex(CxMnoPolicies.GetAllPolicies(RestContext, CancelToken));
+							return new ProjectPolicyIndex(CxMnoPolicies.GetAllPolicies(RestContext, ThreadOpts.CancellationToken));
 
-						}, CancelToken);
+						}, ThreadOpts.CancellationToken);
 				}
 				catch (Exception ex)
 				{
@@ -574,15 +575,16 @@ namespace CxAnalytix.XForm.SastTransformer
 				// Project info is a moment-in-time sample of the state of the project.  This can be output
 				// in a transaction context different than the scans.
 				using (var pinfoTrx = Output.StartTransaction () )
-					if (PolicyViolations.TryAdd(project.ProjectId, new ViolatedPolicyCollection()))
+					if (PolicyViolations.TryAdd(Convert.ToInt32(project.ProjectId), new ViolatedPolicyCollection()))
 					{
 						if (Policies != null)
 							try
 							{
                                 // Collect policy violations, only once per project
-                                var violations = CxMnoRetreivePolicyViolations.GetViolations(RestContext, CancelToken, project.ProjectId, Policies);
+                                var violations = CxMnoRetreivePolicyViolations.GetViolations(RestContext, ThreadOpts.CancellationToken, 
+									Convert.ToInt32(project.ProjectId), Policies);
                                 if (violations != null)
-                                    PolicyViolations[project.ProjectId] = violations;
+                                    PolicyViolations[Convert.ToInt32(project.ProjectId)] = violations;
                             }
 							catch (Exception ex)
 							{
@@ -592,7 +594,7 @@ namespace CxAnalytix.XForm.SastTransformer
 
 						OutputProjectInfoRecords(pinfoTrx, project);
 
-						if (!CancelToken.IsCancellationRequested)
+						if (!ThreadOpts.CancellationToken.IsCancellationRequested)
 							pinfoTrx.Commit();
 					}
 
@@ -600,17 +602,18 @@ namespace CxAnalytix.XForm.SastTransformer
 				// before the scan date is updated.
 				foreach (var scan in State.GetScansForProject(project.ProjectId))
 				{
-					if (CancelToken.IsCancellationRequested)
+					if (ThreadOpts.CancellationToken.IsCancellationRequested)
 						break;
 
 					using (var scanTrx = Output.StartTransaction())
 					{
 						try
 						{
-							// Increment the policy violation stats for each scan.
-							scan.IncrementPolicyViolations(PolicyViolations[scan.Project.ProjectId].GetViolatedRulesByScanId(scan.ScanId));
+                            // Increment the policy violation stats for each scan.
+                            foreach (var violated in PolicyViolations[Convert.ToInt32(scan.Project.ProjectId)].GetViolatedRulesByScanId(scan.ScanId))
+                                scan.IncrementPolicyViolation(Convert.ToString(violated.PolicyId), Convert.ToString(violated.RuleId));
 
-							_log.Info($"Processing {scan.ScanProduct} scan {scan.ScanId}:{scan.Project.ProjectId}:{scan.Project.TeamName}:{scan.Project.ProjectName}[{scan.FinishedStamp}]");
+                            _log.Info($"Processing {scan.ScanProduct} scan {scan.ScanId}:{scan.Project.ProjectId}:{scan.Project.TeamName}:{scan.Project.ProjectName}[{scan.FinishedStamp}]");
 
 							switch (scan.ScanProduct)
 							{
@@ -627,7 +630,7 @@ namespace CxAnalytix.XForm.SastTransformer
 							OutputPolicyViolationDetails(scanTrx, scan);
 
 							// Persist the date of this scan since it has been output.
-							if (!CancelToken.IsCancellationRequested && scanTrx.Commit())
+							if (!ThreadOpts.CancellationToken.IsCancellationRequested && scanTrx.Commit())
 							{
 								State.ScanCompleted(scan);
 								continue;
@@ -658,7 +661,7 @@ namespace CxAnalytix.XForm.SastTransformer
 			header.Add(PropertyKeys.KEY_SCANPRODUCT, scan.ScanProduct.ToString());
 			header.Add(PropertyKeys.KEY_SCANTYPE, scan.ScanType);
 
-			var violatedRules = PolicyViolations[scan.Project.ProjectId].
+			var violatedRules = PolicyViolations[Convert.ToInt32(scan.Project.ProjectId)].
 				GetViolatedRulesByScanId(scan.ScanId);
 
 			if (violatedRules != null)
@@ -933,7 +936,7 @@ namespace CxAnalytix.XForm.SastTransformer
 			flat.Add("FileCount", SastScanCache[scanRecord.ScanId].FileCount);
 			flat.Add("CxVersion", SastScanCache[scanRecord.ScanId].CxVersion);
 			flat.Add("Languages", SastScanCache[scanRecord.ScanId].Languages);
-			flat.Add(PropertyKeys.KEY_PRESET, scanRecord.Preset);
+			flat.Add("Preset", scanRecord.Preset);
 			flat.Add("Initiator", scanRecord.Initiator);
 			flat.Add("DeepLink", scanRecord.DeepLink);
 			flat.Add("ScanTime", scanRecord.ScanTime);
@@ -960,38 +963,6 @@ namespace CxAnalytix.XForm.SastTransformer
 			}
 		}
 
-		private void OutputProjectInfoRecords(IOutputTransaction trx, ProjectDescriptor project)
-		{
-			var flat = new SortedDictionary<String, Object>();
-			AddPrimaryKeyElements(project, flat);
-
-			flat.Add("LastCrawlDate", DateTime.Now);
-
-			flat.Add(PropertyKeys.KEY_PRESET, project.PresetName);
-			flat.Add("Policies", project.Policies);
-
-			foreach (var lastScanProduct in project.LatestScanDateByProduct.Keys)
-				flat.Add($"{lastScanProduct}_LastScanDate",
-					project.LatestScanDateByProduct[lastScanProduct]);
-
-			foreach (var scanCountProduct in project.ScanCountByProduct.Keys)
-				flat.Add($"{scanCountProduct}_Scans",
-					project.ScanCountByProduct[scanCountProduct]);
-
-			if (project.CustomFields != null && project.CustomFields.Count > 0)
-				flat.Add(PropertyKeys.KEY_CUSTOMFIELDS, project.CustomFields);
-
-			trx.write(ProjectInfoOut, flat);
-		}
-
-		private void AddPrimaryKeyElements(ProjectDescriptor rec, IDictionary<String, Object> flat)
-		{
-			flat.Add(PropertyKeys.KEY_PROJECTID, rec.ProjectId);
-			flat.Add(PropertyKeys.KEY_PROJECTNAME, rec.ProjectName);
-			flat.Add(PropertyKeys.KEY_TEAMNAME, rec.TeamName);
-			if (!String.IsNullOrEmpty(Service.InstanceIdentifier))
-				flat.Add(PropertyKeys.KEY_INSTANCEID, Service.InstanceIdentifier);
-		}
 
 		private static String GetFlatPolicyNames(PolicyCollection policies,
 			IEnumerable<int> policyIds)

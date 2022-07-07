@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 using CxRestClient.Utility;
 using CxRestClient.MNO.dto;
-using SDK.Modules.Transformer.Data;
+using CxRestClient.MNO.Collections;
 
 namespace CxRestClient.MNO
 {

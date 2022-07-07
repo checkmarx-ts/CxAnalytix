@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SDK.Modules.Transformer.Data
+namespace CxRestClient.MNO.Collections
 {
     public class PolicyDescriptor
     {
@@ -20,8 +20,8 @@ namespace SDK.Modules.Transformer.Data
 
 
         public int PolicyId { get; set; }
-        public String? Name { get; set; }
-        public String? Description { get; set; }
+        public String Name { get; set; }
+        public String Description { get; set; }
         public Boolean isActive { get; set; }
         public DateTime CreatedOn { get; set; }
 
@@ -44,7 +44,7 @@ namespace SDK.Modules.Transformer.Data
                 AddRule(rule);
         }
 
-        public override string? ToString()
+        public override string ToString()
         {
             return $"{(isActive ? "ACTIVE" : "INACTIVE")} {PolicyId}: {Name} [{Description}] ({CreatedOn})";
         }

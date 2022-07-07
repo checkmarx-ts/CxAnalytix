@@ -13,6 +13,7 @@ namespace SDK.Modules.Transformer.Data
         {
             ScanCountByProduct = new Dictionary<ScanProductType, int>();
             LatestScanDateByProduct = new Dictionary<ScanProductType, DateTime>();
+            ProjectId = String.Empty;
         }
 
         internal ProjectDescriptor (ProjectDescriptor src)
@@ -37,7 +38,7 @@ namespace SDK.Modules.Transformer.Data
         /// <summary>
         /// The project id as it is stored in the SAST system.
         /// </summary>
-        public int ProjectId { get; set; }
+        public String ProjectId { get; set; }
         /// <summary>
         /// The name of the project.
         /// </summary>
@@ -53,7 +54,7 @@ namespace SDK.Modules.Transformer.Data
         /// <summary>
         /// A numeric identifier of the preset configured for the project.
         /// </summary>
-        public int PresetId { get; set; }
+        public String? PresetId { get; set; }
         /// <summary>
         /// A human-eadable name for the preset.
         /// </summary>
