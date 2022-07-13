@@ -17,7 +17,8 @@ namespace SDK.Modules.Transformer.Data
 
         public ScanDescriptor()
         {
-            SeverityCounts = new Dictionary<string, long>();
+            SeverityCounts = new();
+            ViolatedPolicies = new();
         }
 
         /// <summary>
@@ -77,7 +78,7 @@ namespace SDK.Modules.Transformer.Data
         public int RulesViolated { get; private set; }
         public int Violations { get; private set; }
 
-        private HashSet<String> _policyViolations = new HashSet<String>();
+        public HashSet<String> ViolatedPolicies { get; private set; }
         private HashSet<String> _ruleViolations = new HashSet<String>();
 
         public bool HasPoliciesApplied { get; private set; }
@@ -91,10 +92,10 @@ namespace SDK.Modules.Transformer.Data
 
             Violations++;
 
-            if (!_policyViolations.Contains (policyId))
+            if (!ViolatedPolicies.Contains (policyId))
             {
                 PoliciesViolated++;
-                _policyViolations.Add(policyId);
+                ViolatedPolicies.Add(policyId);
             }
 
             if (!_ruleViolations.Contains(ruleId))

@@ -8,10 +8,14 @@ namespace CxRestClient.Utility
 {
     public class UrlUtils
     {
-        public static String MakeUrl(String url, String suffix)
+        public static String MakeUrl(String url, params String[] suffixes)
         {
-            return $"{url.TrimEnd('/')}/{suffix.TrimStart('/')}";
+            StringBuilder result = new(url.TrimEnd('/'));
 
+            foreach (var suffix in suffixes)
+                result.Append("/").Append(suffix.TrimStart('/'));
+
+            return result.ToString();
         }
 
         public static String MakeQueryString(Dictionary<String, String> query)

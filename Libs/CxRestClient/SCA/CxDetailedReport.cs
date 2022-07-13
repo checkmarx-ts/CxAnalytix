@@ -3,6 +3,7 @@ using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -24,6 +25,35 @@ namespace CxRestClient.SCA
 
 
 
+        [JsonArray]
+        public class VulnerabilityIndex : AggregatedCollection<Vulnerability>
+        {
+            private Dictionary<String, Vulnerability> _index = new();
+
+            public Vulnerability Lookup(String id) => _index[id];
+
+            public override void Add(Vulnerability item)
+            {
+                base.Add(item);
+                _index[item.Id] = item;
+            }
+        }
+
+        [JsonArray]
+        public class LicenseIndex : AggregatedCollection<License>
+        {
+            private Dictionary<String, License> _index = new();
+
+            public License Lookup(String id) => _index[id];
+
+            public override void Add(License item)
+            {
+                base.Add(item);
+                _index[item.Name] = item;
+            }
+        }
+
+
         [JsonObject(MemberSerialization.OptIn)]
         public class DetailedRiskReport
         {
@@ -33,9 +63,9 @@ namespace CxRestClient.SCA
             public List<Package> Packages { get; internal set; }
 
             [JsonProperty(PropertyName = "Vulnerabilities")]
-            public List<Vulnerability> Vulnerabilities { get; internal set; }
+            public VulnerabilityIndex Vulnerabilities { get; internal set; }
             [JsonProperty(PropertyName = "Licenses")]
-            public List<License> Licenses { get; internal set; }
+            public LicenseIndex Licenses { get; internal set; }
             [JsonProperty(PropertyName = "Policies")]
             public List<Policy> Policies { get; internal set; }
 
@@ -95,6 +125,10 @@ namespace CxRestClient.SCA
 
             [JsonProperty(PropertyName = "ScanOrigin")]
             public String ScanOrigin { get; internal set; }
+
+            [JsonProperty(PropertyName = "ExploitablePathsFound")]
+            public int ExploitablePathsFound { get; internal set; }
+
 
             [JsonProperty(PropertyName = "BuildBreakerPolicies")]
             public int BuildBreakerPolicies { get; internal set; }
@@ -316,21 +350,46 @@ namespace CxRestClient.SCA
             public String Name { get; internal set; }
             [JsonProperty(PropertyName = "IsViolated")]
             public Boolean IsViolated { get; internal set; }
+
             [JsonProperty(PropertyName = "violatingConditionGroups")]
-            public List<String> ViolatingConditionGroups { get; internal set; }
+            public List<PolicyRuleConditionGroups> ViolatingConditionGroups { get; internal set; }
 
         }
 
+        [JsonObject(MemberSerialization.OptIn)]
+        public class PolicyRuleConditionGroups
+        {
+            [JsonProperty(PropertyName = "violatingPackages")]
+            public List<PoliyRuleViolatingPackages> ViolatingPackages { get; internal set; }
+        }
 
 
-        public static DetailedRiskReport GetDetailedReport(CxSCARestContext ctx, CancellationToken token, String scanId)
+        [JsonObject(MemberSerialization.OptIn)]
+        public class PoliyRuleViolatingPackages
+        {
+            [JsonProperty(PropertyName = "id")]
+            public String Id { get; internal set; }
+            [JsonProperty(PropertyName = "ViolatingEntities")]
+            public List<PolicyRuleViolation> ViolationDetails { get; internal set; }
+        }
+
+        [JsonObject(MemberSerialization.OptIn)]
+        public class PolicyRuleViolation
+        {
+            [JsonProperty(PropertyName = "id")]
+            public String Id { get; internal set; }
+            [JsonProperty(PropertyName = "conditionCategory")]
+            public String Category { get; internal set; }
+        }
+
+        public static DetailedRiskReport GetDetailedReport(CxSCARestContext ctx, CancellationToken token, String riskReportId)
         {
             return WebOperation.ExecuteGet<DetailedRiskReport>(ctx.Json.CreateClient,
                 (response) =>
                 {
                     return JsonUtils.DeserializeFromStream<DetailedRiskReport>(response.Content.ReadAsStreamAsync().Result);
                 },
-                UrlUtils.MakeUrl(ctx.ApiUrl, String.Format(URL_SUFFIX, scanId)), ctx, token);
+                UrlUtils.MakeUrl(ctx.ApiUrl, String.Format(URL_SUFFIX, riskReportId)), ctx, token);
 
         }
 

@@ -112,6 +112,10 @@ namespace CxRestClient.Utility
 							}
 						}
 					}
+					catch(Newtonsoft.Json.JsonException jex)
+                    {
+                        throw new UnrecoverableOperationException($"Last exception caught: {jex.GetType().Name}: {jex.Message}");
+					}
 					catch (Exception ex)
 					{
 						if (!recoveryStartedAt.HasValue)
@@ -170,7 +174,7 @@ namespace CxRestClient.Utility
 				, onSuccess
 				, (client) =>
 				{
-					_log.Trace($"Executing GET operation at {url}");
+					_log.Debug($"Executing GET operation at {url}");
 
 					try
 					{
@@ -214,7 +218,7 @@ namespace CxRestClient.Utility
 				, onSuccess
 				, (client) =>
 				{
-					_log.Trace($"Executing POST operation at {url}");
+					_log.Debug($"Executing POST operation at {url}");
 
 					try
 					{

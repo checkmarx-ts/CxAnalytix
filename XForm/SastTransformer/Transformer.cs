@@ -180,13 +180,13 @@ namespace CxAnalytix.XForm.SastTransformer
 
 				var header = new SortedDictionary<String, Object>();
 				AddPrimaryKeyElements(sd.Project, header);
-				header.Add(PropertyKeys.KEY_SCANFINISH, sd.FinishedStamp);
+				header.Add("ScanFinished", sd.FinishedStamp);
 
 				foreach (var vuln in vulns)
 				{
 					var flat = new SortedDictionary<String, Object>(header);
 
-					flat.Add(PropertyKeys.KEY_SCANID, sd.ScanId);
+					flat.Add("ScanId", sd.ScanId);
 
 					flat.Add("VulnerabilityId", vuln.VulerabilityId);
 					flat.Add(PropertyKeys.KEY_SIMILARITYID, vuln.SimilarityId);
@@ -246,13 +246,12 @@ namespace CxAnalytix.XForm.SastTransformer
 			var flat = new SortedDictionary<String, Object>();
 			AddPrimaryKeyElements(sd.Project, flat);
 			AddPolicyViolationProperties(sd, flat);
-			flat.Add(PropertyKeys.KEY_SCANID, sd.ScanId);
-			flat.Add(PropertyKeys.KEY_SCANSTART, ScaScanCache[sd.ScanId].StartTime);
-			flat.Add(PropertyKeys.KEY_SCANFINISH, ScaScanCache[sd.ScanId].FinishTime);
+			flat.Add("ScanId", sd.ScanId);
+			flat.Add("ScanStart", ScaScanCache[sd.ScanId].StartTime);
+			flat.Add("ScanFinished", ScaScanCache[sd.ScanId].FinishTime);
 
 			foreach (var k in licenseCount.Keys)
 				flat.Add($"Legal{k}", licenseCount[k]);
-
 
 			try
 			{
@@ -657,9 +656,9 @@ namespace CxAnalytix.XForm.SastTransformer
 		{
 			var header = new SortedDictionary<String, Object>();
 			AddPrimaryKeyElements(scan.Project, header);
-			header.Add(PropertyKeys.KEY_SCANID, scan.ScanId);
-			header.Add(PropertyKeys.KEY_SCANPRODUCT, scan.ScanProduct.ToString());
-			header.Add(PropertyKeys.KEY_SCANTYPE, scan.ScanType);
+			header.Add("ScanId", scan.ScanId);
+			header.Add("ScanProduct", scan.ScanProduct.ToString());
+			header.Add("ScanType", scan.ScanType);
 
 			var violatedRules = PolicyViolations[Convert.ToInt32(scan.Project.ProjectId)].
 				GetViolatedRulesByScanId(scan.ScanId);
@@ -697,10 +696,10 @@ namespace CxAnalytix.XForm.SastTransformer
 		{
 			var reportRec = new SortedDictionary<String, Object>();
 			AddPrimaryKeyElements(scan.Project, reportRec);
-			reportRec.Add(PropertyKeys.KEY_SCANID, scan.ScanId);
-			reportRec.Add(PropertyKeys.KEY_SCANPRODUCT, scan.ScanProduct.ToString ());
-			reportRec.Add(PropertyKeys.KEY_SCANTYPE, scan.ScanType);
-			reportRec.Add(PropertyKeys.KEY_SCANFINISH, scan.FinishedStamp);
+			reportRec.Add("ScanId", scan.ScanId);
+			reportRec.Add("ScanProduct", scan.ScanProduct.ToString ());
+			reportRec.Add("ScanType", scan.ScanType);
+			reportRec.Add("ScanFinished", scan.FinishedStamp);
 
 			Queue<SortedDictionary<String, Object>> writeQueue = null;
 			SortedDictionary<String, Object> curResultRec = null;
@@ -922,11 +921,11 @@ namespace CxAnalytix.XForm.SastTransformer
 
 			var flat = new SortedDictionary<String, Object>();
 			AddPrimaryKeyElements(scanRecord.Project, flat);
-			flat.Add(PropertyKeys.KEY_SCANID, scanRecord.ScanId);
-			flat.Add(PropertyKeys.KEY_SCANPRODUCT, scanRecord.ScanProduct.ToString());
-			flat.Add(PropertyKeys.KEY_SCANTYPE, scanRecord.ScanType);
-			flat.Add(PropertyKeys.KEY_SCANFINISH, scanRecord.FinishedStamp);
-			flat.Add(PropertyKeys.KEY_SCANSTART, SastScanCache[scanRecord.ScanId].StartTime);
+			flat.Add("ScanId", scanRecord.ScanId);
+			flat.Add("ScanProduct", scanRecord.ScanProduct.ToString());
+			flat.Add("ScanType", scanRecord.ScanType);
+			flat.Add("ScanFinished", scanRecord.FinishedStamp);
+			flat.Add("ScanStart", SastScanCache[scanRecord.ScanId].StartTime);
 			flat.Add(PropertyKeys.KEY_ENGINESTART, SastScanCache[scanRecord.ScanId].EngineStartTime);
 			flat.Add(PropertyKeys.KEY_ENGINEFINISH, SastScanCache[scanRecord.ScanId].EngineFinishTime);
 			flat.Add(PropertyKeys.KEY_SCANRISK, SastScanCache[scanRecord.ScanId].ScanRisk);
