@@ -311,6 +311,10 @@ namespace CxAnalytix.XForm.ScaTransformer
                     var specificLicense = riskReport.Licenses.Lookup(violationDetails.Id);
                     detail_flat.Add("ViolationSeverity", specificLicense.RiskLevel);
                     break;
+                
+                case "Package":
+                case "SupplyChainRisk":
+                    break;
 
                 default:
                     _log.Warn($"Unknown policy violation category [{violationDetails.Category}] found in project [{riskReport.Summary.ProjectName}]");

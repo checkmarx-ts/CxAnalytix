@@ -105,8 +105,7 @@ namespace CxRestClient.SCA
             [JsonProperty(PropertyName = "Namespace")]
             public String Namespace { get; internal set; }
 
-
-            public static implicit operator String(ExploitableMethod em) => $"{em.ShortName}@{em.SourceFile}@{em.Line}";
+            public override string ToString() => $"{ShortName}@{SourceFile}@{Line}";
 
         }
 
