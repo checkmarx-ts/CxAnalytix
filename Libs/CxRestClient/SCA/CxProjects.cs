@@ -59,7 +59,7 @@ namespace CxRestClient.SCA
         {
 
             using (var r = WebOperation.ExecuteGet<JsonResponseArrayReader<Project>>(ctx.Json.CreateClient, 
-                (response) => new JsonResponseArrayReader<Project>(response.Content.ReadAsStreamAsync().Result),
+                (response) => new JsonResponseArrayReader<Project>(response.Content.ReadAsStream()),
                 UrlUtils.MakeUrl(ctx.ApiUrl, URL_SUFFIX), ctx, token))
                 return new List<Project>(r);
 

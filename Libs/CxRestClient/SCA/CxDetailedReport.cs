@@ -53,6 +53,20 @@ namespace CxRestClient.SCA
             }
         }
 
+        [JsonArray]
+        public class PackageIndex : AggregatedCollection<Package>
+        {
+            private Dictionary<String, Package> _index = new();
+
+            public Package Lookup(String id) => _index[id];
+
+            public override void Add(Package item)
+            {
+                base.Add(item);
+                _index[item.Id] = item;
+            }
+        }
+
 
         [JsonObject(MemberSerialization.OptIn)]
         public class DetailedRiskReport
@@ -60,7 +74,7 @@ namespace CxRestClient.SCA
             [JsonProperty(PropertyName = "RiskReportSummary")]
             public RiskReportSummary Summary { get; internal set; }
             [JsonProperty(PropertyName = "Packages")]
-            public List<Package> Packages { get; internal set; }
+            public PackageIndex Packages { get; internal set; }
 
             [JsonProperty(PropertyName = "Vulnerabilities")]
             public VulnerabilityIndex Vulnerabilities { get; internal set; }
@@ -72,6 +86,27 @@ namespace CxRestClient.SCA
 
             public override string ToString() =>
                 $"{Summary}";
+
+        }
+
+        [JsonObject(MemberSerialization.OptIn)]
+        public class ExploitableMethod
+        {
+            [JsonProperty(PropertyName = "PackageUiIdentifier")]
+            public String PackageId { get; internal set; }
+            [JsonProperty(PropertyName = "SourceFile")]
+            public String SourceFile { get; internal set; }
+            [JsonProperty(PropertyName = "ShortName")]
+            public String ShortName { get; internal set; }
+            [JsonProperty(PropertyName = "FullName")]
+            public String FullName { get; internal set; }
+            [JsonProperty(PropertyName = "Line")]
+            public String Line { get; internal set; }
+            [JsonProperty(PropertyName = "Namespace")]
+            public String Namespace { get; internal set; }
+
+
+            public static implicit operator String(ExploitableMethod em) => $"{em.ShortName}@{em.SourceFile}@{em.Line}";
 
         }
 
@@ -257,7 +292,7 @@ namespace CxRestClient.SCA
             [JsonProperty(PropertyName = "IsIgnored")]
             public Boolean IsIgnored { get; internal set; }
             [JsonProperty(PropertyName = "ExploitableMethods")]
-            public List<String> ExploitableMethods { get; internal set; }
+            public List<ExploitableMethod> ExploitableMethods { get; internal set; }
             [JsonProperty(PropertyName = "Cwe")]
             public String Cwe { get; internal set; }
 
@@ -387,7 +422,7 @@ namespace CxRestClient.SCA
             return WebOperation.ExecuteGet<DetailedRiskReport>(ctx.Json.CreateClient,
                 (response) =>
                 {
-                    return JsonUtils.DeserializeFromStream<DetailedRiskReport>(response.Content.ReadAsStreamAsync().Result);
+                    return JsonUtils.DeserializeFromStream<DetailedRiskReport>(response.Content.ReadAsStream());
                 },
                 UrlUtils.MakeUrl(ctx.ApiUrl, String.Format(URL_SUFFIX, riskReportId)), ctx, token);
 

@@ -57,7 +57,7 @@ namespace CxRestClient.SCA
         public static IEnumerable<Policy> GetPolicies(CxSCARestContext ctx, CancellationToken token)
         {
             using (var r = WebOperation.ExecuteGet<JsonResponseArrayReader<Policy>>(ctx.Json.CreateClient,
-                (response) => new JsonResponseArrayReader<Policy>(response.Content.ReadAsStreamAsync().Result),
+                (response) => new JsonResponseArrayReader<Policy>(response.Content.ReadAsStream()),
                 UrlUtils.MakeUrl(ctx.ApiUrl, URL_SUFFIX), ctx, token))
                 return new List<Policy>(r);
         }

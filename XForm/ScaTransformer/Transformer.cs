@@ -15,7 +15,7 @@ using CxAnalytix.Extensions;
 using static SDK.Modules.Transformer.Data.ScanDescriptor;
 using OutputBootstrapper;
 using CxAnalytix.XForm.ScaTransformer.Policy;
-using ScanHeaderIndex_t = System.Collections.Generic.Dictionary<string, CxRestClient.SCA.CxScans.Scan>;
+using ScanHeaderIndex_t = System.Collections.Concurrent.ConcurrentDictionary<string, CxRestClient.SCA.CxScans.Scan>;
 using CxAnalytix.Interfaces.Outputs;
 
 namespace CxAnalytix.XForm.ScaTransformer
@@ -122,7 +122,7 @@ namespace CxAnalytix.XForm.ScaTransformer
                         _log.Trace($"SCA scan record: {s}");
                     State.AddScan(Convert.ToString(s.ProjectId), s.Origin, ScanProductType.SCA, s.ScanId, s.Updated, null);
 
-                    ScanHeaderIndex.Add(s.ScanId, s);
+                    ScanHeaderIndex[s.ScanId] = s;
                 }
 
             });
@@ -168,7 +168,6 @@ namespace CxAnalytix.XForm.ScaTransformer
                     {
                         _log.Info($"Processing {scan.ScanProduct} scan {scan.ScanId}:{scan.Project.ProjectId}:{ScanHeaderIndex[scan.ScanId].RiskReportId}:{scan.Project.ProjectName}[{scan.FinishedStamp}]");
 
-
                         var riskReport = CxDetailedReport.GetDetailedReport(ctx, ThreadOpts.CancellationToken, ScanHeaderIndex[scan.ScanId].RiskReportId);
 
                         foreach (var policy in riskReport.Policies)
@@ -178,32 +177,80 @@ namespace CxAnalytix.XForm.ScaTransformer
                                         scan.IncrementPolicyViolation(policy.PolicyName, rule.Name);
 
                         OutputScanSummary(scanTrx, scan, riskReport);
-
-
-
+                        OutputScanDetails(scanTrx, scan, riskReport, riskStateTask.Result);
                         OutputPolicyViolations(scanTrx, scan, riskReport, riskStateTask.Result);
 
 
-                        // TODO: Policy violations
-                        // TODO: Scan summary
-                        // TODO: Scan details
-
                         if (!ThreadOpts.CancellationToken.IsCancellationRequested && scanTrx.Commit())
-                        {
                             State.ScanCompleted(scan);
-                            continue;
-                        }
-
                     }
                 }
             });
 
 		}
 
+        private void OutputScanDetails(IOutputTransaction scanTrx, ScanDescriptor scan, CxDetailedReport.DetailedRiskReport riskReport, CxRiskState.IndexedRiskStates stateIndex)
+        {
+            var header = new SortedDictionary<String, Object>();
+            AddPrimaryKeyElements(scan.Project, header);
+            header.Add("ScanFinished", scan.FinishedStamp);
+            header.Add("ScanId", scan.ScanId);
+
+            foreach (var vulnerability in riskReport.Vulnerabilities)
+            {
+                var flat = new SortedDictionary<String, Object>(header);
+                flat.Add("VulnerabilityId", vulnerability.Id);
+                flat.Add("CVEDescription", vulnerability.Description);
+                flat.Add("CVEName", vulnerability.CveName);
+                flat.Add("CVEPubDate", vulnerability.PublishDate);
+                flat.Add("CVEScore", vulnerability.Score);
+                if (vulnerability.References != null && vulnerability.References.Count > 0)
+                    flat.Add("CVEUrl", String.Join(";", vulnerability.References));
+
+                flat.Add("ScanRiskSeverity", vulnerability.Severity);
+                flat.Add("State", stateIndex.Lookup(vulnerability.PackageId, vulnerability.Id).State);
+                flat.Add("CWE", vulnerability.Cwe);
+                flat.Add("Type", vulnerability.Type);
+
+                if (vulnerability.ExploitableMethods != null && vulnerability.ExploitableMethods.Count > 0)
+                    flat.Add("ExploitableMethods", String.Join(";", vulnerability.ExploitableMethods));
+
+                if (vulnerability.Cvss != null)
+                {
+                    flat.Add("CVSS_Score", vulnerability.Cvss.Score);
+                    flat.Add("CVSS_Severity", vulnerability.Cvss.Severity);
+                    flat.Add("CVSS_AttackVector", vulnerability.Cvss.AttackVector);
+                    flat.Add("CVSS_AttackComplexity", vulnerability.Cvss.AttackComplexity);
+                    flat.Add("CVSS_Confidentiality", vulnerability.Cvss.Confidentiality);
+                    flat.Add("CVSS_Availability", vulnerability.Cvss.Availability);
+                    flat.Add("CVSS_Version", vulnerability.Cvss.Version);
+                }
+
+                flat.Add("LibraryId", vulnerability.PackageId);
+                var package = riskReport.Packages.Lookup(vulnerability.PackageId);
+                flat.Add("LibraryLatestReleaseDate", package.NewestVersionReleaseDate);
+                flat.Add("LibraryLatestVersion", package.NewestVersion);
+                flat.Add("LibraryName", package.Name);
+                flat.Add("LibraryReleaseDate", package.ReleaseDate);
+                flat.Add("LibraryVersion", package.Version);
+
+                if (package.Licenses != null && package.Licenses.Count> 0)
+                {
+                    flat.Add("LibraryLicenses", String.Join(";", package.Licenses));
+                    foreach (var license in package.Licenses)
+                    {
+                        var licenseInstance = riskReport.Licenses.Lookup(license);
+                        var fixed_name = licenseInstance.Name.Replace(" ", "");
+                        flat.Add($"LibraryLegalRisk_{fixed_name}", licenseInstance.RiskLevel);
+                    }
+                }
+
+                scanTrx.write(ScaScanDetailOut, flat);
+            }
+        }
+
         private void OutputPolicyViolations(IOutputTransaction trx, ScanDescriptor sd, CxDetailedReport.DetailedRiskReport riskReport, CxRiskState.IndexedRiskStates stateIndex)
         {
-
-
             var header = new SortedDictionary<String, Object>();
             AddPrimaryKeyElements(sd.Project, header);
             header.Add("ScanProduct", sd.ScanProduct.ToString());
@@ -258,31 +305,11 @@ namespace CxAnalytix.XForm.ScaTransformer
                     detail_flat.Add("ViolationSeverity", specificVuln.Severity);
                     detail_flat.Add("ViolationStatus", specificVuln.IsNewInRiskReport ? "New" : "Recurrent");
                     detail_flat.Add("ViolationState", stateIndex.Lookup(specificVuln.PackageId, specificVuln.Id).State);
-                    detail_flat.Add("CveName", specificVuln.CveName);
-                    detail_flat.Add("PublishDate", specificVuln.PublishDate);
-                    detail_flat.Add("CVSS_Score", specificVuln.Cvss.Score);
-                    detail_flat.Add("CVSS_Severity", specificVuln.Cvss.Severity);
-                    detail_flat.Add("CVSS_AttackVector", specificVuln.Cvss.AttackVector);
-                    detail_flat.Add("CVSS_AttackComplexity", specificVuln.Cvss.AttackComplexity);
-                    detail_flat.Add("CVSS_Confidentiality", specificVuln.Cvss.Confidentiality);
-                    detail_flat.Add("CVSS_Availability", specificVuln.Cvss.Availability);
-                    detail_flat.Add("CVSS_Version", specificVuln.Cvss.Version);
-                    detail_flat.Add("Cwe", specificVuln.Cwe);
-                    detail_flat.Add("Type", specificVuln.Type);
                     break;
 
                 case "License":
                     var specificLicense = riskReport.Licenses.Lookup(violationDetails.Id);
                     detail_flat.Add("ViolationSeverity", specificLicense.RiskLevel);
-                    detail_flat.Add("ReferenceType", specificLicense.ReferenceType);
-                    detail_flat.Add("Reference", specificLicense.Reference);
-                    detail_flat.Add("RoyaltyFree", specificLicense.RoyaltyFree);
-                    detail_flat.Add("CopyrightRiskScore", specificLicense.CopyrightRiskScore);
-                    detail_flat.Add("CopyLeft", specificLicense.CopyLeft);
-                    detail_flat.Add("Linking", specificLicense.Linking);
-                    detail_flat.Add("PatentRiskScore", specificLicense.PatentRiskScore);
-                    detail_flat.Add("LicenseUrl", specificLicense.Url);
-                    detail_flat.Add("PackageUsageCount", specificLicense.PackageUsageCount);
                     break;
 
                 default:

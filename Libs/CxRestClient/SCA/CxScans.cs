@@ -109,7 +109,7 @@ namespace CxRestClient.SCA
         public static IEnumerable<Scan> GetScans(CxSCARestContext ctx, CancellationToken token, String projectId)
         {
             using (var r = WebOperation.ExecuteGet<JsonResponseArrayReader<Scan>>(ctx.Json.CreateClient,
-                (response) => new JsonResponseArrayReader<Scan>(response.Content.ReadAsStreamAsync().Result),
+                (response) => new JsonResponseArrayReader<Scan>(response.Content.ReadAsStream()),
                 UrlUtils.MakeUrl(ctx.ApiUrl, URL_SUFFIX,
                 new Dictionary<String, String>() { { "ProjectId", projectId }}), ctx, token))
                 return new List<Scan>(r);

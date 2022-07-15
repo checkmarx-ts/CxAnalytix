@@ -22,7 +22,6 @@ namespace CxRestClient.SCA
         [JsonObject(MemberSerialization.OptIn)]
         public class RiskState
         {
-
             internal static RiskState Default(String projectId, String packageId, String vulnerabilityId) => 
                 new RiskState() { ProjectId = projectId,  PackageId = packageId, VulnerabilityId = vulnerabilityId, State = "ToVerify"};
 
@@ -64,7 +63,7 @@ namespace CxRestClient.SCA
             var idx = WebOperation.ExecuteGet<IndexedRiskStates>(ctx.Json.CreateClient,
                 (response) =>
                 {
-                    return JsonUtils.DeserializeFromStream<IndexedRiskStates>(response.Content.ReadAsStreamAsync().Result);
+                    return JsonUtils.DeserializeFromStream<IndexedRiskStates>(response.Content.ReadAsStream());
                 },
                 UrlUtils.MakeUrl(ctx.ApiUrl, URL_SUFFIX, projectId), ctx, token);
 

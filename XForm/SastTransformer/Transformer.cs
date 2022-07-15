@@ -275,7 +275,7 @@ namespace CxAnalytix.XForm.SastTransformer
 			}
 			catch (Exception ex)
 			{
-				_log.Warn($"Error obtaining summary report for SCA scan {sd.ScanId} " +
+				_log.Warn($"Error obtaining summary report for OSA scan {sd.ScanId} " +
 					$"in project {sd.Project.ProjectName}", ex);
 			}
 
