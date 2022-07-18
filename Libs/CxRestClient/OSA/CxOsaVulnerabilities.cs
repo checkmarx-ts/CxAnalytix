@@ -84,10 +84,8 @@ namespace CxRestClient.OSA
 
 			object IEnumerator.Current => Current;
 
-			public IEnumerator<Vulnerability> GetEnumerator()
-			{
-				return new VulnerabilityReader(_json);
-			}
+			IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+			public IEnumerator<Vulnerability> GetEnumerator() => this;
 
 			void IDisposable.Dispose()
 			{
@@ -99,10 +97,6 @@ namespace CxRestClient.OSA
 				}
 			}
 
-			IEnumerator IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
-			}
 
 			int _arrayPos = 0;
 			JArray _vulnArray;

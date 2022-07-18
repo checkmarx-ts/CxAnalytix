@@ -23,7 +23,7 @@ jobs:
       - name: Platform build linux-x64
         run: dotnet publish --self-contained -c ReleaseLinux -o artifacts/linux-x64 -r linux-x64
       - name: Run InferCsharp win-x64
-        uses: microsoft/infersharpaction@v1.2.1
+        uses: microsoft/infersharpaction@v1.3.1
         id: runinfersharp-win-x64
         with:
           binary-path: artifacts/win-x64
@@ -36,7 +36,7 @@ jobs:
           header: InferCsharp win-x64 Results
           path: filtered-report.txt
       - name: Run InferCsharp linux-x64
-        uses: microsoft/infersharpaction@v1.2.1
+        uses: microsoft/infersharpaction@v1.3.1
         id: runinfersharp-linux-x64
         with:
           binary-path: artifacts/linux-x64
