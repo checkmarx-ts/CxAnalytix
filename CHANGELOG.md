@@ -1,9 +1,20 @@
 # Version History
 
-## 1.4.0
+## 2.0.0
 
-#### Features
+#### FEATURES
 * Issue 12 - SCA compatibility
+    * The data field specification in the Wiki is updated with to reflect data fields used by OSA and/or SCA.  The data concepts in OSA and SCA are slightly different, thus the data fields will reflect these differences.
+
+
+#### UPDATES
+* Using .Net 6.0
+    * Standalone execution has been supported for several versions, it is now the default.  Wiki updates will reflect this default.
+    * Configuration file is now `cxanalytix.config` for all executables.
+    * Configuration file search path has changed, please see the Wiki for details.
+    * Configuration format for 2.x is not backwards compatible with 1.x configuration files.  You will need to re-configure 2.x.
+    * Transformers are now pluggable modules, please see Wiki for information about configuring SAST and SCA transformers.
+    * Outputs have always been pluggable modules, but selection is now more user friendly.  See Wiki for details.
 
 ---
 

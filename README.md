@@ -2,11 +2,24 @@
 
 # CxAnalytix
 
-CxAnalytix is a background process that crawls Checkmarx SAST, OSA, and Management & Orchestration APIs to 
-obtain data about vulnerabilities.  The data is then flattened into a JSON format with the intent to be forwarded to a data analytics 
-platform for analysis.  Analysis can be performed on the data alone or in aggregate with other sources of data.
+CxAnalytix is a background process that crawls and extracts vulnerability data from Checkmarx products.  Currently it supports:
 
-The fields available in generated documents can be found in the [data field specification](https://github.com/checkmarx-ts/CxAnalytix/wiki/SPEC.md).
+* Checkmarx SAST, including:
+    * OSA (optional)
+    * Management & Orchestration (optional)
+* Checkmarx SCA
+
+
+The vulnerability data is then transformed into a flattened JSON document and stored for at-scale data analysis.  Pluggable data transports are implemented for storage flexibility; data can be easily stored and accessed locally or transported to data lakes for more advanced analysis.
+
+The fields available JSON documents can be found in the [data field specification](https://github.com/checkmarx-ts/CxAnalytix/wiki/SPEC.md).
+
+
+## NOTE: 2.0.0 PRE-RELEASE
+
+**CxAnalytix v1.x configurations are not backwards compatible with v2.0.0 configurations.**
+
+*THE WIKI DOES NOT CURRENTLY REFLECT THE DOCUMENTATION FOR THE v2.0.0 PRE-RELEASE.  THE WIKI UPDATE WILL COINCIDE WITH THE RELEASE OF v2.0.0.  IF THERE IS A NEED TO IMMEDIATELY EVALUATE v2.0.0, PLEASE SCHEDULE TIME WITH CHECKMARX PROFESSIONAL SERVICES.*
 
 ## Getting Started
 
