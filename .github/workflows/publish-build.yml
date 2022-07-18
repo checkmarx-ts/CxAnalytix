@@ -36,10 +36,10 @@ jobs:
           username: ${{ secrets.PACKAGE_USER }}
           password: ${{ secrets.PACKAGE_PAT }}
 
-      - name: Dotnet Core 3.1 Install
-        uses: actions/setup-dotnet@v1.7.2
+      - name: Dotnet Core Install
+        uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: 3.1
+          dotnet-version: 6.*
          
           
       - name: Fetch Code @ tag v${{ inputs.tag }}
@@ -48,9 +48,9 @@ jobs:
           ref: refs/tags/v${{ inputs.tag }}
 
       - name: Platform build win-x64
-        run: dotnet publish -p:Version=${{ inputs.tag }}  -c ReleaseWindows -o artifacts/win-x64 -r win-x64
+        run: dotnet publish --self-contained -p:Version=${{ inputs.tag }}  -c ReleaseWindows -o artifacts/win-x64 -r win-x64
       - name: Platform build linux-x64
-        run: dotnet publish -p:Version=${{ inputs.tag }}  -c ReleaseLinux -o artifacts/linux-x64 -r linux-x64
+        run: dotnet publish --self-contained -p:Version=${{ inputs.tag }}  -c ReleaseLinux -o artifacts/linux-x64 -r linux-x64
       
       - name: Make win-x64 package
         run: |

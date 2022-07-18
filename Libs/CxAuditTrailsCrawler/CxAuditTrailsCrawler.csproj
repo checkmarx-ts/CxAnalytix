@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <RootNamespace>CxAnalytix.AuditTrails.Crawler</RootNamespace>
+    <Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
+	  <Company>Checkmarx</Company>
+	  <Authors>Checkmarx</Authors>
+	  <Version>0.0.0</Version>
+	  <Description>CxAnalytix crawls and extracts vulnerability scan data from Checkmarx products.</Description>
+	  <Copyright>Copyright (c) 2019-2022 Checkmarx.  All rights reserved.</Copyright>
+	  <PackageProjectUrl>https://github.com/checkmarx-ts/CxAnalytix/wiki</PackageProjectUrl>
+	  <PackageReadmeFile>$(SolutionDir)README.md</PackageReadmeFile>
+	  <RepositoryUrl>https://github.com/checkmarx-ts/CxAnalytix</RepositoryUrl>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Configuration\Configuration.csproj" />
+    <ProjectReference Include="..\CxAuditTrailsDirectDB\CxAuditTrailsDirectDB.csproj" />
+    <ProjectReference Include="..\OutputBootstrapper\OutputBootstrapper.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.14" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+  </ItemGroup>
+
+</Project>

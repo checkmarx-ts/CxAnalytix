@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+	  <Company>Checkmarx</Company>
+	  <Authors>Checkmarx</Authors>
+	  <Version>0.0.0</Version>
+	  <Description>CxAnalytix crawls and extracts vulnerability scan data from Checkmarx products.</Description>
+	  <Copyright>Copyright (c) 2019-2022 Checkmarx.  All rights reserved.</Copyright>
+	  <PackageProjectUrl>https://github.com/checkmarx-ts/CxAnalytix/wiki</PackageProjectUrl>
+	  <PackageReadmeFile>$(SolutionDir)README.md</PackageReadmeFile>
+	  <RepositoryUrl>https://github.com/checkmarx-ts/CxAnalytix</RepositoryUrl>
+	  <Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
+	  <RootNamespace>CxAnalytix.XForm.ScaTransformer</RootNamespace>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libs\CxRestClient\CxRestClient.csproj" />
+    <ProjectReference Include="..\..\Libs\Interfaces\Interfaces.csproj" />
+    <ProjectReference Include="..\..\SDK\SDK.Modules\SDK.Modules.csproj" />
+    <ProjectReference Include="..\Common\Common.csproj" />
+  </ItemGroup>
+
+</Project>

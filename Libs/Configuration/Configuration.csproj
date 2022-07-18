@@ -1,0 +1,39 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<RootNamespace>CxAnalytix.Configuration</RootNamespace>
+		<Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
+		<Company>Checkmarx</Company>
+		<Authors>Checkmarx</Authors>
+		<Version>0.0.0</Version>
+		<Description>CxAnalytix crawls and extracts vulnerability scan data from Checkmarx products.</Description>
+		<Copyright>Copyright (c) 2019-2022 Checkmarx.  All rights reserved.</Copyright>
+		<PackageProjectUrl>https://github.com/checkmarx-ts/CxAnalytix/wiki</PackageProjectUrl>
+		<PackageReadmeFile>$(SolutionDir)README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/checkmarx-ts/CxAnalytix</RepositoryUrl>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseLinux|AnyCPU'">
+	  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='ReleaseWindows|AnyCPU'">
+	  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Autofac" Version="6.4.0" />
+		<PackageReference Include="log4net" Version="2.0.14" />
+		<PackageReference Include="System.Configuration.ConfigurationManager" Version="6.0.0" />
+	</ItemGroup>
+
+</Project>

@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>CxAnalytix.Executive</RootNamespace>
+	  <Company>Checkmarx</Company>
+	  <Authors>Checkmarx</Authors>
+	  <Version>0.0.0</Version>
+	  <Description>CxAnalytix crawls and extracts vulnerability scan data from Checkmarx products.</Description>
+	  <Copyright>Copyright (c) 2019-2022 Checkmarx.  All rights reserved.</Copyright>
+	  <PackageProjectUrl>https://github.com/checkmarx-ts/CxAnalytix/wiki</PackageProjectUrl>
+	  <PackageReadmeFile>$(SolutionDir)README.md</PackageReadmeFile>
+	  <RepositoryUrl>https://github.com/checkmarx-ts/CxAnalytix</RepositoryUrl>
+	  <Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.14" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Output\AMQPOutput\AMQPOutput.csproj" />
+    <ProjectReference Include="..\..\Output\Log4NetOutput\Log4NetOutput.csproj" />
+    <ProjectReference Include="..\..\Output\MongoDBOutput\MongoDBOutput.csproj" />
+    <ProjectReference Include="..\..\XForm\SastTransformer\SastTransformer.csproj" />
+    <ProjectReference Include="..\..\XForm\ScaTransformer\ScaTransformer.csproj" />
+    <ProjectReference Include="..\Configuration\Configuration.csproj" />
+    <ProjectReference Include="..\CxAuditTrailsCrawler\CxAuditTrailsCrawler.csproj" />
+    <ProjectReference Include="..\CxRestClient\CxRestClient.csproj" />
+    <ProjectReference Include="..\Exceptions\Exceptions.csproj" />
+    <ProjectReference Include="..\Extensions\Extensions.csproj" />
+    <ProjectReference Include="..\OutputBootstrapper\OutputBootstrapper.csproj" />
+    <ProjectReference Include="..\ProjectFilter\ProjectFilter.csproj" />
+  </ItemGroup>
+
+</Project>
