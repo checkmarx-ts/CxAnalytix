@@ -20,7 +20,6 @@ namespace CxRestClient.Utility
             _jtr = new JsonTextReader(_sr);
             _jt = JToken.Load(_jtr);
             _reader = new JTokenReader(_jt);
-
         }
 
         internal JsonResponseArrayReader(JToken json)
@@ -61,7 +60,9 @@ namespace CxRestClient.Utility
 
         }
 
-        public IEnumerator<T> GetEnumerator() => new JsonResponseArrayReader<T>(_jt);
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        public IEnumerator<T> GetEnumerator() => this;
 
         int _arrayPos = 0;
         int _arrayElems = 0;
@@ -96,6 +97,5 @@ namespace CxRestClient.Utility
             throw new NotImplementedException();
         }
 
-        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
     }
 }

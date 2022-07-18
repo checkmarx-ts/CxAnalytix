@@ -30,6 +30,9 @@ namespace CxAnalytix.Out.Log4NetOutput.Config.Impl
 
         protected override object GetElementKey(ConfigurationElement element)
         {
+            if (element == null)
+                return null;
+
             return (element as FileSpecElement).MatchSpec;
         }
 

@@ -36,8 +36,6 @@ namespace CxRestClient.SCA
             internal String _updated { get; set; }
             public DateTime Updated => JsonUtils.NormalizeDateParse(_updated);
 
-            // TODO: RULES
-
             [JsonProperty(PropertyName = "projectIds")]
             public List<String> Projects { get; internal set; }
 

@@ -81,11 +81,8 @@ namespace CxRestClient.OSA
                 }
             }
 
-            public IEnumerator<License> GetEnumerator()
-            {
-                return new LicensesReader(_json);
-
-            }
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            public IEnumerator<License> GetEnumerator() => this;
 
             int _arrayPos = 0;
             JArray _licenseArray;
@@ -118,10 +115,6 @@ namespace CxRestClient.OSA
                 throw new NotImplementedException();
             }
 
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return GetEnumerator();
-            }
         }
 
         public static IEnumerable<License> GetLicenses(CxSASTRestContext ctx, CancellationToken token,

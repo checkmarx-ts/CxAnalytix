@@ -14,6 +14,9 @@ namespace CxAnalytix.Out.AMQPOutput.Config
 
 		protected override object GetElementKey(ConfigurationElement element)
 		{
+			if (element == null)
+				return null;
+
 			return (element as AmqpRecordHeaderConfig).HeaderKey;
 		}
 

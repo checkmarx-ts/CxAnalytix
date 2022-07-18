@@ -16,6 +16,9 @@ namespace CxAnalytix.Configuration.Impls
 
 		protected override object GetElementKey(ConfigurationElement element)
 		{
+			if (element == null)
+				return null;
+
 			return (element as EnabledTransformer).Name;
 		}
 

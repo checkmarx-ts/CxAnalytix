@@ -66,13 +66,8 @@ namespace CxRestClient.OSA
 				}
 			}
 
-			public IEnumerator<Scan> GetEnumerator()
-			{
-				if (_json == null)
-					return new ScansReader();
-
-				return new ScansReader(_json, _projectId);
-			}
+			IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+			public IEnumerator<Scan> GetEnumerator() => this;
 
 			Scan _currentScan = new Scan();
 
@@ -116,11 +111,6 @@ namespace CxRestClient.OSA
 			public void Reset()
 			{
 				throw new NotImplementedException();
-			}
-
-			IEnumerator IEnumerable.GetEnumerator()
-			{
-				return new ScansReader(_json, _projectId);
 			}
 
 		}

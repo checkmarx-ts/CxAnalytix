@@ -113,7 +113,8 @@ namespace CxRestClient
 
         protected LoginToken GetLoginToken(Dictionary<string, string> body)
         {
-            return GetLoginToken(new FormUrlEncodedContent(body));
+            using (var content = new FormUrlEncodedContent(body))
+                return GetLoginToken(content);
         }
 
         #endregion

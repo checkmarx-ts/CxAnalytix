@@ -158,22 +158,23 @@ namespace CxRestClient.OSA
 
 				var beforeCount = returnVulns.Count;
 
-				returnVulns.AddRange(WebOperation.ExecuteGet<IEnumerable<Vulnerability>>(
-					ctx.Sast.Json.CreateClient
-					, (response) =>
-					{
-						using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
-						using (var jtr = new JsonTextReader(sr))
-						{
-							JToken jt = JToken.Load(jtr);
-							return new VulnerabilityReader(jt);
-						}
-					}
-					, url(curPage++)
-					, ctx.Sast
-					, token));
+                using (var page = WebOperation.ExecuteGet<VulnerabilityReader>(
+                    ctx.Sast.Json.CreateClient
+                    , (response) =>
+                    {
+                        using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
+                        using (var jtr = new JsonTextReader(sr))
+                        {
+                            JToken jt = JToken.Load(jtr);
+                            return new VulnerabilityReader(jt);
+                        }
+                    }
+                    , url(curPage++)
+                    , ctx.Sast
+                    , token))
+                    returnVulns.AddRange(page);
 
-				if (returnVulns.Count == beforeCount)
+                if (returnVulns.Count == beforeCount)
 					break;
 			}
 

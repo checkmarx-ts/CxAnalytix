@@ -62,10 +62,8 @@ namespace CxRestClient.SAST
                 }
             }
 
-            public IEnumerator<Preset> GetEnumerator()
-            {
-                return new PresetReader(_json);
-            }
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            public IEnumerator<Preset> GetEnumerator() => this;
 
             public bool MoveNext()
             {
@@ -84,10 +82,6 @@ namespace CxRestClient.SAST
                 throw new NotImplementedException();
             }
 
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return new PresetReader(_json);
-            }
         }
 
         public static IEnumerable<Preset> GetPresets(CxSASTRestContext ctx, CancellationToken token)

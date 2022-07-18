@@ -79,10 +79,8 @@ namespace CxRestClient.SAST
                 _ctx = null;
             }
 
-            public IEnumerator<Project> GetEnumerator()
-            {
-                return new ProjectReader(_json, _ctx, _token);
-            }
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            public IEnumerator<Project> GetEnumerator() => this;
 
             private Project _curProject;
 
@@ -134,10 +132,6 @@ namespace CxRestClient.SAST
                 throw new NotImplementedException();
             }
 
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return new ProjectReader(_json, _ctx, _token);
-            }
 
         }
 

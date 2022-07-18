@@ -130,10 +130,10 @@ namespace SDK.Modules.Transformer
 			try
 			{
 				_currentState = loadCrawlState(firstFileToLoad);
-				if (_currentState.Count == 0 && recoveryPresent)
+				if (_currentState != null && _currentState.Count == 0 && recoveryPresent)
 				{
 					var tempState = loadCrawlState(_recoveryStorageFile);
-					if (tempState.Count > 0)
+					if (tempState != null && tempState.Count > 0)
 					{
 						_currentState = tempState;
 						_log.Warn("State file had 0 records, current state was loaded from the recovery file.");

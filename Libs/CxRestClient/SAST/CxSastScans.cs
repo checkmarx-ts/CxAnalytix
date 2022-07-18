@@ -119,10 +119,8 @@ namespace CxRestClient.SAST
                 }
             }
 
-            public IEnumerator<Scan> GetEnumerator()
-            {
-                return new ScansReader(_json);
-            }
+            IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+            public IEnumerator<Scan> GetEnumerator() => this;
 
             private Scan _currentScan;
 
@@ -164,10 +162,6 @@ namespace CxRestClient.SAST
                 throw new NotImplementedException();
             }
 
-            IEnumerator IEnumerable.GetEnumerator()
-            {
-                return new ScansReader(_json);
-            }
 
         }
 

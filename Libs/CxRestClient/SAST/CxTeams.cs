@@ -48,10 +48,8 @@ namespace CxRestClient.SAST
 				}
 			}
 
-			public IEnumerator<Team> GetEnumerator()
-			{
-				return new TeamReader(_json);
-			}
+			IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+			public IEnumerator<Team> GetEnumerator() => this;
 
 			int _arrayPos = 0;
 			JArray _teamArray;
@@ -82,11 +80,6 @@ namespace CxRestClient.SAST
 			public void Reset()
 			{
 				throw new NotImplementedException();
-			}
-
-			IEnumerator IEnumerable.GetEnumerator()
-			{
-				return new TeamReader(_json);
 			}
 		}
 

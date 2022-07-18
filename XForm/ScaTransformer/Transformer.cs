@@ -395,12 +395,9 @@ namespace CxAnalytix.XForm.ScaTransformer
             flat.Add("VulnerableAndOutdated", outdatedVuln);
             flat.Add("VulnerableAndUpdated", updatedVuln);
 
-            if (sd.HasPoliciesApplied && sd.PoliciesViolated > 0)
-            {
-                flat.Add("RulesViolated", sd.RulesViolated);
-                flat.Add("PolicyViolations", sd.PoliciesViolated);
-                flat.Add("PoliciesViolated", String.Join(";", sd.ViolatedPolicies));
-            }
+            flat.Add("RulesViolated", sd.RulesViolated);
+            flat.Add("PolicyViolations", sd.PoliciesViolated);
+            flat.Add("PoliciesViolated", String.Join(";", sd.ViolatedPolicies));
 
             // TODO: NEW
             flat.Add("TotalDirectDependencies", report.Summary.DirectPackages);

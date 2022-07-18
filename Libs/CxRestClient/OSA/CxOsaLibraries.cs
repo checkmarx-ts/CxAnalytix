@@ -91,10 +91,8 @@ namespace CxRestClient.OSA
 				}
 			}
 
-			public IEnumerator<Library> GetEnumerator()
-			{
-				return new LibrariesReader(_json);
-			}
+			IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+			public IEnumerator<Library> GetEnumerator() => this;
 
 			int _arrayPos = 0;
 			JArray _libArray;
@@ -125,11 +123,6 @@ namespace CxRestClient.OSA
 			public void Reset()
 			{
 				throw new NotImplementedException();
-			}
-
-			IEnumerator IEnumerable.GetEnumerator()
-			{
-				return GetEnumerator();
 			}
 		}
 

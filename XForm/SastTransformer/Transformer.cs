@@ -954,16 +954,13 @@ namespace CxAnalytix.XForm.SastTransformer
 		private static void AddPolicyViolationProperties(ScanDescriptor scanRecord,
 			IDictionary<String, Object> rec)
 		{
-			if (scanRecord.HasPoliciesApplied)
-			{
-				rec.Add("PoliciesViolated", scanRecord.PoliciesViolated);
-				rec.Add("RulesViolated", scanRecord.RulesViolated);
-				rec.Add("PolicyViolations", scanRecord.Violations);
-			}
-		}
+            rec.Add("PoliciesViolated", scanRecord.PoliciesViolated);
+            rec.Add("RulesViolated", scanRecord.RulesViolated);
+            rec.Add("PolicyViolations", scanRecord.Violations);
+        }
 
 
-		private static String GetFlatPolicyNames(PolicyCollection policies,
+        private static String GetFlatPolicyNames(PolicyCollection policies,
 			IEnumerable<int> policyIds)
 		{
 			StringBuilder b = new StringBuilder();

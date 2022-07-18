@@ -81,15 +81,8 @@ namespace SDK.Modules.Transformer.Data
         public HashSet<String> ViolatedPolicies { get; private set; }
         private HashSet<String> _ruleViolations = new HashSet<String>();
 
-        public bool HasPoliciesApplied { get; private set; }
-
         public void IncrementPolicyViolation (String policyId, String ruleId)
         {
-            if (policyId == null || ruleId == null)
-                return;
-            else
-                HasPoliciesApplied = true;
-
             Violations++;
 
             if (!ViolatedPolicies.Contains (policyId))
