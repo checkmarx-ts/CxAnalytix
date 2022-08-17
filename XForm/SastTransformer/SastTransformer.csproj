@@ -33,7 +33,7 @@
 
 
 	<ItemGroup>
-		<PackageReference Include="log4net" Version="2.0.14" />
+		<PackageReference Include="log4net" Version="2.0.15" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="Sax.Net.Core" Version="1.0.2" />
 	</ItemGroup>
