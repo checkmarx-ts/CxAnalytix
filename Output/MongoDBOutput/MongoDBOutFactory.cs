@@ -6,6 +6,7 @@ using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.Exceptions;
 using CxAnalytix.Configuration.Impls;
 using CxAnalytix.Out.MongoDBOutput.Config.Impl;
+using System.Runtime.CompilerServices;
 
 namespace CxAnalytix.Out.MongoDBOutput
 {
@@ -20,8 +21,12 @@ namespace CxAnalytix.Out.MongoDBOutput
 		private static CxAnalytixService Service => CxAnalytix.Configuration.Impls.Config.GetConfig<CxAnalytixService>();
 
 
+		[MethodImpl(MethodImplOptions.Synchronized)]
 		private static void Init()
         {
+			if (_client != null)
+				return;
+
 			try
 			{
 				if (_log.IsDebugEnabled)
@@ -111,7 +116,7 @@ namespace CxAnalytix.Out.MongoDBOutput
 
 		public override IRecordRef RegisterRecord(string recordName)
 		{
-			if (_client == null)
+			if (Client == null)
 				throw new ProcessFatalException("The connection to MongoDB could not be established.");
 
 			lock (_schemas)
