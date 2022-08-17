@@ -20,6 +20,10 @@ namespace CxAnalytix.Utilities
                     var asm = Assembly.LoadFrom(path);
                     retVal.Add(asm);
                 }
+                catch(FileLoadException)
+                {
+                    continue;
+                }
                 catch (BadImageFormatException)
                 {
                     continue;
