@@ -4,7 +4,7 @@ using log4net;
 using System;
 using System.Configuration;
 using System.IO;
-using System.Reflection;
+
 
 namespace CxAnalytix.Configuration.Impls
 {
@@ -13,9 +13,6 @@ namespace CxAnalytix.Configuration.Impls
         private static System.Configuration.Configuration _cfgManager;
         private static ILog _log = LogManager.GetLogger(typeof (Config) );
 		private static readonly String CONFIG_FILE_NAME = "cxanalytix.config";
-		private static readonly String CONFIG_PATH_VARIABLE = "CXANALYTIX_CONFIG_PATH";
-		private static readonly String DEFAULT_FOLDER_NAME = "cxanalytix";
-		private static readonly String DEFAULT_LINUX_PATH = $"/etc/{DEFAULT_FOLDER_NAME}";
 
 		private static IContainer _configDI;
 
@@ -23,7 +20,7 @@ namespace CxAnalytix.Configuration.Impls
 		static Config()
 		{
 			ExeConfigurationFileMap map = new ExeConfigurationFileMap();
-			map.ExeConfigFilename = FindConfigFilePath();
+			map.ExeConfigFilename = ConfigPathResolver.ResolveConfigFilePath(CONFIG_FILE_NAME);
 			_log.DebugFormat("Loading configuration from [{0}]", map.ExeConfigFilename);
 
 			if (!File.Exists(map.ExeConfigFilename))
@@ -50,35 +47,6 @@ namespace CxAnalytix.Configuration.Impls
         {
 			return _configDI.Resolve<T>();
         }
-
-
-		private static String FindConfigFilePath()
-        {
-			String cwd = Path.Combine(Directory.GetCurrentDirectory(), CONFIG_FILE_NAME);
-
-            if (File.Exists(cwd))
-                return cwd;
-
-            if (Environment.GetEnvironmentVariables()[CONFIG_PATH_VARIABLE] != null)
-			{
-				String env = Path.Combine(Environment.GetEnvironmentVariables()[CONFIG_PATH_VARIABLE] as String, CONFIG_FILE_NAME);
-				if (File.Exists(env))
-					return env;
-			}
-
-			String os = String.Empty;
-
-            if (OperatingSystem.IsWindows())
-                os = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), DEFAULT_FOLDER_NAME, CONFIG_FILE_NAME);
-            else
-                os = Path.Combine(DEFAULT_LINUX_PATH, CONFIG_FILE_NAME);
-
-            if (File.Exists(os))
-				return os;
-
-			throw new FileNotFoundException($"Configuration file {CONFIG_FILE_NAME} could not be located.");
-        }
-
 
 
 		private static void EncryptSensitiveSections()

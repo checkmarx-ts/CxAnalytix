@@ -4,10 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 
-[assembly: CxRestClient.IO.NetworkTraceLog()]
-[assembly: CxAnalytix.Extensions.LogTrace()]
-[assembly: log4net.Config.XmlConfigurator(ConfigFile = "cxanalytix.log4net", Watch = true)]
-
 namespace CxAnalytixDaemon
 {
     class Program

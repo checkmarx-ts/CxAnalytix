@@ -10,10 +10,10 @@ using CxAnalytix.Interfaces.Transform;
 using Autofac.Core.Registration;
 using SDK.Modules;
 using CxAnalytix.Exceptions;
+using CxAnalytix.Configuration.Utils;
 
 [assembly: CxRestClient.IO.NetworkTraceLog()]
 [assembly: CxAnalytix.Extensions.LogTrace()]
-[assembly: log4net.Config.XmlConfigurator(ConfigFile = "cxanalytix.log4net", Watch = true)]
 
 
 namespace CxAnalytix.Executive
@@ -23,6 +23,8 @@ namespace CxAnalytix.Executive
 
     public class ExecuteOnce
     {
+        private static readonly String LOG_CONFIG_FILE_NAME = "cxanalytix.log4net";
+
         private static IContainer _xformersContainer;
 
         protected static CxAnalytixService Service => Config.GetConfig<CxAnalytixService>();
@@ -34,6 +36,8 @@ namespace CxAnalytix.Executive
 
         static ExecuteOnce()
         {
+            var l4net_config = new FileInfo(ConfigPathResolver.ResolveConfigFilePath (LOG_CONFIG_FILE_NAME) );
+            log4net.Config.XmlConfigurator.Configure(l4net_config);
 
             var builder = new ContainerBuilder();
             builder.RegisterAssemblyModules(typeof(ITransformer), Reflection.GetOutputAssemblies());
