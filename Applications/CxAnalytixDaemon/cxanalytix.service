@@ -8,7 +8,7 @@ Type=simple
 Restart=always
 RestartSec=10
 User=nobody
-ExecStart=/bin/dotnet CxAnalytixDaemon.dll
+ExecStart=/opt/cxanalytix/CxAnalytixDaemon
 WorkingDirectory=/opt/cxanalytix
 Environment='HOME=/opt/cxanalytix'
 
