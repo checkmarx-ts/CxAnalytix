@@ -115,7 +115,7 @@ namespace CxAnalytix.AuditTrails.Crawler
 
 					if (GetPropertyValue<CxAuditTrailSuppressions, bool>(field.Name, crawlInvoker._suppressions))
 					{
-						_log.Debug($"{field.Name} logging has been suppressed via configuration.");
+						_log.Info($"{field.Name} logging has been suppressed via configuration.");
 						return;
 					}
 

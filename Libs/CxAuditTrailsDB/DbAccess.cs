@@ -12,6 +12,40 @@ namespace CxAnalytix.CxAuditTrails.DB
 
 		private static CxAuditDBConnection ConConfig => Configuration.Impls.Config.GetConfig<CxAuditDBConnection>();
 
+
+		public class FetchResults : IDisposable
+		{
+			private FetchResults() { }
+
+			private SqlConnection _con;
+			public SqlDataReader DataReader { get; private set; }
+
+			internal FetchResults (SqlConnection con, SqlDataReader reader)
+			{
+				_con = con;
+                DataReader = reader;
+			}
+
+
+			public void Dispose()
+			{
+				if (DataReader != null)
+				{
+					DataReader.Close();
+					DataReader.Dispose();
+					DataReader = null;
+				}
+
+				if (_con != null)
+				{
+					_con.Close();
+					_con.Dispose();
+					_con = null;
+				}
+			}
+		}
+
+
 		public bool IsDisabled
 		{
 			get
@@ -57,7 +91,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 			return retVal;
 		}
 
-		internal SqlDataReader FetchRecords (String db, String schema, String table, String cmdText, DateTime since)
+		internal FetchResults FetchRecords (String db, String schema, String table, String cmdText, DateTime since)
 		{
 			_log.Trace($"FetchRecords: {db}.{schema}.{table} > {since}");
 
@@ -85,10 +119,10 @@ namespace CxAnalytix.CxAuditTrails.DB
 
 			_log.Debug($"{db}.{schema}.{table} query has rows [{reader.HasRows}]");
 
-			return reader;
+			return new FetchResults (con, reader);
 		}
 
-		public SqlDataReader FetchRecords_CxDB_accesscontrol_AuditTrail(DateTime since)
+		public FetchResults FetchRecords_CxDB_accesscontrol_AuditTrail(DateTime since)
 		{
 			String query  = @"SELECT
 				[Id]
@@ -104,7 +138,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 			return FetchRecords("CxDB", "accesscontrol", "AuditTrail", query, since);
 		}
 
-		public SqlDataReader FetchRecords_CxActivity_dbo_AuditTrail(DateTime since)
+		public FetchResults FetchRecords_CxActivity_dbo_AuditTrail(DateTime since)
 		{
 			String query = @"SELECT 
 				ActTyp.Name as [Action]
@@ -125,7 +159,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 			return FetchRecords("CxActivity", "dbo", "AuditTrail", query, since);
 		}
 
-		public SqlDataReader FetchRecords_CxActivity_dbo_Audit_DataRetention(DateTime since)
+		public FetchResults FetchRecords_CxActivity_dbo_Audit_DataRetention(DateTime since)
 		{
 			String query = @"SELECT 
 				[Id]
@@ -140,7 +174,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 			return FetchRecords("CxActivity", "dbo", "Audit_DataRetention", query, since);
 		}
 
-		public SqlDataReader FetchRecords_CxActivity_dbo_Audit_Logins(DateTime since)
+		public FetchResults FetchRecords_CxActivity_dbo_Audit_Logins(DateTime since)
 		{
 			String query = @"SELECT 
 				[Id]
@@ -157,7 +191,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 			return FetchRecords("CxActivity", "dbo", "Audit_Logins", query, since);
 		}
 
-		public SqlDataReader FetchRecords_CxActivity_dbo_Audit_Presets(DateTime since)
+		public FetchResults FetchRecords_CxActivity_dbo_Audit_Presets(DateTime since)
 		{
 			String query = @"SELECT 
 				[Id]
@@ -175,7 +209,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 			return FetchRecords("CxActivity", "dbo", "Audit_Presets", query, since);
 		}
 
-		public SqlDataReader FetchRecords_CxActivity_dbo_Audit_Projects(DateTime since)
+		public FetchResults FetchRecords_CxActivity_dbo_Audit_Projects(DateTime since)
 		{
 			String query = @"SELECT 
 				[Id]
@@ -192,7 +226,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 			return FetchRecords("CxActivity", "dbo", "Audit_Projects", query, since);
 		}
 
-		public SqlDataReader FetchRecords_CxActivity_dbo_Audit_Queries(DateTime since)
+		public FetchResults FetchRecords_CxActivity_dbo_Audit_Queries(DateTime since)
 		{
 			String query = @"SELECT 
 				[Id]
@@ -226,7 +260,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 			return FetchRecords("CxActivity", "dbo", "Audit_Queries", query, since);
 		}
 
-		public SqlDataReader FetchRecords_CxActivity_dbo_Audit_QueriesActions(DateTime since)
+		public FetchResults FetchRecords_CxActivity_dbo_Audit_QueriesActions(DateTime since)
 		{
 			String query = @"SELECT 
 				[Id]
@@ -243,7 +277,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 			return FetchRecords("CxActivity", "dbo", "Audit_QueriesActions", query, since);
 		}
 
-		public SqlDataReader FetchRecords_CxActivity_dbo_Audit_Reports(DateTime since)
+		public FetchResults FetchRecords_CxActivity_dbo_Audit_Reports(DateTime since)
 		{
 			String query = @"SELECT 
  				[ID] as Id
@@ -259,7 +293,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 			return FetchRecords("CxActivity", "dbo", "Audit_Reports", query, since);
 		}
 
-		public SqlDataReader FetchRecords_CxActivity_dbo_Audit_ScanRequests(DateTime since)
+		public FetchResults FetchRecords_CxActivity_dbo_Audit_ScanRequests(DateTime since)
 		{
 			String query = @"SELECT 
 				[Id]
@@ -279,7 +313,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 			return FetchRecords("CxActivity", "dbo", "Audit_ScanRequests", query, since);
 		}
 
-		public SqlDataReader FetchRecords_CxActivity_dbo_Audit_Scans(DateTime since)
+		public FetchResults FetchRecords_CxActivity_dbo_Audit_Scans(DateTime since)
 		{
 			String query = @"SELECT 
 				[Id]
@@ -299,7 +333,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 			return FetchRecords("CxActivity", "dbo", "Audit_Scans", query, since);
 		}
 
-		public SqlDataReader FetchRecords_CxActivity_dbo_Audit_Users(DateTime since)
+		public FetchResults FetchRecords_CxActivity_dbo_Audit_Users(DateTime since)
 		{
 			String query = @"SELECT 
 				[Id]
