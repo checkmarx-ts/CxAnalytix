@@ -10,13 +10,13 @@ namespace CxAnalytix.CxAuditTrails.DB
 	{
 		private static ILog _log = LogManager.GetLogger(typeof(DbAccess));
 
-		private CxAuditDBConnection ConConfig => CxAnalytix.Configuration.Impls.Config.GetConfig<CxAuditDBConnection>();
+		private static CxAuditDBConnection ConConfig => Configuration.Impls.Config.GetConfig<CxAuditDBConnection>();
 
 		public bool IsDisabled
 		{
 			get
 			{
-				return !(ConConfig == null);
+				return ConConfig == null;
 			}
 		}
 
@@ -41,8 +41,9 @@ namespace CxAnalytix.CxAuditTrails.DB
 				{
 					con.Open();
 					con.ChangeDatabase(dbName);
-					var reader = cmd.ExecuteReader(System.Data.CommandBehavior.SingleRow);
-					retVal = reader.HasRows;
+
+					using (var reader = cmd.ExecuteReader(System.Data.CommandBehavior.SingleRow))
+						retVal = reader.HasRows;
 				}
 				catch (Exception ex)
 				{
@@ -61,9 +62,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 			_log.Trace($"FetchRecords: {db}.{schema}.{table} > {since}");
 
 			if (IsDisabled)
-			{
 				throw new InvalidOperationException("Database access parameters are not defined.");
-			}
 
 			if (!TableExists(db, schema, table))
 			{
