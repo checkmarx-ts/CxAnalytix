@@ -5,7 +5,6 @@ TransformLogic/TransformLogic.xml
 artifacts/
 **/*- Copy*
 .vscode
-**/launchSettings.json
 
 **/*.csproj.user
 
