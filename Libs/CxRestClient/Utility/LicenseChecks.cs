@@ -59,7 +59,7 @@ namespace CxRestClient.Utility
         private static bool CheckIsOsaEnabledFromLicenseSummary (CxSASTRestContext ctx, CancellationToken token)
 		{
             var summary = WebOperation.ExecuteGet<LicenseSummary>(
-            ctx.Sast.Json.CreateClient
+            ctx.Sast.Any.CreateClient
             , (response) =>
             {
                 using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
