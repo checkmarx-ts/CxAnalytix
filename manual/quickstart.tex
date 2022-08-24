@@ -1,0 +1,39 @@
+\chapter{Quickstart}
+
+CxAnalytix performs read-only operations using Checkmarx REST APIs to obtain vulnerability data. It is therefore possible to execute 
+CxAnalytix locally (e.g. on your workstation\footnote{Depending on the number of scans that need to be crawled, you may need a significant amount of disk space.}) 
+or on a test system without the need to make any production changes.\\
+
+\noindent The requirements to execute a test crawl are:
+
+\begin{enumerate}
+    \item Download the \href{https://github.com/checkmarx-ts/CxAnalytix/releases}{latest release zip}
+    \item Unzip the release binaries into a directory of your choice
+    \item Update the configuration with:
+    \begin{itemize}
+        \item The URL of the REST API endpoint(s)
+        \item Credentials to access the REST API endpoint(s)
+    \end{itemize}    
+\end{enumerate}
+
+
+\section{Quick SAST Crawl}
+
+
+Some basic configuration is required before execution.
+
+\begin{enumerate}
+    \item Open a command prompt.
+    \item Switch to the directory containing the CxAnalytix binaries.
+    \item Set the environment variable \verb|CHECKMARX_URL| to the URL of your SAST instance.\footnote{Do not include "cxwebclient" in your SAST URL!}
+    \item Set the environment variable \verb|CHECKMARX_USERNAME| to a SAST application user account name.
+    \item Set the environment variable \verb|CHECKMARX_PASSWORD| to the password for the SAST application user account.
+    \item Set the environment variable \verb|CHECKMARX_STATE_PATH| to a path where the state data will be stored.  
+    A path of \verb|.| or any other temporary storage location is sufficient for evaluation.
+    \item Execute \verb|CxAnalytixCLI| (Linux) or \verb|CxAnalytixCLI.exe| (Windows)
+\end{enumerate}
+
+The SAST vulnerability data will be retrieved and written to files in the \verb|logs| directory located in the directory where the CxAnalytix binaries
+have been extracted.  If the crawl is interrupted, it will be re-started from the scan being processed when the crawl was interrupted.  To completely 
+re-start the crawl, find and delete the \verb|CxAnalytixExportState.json| file in the directory specified by the \verb|CHECKMARX_STATE_PATH| 
+environment variable.

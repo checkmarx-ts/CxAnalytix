@@ -1,0 +1,73 @@
+\documentclass[a4paper, 11pt, oneside]{book}
+\usepackage[a4paper, total={6.5in, 10in}]{geometry}
+\usepackage{hyperref}
+
+\usepackage[svgnames]{xcolor}
+\usepackage{graphicx}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{PTSerif}
+\usepackage{listings}
+
+\begin{document}
+
+\begin{titlepage}
+    \thispagestyle{empty}
+    \centering
+    \includegraphics[scale=.4]{graphics/cx_logo-dark.png}
+    \vfill
+    \textcolor{Sienna}{\Huge CxAnalytix 2.x}
+    \vfill
+    {\Large\textbf{Nathan Leach, CSSLP}}
+\end{titlepage}
+
+\newpage
+
+
+\tableofcontents
+
+\chapter*{Foreward}
+
+As vulnerability scans are performed, a significant amount of data is generated over time.  The
+scan data is normally consumed by development teams to remediate issues found in their specific 
+projects.  The development team will perform triage and code changes as they assess what is required 
+from the scan results. 
+
+CxAnalytix was created when managment teams expressed the desire to create dashboards with
+aggregated views of vulnerabilities across all scanning activity.  While CxAnalytix itself
+does not produce these dashboards, it crawls scan results and collects the vulnerability
+data that is then integrated into custom dashboards.\\\\
+
+CxAnalytix currently supports the following Checkmarx products:
+
+\begin{itemize}
+    \item Checkmarx SAST (including OSA and Management \& Orchestration)
+    \item Checkmarx SCA
+\end{itemize}
+
+The documentation for CxAnalytix was moved from the GitHub Wiki as of version 2.0.  This
+manual will serve as the source of CxAnalytix documentation.  The manual will be updated
+and versioned with each CxAnalytix release.
+
+% Code listing
+%\begin{lstlisting}
+%\end{lstlisting}
+
+
+\part{Operation}
+\input{quickstart.tex}
+\input{deploymentguide.tex}
+\input{installing.tex}
+\input{configuration.tex}
+
+\part{CxAnalytix\\Development \& Data Analysis}
+\input{development.tex}
+\input{analysis.tex}
+
+\part{Appendices}
+\appendix
+\input{spec.tex}
+\input{release_notes.tex}
+
+
+\end{document}
