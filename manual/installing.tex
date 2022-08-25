@@ -1,1 +1,41 @@
 \chapter{Installation}
+
+
+\section{Installing on Windows}
+\section{Installing on Linux}
+\section{Running CxAnalytix as a Docker Container}
+
+CxAnalytix is published as a docker image in the \href{https://github.com/checkmarx-ts/CxAnalytix/pkgs/container/cxanalytix%2Fcxanalytix}{Checkmarx TS} GitHub 
+packages repository. You can reference the image using \verb|ghcr.io/checkmarx-ts/cxanalytix/cxanalytix:<tag>| where \verb|tag| can be:
+
+\begin{itemize}
+    \item \verb|latest| to get the latest release
+    \item \verb|vx.x.x| to get a specific release version
+    \item \verb|vx.x.x-x-prerelease| to get a specific build of a pre-release version
+\end{itemize}
+
+\subsection{Configuration with Environment Variables}
+
+Several of the configuration fields support environment variable expansion.  The default configuration file will use the log4net output
+module to place the data files in \verb|/var/logs/cxanalytix| table \ref{tab:env} shows the environment variables required for a 
+basic CxAnalytix runtime configuration.
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|l|}
+        \toprule
+        \textbf{Environment Variable} & \textbf{Default} & \textbf{Description}\\
+        \midrule
+        \verb|CHECKMARX_URL| & None & The URL to the SAST server.\\
+        \midrule
+        \verb|CHECKMARX_USERNAME| & None & The username of the account that will log into CxSAST.\\
+        \midrule
+        \verb|CHECKMARX_PASSWORD| & None & The password for the user account logging into CxSAST.\\
+        \midrule
+        \verb|CHECKMARX_STATE_PATH| & \verb|/var/cxanalytix| & The path where state files will be stored.\\
+        \bottomrule
+    \end{tabular}
+    \caption{Docker configuration environment variables}
+    \label{tab:env}
+\end{table}
+    
