@@ -1,8 +1,92 @@
 \chapter{Installation}
 
+\newcommand{\configstmt}[2]{
+\subsection{Configuration File Path Resolution}\label{plat:#1}
+    
+The \texttt{cxanalytix.config} and \texttt{cxanalytix.log4net} configuration files are included in the distribution zip by default.  These
+files can be left in the same directory as the runtime or deployed to different paths to make upgrades easier to manage.\\
+
+\noindent\\On the #1 platform, the search path is:\\
+\begin{enumerate}
+    \item The current working directory of the running application.
+    \item The path specified by the \texttt{CXANALYTIX\_CONFIG\_PATH} environment variable.
+    \item The directory path \texttt{#2}.
+\end{enumerate}
+}
+
+\newcommand{\clistmt}[2]{
+    \subsection{CxAnalytix CLI}
+    The CxAnalytix CLI provides a method of invoking a one-time crawl.  It is recommended that any crawling services running in the background
+    are stopped before invoking the CLI.
+
+    \noindent\\On the #1 platform, the \texttt{CxAnalytixCLI#2} executable can be run from any path.  The CLI follows the search logic described in section \ref{plat:#1}.
+}
+
 
 \section{Installing on Windows}
+\newcommand{\windowsconfigpathbase}{\%PROGRAMDATA\%/cxanalytix}
+\newcommand{\windowsconfigpath}{\windowsconfigpathbase/cxanalytix.config}
+\configstmt{Windows}{\windowsconfigpath}
+\clistmt{Windows}{.exe}
+
+\subsection{CxAnalytix Service}
+\begin{enumerate}
+    \item Open Powershell or Windows command prompt as administrator.
+    \item Execute: \texttt{sc.exe create CxAnalytix binpath="\{install folder path\}/CxAnalytixService.exe"}
+    \item Make the directory \texttt{\windowsconfigpathbase}
+    \item Move the \texttt{cxanalytix.config} and \texttt{cxanalytix.log4net} \\to \windowsconfigpath.
+\end{enumerate}
+
+
+
+\noindent\\The CxAnalytix service and now be started and stopped from the Service Control Manager.
+
+
 \section{Installing on Linux}
+\configstmt{Linux}{/etc/cxanalytix}
+\clistmt{Linux}{}
+
+\subsection{CxAnalytix Daemon}
+There is not a platform-specific installer for CxAnalytix at the time this documentation was written. The following steps can 
+be used to install the CxAnalytix Daemon on a Linux system that uses \verb|systemd|\footnote{Perform the installation steps as the root user.}.
+
+
+\begin{enumerate}
+    \item Configure the system running CxAnalytix to have the same time zone as the SAST Manager if SAST scans will be crawled.
+    \footnote{SAST uses localtime for some time fields; this may make some scans to be 
+    crawled with a delay equal to the time zone difference between CxAnalytix and the SAST Manager.}
+
+    \item Make directory \texttt{/var/log/cxanalytix}
+
+    \item Execute \texttt{chown root:nobody /var/log/cxanalytix}
+
+    \item Execute \texttt{chmod g+w /var/log/cxanalytix}
+
+    \item Make directory \texttt{/etc/cxanalytix}
+
+    \item Move the \texttt{cxanalytix.config} and \texttt{cxanalytix.log4net} files to \texttt{/etc/cxanalytix}
+
+    \item Execute: \texttt{chown root:nobody /etc/cxanalytix}
+
+    \item Execute \texttt{chmod g+w /etc/cxanalytix}
+
+    \item Make the directory \texttt{/opt/cxanalytix} and copy the installation artifacts there.
+
+    \item Execute: \texttt{chown root:nobody /opt/cxanalytix}
+
+    \item Modify the \texttt{cxanalytix.log4net} file to output logs into \texttt{/var/log/cxanalytix}
+    
+    \item Copy the file \texttt{cxanalytix.service} to \texttt{/etc/systemd/system/}
+
+    \item Enable automatic startup of the daemon by executing: \texttt{systemctl enable cxanalytix}
+
+    \item \textit{(optional)} Start the daemon by executing: \texttt{systemctl start cxanalytix}
+
+\end{enumerate}
+
+\noindent\\After CxAnalytix is installed, modify the \texttt{cxanalytix.config} and/or \texttt{cxanalytix.log4net} files according to the 
+configuration instructions in Chapter \ref{chap:configuration}.
+
 \section{Running CxAnalytix as a Docker Container}
 
 CxAnalytix is published as a docker image in the \href{https://github.com/checkmarx-ts/CxAnalytix/pkgs/container/cxanalytix%2Fcxanalytix}{Checkmarx TS} GitHub 
@@ -38,4 +122,59 @@ basic CxAnalytix runtime configuration.
     \caption{Docker configuration environment variables}
     \label{tab:env}
 \end{table}
-    
+
+\noindent\\By default, the state storage path is \verb|/var/cxanalytix|. The state storage files will be lost after the Docker image exits unless a volume is mapped 
+to \verb|/var/cxanalytix|. A custom configuration can be used to change the location of the state storage, or a volume can be mapped to 
+\verb|/var/cxanalytix| to allow the state storage files to be persisted across container executions.
+
+
+\subsection{Other Container Configuration Options}
+
+Some of the configuration options in CxAnalytix can be too complex for using environment variables alone.  There are a few different options
+that will allow for a user-supplied configuration to be used by the running container.
+
+\subsubsection{Extending the CxAnalytix Docker Image}
+
+The base docker image can be customized using \verb|FROM ghcr.io/checkmarx-ts/cxanalytix/cxanalytix:<tag>| and copying 
+the \verb|cxanalytix.log4net| and \verb|cxanalytix.config| files to /etc/cxanalytix. You can refer to the Dockerfile to re-use the \verb|ENTRYPOINT| or 
+provide your own entry point.
+
+\noindent\\The state file storage location can be configured in the custom configuration files to write the state files at a location where a 
+volume is mapped.  This will allow the state to persist across container executions.
+
+
+\subsubsection{Volume Mapping}
+
+Volume or host path mounts can be mounted to various locations when running the CxAnalytix Docker image.  Table \ref{tab:mounts} shows
+the paths that should be considered for volume mounting.
+
+\begin{table}
+    \centering
+    \begin{tabular}{|l|l|}
+        \toprule
+        \textbf{Location} & \textbf{Description}\\
+        \midrule
+        \verb|/etc/cxanalytix| & \makecell[l]{Place the \texttt{cxanalytix.log4net} and \texttt{cxanalytix.config} configuration files here.
+        \\The daemon will run and use these files to configure the runtime.}\\
+        \midrule
+        \verb|/var/cxanalytix| & This is where the state files are written as scans are crawled.\\
+        \midrule
+        \verb|/var/logs/cxanalytix| & If configured to output to log files, this is where the log files are written by default.\\
+        \bottomrule
+    \end{tabular}
+    \caption{Container Mount Locations}
+    \label{tab:mounts}
+\end{table}
+
+
+\section{Upgrading}
+
+Configuration files for versions of CxAnalytix with the same major version\footnote{The major version is the first 
+number in the version stamp.  e.g. v2.0.0 has a major version of 2.} are backwards compatible unless stated otherwise 
+in the release notes.  Upgrades only require replacing the CxAnalytix binaries.
+
+\noindent\\When configuring CxAnalytix, it is recommended that the configuration, state, and log files are stored
+in directories separate from the CxAnalytix binaries.  This will prevent the inadvertent misconfiguration on upgrade.
+Note that if installing from the CxAnalytix zip binary that there is a default version of \texttt{cxanalytix.config}
+and \texttt{cxanalytix.log4net} in the zip binary.  These default configuration files can safely be removed upon
+upgrading the CxAnalytix binaries.
