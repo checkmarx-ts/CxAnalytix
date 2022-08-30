@@ -1,23 +1,20 @@
 \chapter{Configuration}\label{chap:configuration}
 
 
+\newcommand{\configelement}[2]{\paragraph{XML Element: #1, Expands: #2}}
+
 CxAnalytix uses the XML \texttt{cxanalytix.config} to configure the application execution parameters.  A path search order described in chapter \ref{chap:installation}
 describes how CxAnalytix finds the configuration file at runtime.
 
-\section{Logging Configuration}
+\noindent\\Configuration of CxAnalytix is performed by adding XML elements to the top level \texttt{configuration} element in the
+\texttt{cxanalytix.config} file.  The XML element names are indicated in each section with an example set of XML attributes or child-elements.
 
-Log4Net is used to produce both application logs and logs containing exported JSON key/value pairs when using the Logging Output component. 
-CxAnalytix produces logging useful for troubleshooting and/or execution tracking purposes even when not using the Log4Net output method.  The 
-\texttt{cxanalytix.log4net} file is generally located in the same directory as the \texttt{cxanalytix.config} file, and will allow for
-customizing the logging output location and verbosity.
-
-
-
+\noindent\\Elements that are noted as "Expands" will expand environment variables for assigned to elements for environment variable values in the
+format \texttt{\%VARIABLENAME\%}.  
 
 \section{General Configuration}\label{sec:general}
 
 \subsection{Never Do This}
-
 
 The \texttt{cxanalytix.config} file needs to be modified to supply the appropriate configuration elements.  The \texttt{configSections}
 element is not intended to be user configurable.  Listing \ref{lst:motouch} shows an example of the contents of this XML element;
@@ -54,8 +51,52 @@ element is not intended to be user configurable.  Listing \ref{lst:motouch} show
     <section name="CxMongoConnection" 
         type="CxAnalytix.Out.MongoDBOutput.Config.Impl.MongoConnectionConfig, MongoDBOutput" />
 </configSections>
-
 \end{lstlisting}
+
+
+\subsection{Checkmarx Service Connection Configuration}
+
+\subsubsection{Checkmarx SAST Connection Configuration}
+
+\configelement{CxSASTConnection}{Yes}
+
+\noindent\\\\\textbf{Expands Environment Variables}
+
+\noindent\\Example:
+
+\noindent\\\texttt{
+CxSASTConnection\\\indent URL=""
+\\\indent mnoURL=""
+\\\indent TimeoutSeconds="" 
+\\\indent ValidateCertificates="true"
+\\\indent RetryLoop=""
+\\\indent />
+}\\\\
+
+\begin{table}[h]
+    \caption{CxSASTConnection Attributes}        
+    \begin{tabular}{|c|c|c|l|}
+        \toprule
+        \textbf{Attribute} & \textbf{Default} & \textbf{Required} & \textbf{Description}\\
+        \midrule
+        \texttt{URL} & N/A & Yes & \makecell[l]{The URL to the SAST server.}\\
+        \midrule
+        \texttt{mnoURL} & N/A & No & \makecell[l]{The URL to the Management and Orchestration endpoint\\of the SAST server.}\\
+        \midrule
+        \texttt{TimeoutSeconds} & 300 & No & \makecell[l]{The number of seconds to wait until an\\API operation times out.}\\
+        \midrule
+        \texttt{ValidateCertificates} & True & No & \makecell[l]{Validate SSL certificates for\\API endpoints.}\\
+        \midrule
+        \texttt{RetryLoop} & 0 & No & \makecell[l]{The number of retries for an API operation\\after the operation times out.}\\
+        \bottomrule
+    \end{tabular}
+\end{table}
+
+
+\subsubsection{Checkmarx SCA Connection Configuration}
+
+
+\subsection{CxAnalytix Service and CLI Execution Configuration}
 
 
 \section{Splunk Output Configuration}\label{sec:splunk_config}
@@ -225,3 +266,11 @@ will also return historical data that is outside of the selected search time fra
 \section{AMQP Output Configuration}\label{sec:amqp_config}
 
 \section{Audit Table Crawling Configuration}
+
+
+\section{Logging Configuration}
+
+Log4Net is used to produce both application logs and logs containing exported JSON key/value pairs when using the Logging Output component. 
+CxAnalytix produces logging useful for troubleshooting and/or execution tracking purposes even when not using the Log4Net output method.  The 
+\texttt{cxanalytix.log4net} file is generally located in the same directory as the \texttt{cxanalytix.config} file, and will allow for
+customizing the logging output location and verbosity.
