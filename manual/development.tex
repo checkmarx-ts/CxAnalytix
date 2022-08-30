@@ -1,7 +1,190 @@
-\chapter{Contributing to CxAnalytix}
+\chapter{Developing for CxAnalytix}
 
 \section{Build From Source}
 
-\section{Creating New Transformation Modules}
+\subsection{The Easy Way}
+The easiest method of building the code from source is to open the \texttt{CxAnalytix.sln} file using Visual Studio (not Visual Studio Code).
+From there, the entire solution can be built with a "Build Solution" command.
 
-\section{Creating New Output Modules}
+\subsection{From the Command Line}
+If the .Net Core SDK of the appropriate version is installed, the \texttt{dotnet} command can be executed to create a build:
+
+\begin{lstlisting}
+dotnet publish .\CxAnalytix.sln -o $OutLoc/win-x64 -c ReleaseWindows -r win-x64
+dotnet publish .\CxAnalytix.sln -o $OutLoc/linux-x64 -c ReleaseLinux -r linux-x64
+\end{lstlisting}
+
+\subsection{Visual Studio Code}
+This is a .Net Core application and therefore can be developed on any platform that supports .Net Core.  Readers are encouraged to investigate configuring
+their instance of VSCode to build and debug CxAnalytix.  A basic \texttt{launch.json} and \texttt{tasks.json} file is included in the source tree, but they may need
+updated as versions of .Net Core and VSCode change over time.
+
+
+\section{Developing New Modules}
+
+The transformation and output modules are dynamically loaded at runtime.  They are developed with an SDK component included in the CxAnalytix source tree.
+The SDK component is intended to be used as a project reference at this time as it is not deployed as a Nuget package.
+
+\noindent\\The modules, being that they are dynamically loaded, will have no incoming dependencies.  This means they will not be included
+in the build output since the compiler will believe the shared libraries where the modules are implemented are not in use.  For easy debug and build
+purposes, each output and transform module is added as a project dependency to the \texttt{Executive} project.  The \texttt{Executive} project
+is loaded by executing applications on all platforms to perform the appropriate type of CxAnalytix execution.
+
+
+\subsection{Creating New Transformation Modules}
+
+Creating a new transformer type can be done with the following steps:
+
+\begin{enumerate}
+    \item Create a class library project.
+    \item Add a project reference to \texttt{SDK.Modules}
+    \item Create a class that derives from \texttt{TransformerModule}
+    \item Create a public default constructor that initializes the transformer module with the runtime specifics of your module
+    \item Implement the abstract methods/properties defined in \texttt{TransformerModule}
+\end{enumerate}
+
+\noindent\\An example transformer module can be observed in listing \ref{lst:xform}. The arguments passed to the \texttt{TransformerModule}
+are explained in table \ref{tab:xform}.
+
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|l|}
+        \toprule
+        \textbf{Argument} & \textbf{Type} & \textbf{Description}\\
+        \midrule
+        \texttt{moduleName} & \texttt{String} & \makecell[l]{The string used to select the module for invocation in the\\
+        configuration as described in section \ref{sec:general} (e.g. SAST, SCA)}\\
+        \midrule
+        \texttt{moduleImplType} & \texttt{Type} & The .Net type that contains the implementation of the module.\\
+        \midrule
+        \texttt{stateStorageFileName} & \texttt{String} & The name of the file that stores any state of the transformation module.\\
+        \bottomrule
+    \end{tabular}
+    \caption{\texttt{TransformerModule} Construction Parameters}
+    \label{tab:xform}
+\end{table}
+
+
+
+\begin{lstlisting}[caption={Example Transformer Module}, label={lst:xform}, language=C]
+class Transformer : TransformerModule
+{
+    public override string DisplayName 
+        => "This is my module, this text will show in logs";
+
+    
+    public Transformer() 
+        : base("MYMODULE", typeof(Transformer), "MYMODULE_state.json")
+    {
+        // Initialization goes here, if any
+    }
+
+    public override void DoTransform(CancellationToken token)
+    {
+        // This is where the transformation is executed.
+    }
+}
+\end{lstlisting}
+
+\subsection{Creating New Output Modules}
+
+Output modules are created similarly to transformer modules.  The basic tasks to create an output module:
+
+\begin{enumerate}
+    \item Create a class library project.
+    \item Add a project reference to \texttt{SDK.Modules}
+    \item Create a class that derives from \texttt{OutputModule}; this is your factory class that creates the instance of the output implementation
+    \item Create a public default constructor that initializes the output module with the runtime specifics of your module
+    \item Implement the abstract methods/properties defined in \texttt{OutputModule}
+\end{enumerate}
+
+\noindent\\Listing \ref{lst:output} shows an example of an output implementation.  Table \ref{tab:output} explains the output
+module arguments.
+
+
+\begin{lstlisting}[caption={Example Output Module}, label={lst:output}, language=C]
+public class MyOutFactory : SDK.Modules.Output.OutputModule
+{
+    public MyOutFactory() : base("MyOutput", typeof(MyOutFactory) )
+    {
+    }
+
+    public override IRecordRef RegisterRecord(string recordName)
+    {
+        // Implementation for registering a record
+    }
+
+    public override IOutputTransaction StartTransaction()
+    {
+        // This is where the instance of the output implementation is given
+        // to the caller.  Transactional capabilities are optional, the
+        // concept of a transaction is simply a grouping of related
+        // data being output.
+    }
+}    
+\end{lstlisting}
+
+
+\begin{table}
+    \centering
+    \begin{tabular}{|c|c|l|}
+        \toprule
+        \textbf{Argument} & \textbf{Type} & \textbf{Description}\\
+        \midrule
+        \texttt{moduleName} & \texttt{String} & \makecell[l]{The string used to select the module for output in the\\
+        configuration as described in section \ref{sec:general} (e.g. MongoDB, AMQP, Log4Net)}\\
+        \midrule
+        \texttt{moduleImplType} & \texttt{Type} & The .Net type that contains the implementation of the module.\\
+        \bottomrule
+    \end{tabular}
+    \caption{\texttt{OutputModule} Construction Parameters}
+    \label{tab:output}
+\end{table}
+
+
+\section{Module Configuration}
+
+\subsection{CxAnalytix Internal Configuration}\label{sec:internal_config}
+
+It is possible to obtain the general configuration objects (described in section \ref{sec:general}) with a project dependency for the \texttt{Configuration}
+class library.  Obtaining a reference to the \texttt{CxAnalytixService} configuration can then be achieved with the example code show in listing 
+\ref{lst:global_config}.  Instances of CxAnalytix configuration objects can be obtained by specifying the type in the generic parameter for the 
+method call \texttt{CxAnalytix.Configuration.Impls.Config.GetConfig<T>()} 
+
+\begin{lstlisting}[caption={Retrieving a CxAnalytixService Config Object Instance}, label={lst:global_config}, language=C]
+private CxAnalytixService Service => 
+    CxAnalytix.Configuration.Impls.Config.GetConfig<CxAnalytixService>();
+\end{lstlisting}
+
+
+\subsection{Module-Specific Configuration}
+
+All configurations in the \texttt{cxanalytix.config} file are consumed by the Microsoft\\ 
+\texttt{System.Configuration.ConfigurationManager} package.
+Each individual module implementation should define configuration classes that are publicly accessible for dynamic loading.
+The assembly path for custom module configuration is then placed in the \texttt{configSections} element of the \texttt{cxanalytix.config}
+file.  Listing \ref{lst:config_sections} shows an example of a configuration section entry to load the AMQP configuration elements
+from the AMQP class library.
+
+\noindent\\Obtaining an instance of a configuration object uses the same \texttt{GetConfig} as was used in section \ref{sec:internal_config}
+to obtain an instance of the \texttt{CxAnalytixService} configuration object.  Listing \ref{lst:amqp_config} shows an example of
+how the AMQP output module obtains an instance of an module-specific configuration object.
+
+\begin{lstlisting}[caption={AMQP Configuration Section Entries}, label={lst:config_sections}, language=XML]
+<configSections>
+    <section name="AMQPConnection" 
+        type="CxAnalytix.Out.AMQPOutput.Config.Impls.AmqpConnectionConfig, AMQPOutput"
+        />
+    <section name="AMQPConfig" 
+        type="CxAnalytix.Out.AMQPOutput.Config.Impls.AmqpConfig, AMQPOutput"
+        />
+</configSections>
+\end{lstlisting}
+
+
+\begin{lstlisting}[caption={Retrieving a Config Object Instance}, label={lst:amqp_config}, language=C]
+private AmqpConnectionConfig ConConfig =>
+    CxAnalytix.Configuration.Impls.Config.GetConfig<AmqpConnectionConfig>();
+\end{lstlisting}
+    

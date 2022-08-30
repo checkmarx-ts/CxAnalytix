@@ -1,1 +1,121 @@
 \chapter{Shard Key Cookbook}\label{ShardKeyCookbook}
+
+
+If you have come to this documentation, you may have the need to store quite a lot of data and access such data in a scalable way.  
+The MongoDB documentation about \href{https://docs.mongodb.com/manual/core/sharding-shard-key/#choosing-a-shard-key}{choosing a shard key} is a good read if you are
+not familiar with sharding concepts as they relate to document databases.  In the context of CxAnalytix, sharding is primarily discussed in terms of 
+storage scalability.  Scalability for efficient reads (e.g. avoiding queries across multiple shards) is beyond the scope of CxAnalytix.
+
+
+\section{Shard Keys and Vulnerability Data}
+
+The difficulty in choosing a shard key from vulnerability data is that it is difficult to predict if fields have low cardinality 
+(e.g. the field has very few unique values) or high cardinality (e.g. the field has mostly unique values).  Even harder still is the ability to predict
+the frequency at which a field's value changes.
+
+\noindent\\ProjectName, ProjectId, TeamName are examples of low cardinality fields within any given collection.  As scans are executed against a project, 
+the names of the projects will repeat quite often.  Projects are also unlikely to change teams very often.
+
+\noindent\\ScanId is an example of a high cardinality field.  ScanId, however, may not be an ideal selection as a shard key considering it changes
+for every scan.  In an extreme scenario, imagine a data storage shard being allocated for each scan.  This may result in a system where the size of
+the allocated data storage is difficult to manage.
+
+\noindent\\Combining several fields to form a composite key can often achieve sufficient cardinality.  When choosing fields, it is important to include
+fields that have a sufficient change frequency.  The required frequency may depend on the volume of scanning performed.  If the frequency of change is 
+very low and scan volume very high, the shard storage space may reach maximum capacity.
+
+
+\section{Generated Shard/Partition Keys}
+Section \ref{sec:mongo_config} details the MongoDB configuration.  The MongoDB configuration gives the ability to optionally specify a calculated
+shard key to add to each record written to a collection.  This is primarily for use with cloud-based document storage systems that dynamically
+expand the storage based on a value at the root of the document.  It can be used as a generic method for automating the calculation of shard
+affinity if desired, but MongoDB's shard indexing capability is more flexible than using this option.
+
+\noindent\\Each collection of documents has different fields and cardinality considerations.  Chapter \ref{chap:spec} details the fields
+available for documents written in each collection.
+
+\noindent\\For those that wish to experiment with the key format specifier, 
+an \href{https://repl.it/repls/BriskPleasingLine#main.cs}{interactive programming example} is available.
+
+
+\subsection{Key Format Specifier}
+
+The key format specifier is a string composed of alphanumeric text, field specifiers, and field format specifiers.
+
+\noindent\\The syntax of the format specifier is:
+
+\noindent\\\texttt{\{field key[:format value]\}}
+
+\noindent\\Where the \texttt{field key} element is the name of the field in the record from which to extract a value used when composing a shard key.
+The following example creates a shard key from the data found in \texttt{ScanType}, \texttt{TeamName}, and \texttt{ProjectName}.
+
+\noindent\\
+\lstset{language=XML}
+\begin{lstlisting}
+<Spec KeyName="pkey" CollectionName="SAST_Scan_Summary" 
+    FormatSpec="SHARD-{ScanType}-{TeamName}-{ProjectName}"  />
+\end{lstlisting}
+
+
+\noindent\\When the \texttt{field key} element is a dictionary type, a dotted notation may be used to reference a key in the dictionary
+value referenced by \texttt{field key}.  The following example creates a shard key using the value of a custom field:
+
+\begin{lstlisting}
+<Spec KeyName="pkey" CollectionName="SAST_Scan_Summary" 
+    FormatSpec="SHARD-{ScanType}-{TeamName}-{ProjectName}-{CustomFields.MyCustomField}"
+    />
+\end{lstlisting}
+
+
+\noindent\\The curly braces (\texttt{\{} and \texttt{\}}) can be embedded in the format spec by using a backslash (\texttt{\textbackslash}) to escape 
+the curly brace.  The following example shows the shard key contents surrounded by curly braces:
+
+\begin{lstlisting}
+<Spec KeyName="pkey" CollectionName="SAST_Scan_Summary"
+    FormatSpec="\{{ScanType}-{TeamName}-{ProjectName}\}"  />
+\end{lstlisting}
+
+\subsection{Field Format Specifier}
+
+The field format specifier follows the same convention of a .Net string format specifier.  The format string used depend on the data type:
+
+\begin{itemize}
+    \item\href{https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings}{Standard} and \href{https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings}{Custom} date and time format strings.
+    \item\href{https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-timespan-format-strings}{Standard} and \href{https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-timespan-format-strings}{Custom} time span format strings.
+    \item\href{https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings}{Standard} and \href{https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-numeric-format-strings}{Custom} numeric format strings.
+\end{itemize}
+
+
+\section{Example Shard Key Format Specifiers}
+
+\textbf{This section is intended to be where new examples of shard keys are documented as they are chosen in field implementations.}
+
+\noindent\\The examples below are given for consideration of a suitable shard key.  The volume of scans in an organization should be taken into
+consideration when selecting a shard key.  The given examples are likely suitable for a moderate scan volume.
+
+\noindent\\The fields \texttt{TeamName} and \texttt{ProjectName} are common to all records and are often easy to add (either both or one)
+to increase cardinality.  Date fields are also generally a good choice for increasing cardinality; using the field format specifier, the cardinality increases as the
+time span length decreases (e.g. year > month > day-of-week > day-of-month and so on).
+
+
+\subsection{SAST Scan Summary}
+
+This example uses the scan type, the year and full name of the day of the week when the scan finished.
+
+\begin{lstlisting}
+<add KeyName="pkey" CollectionName="SAST_Scan_Summary"
+    FormatSpec="{ScanType}-{ScanFinished:yyyy-dddd}" NoHash="true" />
+\end{lstlisting}
+
+\subsection{SAST Vulnerability Details}
+
+This example uses the scan type, the query group, the year and full name of the day of the week when the scan finished.
+
+\begin{lstlisting}
+<add KeyName="pkey" CollectionName="SAST_Scan_Detail"
+    FormatSpec="{ScanType}-{QueryGroup}-{ScanFinished:yyyy-dddd}" NoHash="true" />
+\end{lstlisting}
+
+
+
+
