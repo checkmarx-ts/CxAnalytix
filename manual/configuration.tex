@@ -16,6 +16,47 @@ customizing the logging output location and verbosity.
 
 \section{General Configuration}\label{sec:general}
 
+\subsection{Never Do This}
+
+
+The \texttt{cxanalytix.config} file needs to be modified to supply the appropriate configuration elements.  The \texttt{configSections}
+element is not intended to be user configurable.  Listing \ref{lst:motouch} shows an example of the contents of this XML element;
+\textbf{never change anything in this section.}
+
+\begin{lstlisting}[caption={Part of the Configuration File to Never Change}, label={lst:motouch}, language=XML, basicstyle=\ttfamily\tiny]
+<configSections>
+    <section name="CxAnalytixService" 
+        type="CxAnalytix.Configuration.Impls.CxAnalytixService, Configuration" />
+    <section name="CxSASTCredentials" 
+        type="CxAnalytix.Configuration.Impls.CxCredentials, Configuration" />
+    <section name="CxSCACredentials" 
+        type="CxAnalytix.Configuration.Impls.CxMultiTenantCredentials, Configuration" />
+    <section name="CxSASTConnection" 
+        type="CxAnalytix.Configuration.Impls.CxSASTConnection, Configuration" />
+    <section name="CxSCAConnection" 
+        type="CxAnalytix.XForm.ScaTransformer.Config.CxScaConnection, ScaTransformer" />
+    <section name="ProjectFilterRegex" 
+        type="CxAnalytix.Configuration.Impls.CxFilter, Configuration"/>
+    <section name="CxAuditTrailSuppressions" 
+        type="CxAnalytix.AuditTrails.Crawler.Config.CxAuditTrailSuppressions, CxAuditTrailsCrawler"/>
+    <section name="CxAuditTrailRecords" 
+        type="CxAnalytix.AuditTrails.Crawler.Config.CxAuditTrailRecordNameMap, CxAuditTrailsCrawler"/>
+    <section name="CxDB" 
+        type="CxAnalytix.CxAuditTrails.DB.Config.CxAuditDBConnection, CxAuditTrailsDB"/>
+    <section name="AMQPConnection" 
+        type="CxAnalytix.Out.AMQPOutput.Config.Impls.AmqpConnectionConfig, AMQPOutput"/>
+    <section name="AMQPConfig" 
+        type="CxAnalytix.Out.AMQPOutput.Config.Impls.AmqpConfig, AMQPOutput"/>
+    <section name="CxLogOutput" 
+        type="CxAnalytix.Out.Log4NetOutput.Config.Impl.LogOutputConfig, Log4NetOutput" />
+    <section name="CxMongoOutput" 
+        type="CxAnalytix.Out.MongoDBOutput.Config.Impl.MongoOutConfig, MongoDBOutput" />
+    <section name="CxMongoConnection" 
+        type="CxAnalytix.Out.MongoDBOutput.Config.Impl.MongoConnectionConfig, MongoDBOutput" />
+</configSections>
+
+\end{lstlisting}
+
 
 \section{Splunk Output Configuration}\label{sec:splunk_config}
 \subsection{Log4Net Output Configuration}
