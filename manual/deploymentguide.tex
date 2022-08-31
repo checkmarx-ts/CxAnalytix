@@ -24,7 +24,7 @@ additional packages may need to be installed that are dependencies of .Net 6.0 b
 The MongoDB instance can be one of the following types of MongoDB:
 
 \begin{itemize}
-    \item Native MongoDB (local or cloud)
+    \item Native MongoDB (local or cloud, single instance or cluster)
     \item AWS DocumentDB
 \end{itemize}
 
@@ -45,6 +45,21 @@ maximum 2MB document size.  When CosmoDB officially supports the 16MB document s
     in searches across all shards. The expected volume of queries that may result in multi-shard searches should be taken into account when specifying the 
     cluster members' hardware specifics. The machine specification will also need to account for CPU required for any indexing and data ingestion.
 \end{itemize}
+
+\subsection{Bring Your Own Indexing}
+
+The MongoDB implementation requires that the user account configured for CxAnalytix to interact with MongoDB has read/write access to tables and 
+collections specified in the configuration.  Upon the first run, tables, collections, and some default indexes will be created.
+
+\noindent\\If there are additional indexes desired, it is possible to script your own indexes.  This includes indexes with a primary use of calculating a
+destination shard at the time of write.  Each index will consume additional disk space, so the number of indexes and the fields used to define the index
+should be considered when sizing your MongoDB deployment.
+
+
+\noindent\\The mode of storage in CxAnalytix is intended more as a historical data store than a high-performance, transactional
+document retrieval system.  This means that while it is possible to craft a shard index used to avoid crawling multiple shards, 
+data organization for high performance IO is outside of the scope of CxAnalytix.
+
 
 \section{Network Connectivity Requirements}
 
