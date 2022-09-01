@@ -6,13 +6,6 @@ advanced near-realtime and stream analytics applications.  AMQP supports many co
 distributed data consumption architectures.
 
 
-% Key Features of AMQP Output
-% * Headers and routing keys can be set with static values and/or values composed of [fields](SPEC) from each record entry using a [key format specifier](ShardKeyCookbook#key-format-specifier).
-% * Filtering of records can be done prior to sending records via the [Team and Project filtering](Configure-ProjectFilterRegex) configuration or via topic and/or header Exchange/Queue bindings.
-% * Record fields can be filtered with Pass or Reject filter specifications for any record type.
-% * Record entries for all record types can be sent to a default exchange or an exchange specifically set for the record type.
-% * The Exchange and Queue topology is not dictated by CxAnalytix; complex routing of data can be configured via Exchange bindings on the broker.
-%-----%
 
 
 \subsubsection{AMQP Connection Configuration}
@@ -124,9 +117,24 @@ the SSL connection is established.\\
 
 \subsubsection{AMQP Data Exchange Configuration}
 
-\ref{chap:key_format_spec}
+The \texttt{AMQPConfig} allows for some advanced routing configurations when forwarding data to an AMQP endpoint.  Crawled vulnerability
+data is sent to an AMQP Exchange that will allow complex Exchange/Queue topologies to route the data to the appropriate consumer.  Some configuration
+elements can form values injected into data sent to the AMQP endpoint using the Key Format Specification as described in Appendix \ref{chap:key_format_spec}.
 
-\begin{xml}{AMQPConfig}{\expandsenv}{}
+
+
+
+% Key Features of AMQP Output
+% * Headers and routing keys can be set with static values and/or values composed of [fields](SPEC) from each record entry using a [key format specifier](ShardKeyCookbook#key-format-specifier).
+% * Filtering of records can be done prior to sending records via the [Team and Project filtering](Configure-ProjectFilterRegex) configuration or via topic and/or header Exchange/Queue bindings.
+% * Record fields can be filtered with Pass or Reject filter specifications for any record type.
+% * Record entries for all record types can be sent to a default exchange or an exchange specifically set for the record type.
+% * The Exchange and Queue topology is not dictated by CxAnalytix; complex routing of data can be configured via Exchange bindings on the broker.
+%-----%
+
+
+
+\begin{xml}{AMQPConfig}{\expandsenv\contentvariables}{}
 <AMQPConfig DefaultExchange="bar">
     <RecordSpecs>
         <Record Name="SAST_Scan_Summary">
