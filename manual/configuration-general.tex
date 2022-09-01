@@ -1,0 +1,270 @@
+\section{General Configuration}\label{sec:general}
+
+\subsection{Never Do This}
+
+The \texttt{cxanalytix.config} file needs to be modified to supply the appropriate configuration elements.  The \texttt{configSections}
+element is not intended to be user configurable.  Listing \ref{lst:motouch} shows an example of the contents of this XML element;
+\textbf{never change anything in this section.}
+
+\begin{lstlisting}[caption={Part of the Configuration File to Never Change}, label={lst:motouch}, language=XML, basicstyle=\ttfamily\tiny]
+<configSections>
+    <section name="CxAnalytixService" 
+        type="CxAnalytix.Configuration.Impls.CxAnalytixService, Configuration" />
+    <section name="CxSASTCredentials" 
+        type="CxAnalytix.Configuration.Impls.CxCredentials, Configuration" />
+    <section name="CxSCACredentials" 
+        type="CxAnalytix.Configuration.Impls.CxMultiTenantCredentials, Configuration" />
+    <section name="CxSASTConnection" 
+        type="CxAnalytix.Configuration.Impls.CxSASTConnection, Configuration" />
+    <section name="CxSCAConnection" 
+        type="CxAnalytix.XForm.ScaTransformer.Config.CxScaConnection, ScaTransformer" />
+    <section name="ProjectFilterRegex" 
+        type="CxAnalytix.Configuration.Impls.CxFilter, Configuration"/>
+    <section name="CxAuditTrailSuppressions" 
+        type="CxAnalytix.AuditTrails.Crawler.Config.CxAuditTrailSuppressions, CxAuditTrailsCrawler"/>
+    <section name="CxAuditTrailRecords" 
+        type="CxAnalytix.AuditTrails.Crawler.Config.CxAuditTrailRecordNameMap, CxAuditTrailsCrawler"/>
+    <section name="CxDB" 
+        type="CxAnalytix.CxAuditTrails.DB.Config.CxAuditDBConnection, CxAuditTrailsDB"/>
+    <section name="AMQPConnection" 
+        type="CxAnalytix.Out.AMQPOutput.Config.Impls.AmqpConnectionConfig, AMQPOutput"/>
+    <section name="AMQPConfig" 
+        type="CxAnalytix.Out.AMQPOutput.Config.Impls.AmqpConfig, AMQPOutput"/>
+    <section name="CxLogOutput" 
+        type="CxAnalytix.Out.Log4NetOutput.Config.Impl.LogOutputConfig, Log4NetOutput" />
+    <section name="CxMongoOutput" 
+        type="CxAnalytix.Out.MongoDBOutput.Config.Impl.MongoOutConfig, MongoDBOutput" />
+    <section name="CxMongoConnection" 
+        type="CxAnalytix.Out.MongoDBOutput.Config.Impl.MongoConnectionConfig, MongoDBOutput" />
+</configSections>
+\end{lstlisting}
+
+\subsection{Checkmarx Service Connection Configuration}\label{sec:connection}
+
+\subsubsection{Checkmarx SAST Connection Configuration}
+
+Configuring a connection to Checkmarx SAST requires the elements \texttt{CxSASTConnection} and \texttt{CxSASTCredentials}.
+
+\begin{xml}{CxSASTConnection}{\expandsenv}{}
+<CxSASTConnection
+    URL=""
+    mnoURL=""
+    TimeoutSeconds="" 
+    ValidateCertificates="true"
+    RetryLoop=""
+    />
+\end{xml}
+
+\begin{table}[h]
+    \caption{CxSASTConnection Attributes}        
+    \begin{tabularx}{\textwidth}{cccl}
+        \toprule
+        \textbf{Attribute} & \textbf{Default} & \textbf{Required} & \textbf{Description}\\
+        \midrule
+        \texttt{URL} & N/A & Yes & \makecell[l]{The URL to the SAST server.}\\
+        \midrule
+        \texttt{mnoURL} & N/A & No & \makecell[l]{The URL to the Management and Orchestration\\endpoint of the SAST server.}\\
+        \midrule
+        \texttt{TimeoutSeconds} & 300 & No & \makecell[l]{The number of seconds to wait until an\\API operation times out.}\\
+        \midrule
+        \texttt{ValidateCertificates} & True & No & \makecell[l]{Validate SSL certificates for\\API endpoints.}\\
+        \midrule
+        \texttt{RetryLoop} & 0 & No & \makecell[l]{The number of retries for an API operation\\after the operation times out.}\\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\begin{xml}{CxSASTCredentials}{\expandsenv\encrypts}{}
+<CxSASTCredentials
+    Username=""
+    Password=""
+    />
+\end{xml}
+    
+\begin{table}[h]
+    \caption{CxSASTCredentials Attributes}        
+    \begin{tabularx}{\textwidth}{cccl}
+        \toprule
+        \textbf{Attribute} & \textbf{Default} & \textbf{Required} & \textbf{Description}\\
+        \midrule
+        \texttt{Username} & N/A & Yes & \makecell[l]{A username for a SAST application account.}\\
+        \midrule
+        \texttt{Password} & N/A & Yes & \makecell[l]{The password for the SAST application account.}\\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\subsubsection{Checkmarx SCA Connection Configuration}
+Configuring a connection to Checkmarx SCA requires the elements \texttt{CxSCAConnection} and \texttt{CxSCACredentials}.
+
+\begin{xml}{CxSCAConnection}{\expandsenv}{}
+<CxSCAConnection
+    URL=""
+    LoginURL=""
+    TimeoutSeconds="" 
+    ValidateCertificates="true"
+    RetryLoop=""
+    />
+\end{xml}
+
+\begin{table}[h]
+    \caption{CxSCAConnection Attributes}        
+    \begin{tabularx}{\textwidth}{cccl}
+        \toprule
+        \textbf{Attribute} & \textbf{Default} & \textbf{Required} & \textbf{Description}\\
+        \midrule
+        \texttt{URL} & N/A & Yes & \makecell[l]{The URL to the SCA API.}\\
+        \midrule
+        \texttt{LoginURL} & N/A & No & \makecell[l]{The URL to the SCA access control endpoint.}\\
+        \midrule
+        \texttt{TimeoutSeconds} & 300 & No & \makecell[l]{The number of seconds to wait until an\\API operation times out.}\\
+        \midrule
+        \texttt{ValidateCertificates} & True & No & \makecell[l]{Validate SSL certificates for\\API endpoints.}\\
+        \midrule
+        \texttt{RetryLoop} & 0 & No & \makecell[l]{The number of retries for an API operation\\after the operation times out.}\\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\begin{xml}{CxSCACredentials}{\expandsenv\encrypts}{}
+<CxSCACredentials
+    Username=""
+    Password=""
+    Tenant=""
+    />
+\end{xml}
+    
+\begin{table}[h]
+    \caption{CxSCACredentials Attributes}        
+    \begin{tabularx}{\textwidth}{cccl}
+        \toprule
+        \textbf{Attribute} & \textbf{Default} & \textbf{Required} & \textbf{Description}\\
+        \midrule
+        \texttt{Username} & N/A & Yes & \makecell[l]{A username for an SCA application account.}\\
+        \midrule
+        \texttt{Password} & N/A & Yes & \makecell[l]{The password for the SCA application account.}\\
+        \midrule
+        \texttt{Tenant} & N/A & Yes & \makecell[l]{The name of the SCA tenant.}\\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+
+\subsection{CxAnalytix Service and CLI Execution Configuration}\label{sec:runtime_config}
+
+The \texttt{CxAnalytixService} element provides the runtime configuration for CxAnalytix.  The child element \texttt{EnabledTransformers}
+is configured with the transformation logic modules to use when crawling Checkmarx services.
+
+\begin{xml}{CxAnalytixService}{\expandsenv}{}
+<CxAnalytixService
+    InstanceId=""
+    ConcurrentThreads=""
+    StateDataStoragePath=""
+    ProcessPeriodMinutes=""
+    OutputModuleName=""
+    SASTScanSummaryRecordName=""
+    SASTScanDetailRecordName=""
+    SCAScanSummaryRecordName=""
+    SCAScanDetailRecordName=""
+    ProjectInfoRecordName=""
+    PolicyViolationsRecordName="">
+
+    <EnabledTransformers>
+        <Transformer Name="" />
+    </EnabledTransformers>
+
+</CxAnalytixService>
+\end{xml}
+        
+\begin{table}[h]
+    \caption{CxAnalytixService Attributes}        
+    \begin{tabularx}{\textwidth}{cccl}
+        \toprule
+        \textbf{Attribute} & \textbf{Default} & \textbf{Required} & \textbf{Description}\\
+        \midrule
+        \texttt{InstanceId} & N/A & No & \makecell[l]{A static value added to each data record\\
+        to indicate the CxAnalytix instance\\
+        from which the record originated.}\\
+        \midrule
+        \texttt{ConcurrentThreads} & N/A & Yes & \makecell[l]{The number of reports that are processed\\
+        concurrently.  This applies per \\
+        transformation module, therefore using \\
+        2 threads and 2 transformation modules\\
+        yields 4 concurrent threads.}\\
+        \midrule
+        \texttt{StateDataStoragePath} & N/A & Yes & \makecell[l]{A path to a folder where the state data\\
+        that is persisted between each scan is\\stored.}\\
+        \midrule
+        \texttt{ProcessPeriodMinutes} & N/A & Yes & \makecell[l]{The number of minutes between
+        \\performing crawls for new scan\\
+        results. Ignored by CxAnalytixCLI.}\\
+        \midrule
+        \texttt{OutputModuleName} & N/A & Yes & \makecell[l]{The name of the output module to use\\
+        for data output.  The acceptable\\
+        values can be found in\\
+        the \hyperref[lst:outmodules]{Available Output Modules} list.}\\
+        \midrule
+        \texttt{SASTScanSummaryRecordName}\\
+        \texttt{SASTScanDetailRecordName}\\
+        \texttt{SCAScanSummaryRecordName}\\
+        \texttt{SCAScanDetailRecordName}\\
+        \texttt{ProjectInfoRecordName}\\
+        \texttt{PolicyViolationsRecordName} & N/A & Yes & \makecell[tl]{The name of the corresponding\\
+        record collection configured\\
+        in the output.}\\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+
+\paragraph{Available Output Modules}\label{lst:outmodules}
+\begin{itemize}
+    \item Log4Net
+    \item AMQP
+    \item MongoDB
+\end{itemize}
+
+\noindent\\The child element \texttt{EnabledTransformers} defines one or more transformer modules that crawl corresponding Checkmarx services.  The
+attribute \texttt{Name} of the child element \texttt{Transformer} can be given one of the following values:\\
+
+\begin{itemize}
+    \item SAST
+    \item SCA
+\end{itemize}
+
+\noindent\\One or more \texttt{Transformer} elements are required.  In the example below, both the SAST and SCA transformers are configured.
+The selected services must have corresponding connection configurations as described in Section \ref{sec:connection}.
+
+\begin{xml}{CxAnalytixService> \ \faArrowLeft \ <EnabledTransformers}{}{}
+<CxAnalytixService ... >
+    <EnabledTransformers>
+        <Transformer Name="SAST" />
+        <Transformer Name="SCA" />
+    </EnabledTransformers>
+</CxAnalytixService>
+\end{xml}
+
+\subsection{Limiting the Scope of Crawling by Filtering}
+
+The optional \texttt{ProjectFilterRegex} configuration element can be used to limit the scope of the data crawl to only those scans matching Team or Project
+name regular expressions.  The filtering is performed using a regular expression to evaluate Team and Project path such that the values of each must
+match the provided regular expression.  If this \texttt{ProjectFilterRegex} is not included in the configuration file, all scans are crawled and exported.
+
+\noindent\\The \texttt{Team} and \texttt{Project} attributes are optional.  Omitting one of the attributes or configuring the attribute with an empty
+value indicates all values match.  Negative matching regular expressions also work; the typical application of this configuration is to limit crawling
+to projects that are deployed to production.
+
+\noindent\\In the example XML, the configuration crawls scans for projects meeting the following criteria:
+
+\begin{itemize}
+    \item The team does not contain the word "AppSec" anywhere in the team path.
+    \item The project name contains the word "master".
+\end{itemize}
+
+\begin{xml}{ProjectFilterRegex}{}{}
+<ProjectFilterRegex 
+    Team="^((?!AppSec).)*\$" 
+    Project="master"
+    />
+\end{xml}
+    

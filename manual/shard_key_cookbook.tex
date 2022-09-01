@@ -32,58 +32,11 @@ expand the storage based on a value at the root of the document.  It can be used
 affinity if desired, but MongoDB's shard indexing capability is more flexible than using this option.
 
 \noindent\\Each collection of documents has different fields and cardinality considerations.  Chapter \ref{chap:spec} details the fields
-available for documents written in each collection.
+available for documents written in each collection.  The fields of each data record can be used to compose the shard key via
+the Key Format Specification described in Appendix \ref{chap:key_format_spec}.
 
-\noindent\\For those that wish to experiment with the key format specifier, 
-an \href{https://repl.it/repls/BriskPleasingLine#main.cs}{interactive programming example} is available.
-
-
-\subsection{Key Format Specifier}
-
-The key format specifier is a string composed of alphanumeric text, field specifiers, and field format specifiers.
-
-\noindent\\The syntax of the format specifier is:
-
-\noindent\\\texttt{\{field key[:format value]\}}
-
-\noindent\\Where the \texttt{field key} element is the name of the field in the record from which to extract a value used when composing a shard key.
-The following example creates a shard key from the data found in \texttt{ScanType}, \texttt{TeamName}, and \texttt{ProjectName}.
-
-\noindent\\
-\lstset{language=XML}
-\begin{lstlisting}
-<Spec KeyName="pkey" CollectionName="SAST_Scan_Summary" 
-    FormatSpec="SHARD-{ScanType}-{TeamName}-{ProjectName}"  />
-\end{lstlisting}
-
-
-\noindent\\When the \texttt{field key} element is a dictionary type, a dotted notation may be used to reference a key in the dictionary
-value referenced by \texttt{field key}.  The following example creates a shard key using the value of a custom field:
-
-\begin{lstlisting}
-<Spec KeyName="pkey" CollectionName="SAST_Scan_Summary" 
-    FormatSpec="SHARD-{ScanType}-{TeamName}-{ProjectName}-{CustomFields.MyCustomField}"
-    />
-\end{lstlisting}
-
-
-\noindent\\The curly braces (\texttt{\{} and \texttt{\}}) can be embedded in the format spec by using a backslash (\texttt{\textbackslash}) to escape 
-the curly brace.  The following example shows the shard key contents surrounded by curly braces:
-
-\begin{lstlisting}
-<Spec KeyName="pkey" CollectionName="SAST_Scan_Summary"
-    FormatSpec="\{{ScanType}-{TeamName}-{ProjectName}\}"  />
-\end{lstlisting}
-
-\subsection{Field Format Specifier}
-
-The field format specifier follows the same convention of a .Net string format specifier.  The format string used depend on the data type:
-
-\begin{itemize}
-    \item\href{https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-date-and-time-format-strings}{Standard} and \href{https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-date-and-time-format-strings}{Custom} date and time format strings.
-    \item\href{https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-timespan-format-strings}{Standard} and \href{https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-timespan-format-strings}{Custom} time span format strings.
-    \item\href{https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings}{Standard} and \href{https://docs.microsoft.com/en-us/dotnet/standard/base-types/custom-numeric-format-strings}{Custom} numeric format strings.
-\end{itemize}
+\noindent\\For those that wish to experiment with the Key Format Specification, the \texttt{StringFormatExamples} project can be used
+for experimentation purposes.
 
 
 \section{Example Shard Key Format Specifiers}
@@ -98,7 +51,7 @@ to increase cardinality.  Date fields are also generally a good choice for incre
 time span length decreases (e.g. year > month > day-of-week > day-of-month and so on).
 
 
-\subsection{SAST Scan Summary}
+\subsection{SAST Scan Summary Example}
 
 This example uses the scan type, the year and full name of the day of the week when the scan finished.
 
@@ -115,7 +68,3 @@ This example uses the scan type, the query group, the year and full name of the 
 <add KeyName="pkey" CollectionName="SAST_Scan_Detail"
     FormatSpec="{ScanType}-{QueryGroup}-{ScanFinished:yyyy-dddd}" NoHash="true" />
 \end{lstlisting}
-
-
-
-

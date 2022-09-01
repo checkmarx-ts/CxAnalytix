@@ -1,0 +1,164 @@
+\chapter{Forwarding Data to Splunk}\label{chap:splunk_config}
+
+The Log4Net output is used to generate log files that are tailed and forwarded to Splunk via the Splunk Universal Forwarder.  This requires the Log4Net
+output to be configured so that the Universal Forwarder can find the generated output files.  Please refer to Section \ref{sec:runtime_config} for details
+about choosing the Log4Net output module.
+
+\noindent\\The Log4Net configuration file should be modified only to change the output path of the generated data output files.  The generated data output files are different
+than the application logging output files in that the data output files contain data to be used for analysis purposes. It may be desirable to also forward
+the application log files to Splunk for monitoring and troubleshooting purposes.
+
+
+\section{Configuring CxAnalytix for Splunk}
+
+\noindent\\The \texttt{CxAnalytixService} configuration section in \texttt{cxanalytix.config} contains record name mapping attributes.  Listing \ref{lst:record_map}
+shows an example configuration with the record names mapped to file logger names shown configured in listing \ref{lst:record_loggers}.  The loggers
+reference file appenders, as seen in listing \ref{lst:record_appenders}.  The appender configuration, by default, places all output in the \texttt{logs}
+directory, which resolves to the current working directory set when a CxAnalytix process executes.  The location of the output files can be changed
+by modifying the appender configuration in \texttt{cxanalytix.log4net}.
+
+
+\begin{lstlisting}[caption={Example Record Map Configuration}, label={lst:record_map}, language=XML]
+<CxAnalytixService 
+    ConcurrentThreads="2" 
+    StateDataStoragePath="%CHECKMARX_STATE_PATH%"
+    ProcessPeriodMinutes="120"
+    OutputModuleName="log4net"
+    SASTScanSummaryRecordName="RECORD_SAST_Scan_Summary"
+    SASTScanDetailRecordName="RECORD_SAST_Scan_Detail"
+    SCAScanSummaryRecordName="RECORD_SCA_Scan_Summary"
+    SCAScanDetailRecordName="RECORD_SCA_Scan_Detail"
+    ProjectInfoRecordName="RECORD_Project_Info"
+    PolicyViolationsRecordName="RECORD_Policy_Violations">
+    <EnabledTransformers>
+        <Transformer Name="SAST" />
+    </EnabledTransformers>
+</CxAnalytixService>
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Log4Net Logger Configurations}, label={lst:record_loggers}, language=XML]
+.. snip ..
+<logger name="RECORD_SAST_Scan_Summary" aditivity="false">
+    <level value="ALL" />
+    <appender-ref ref="SAST_SS" />
+</logger>
+  .. snip ..
+\end{lstlisting}
+
+\begin{lstlisting}[caption={Log4Net Record File Appenders}, label={lst:record_appenders}, language=XML]
+.. snip ..
+<appender name="SAST_SS" type="log4net.Appender.RollingFileAppender">
+    <appendToFile value="true" />
+    <maximumFileSize value="100MB" />
+    <rollingStyle value="Composite" />
+    <staticLogFileName value="false" />
+    <countDirection value="1" />
+    <file type="log4net.Util.PatternString" value="logs/sast_scan_summary" />
+    <datePattern value="'.'yyyy_MM_dd'.log'" />
+    <preserveLogFileNameExtension value="true" />
+
+    <layout type="log4net.Layout.PatternLayout">
+        <conversionPattern value="%message%newline" />
+    </layout>
+</appender>
+.. snip ..
+\end{lstlisting}
+
+\section{Splunk Universal Forwarder Configuration}
+The \ref{https://www.splunk.com/en_us/download/universal-forwarder.html}{Splunk Universal Forwarder} is used to send data to Splunk Enterprise or Splunk Cloud.  
+Please refer to the Splunk website for information for details about installing and configuring the Universal Forwarder.
+
+
+\subsection{Output File Tailing Configuration}
+
+Assuming an installed forwarder is able to connect to the desired Splunk instance, 
+create the \href{https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf}{\texttt{inputs.conf}} file at the appropriate location 
+(e.g. \texttt{/etc/apps/splunkclouduf/default/inputs.conf}).  Listing \ref{lst:inputsconf} shows an example of an \texttt{inputs.conf}
+file with monitoring stanzas appropriate for each type of record. 
+
+\begin{lstlisting}[caption={Log4Net Record File Appenders}, label={lst:inputsconf}, language=XML]
+[monitor://{path to logs}\CxAnalytixService...]
+sourcetype=service
+
+[monitor://{path to logs}\sast_scan_summary...]
+sourcetype=sast_scan_summary
+
+[monitor://{path to logs}\sast_scan_detail...]
+sourcetype=sast_scan_detail
+
+[monitor://{path to logs}\sast_project_info...]
+sourcetype=sast_project_info
+
+[monitor://{path to logs}\sast_policy_violations...]
+sourcetype=sast_policy_violation
+
+[monitor://{path to logs}\sca_scan_summary...]
+sourcetype=sca_scan_summary
+
+[monitor://{path to logs}\sca_scan_detail...]
+sourcetype=sca_scan_detail
+
+[monitor://{path to logs}\CxActivity_dbo_AuditTrail...]
+sourcetype=cxactivity_audittrail
+
+[monitor://{path to logs}\CxActivity_dbo_Audit_Scans...]
+sourcetype=cxactivity_auditscans
+
+[monitor://{path to logs}\CxActivity_dbo_Audit_Reports...]
+sourcetype=cxactivity_auditreports
+
+[monitor://{path to logs}\CxActivity_dbo_Audit_Queries...]
+sourcetype=cxactivity_auditqueries
+
+[monitor://{path to logs}\CxActivity_dbo_Audit_Projects...]
+sourcetype=cxactivity_auditprojects
+
+[monitor://{path to logs}\CxActivity_dbo_Audit_Presets...]
+sourcetype=cxactivity_auditpresets
+
+[monitor://{path to logs}\CxActivity_dbo_Audit_DataRetention...]
+sourcetype=cxactivity_auditdataretention
+\end{lstlisting}
+
+\subsection{Configuring the Source Types}
+
+The source types on the Splunk server need to be configured to appropriately parse JSON.  
+This can be done using \href{https://docs.splunk.com/Documentation/Splunk/latest/Admin/Propsconf}{\texttt{props.conf}} (only available in Splunk Enterprise) 
+or through the Splunk UI. A source type should be created the matches each record output source types as defined in 
+\href{https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf}{\texttt{inputs.conf}}.  Listing \ref{lst:sourcetypes} shows an example
+of a source type entry.  The source type configuration needs to be performed for each source type.
+
+
+\begin{lstlisting}[caption={Log4Net Record File Appenders}, label={lst:sourcetypes}, language=XML]
+LINE_BREAKER=([\r\n]+)
+KV_MODE=json
+TRUNCATE=0
+SHOULD_LINEMERGE=false
+\end{lstlisting}
+
+\noindent\\\textbf{Extracting Timestamps}\\
+
+\noindent\\The source data contains timestamp fields that can be used as the timestamp Splunk uses when indexing the data.  Without specifying how to extract the
+timestamp from each source type, the timestamp will default to the timestamp when the data was indexed.  This may work for current data, but data searches 
+will also return historical data that is outside of the selected search time frame.
+
+\noindent\\For the SAST Scan Summary, SAST Scan Detail, SCA Scan Summary, and SCA Scan Detail source types, this configuration option should be added:
+
+\noindent\\\texttt{TIME\_PREFIX=\^.*ScanFinished".+?"}
+
+\noindent\\For the SAST Project Info source type, this configuration option should be added:
+
+\noindent\\\texttt{TIME\_PREFIX=\^.*LastCrawlDate".+?"}
+
+\noindent\\For the SAST Policy Violation source type, this configuration option should be added:
+
+\noindent\\\texttt{TIME\_PREFIX=\^.*ViolationOccurredDate".+?"}
+
+\noindent\\For the Audit Trail source type, this configuration option should be added:
+
+\noindent\\\texttt{TIME\_PREFIX=\^.*EndTime".+?"}
+
+\noindent\\For the Audit\_Scans, Audit\_Reports, Audit\_Queries, Audit\_Projects, Audit\_Presets, Audit\_DataRetention, this configuration option should be added:
+
+\noindent\\\texttt{TIME\_PREFIX=\^.*TimeStamp".+?"}
+

@@ -1,0 +1,75 @@
+\subsection{MongoDB Output Configuration}\label{sec:mongo_config}
+
+
+\subsubsection{MongoDB Connection String Configuration}
+
+The MongoDB connection is configured with a connection string following the \href{https://docs.mongodb.com/manual/reference/connection-string/}{MongoDB URI Format}.
+XML reserved characters will need to be XML escaped:
+
+\begin{itemize}
+    \item \textbf{"} \ \faArrowRight \ \texttt{\&quot;}
+    \item \textbf{'} \ \faArrowRight \ \texttt{\&apos;}
+    \item \textbf{<} \ \faArrowRight \ \texttt{\&lt;}
+    \item \textbf{>} \ \faArrowRight \ \texttt{\&gt;}
+    \item \textbf{\&} \ \faArrowRight \ \texttt{\&amp;}
+\end{itemize}
+
+\noindent\\Other special characters that are not valid in a URL may need to be \href{https://www.w3schools.com/tags/ref_urlencode.ASP}{URL Encoded}.\\
+
+\begin{xml}{CxMongoConnection}{\expandsenv\encrypts}{}
+<CxMongoConnection
+    ConnectionString="mongodb://<server>:27017/<database>"
+/>
+\end{xml}
+
+\subsubsection{MongoDB Shard Keys}
+
+The \texttt{CxMongoOutput} configuration element is optional; it can be used to add an additional field to each record
+added to an output record with a name matching the record name configuration described in Section \ref{sec:runtime_config}.  The fields
+available for each record can be found in Appendix \ref{chap:spec}. Details about creating shard keys can be found in Appendix \ref{ShardKeyCookbook}.
+
+\noindent\\The example \texttt{CxMongoOutput} element below shows a shard key with the name \texttt{pkey} added to documents
+written to collections named \texttt{SAST\_Scan\_Summary} and \texttt{SAST\_Scan\_Detail}.
+
+\begin{xml}{CxMongoOutput}{\contentvariables}{}
+<CxMongoOutput>
+    <GeneratedShardKeys>
+        <Spec 
+            KeyName="pkey" 
+            CollectionName="SAST_Scan_Summary" 
+            FormatSpec="{ScanType}-{ScanFinished:yyyy-dddd}"
+            />
+        <Spec 
+            KeyName="pkey" 
+            CollectionName="SAST_Scan_Detail" 
+            FormatSpec="{ScanType}-{QueryGroup}-{ScanFinished:yyyy-dddd}" 
+            NoHash="true" 
+            />
+    </GeneratedShardKeys>
+</CxMongoOutput>
+\end{xml}
+    
+
+\begin{table}[h]
+    \caption{CxMongoOutput Shard Key Specification Attributes}        
+    \begin{tabularx}{\textwidth}{cccl}
+        \toprule
+        \textbf{Attribute} & \textbf{Default} & \textbf{Required} & \textbf{Description}\\
+        \midrule
+        \texttt{KeyName} & N/A & Yes & \makecell[l]{The name of the field in the document where the\\shard key value is written.}\\
+        \midrule
+        \texttt{CollectionName} & N/A & Yes & \makecell[l]{The name of the collection where documents\\
+        containing this shard key value are written.}\\
+        \midrule
+        \texttt{FormatSpec} & N/A & Yes & \makecell[l]{A specifier composed of static values\\
+        and dynamic values extracted from the document\\
+        prior to being written to the collection.}\\
+        \midrule
+        \texttt{NoHash} & False & No & \makecell[l]{When False, the value created by the \texttt{FormatSpec}\\
+        attribute is written as a Base64 encoded hash\\
+        to the field with the name defined by\\
+        the \texttt{KeyName} attribute.  Otherwise, the\\
+        unhashed value is written.}\\
+        \bottomrule
+    \end{tabularx}
+\end{table}

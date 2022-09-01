@@ -1,0 +1,156 @@
+\subsection{AMQP Output Configuration}\label{sec:amqp_config}
+
+AMQP is a standard wire-protocol for message queueing that can be utilized by CxAnalytix to support complex architectures for utilizing crawled 
+vulnerability data.  While CxAnalytix does not feed data in real-time, sending record entries as messages to an AMQP endpoint allows for some
+advanced near-realtime and stream analytics applications.  AMQP supports many concepts that make it ideal to support message-bus and other
+distributed data consumption architectures.
+
+
+% Key Features of AMQP Output
+% * Headers and routing keys can be set with static values and/or values composed of [fields](SPEC) from each record entry using a [key format specifier](ShardKeyCookbook#key-format-specifier).
+% * Filtering of records can be done prior to sending records via the [Team and Project filtering](Configure-ProjectFilterRegex) configuration or via topic and/or header Exchange/Queue bindings.
+% * Record fields can be filtered with Pass or Reject filter specifications for any record type.
+% * Record entries for all record types can be sent to a default exchange or an exchange specifically set for the record type.
+% * The Exchange and Queue topology is not dictated by CxAnalytix; complex routing of data can be configured via Exchange bindings on the broker.
+%-----%
+
+
+\subsubsection{AMQP Connection Configuration}
+
+The \texttt{AMQPConnection} configuration element is used to configure connection information for AMQP endpoints.  Endpoints for all nodes in a message queue cluster
+can be defined in the configuration, allowing for failover to a different node in the cluster if one node fails.  The \texttt{ClusterNodes} child element
+contains one or more \texttt{Endpoint} child elements.  The \texttt{Endpoint} element can contain a single \texttt{SSLOptions} element that allows
+for configuration of SSL certificate options.  The full example XML is displayed below:\\
+
+
+\begin{xml}{AMQPConnection}{\expandsenv\encrypts}{}
+<AMQPConnection UserName="foo" Password="bar">
+    <ClusterNodes>
+        <Endpoint 
+            AmqpUri="amqp://localhost:5672" 
+            />
+        ...
+        <Endpoint 
+            AmqpUri="amqps://hostname:5671">
+            <SSLOptions 
+                AllowCertNameMismatch="false" 
+                AllowCertificateChainErrors="false" 
+                ServerName="remote-name" 
+                ClientCertPath ="" 
+                ClientCertPassphrase=""
+                />
+        </Endpoint>
+    </ClusterNodes>
+</AMQPConnection>
+\end{xml}
+
+
+\begin{table}[h]
+    \caption{AMQPConnection Attributes}        
+    \begin{tabularx}{\textwidth}{cccl}
+        \toprule
+        \textbf{Attribute} & \textbf{Default} & \textbf{Required} & \textbf{Description}\\
+        \midrule
+        \texttt{Username} & N/A & Yes & \makecell[l]{The user name used to authenticate with the AMQP endpoint.}\\
+        \midrule
+        \texttt{Password} & N/A & Yes & \makecell[l]{The password used to authenticate with the AMQP endpoint.}\\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+
+\noindent\\A basic endpoint configuration is shown in the following XML.  In this example, only the AMQP endpoint URI is required.\\
+
+\begin{xml}{AMQPConnection> \ \faArrowLeft \ <Endpoint}{\expandsenv\encrypts}{ \ (Basic)}
+<Endpoint AmqpUri="amqp://localhost:5672" />
+\end{xml}
+
+
+\noindent\\An advanced endpoint configuration is shown in the following XML.  In this example, the AMQP endpoint URI is
+configured to encrypt the data exchanged between CxAnalytix and the AMQP endpoint.  Additional SSL options are added to define how
+the SSL connection is established.\\
+
+\begin{xml}{AMQPConnection> \ \faArrowLeft \ <Endpoint}{\expandsenv\encrypts}{ \ (Advanced)}
+<Endpoint
+    AmqpUri="amqps://hostname:5671">
+    <SSLOptions 
+        AllowCertNameMismatch="false" 
+        AllowCertificateChainErrors="false" 
+        ServerName="remote-name" 
+        ClientCertPath ="" 
+        ClientCertPassphrase=""
+        />
+</Endpoint>
+\end{xml}
+    
+
+\noindent\\The \texttt{SSLOptions} element is shown in more detail below.
+
+\begin{xml}{AMQPConnection> \ \faArrowLeft \ <Endpoint> \ \faArrowLeft \ <SSLOptions}{\expandsenv\encrypts}{}
+<SSLOptions 
+    AllowCertNameMismatch="false" 
+    AllowCertificateChainErrors="false" 
+    ServerName="remote-name" 
+    ClientCertPath ="" 
+    ClientCertPassphrase=""
+    />
+\end{xml}
+    
+\begin{table}[h]
+    \caption{SSLOptions Attributes}        
+    \begin{tabularx}{\textwidth}{cccl}
+        \toprule
+        \textbf{Attribute} & \textbf{Default} & \textbf{Required} & \textbf{Description}\\
+        \midrule
+        \texttt{AllowCertNameMismatch} & false & No & \makecell[l]{If true, failures to match the host name\\
+        in the AmqpUri to the server\\
+        name in the certificate are ignored.}\\
+        \midrule
+        \texttt{AllowCertificateChainErrors} & false & No & \makecell[l]{If true, missing certificates in\\
+        the CA chain are accepted.}\\
+        \midrule
+        \texttt{ServerName} & N/A & No & \makecell[l]{The name expected on\\
+        the remote SSL certificate.}\\
+        \midrule
+        \texttt{ClientCertPath} & N/A & No & \makecell[l]{A filepath to a PEM encoded\\
+        client certificate.}\\
+        \midrule
+        \texttt{ClientCertPassphrase} & N/A & No & \makecell[l]{The password for the PEM encoded\\
+        client certificate.}\\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+
+\subsubsection{AMQP Data Exchange Configuration}
+
+\ref{chap:key_format_spec}
+
+\begin{xml}{AMQPConfig}{\expandsenv}{}
+<AMQPConfig DefaultExchange="bar">
+    <RecordSpecs>
+        <Record Name="SAST_Scan_Summary">
+            <MessageHeaders>
+                <Header Key="RecordType" Spec="SAST_Scan_Summary" />
+                <Header Key="ScanType" Spec="{ScanType}" />
+            </MessageHeaders> 
+        </Record>
+
+        <Record 
+            Name="SAST_Scan_Detail" 
+            Exchange="foo" 
+            TopicSpec="{ScanType}.{NodeId}.{Status}.{ResultSeverity}.{QueryLanguage}.{QueryName}">
+            <Filter Mode="Reject">
+                <Fields>
+                    <Field Name="NodeCodeSnippet"/>
+                </Fields>
+            </Filter>
+            <MessageHeaders>
+                <Header Key="RecordType" Spec="SAST_Scan_Detail" />
+                <Header Key="ScanType" Spec="{ScanType}" />
+            </MessageHeaders> 
+        </Record>
+    </RecordSpecs>
+</AMQPConfig>
+\end{xml}
+    

@@ -167,6 +167,15 @@ the paths that should be considered for volume mounting.
 \end{table}
 
 
+\section{Logging Configuration}
+
+Log4Net is used to produce both application logs and logs containing exported JSON key/value pairs when using the Logging Output component. 
+CxAnalytix produces logging useful for troubleshooting and/or execution tracking purposes even when not using the Log4Net output method.  The 
+\texttt{cxanalytix.log4net} file is generally located in the same directory as the \texttt{cxanalytix.config} file, and will allow for
+customizing the logging output location and verbosity.
+
+
+
 \section{Upgrading}
 
 Configuration files for versions of CxAnalytix with the same major version\footnote{The major version is the first 

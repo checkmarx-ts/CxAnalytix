@@ -1,0 +1,34 @@
+\subsection{Log4Net Output Configuration}\label{sec:log4net_out}
+
+The Log4Net configuration is typically limited to modifying the \texttt{cxanalytics.log4net} file to modify the output paths of the
+data output files.  Modifying the output location is described in Section \ref{sec:log4net_out}.
+
+\noindent\\The \texttt{CxLogOutput} optional configuration can be used to periodically purge the files created by CxAnalytix As
+scans are crawled over time.  It is presumed that the files created are being forwarded for storage, thus can be purged periodically.
+
+\begin{xml}{CxLogOutput}{}{}
+<CxLogOutput DataRetentionDays="14" OutputRoot="logs\">
+    <PurgeSpecs>
+        <spec MatchSpec="*.log.*" />
+    </PurgeSpecs>
+</CxLogOutput>
+\end{xml}
+            
+\begin{table}[h]
+    \caption{CxLogOutput Attributes}        
+    \begin{tabularx}{\textwidth}{cccl}
+        \toprule
+        \textbf{Attribute} & \textbf{Default} & \textbf{Required} & \textbf{Description}\\
+        \midrule
+        \texttt{DataRetentionDays} & N/A & Yes & \makecell[l]{The maximum number of days a file can be\\
+        untouched before purge.}\\
+        \midrule
+        \texttt{OutputRoot} & N/A & Yes & \makecell[l]{The root folder where logs are written.}\\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\noindent\\The \texttt{PurgeSpecs} element contains one or more \texttt{spec} child elements.  The attribute \texttt{MatchSpec} in each \texttt{spec} element
+defines a file mask used for selecting files to purge.  The search for files matching one or more of the specifications are performed recursively
+from the root.  Any files found matching one or more of the specifications are purged if the last modified date is older than the value configured
+in the \texttt{DataRetentionDays} element.

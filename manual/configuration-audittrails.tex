@@ -1,0 +1,84 @@
+\section{SAST Audit Trail Crawling}
+The Checkmarx SAST product contains some SQL tables where audit logging is stored.  For on-premise instance of SAST, it is possible to
+configure CxAnalytix to crawl the audit tables found in the CxDB and CxActivity databases.  For this feature 
+to work, a direct database connection must be made to the CxSAST DB.\footnote{This feature is not available for Checkmarx hosted instance of SAST.}
+
+\noindent\\The account used to connect to the CxSAST DB has the following requirements:
+
+\begin{enumerate}
+    \item The account should be mapped to the CxDB and CxActivity databases.
+    \item The account shouid have the roles "public" and "db\_reader" for both the CxDB and CxActivity databases.
+\end{enumerate}
+
+The CxAnalytixService running on Windows can use SSPI to connect to the database if the CxAnalytixService is configured to execute using a 
+service account that meets the above requirements.  The connection string in the \texttt{CxDB} configuration element must indicate that
+integrated security is to be used when connecting to the database.
+
+
+\subsection{SQL Database Connection Configuration}
+
+The \texttt{CxDB} configuration element is optional.  It is only required if SAST audit table data is to be crawled.  If the
+\texttt{CxDB} element is not found in the configuration, no attempt to crawl audit tables will be made.
+
+\begin{xml}{CxDB}{\expandsenv\encrypts}{}
+<CxDB 
+    ConnectionString="<sql connection string>" 
+    />
+\end{xml}
+
+\subsection{Audit Trail Record Name Mapping Configuration}
+
+The \texttt{CxAuditTrailRecords} configuration element is optional.  The purpose of this element is to map the names of data
+crawled from SQL database tables to the name of a record in the output module.  All attributes of \texttt{CxAuditTrailRecords}
+are full names of tables in the CxDB or CxActivity database.
+
+\noindent\\In the example XML below, the value assigned to each attribute is the name of the record storage location where the crawled 
+data will be written.  If using MongoDB, for example, the values would correspond to collection names in the MongoDB database.
+
+\noindent\\If \texttt{CxAuditTrailRecords} is not provided in the configuration, the default name values are the same
+as shown in the XML example below.
+
+\begin{xml}{CxAuditTrailRecords}{}{}
+<CxAuditTrailRecords
+    CxDB.accesscontrol.AuditTrail="RECORD_CxDBaccesscontrolAuditTrail"
+    CxActivity.dbo.AuditTrail="RECORD_CxActivitydboAuditTrail"
+    CxActivity.dbo.Audit_DataRetention="RECORD_CxActivitydboAuditDataRetention"
+    CxActivity.dbo.Audit_Logins="RECORD_CxActivitydboAuditLogins"
+    CxActivity.dbo.Audit_Presets="RECORD_CxActivitydboAuditPresets"
+    CxActivity.dbo.Audit_Projects="RECORD_CxActivitydboAuditProjects"
+    CxActivity.dbo.Audit_Queries="RECORD_CxActivitydboAuditQueries"
+    CxActivity.dbo.Audit_QueriesActions="RECORD_CxActivitydboAuditQueriesActions"
+    CxActivity.dbo.Audit_Reports="RECORD_CxActivitydboAuditReports"
+    CxActivity.dbo.Audit_ScanRequests="RECORD_CxActivitydboAuditScanRequests"
+    CxActivity.dbo.Audit_Scans="RECORD_CxActivitydboAuditScans"
+    CxActivity.dbo.Audit_Users="RECORD_CxActivitydboAuditUsers"
+    />
+\end{xml}
+
+
+\subsection{Audit Trail Record Suppressions Configuration}
+
+By default, when the \texttt{CxDB} configuration element is found in the configuration, all audit trail tables are crawled.  The
+optional \texttt{CxAuditTrailSupressions} configuration element allows some audit trail tables to be omitted from the crawl. 
+All attributes of \texttt{CxAuditTrailSupressions} are full names of tables in the CxDB or CxActivity database.
+
+\noindent\\By default, all audit trail tables are crawled.  The attribute value of "false" means the table will be crawled. The attribute
+value of "true" means the table \textbf{will not} be crawled.\\
+
+    
+\begin{xml}{CxAuditTrailSupressions}{}{}
+<CxAuditTrailSupressions
+    CxDB.accesscontrol.AuditTrail="false"
+    CxActivity.dbo.AuditTrail="false"
+    CxActivity.dbo.Audit_DataRetention="false"
+    CxActivity.dbo.Audit_Logins="false"
+    CxActivity.dbo.Audit_Presets="false"
+    CxActivity.dbo.Audit_Projects="false"
+    CxActivity.dbo.Audit_Queries="false"
+    CxActivity.dbo.Audit_QueriesActions="false"
+    CxActivity.dbo.Audit_Reports="false"
+    CxActivity.dbo.Audit_ScanRequests="false"
+    CxActivity.dbo.Audit_Scans="false"
+    CxActivity.dbo.Audit_Users="false"
+    />
+\end{xml}
