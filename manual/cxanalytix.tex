@@ -61,9 +61,27 @@ The documentation for CxAnalytix was moved from the GitHub Wiki as of version 2.
 manual will serve as the source of CxAnalytix documentation.  The manual will be updated
 and versioned with each CxAnalytix release.
 
-% Code listing
-%\begin{lstlisting}
-%\end{lstlisting}
+\newtcblisting{xml}[3]{
+    listing only,
+    title=<#1> #2 #3,
+    width=\textwidth,
+    listing options={
+        basicstyle=\small\ttfamily,
+        breaklines=true,
+        columns=fullflexible,
+    },
+}
+
+\newtcblisting{code}[3]{
+    listing only,
+    title=#1 #2 #3,
+    width=\textwidth,
+    listing options={
+        basicstyle=\small\ttfamily,
+        breaklines=true,
+        columns=fullflexible,
+    },
+}
 
 
 \part{Operation}

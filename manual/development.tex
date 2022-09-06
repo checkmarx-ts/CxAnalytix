@@ -164,14 +164,14 @@ All configurations in the \texttt{cxanalytix.config} file are consumed by the Mi
 \texttt{System.Configuration.ConfigurationManager} package.
 Each individual module implementation should define configuration classes that are publicly accessible for dynamic loading.
 The assembly path for custom module configuration is then placed in the \texttt{configSections} element of the \texttt{cxanalytix.config}
-file.  Listing \ref{lst:config_sections} shows an example of a configuration section entry to load the AMQP configuration elements
+file.  The \hyperref[lst:config_sections]{AMQP Configuration Section Entries} snippet shows an example of a configuration section entry to load the AMQP configuration elements
 from the AMQP class library.
 
 \noindent\\Obtaining an instance of a configuration object uses the same \texttt{GetConfig} as was used in section \ref{sec:internal_config}
-to obtain an instance of the \texttt{CxAnalytixService} configuration object.  Listing \ref{lst:amqp_config} shows an example of
-how the AMQP output module obtains an instance of an module-specific configuration object.
+to obtain an instance of the \texttt{CxAnalytixService} configuration object.  The \hyperref[lst:amqp_config]{Retrieving a Config Object Instance} snippet 
+shows an example of how the AMQP output module obtains an instance of an module-specific configuration object.\\
 
-\begin{lstlisting}[caption={AMQP Configuration Section Entries}, label={lst:config_sections}, language=XML]
+\begin{code}{AMQP Configuration Section Entries}{\label{lst:config_sections}}{}
 <configSections>
     <section name="AMQPConnection" 
         type="CxAnalytix.Out.AMQPOutput.Config.Impls.AmqpConnectionConfig, AMQPOutput"
@@ -180,11 +180,11 @@ how the AMQP output module obtains an instance of an module-specific configurati
         type="CxAnalytix.Out.AMQPOutput.Config.Impls.AmqpConfig, AMQPOutput"
         />
 </configSections>
-\end{lstlisting}
+\end{code}
 
 
-\begin{lstlisting}[caption={Retrieving a Config Object Instance}, label={lst:amqp_config}, language=C]
+\begin{code}{Retrieving a Config Object Instance}{\label{lst:amqp_config}}{}
 private AmqpConnectionConfig ConConfig =>
     CxAnalytix.Configuration.Impls.Config.GetConfig<AmqpConnectionConfig>();
-\end{lstlisting}
+\end{code}
     

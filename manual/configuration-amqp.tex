@@ -37,6 +37,7 @@ for configuration of SSL certificate options.  The full example XML is displayed
 </AMQPConnection>
 \end{xml}
 
+\noindent\\Note that a single endpoint definition to connect to an AMQP cluster behind a load balancer may be sufficient for most CxAnalytix installations.
 
 \begin{table}[h]
     \caption{AMQPConnection Attributes}        
@@ -121,16 +122,14 @@ The \texttt{AMQPConfig} allows for some advanced routing configurations when for
 data is sent to an AMQP Exchange that will allow complex Exchange/Queue topologies to route the data to the appropriate consumer.  Some configuration
 elements can form values injected into data sent to the AMQP endpoint using the Key Format Specification as described in Appendix \ref{chap:key_format_spec}.
 
+\noindent\\The example XML below shows a complex example to illustrate some of the capabilities of adding data to messages sent to the AMQP endpoint.  
+An AMQP configuration can add headers and routing keys with static or dynamic values.  These can be used with different types of AMQP Exchanges
+to control how messages are eventually routed to the consumer of the messages.  
 
+\par{\noindent\\The \texttt{AMQPConfig} Element}
 
-
-% Key Features of AMQP Output
-% * Headers and routing keys can be set with static values and/or values composed of [fields](SPEC) from each record entry using a [key format specifier](ShardKeyCookbook#key-format-specifier).
-% * Filtering of records can be done prior to sending records via the [Team and Project filtering](Configure-ProjectFilterRegex) configuration or via topic and/or header Exchange/Queue bindings.
-% * Record fields can be filtered with Pass or Reject filter specifications for any record type.
-% * Record entries for all record types can be sent to a default exchange or an exchange specifically set for the record type.
-% * The Exchange and Queue topology is not dictated by CxAnalytix; complex routing of data can be configured via Exchange bindings on the broker.
-%-----%
+\noindent\\Starting with the \texttt{AMQPConfig} element, the \texttt{DefaultExchange} attribute is an optional attribute.  If there is a value assigned to this attribute,
+it is the name of the AQMP Exchange where all messages will be placed unless the name of an Exchange is set in a \texttt{Record} sub-element.
 
 
 
@@ -162,3 +161,101 @@ elements can form values injected into data sent to the AMQP endpoint using the 
 </AMQPConfig>
 \end{xml}
     
+
+
+\par{\noindent\\The \texttt{Record} Element}
+
+\noindent\\One or more \texttt{Record} elements can be created as children of the \texttt{RecordSpecs} element.  The example XML below shows a \texttt{Record}
+element configured to sent records to a specific AMQP Exchange, using a dynamically generated topic, and omitting some of the fields in the data record.
+
+
+\begin{xml}{Record}{\expandsenv\contentvariables}{}
+<Record 
+    Name="SAST_Scan_Detail" 
+    Exchange="foo" 
+    TopicSpec="{ScanType}.{NodeId}.{Status}.{ResultSeverity}.{QueryLanguage}.{QueryName}">
+    <Filter Mode="Reject">
+        <Fields>
+            <Field Name="NodeCodeSnippet"/>
+        </Fields>
+    </Filter>
+    <MessageHeaders>
+        <Header Key="RecordType" Spec="SAST_Scan_Detail" />
+        <Header Key="ScanType" Spec="{ScanType}" />
+    </MessageHeaders> 
+</Record>
+\end{xml}
+
+
+
+\begin{table}[h]
+    \caption{Record Attributes}        
+    \begin{tabularx}{\textwidth}{cccl}
+        \toprule
+        \textbf{Attribute} & \textbf{Default} & \textbf{Required} & \textbf{Description}\\
+        \midrule
+        \texttt{Name} & N/A & Yes & \makecell[l]{The name of the record (configuration described\\
+        in Section \ref{sec:runtime_config}).\\
+        }\\
+        \midrule
+        \texttt{Exchange} & \makecell[c]{See\\Description} & No & \makecell[l]{The name of the exchange to use for this record type.\\
+        If this attribute is not provided, the exchange named\\
+        as the \texttt{DefaultExchange} is used.\\
+        }\\
+        \midrule
+        \texttt{TopicSpec} & N/A & No & \makecell[l]{A specification for forming a topic by combining\\
+        static values and/or values from the record\\
+        itself. This is commonly used to enable\\
+        routing of messages using an AMQP Topic Exchange.\\
+        }\\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+
+
+\par{\noindent\\The \texttt{Filter} Element}
+
+
+\noindent\\The optional \texttt{Filter} element can be used to change the data fields that are sent to the AMQP endpoint
+as messages specified in the parent \texttt{Record} element. There are two modes:
+
+
+\begin{itemize}
+    \item \texttt{Reject} - In this mode, \textbf{all} named fields are omitted from the message sent for the record type.
+    \item \texttt{Pass} - In this mode, \textbf{only} named fields are included in the message sent for the record type.
+\end{itemize}
+
+\noindent\\If this element is not included, all fields for the parent record type are sent as messages to the AMQP endpoint.  The XML example
+below shows that the \texttt{NodeCodeSnippet} field is omitted from the message transmitted to the AMQP endpoint by using the \texttt{Reject}
+filter mode.
+
+\begin{xml}{Filter}{\expandsenv\contentvariables}{}
+<Filter Mode="Reject">
+    <Fields>
+        <Field Name="NodeCodeSnippet"/>
+    </Fields>
+</Filter>
+\end{xml}
+    
+
+
+\par{\noindent\\The \texttt{MessageHeaders} Element}
+
+\noindent\\The \texttt{MessageHeaders} element allows for custom headers to be added to each message before it is transmitted
+to the AMQP endpoint.  This is often used for AMQP Exchanges that route messages using header values.  In the XML example below, 
+two headers are added to each message:
+
+
+\begin{itemize}
+    \item Header \texttt{RecordType} with the static value "SAST\_Scan\_Detail".  
+    \item Header \texttt{ScanType} with the dynamic value added from the record's \texttt{ScanType} field.  
+\end{itemize}
+
+
+\begin{xml}{MessageHeaders}{\expandsenv\contentvariables}{}
+<MessageHeaders>
+    <Header Key="RecordType" Spec="SAST_Scan_Detail" />
+    <Header Key="ScanType" Spec="{ScanType}" />
+</MessageHeaders> 
+\end{xml}
