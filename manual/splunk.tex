@@ -11,14 +11,18 @@ the application log files to Splunk for monitoring and troubleshooting purposes.
 
 \section{Configuring CxAnalytix for Splunk}
 
-\noindent\\The \texttt{CxAnalytixService} configuration section in \texttt{cxanalytix.config} contains record name mapping attributes.  Listing \ref{lst:record_map}
-shows an example configuration with the record names mapped to file logger names shown configured in listing \ref{lst:record_loggers}.  The loggers
-reference file appenders, as seen in listing \ref{lst:record_appenders}.  The appender configuration, by default, places all output in the \texttt{logs}
+\noindent\\The \texttt{CxAnalytixService} configuration section in \texttt{cxanalytix.config} contains record name mapping attributes.  The XML example 
+\hyperref[lst:record_map]{Record Map Configuration}
+shows an example configuration with the record names mapped to file logger names shown configured in the example 
+\hyperref[lst:record_loggers]{Log4Net Logger Configurations}.  The loggers
+reference file appenders, as seen in the snippet \hyperref[lst:record_appenders]{Log4Net Record File Appenders}.  The appender configuration, 
+by default, places all output in the \texttt{logs}
 directory, which resolves to the current working directory set when a CxAnalytix process executes.  The location of the output files can be changed
 by modifying the appender configuration in \texttt{cxanalytix.log4net}.
 
 
-\begin{lstlisting}[caption={Example Record Map Configuration}, label={lst:record_map}, language=XML]
+
+\begin{code}{Example Record Map Configuration}{\label{lst:record_map}}{}
 <CxAnalytixService 
     ConcurrentThreads="2" 
     StateDataStoragePath="%CHECKMARX_STATE_PATH%"
@@ -34,18 +38,20 @@ by modifying the appender configuration in \texttt{cxanalytix.log4net}.
         <Transformer Name="SAST" />
     </EnabledTransformers>
 </CxAnalytixService>
-\end{lstlisting}
+\end{code}
 
-\begin{lstlisting}[caption={Log4Net Logger Configurations}, label={lst:record_loggers}, language=XML]
+
+\begin{code}{Log4Net Logger Configurations}{\label{lst:record_loggers}}{}
 .. snip ..
 <logger name="RECORD_SAST_Scan_Summary" aditivity="false">
     <level value="ALL" />
     <appender-ref ref="SAST_SS" />
 </logger>
   .. snip ..
-\end{lstlisting}
+\end{code}
 
-\begin{lstlisting}[caption={Log4Net Record File Appenders}, label={lst:record_appenders}, language=XML]
+
+\begin{code}{Log4Net Record File Appenders}{\label{lst:record_appenders}}{}
 .. snip ..
 <appender name="SAST_SS" type="log4net.Appender.RollingFileAppender">
     <appendToFile value="true" />
@@ -62,7 +68,7 @@ by modifying the appender configuration in \texttt{cxanalytix.log4net}.
     </layout>
 </appender>
 .. snip ..
-\end{lstlisting}
+\end{code}
 
 \section{Splunk Universal Forwarder Configuration}
 The \ref{https://www.splunk.com/en_us/download/universal-forwarder.html}{Splunk Universal Forwarder} is used to send data to Splunk Enterprise or Splunk Cloud.  
@@ -73,10 +79,11 @@ Please refer to the Splunk website for information for details about installing 
 
 Assuming an installed forwarder is able to connect to the desired Splunk instance, 
 create the \href{https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf}{\texttt{inputs.conf}} file at the appropriate location 
-(e.g. \texttt{/etc/apps/splunkclouduf/default/inputs.conf}).  Listing \ref{lst:inputsconf} shows an example of an \texttt{inputs.conf}
-file with monitoring stanzas appropriate for each type of record. 
+(e.g. \texttt{/etc/apps/splunkclouduf/default/inputs.conf}).  The example \hyperref[lst:inputsconf]{inputs.conf configuration} below shows an example of 
+an \texttt{inputs.conf} file with monitoring stanzas appropriate for each type of record. 
 
-\begin{lstlisting}[caption={Log4Net Record File Appenders}, label={lst:inputsconf}, language=XML]
+
+\begin{code}{inputs.conf Configuration}{\label{lst:inputsconf}}{}
 [monitor://{path to logs}\CxAnalytixService...]
 sourcetype=service
 
@@ -118,23 +125,23 @@ sourcetype=cxactivity_auditpresets
 
 [monitor://{path to logs}\CxActivity_dbo_Audit_DataRetention...]
 sourcetype=cxactivity_auditdataretention
-\end{lstlisting}
+\end{code}
 
 \subsection{Configuring the Source Types}
 
 The source types on the Splunk server need to be configured to appropriately parse JSON.  
 This can be done using \href{https://docs.splunk.com/Documentation/Splunk/latest/Admin/Propsconf}{\texttt{props.conf}} (only available in Splunk Enterprise) 
 or through the Splunk UI. A source type should be created the matches each record output source types as defined in 
-\href{https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf}{\texttt{inputs.conf}}.  Listing \ref{lst:sourcetypes} shows an example
+\href{https://docs.splunk.com/Documentation/Splunk/latest/Admin/Inputsconf}{\texttt{inputs.conf}}.  The \hyperref[lst:sourcetypes]{configuration snippet below} shows an example
 of a source type entry.  The source type configuration needs to be performed for each source type.
 
 
-\begin{lstlisting}[caption={Log4Net Record File Appenders}, label={lst:sourcetypes}, language=XML]
+\begin{code}{Log4Net Record File Appenders}{\label{lst:sourcetypes}}{}
 LINE_BREAKER=([\r\n]+)
 KV_MODE=json
 TRUNCATE=0
 SHOULD_LINEMERGE=false
-\end{lstlisting}
+\end{code}
 
 \noindent\\\textbf{Extracting Timestamps}\\
 

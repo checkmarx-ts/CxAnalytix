@@ -55,16 +55,16 @@ time span length decreases (e.g. year > month > day-of-week > day-of-month and s
 
 This example uses the scan type, the year and full name of the day of the week when the scan finished.
 
-\begin{lstlisting}
+\begin{code}{Shard Key Example for SAST\_Scan\_Summary}{}{}
 <add KeyName="pkey" CollectionName="SAST_Scan_Summary"
     FormatSpec="{ScanType}-{ScanFinished:yyyy-dddd}" NoHash="true" />
-\end{lstlisting}
+\end{code}
 
 \subsection{SAST Vulnerability Details}
 
 This example uses the scan type, the query group, the year and full name of the day of the week when the scan finished.
 
-\begin{lstlisting}
+\begin{code}{Shard Key Example for SAST\_Scan\_Detail}{}{}
 <add KeyName="pkey" CollectionName="SAST_Scan_Detail"
     FormatSpec="{ScanType}-{QueryGroup}-{ScanFinished:yyyy-dddd}" NoHash="true" />
-\end{lstlisting}
+\end{code}

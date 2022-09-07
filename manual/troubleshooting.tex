@@ -1,9 +1,9 @@
 \chapter{Troubleshooting}
 
 \section{Configuration file missing}
-If you get this error:
+If you get the following error stack trace emitted on the console or in logs:
 
-\begin{lstlisting}
+\begin{code}{Error Stack Trace}{}{}
 Unhandled Exception: System.TypeInitializationException: The type initializer for 
 'CxAnalytix.Configuration.Config' threw an exception. 
     ---> System.IO.FileNotFoundException: Configuration file missing.
@@ -12,7 +12,7 @@ Unhandled Exception: System.TypeInitializationException: The type initializer fo
    --- End of inner exception stack trace ---
    at CxAnalytixCLI.Program.Main(String[] args) in 
    c:\programdata\checkmarx\CxAnalytix\CxAnalytixCLI\Program.cs:line 47
-\end{lstlisting}
+\end{code}
 
 \noindent\\Try setting your current directory to the same directory as the CxAnalytixCLI executable e.g.
 
@@ -23,22 +23,22 @@ Unhandled Exception: System.TypeInitializationException: The type initializer fo
 
 All data I/O with the web APIs can be captured by adding a logger to the log4net configuration with the following lines:
 
-\begin{lstlisting}
+\begin{xml}{logger}{configuration for TRACE\_NETWORK}{}
 <logger name="CxRestClient.IO">
     <level value="TRACE_NETWORK" />
 </logger>
-\end{lstlisting}
+\end{xml}
 
 \section{Trace Web API Operations}
 
 \noindent\\Capturing the web API data I/O generates a large amount of logging data.  A reduced set of data showing web API requests, timings, and 
 response statuses can be captured by adding the following logger to the log4net configuration:
 
-\begin{lstlisting}
+\begin{xml}{logger}{configuration for TRACE}{}
 <logger name="CxRestClient.Utility">
   <level value="TRACE" />
 </logger>
-\end{lstlisting}
+\end{xml}
 
 \section{Execution Logging Verbosity}
 
@@ -46,31 +46,31 @@ response statuses can be captured by adding the following logger to the log4net 
 \texttt{CxRestClient.IO} namespace.  It can also be applied at the root level logger to increase the
 verbosity of logging to the entire application to the maximum level possible:
 
-\begin{lstlisting}
+\begin{xml}{root}{with appenders}{}
 <root>
     <level value="TRACE_NETWORK" />
     <appender-ref ref="Console" />
     <appender-ref ref="RollingFile" />
 </root>
-\end{lstlisting}
+\end{xml}
 
 \noindent\\Applying \texttt{TRACE\_NETWORK} at the root level is really not recommended.  A level of logging that increases the verbosity of execution
 logging but excludes network traffic is \texttt{TRACE}:
 
-\begin{lstlisting}
+\begin{xml}{root}{with appenders}{}
 <root>
     <level value="TRACE" />
     <appender-ref ref="Console" />
     <appender-ref ref="RollingFile" />
 </root>
-\end{lstlisting}
+\end{xml}
 
 \noindent\\The \texttt{DEBUG} level of logging is less verbose than \texttt{TRACE} and should be the first choice for troubleshooting issues:
 
-\begin{lstlisting}
+\begin{xml}{root}{with appenders}{}
 <root>
     <level value="DEBUG" />
     <appender-ref ref="Console" />
     <appender-ref ref="RollingFile" />
 </root>
-\end{lstlisting}
+\end{xml}

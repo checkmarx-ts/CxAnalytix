@@ -7,12 +7,12 @@ The easiest method of building the code from source is to open the \texttt{CxAna
 From there, the entire solution can be built with a "Build Solution" command.
 
 \subsection{From the Command Line}
-If the .Net Core SDK of the appropriate version is installed, the \texttt{dotnet} command can be executed to create a build:
+If the .Net Core SDK of the appropriate version is installed, the \texttt{dotnet} command can be executed to create a build:\\
 
-\begin{lstlisting}
+\begin{code}{Build Commands}{}{}
 dotnet publish .\CxAnalytix.sln -o $OutLoc/win-x64 -c ReleaseWindows -r win-x64
 dotnet publish .\CxAnalytix.sln -o $OutLoc/linux-x64 -c ReleaseLinux -r linux-x64
-\end{lstlisting}
+\end{code}
 
 \subsection{Visual Studio Code}
 This is a .Net Core application and therefore can be developed on any platform that supports .Net Core.  Readers are encouraged to investigate configuring
@@ -43,8 +43,8 @@ Creating a new transformer type can be done with the following steps:
     \item Implement the abstract methods/properties defined in \texttt{TransformerModule}
 \end{enumerate}
 
-\noindent\\An example transformer module can be observed in listing \ref{lst:xform}. The arguments passed to the \texttt{TransformerModule}
-are explained in table \ref{tab:xform}.
+\noindent\\An example transformer module can be observed in the code snippet \hyperref[lst:xform]{Example Transformer Module}. The arguments passed to 
+the \texttt{TransformerModule} are explained in table \ref{tab:xform}.\\
 
 
 \begin{table}
@@ -67,7 +67,7 @@ are explained in table \ref{tab:xform}.
 
 
 
-\begin{lstlisting}[caption={Example Transformer Module}, label={lst:xform}, language=C]
+\begin{code}{Example Transformer Module}{\label{lst:xform}}{}
 class Transformer : TransformerModule
 {
     public override string DisplayName 
@@ -85,7 +85,7 @@ class Transformer : TransformerModule
         // This is where the transformation is executed.
     }
 }
-\end{lstlisting}
+\end{code}
 
 \subsection{Creating New Output Modules}
 
@@ -99,11 +99,11 @@ Output modules are created similarly to transformer modules.  The basic tasks to
     \item Implement the abstract methods/properties defined in \texttt{OutputModule}
 \end{enumerate}
 
-\noindent\\Listing \ref{lst:output} shows an example of an output implementation.  Table \ref{tab:output} explains the output
+\noindent\\The snippet \hyperref[lst:output]{Example Output Module} shows an example of an output implementation.  Table \ref{tab:output} explains the output
 module arguments.
 
 
-\begin{lstlisting}[caption={Example Output Module}, label={lst:output}, language=C]
+\begin{code}{Example Output Module}{\label{lst:output}}{}
 public class MyOutFactory : SDK.Modules.Output.OutputModule
 {
     public MyOutFactory() : base("MyOutput", typeof(MyOutFactory) )
@@ -123,7 +123,7 @@ public class MyOutFactory : SDK.Modules.Output.OutputModule
         // data being output.
     }
 }    
-\end{lstlisting}
+\end{code}
 
 
 \begin{table}
@@ -148,14 +148,15 @@ public class MyOutFactory : SDK.Modules.Output.OutputModule
 \subsection{CxAnalytix Internal Configuration}\label{sec:internal_config}
 
 It is possible to obtain the general configuration objects (described in section \ref{sec:general}) with a project dependency for the \texttt{Configuration}
-class library.  Obtaining a reference to the \texttt{CxAnalytixService} configuration can then be achieved with the example code show in listing 
-\ref{lst:global_config}.  Instances of CxAnalytix configuration objects can be obtained by specifying the type in the generic parameter for the 
+class library.  Obtaining a reference to the \texttt{CxAnalytixService} configuration can then be achieved with the example code show in the 
+\hyperref[lst:global_config]{code snippet below}.  Instances of CxAnalytix configuration objects can be obtained by specifying the type in the generic parameter for the 
 method call \texttt{CxAnalytix.Configuration.Impls.Config.GetConfig<T>()} 
 
-\begin{lstlisting}[caption={Retrieving a CxAnalytixService Config Object Instance}, label={lst:global_config}, language=C]
+
+\begin{code}{Retrieving a CxAnalytixService Config Object Instance}{\label{lst:global_config}}{}
 private CxAnalytixService Service => 
     CxAnalytix.Configuration.Impls.Config.GetConfig<CxAnalytixService>();
-\end{lstlisting}
+\end{code}
 
 
 \subsection{Module-Specific Configuration}
@@ -164,14 +165,14 @@ All configurations in the \texttt{cxanalytix.config} file are consumed by the Mi
 \texttt{System.Configuration.ConfigurationManager} package.
 Each individual module implementation should define configuration classes that are publicly accessible for dynamic loading.
 The assembly path for custom module configuration is then placed in the \texttt{configSections} element of the \texttt{cxanalytix.config}
-file.  Listing \ref{lst:config_sections} shows an example of a configuration section entry to load the AMQP configuration elements
+file.  The \hyperref[lst:config_sections]{AMQP Configuration Section Entries} snippet shows an example of a configuration section entry to load the AMQP configuration elements
 from the AMQP class library.
 
 \noindent\\Obtaining an instance of a configuration object uses the same \texttt{GetConfig} as was used in section \ref{sec:internal_config}
-to obtain an instance of the \texttt{CxAnalytixService} configuration object.  Listing \ref{lst:amqp_config} shows an example of
-how the AMQP output module obtains an instance of an module-specific configuration object.
+to obtain an instance of the \texttt{CxAnalytixService} configuration object.  The \hyperref[lst:amqp_config]{Retrieving a Config Object Instance} snippet 
+shows an example of how the AMQP output module obtains an instance of an module-specific configuration object.\\
 
-\begin{lstlisting}[caption={AMQP Configuration Section Entries}, label={lst:config_sections}, language=XML]
+\begin{code}{AMQP Configuration Section Entries}{\label{lst:config_sections}}{}
 <configSections>
     <section name="AMQPConnection" 
         type="CxAnalytix.Out.AMQPOutput.Config.Impls.AmqpConnectionConfig, AMQPOutput"
@@ -180,11 +181,11 @@ how the AMQP output module obtains an instance of an module-specific configurati
         type="CxAnalytix.Out.AMQPOutput.Config.Impls.AmqpConfig, AMQPOutput"
         />
 </configSections>
-\end{lstlisting}
+\end{code}
 
 
-\begin{lstlisting}[caption={Retrieving a Config Object Instance}, label={lst:amqp_config}, language=C]
+\begin{code}{Retrieving a Config Object Instance}{\label{lst:amqp_config}}{}
 private AmqpConnectionConfig ConConfig =>
     CxAnalytix.Configuration.Impls.Config.GetConfig<AmqpConnectionConfig>();
-\end{lstlisting}
+\end{code}
     
