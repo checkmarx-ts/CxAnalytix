@@ -3,10 +3,10 @@
 \subsection{Never Do This}
 
 The \texttt{cxanalytix.config} file needs to be modified to supply the appropriate configuration elements.  The \texttt{configSections}
-element is not intended to be user configurable.  Listing \ref{lst:motouch} shows an example of the contents of this XML element;
+element is not intended to be user configurable.  The XML snippet \hyperref[lst:motouch]{"Part of the Configuration File to Never Change"} shows an example of the contents of this XML element;
 \textbf{never change anything in this section.}
 
-\begin{lstlisting}[caption={Part of the Configuration File to Never Change}, label={lst:motouch}, language=XML, basicstyle=\ttfamily\tiny]
+\begin{code}{Part of the Configuration File to Never Change}{\label{lst:motouch}}{}
 <configSections>
     <section name="CxAnalytixService" 
         type="CxAnalytix.Configuration.Impls.CxAnalytixService, Configuration" />
@@ -37,7 +37,7 @@ element is not intended to be user configurable.  Listing \ref{lst:motouch} show
     <section name="CxMongoConnection" 
         type="CxAnalytix.Out.MongoDBOutput.Config.Impl.MongoConnectionConfig, MongoDBOutput" />
 </configSections>
-\end{lstlisting}
+\end{code}
 
 \subsection{Checkmarx Service Connection Configuration}\label{sec:connection}
 
