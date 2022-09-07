@@ -335,7 +335,6 @@ namespace CxAnalytix.XForm.ScaTransformer
             flat.Add("LegalLow", report.Summary.LicensesLegalRisk.Low);
             flat.Add("LegalUnknown", report.Summary.LicensesLegalRisk.Unknown);
 
-            // TODO: NEW
             flat.Add("TotalLegalRiskPackages", report.Summary.TotalPackagesWithLegalRisk);
 
             flat.Add("TotalHighVulnerabilities", report.Summary.HighVulnerabilityCount);
@@ -399,11 +398,8 @@ namespace CxAnalytix.XForm.ScaTransformer
             flat.Add("PolicyViolations", sd.PoliciesViolated);
             flat.Add("PoliciesViolated", String.Join(";", sd.ViolatedPolicies));
 
-            // TODO: NEW
             flat.Add("TotalDirectDependencies", report.Summary.DirectPackages);
-            // TODO: NEW
             flat.Add("ScanOrigin", report.Summary.ScanOrigin);
-            // TODO: NEW
             flat.Add("TotalExploitablePaths", report.Summary.ExploitablePathsFound);
 
             trx.write(ScaScanSummaryOut, flat);
