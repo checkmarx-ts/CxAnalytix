@@ -106,5 +106,30 @@ jobs:
       - name: Run Tests
         run: dotnet test --verbosity q
               
+            
+  build-manual:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Code
+        uses: actions/checkout@v2
+      - name: Build Manual
+        id: build_manual
+        uses: xu-cheng/latex-action@v2
+        with:
+          root_file: manual/cxanalytix.tex
+          work_in_root_file_dir: true
+      - name: list dir
+        run: ls -l manual
               
             
+  build-release-notes:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Code
+        uses: actions/checkout@v2
+      - name: Build Release Notes
+        id: build_release_notes
+        uses: xu-cheng/latex-action@v2
+        with:
+          root_file: release_notes/release_notes.tex
+          work_in_root_file_dir: true

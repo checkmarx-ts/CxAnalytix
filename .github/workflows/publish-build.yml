@@ -81,6 +81,24 @@ jobs:
           echo \<P\> >> release.md
           echo docker pull $DOCKER_REPO:v${{ inputs.tag }} >> release.md
 
+      - name: Build PDF Manual
+        uses: xu-cheng/latex-action@v2
+        with:
+          root_file: manual/cxanalytix.tex
+          work_in_root_file_dir: true
+
+      - name: Build PDF Release Notes
+        uses: xu-cheng/latex-action@v2
+        with:
+          root_file: release_notes/release_notes.tex
+          work_in_root_file_dir: true
+      
+      - name: Move documentation artifacts
+        run: |
+          mv manual/cxanalytix.pdf artifacts/CxAnalytix_Manual_${{ inputs.tag }}.pdf
+          mv release_notes/release_notes.pdf artifacts/CxAnalytix_ReleaseNotes_${{ inputs.tag }}.pdf
+
+
       - name: Create GitHub Release
         id: create_release
         uses: ncipollo/release-action@v1
@@ -95,7 +113,21 @@ jobs:
           replacesArtifacts: true
           tag: v${{ inputs.tag }}
           
-          
+      - name: Update Documentation for GitHub Release
+        id: update_release
+        uses: ncipollo/release-action@v1
+        with:
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          artifacts: artifacts/*.pdf
+          artifactContentType: application/pdf
+          omitBodyDuringUpdate: true
+          name: v${{ inputs.tag }}
+          omitNameDuringUpdate: true
+          prerelease: ${{ inputs.prerelease }}
+          replacesArtifacts: false
+          removeArtifacts: false
+          tag: v${{ inputs.tag }}
           
           
 
