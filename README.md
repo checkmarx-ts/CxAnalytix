@@ -12,40 +12,21 @@ CxAnalytix is a background process that crawls and extracts vulnerability data f
 
 The vulnerability data is then transformed into a flattened JSON document and stored for at-scale data analysis.  Pluggable data transports are implemented for storage flexibility; data can be easily stored and accessed locally or transported to data lakes for more advanced analysis.
 
-The fields available JSON documents can be found in the [data field specification](https://github.com/checkmarx-ts/CxAnalytix/wiki/SPEC.md).
+The fields available JSON documents can be found in the `Data Field Specification` section of the PDF manual.
 
+## NOTE: 2.0.0 RELEASE
 
-## NOTE: 2.0.0 PRE-RELEASE
+**CxAnalytix v1.x configurations are not backwards compatible with v2.0.0 configurations. Please review the configuration PDF manual for details.**
 
-**CxAnalytix v1.x configurations are not backwards compatible with v2.0.0 configurations.**
-
-*THE WIKI DOES NOT CURRENTLY REFLECT THE DOCUMENTATION FOR THE v2.0.0 PRE-RELEASE.  THE WIKI UPDATE WILL COINCIDE WITH THE RELEASE OF v2.0.0.  IF THERE IS A NEED TO IMMEDIATELY EVALUATE v2.0.0, PLEASE SCHEDULE TIME WITH CHECKMARX PROFESSIONAL SERVICES.*
+As of release 2.0.0, a PDF manual is included with each release.  The [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki) is available for reference
+for versions prior to 2.0.0.  The CxAnalytix Wiki will no longer be maintained as of release 2.0.0.
 
 ## Getting Started
 
-### Dependencies
 
-CxAnalytix is built on .Net Core and is therefore capable of running on Windows or Linux.  
+1. Download the [latest release](https://github.com/checkmarx-ts/CxAnalytix/releases) appropriate for your platform.
+2. Download the PDF manual and review the `Quickstart` chapter.
 
-There are several installation variations:
-
-* A Windows service
-* A Linux daemon
-* A command line executable
-
-### Installation
-
-Please refer to the [Installation](https://github.com/checkmarx-ts/CxAnalytix/wiki/Installation-Home) wiki page
-
-
-## Additional Documentation
-
-Please see the [CxAnalytix Wiki](https://github.com/checkmarx-ts/CxAnalytix/wiki) for information related to obtaining, installing, and configuring CxAnalytix.
-
-
-## Version History
-
-Version history has been moved to [CHANGELOG.md](CHANGELOG.md)
 
 ## Contributing
 
