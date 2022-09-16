@@ -400,8 +400,11 @@ namespace CxAnalytix.XForm.SastTransformer
 						PresetId = Convert.ToString(p.PresetId),
 						PresetName = presetName,
 						Policies = combinedPolicyNames,
-						CustomFields = cfDict
-					}
+						CustomFields = cfDict,
+						IsBranched = p.IsBranched,
+						BranchParentProject = (p.IsBranched) ? (p.BranchParentProject) : (null),
+						BranchedAtScanId = (p.IsBranched) ? (p.BranchedAtScanId) : (null)
+                    }
 				))
 				{
 					_log.WarnFormat("Rejected changed when adding new project with duplicate id {0}: New name: [{1}] current name: [{2}].",

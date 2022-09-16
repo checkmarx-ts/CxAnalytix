@@ -28,7 +28,19 @@ namespace SDK.Modules.Transformer.Data
             ScanCountByProduct = src.ScanCountByProduct;
             LatestScanDateByProduct = src.LatestScanDateByProduct;
             CustomFields = src.CustomFields;
+            IsBranched = src.IsBranched;
+            BranchedAtScanId = src.BranchedAtScanId;
+            BranchParentProject = src.BranchParentProject;
         }
+
+        [JsonIgnore]
+        public bool IsBranched { get; set; }
+
+        [JsonIgnore]
+        public String BranchParentProject { get; set; }
+
+        [JsonIgnore]
+        public String BranchedAtScanId { get; set; }
 
         /// <summary>
         /// Custom fields assigned to the project.

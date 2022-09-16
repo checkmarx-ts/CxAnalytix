@@ -7,6 +7,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Reflection.Metadata;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 
@@ -17,6 +19,24 @@ namespace CxRestClient.SAST
         private static ILog _log = LogManager.GetLogger(typeof(CxProjects));
 
         private static String URL_SUFFIX = "cxrestapi/projects";
+
+        private static String _apiVersion = null;
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        private static String GetApiVersion(CxSASTRestContext ctx, CancellationToken token)
+        {
+            if (_apiVersion == null)
+            {
+                var mm = CxVersion.GetServerMajorMinorVersion(ctx, token);
+
+                if (mm.IsUnknown)
+                    _apiVersion = "2.0";
+                else if (mm.Major == 9 || (mm.Major == 8 && mm.Minor >= 9) )
+                    _apiVersion = "2.2";
+            }
+
+            return _apiVersion;
+        }
 
         private CxProjects()
         { }
@@ -45,7 +65,17 @@ namespace CxRestClient.SAST
             [JsonProperty(PropertyName = "customFields")]
             public List<ProjectCustomFields> CustomFields { get; internal set; }
 
-			public override string ToString() =>
+            [JsonProperty(PropertyName = "isBranched")]
+            public bool IsBranched { get; internal set; }
+
+            [JsonProperty(PropertyName = "originalProjectId")]
+            public String BranchParentProject { get; internal set; }
+
+            [JsonProperty(PropertyName = "branchedOnScanId")]
+            public String BranchedAtScanId { get; internal set; }
+
+
+            public override string ToString() =>
                 $"{ProjectId}:{ProjectName} [TeamId: {TeamId} Public: {IsPublic} CustomFields: {CustomFields.Count}]";
 		}
 
@@ -152,7 +182,7 @@ namespace CxRestClient.SAST
             }
             , UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX)
             , ctx.Sast
-            , token, apiVersion: "2.0"))
+            , token, apiVersion: GetApiVersion(ctx, token) ))
                 return new List<Project>(projectReader);
         }
     }
