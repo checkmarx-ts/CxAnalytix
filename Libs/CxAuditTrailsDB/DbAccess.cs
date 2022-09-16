@@ -3,6 +3,7 @@ using CxAnalytix.CxAuditTrails.DB.Config;
 using CxAnalytix.Extensions;
 using log4net;
 using Microsoft.Data.SqlClient;
+using Microsoft.IdentityModel.Tokens;
 
 namespace CxAnalytix.CxAuditTrails.DB
 {
@@ -50,7 +51,7 @@ namespace CxAnalytix.CxAuditTrails.DB
 		{
 			get
 			{
-				return ConConfig == null;
+				return ConConfig == null || String.IsNullOrEmpty(ConConfig.ConnectionString);
 			}
 		}
 
