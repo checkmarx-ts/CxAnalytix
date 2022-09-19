@@ -39,7 +39,9 @@ namespace CxAnalytix.XForm.SastTransformer
 
 		private ConcurrentDictionary<String, CxSastScans.Scan> SastScanCache { get; set; }
 			= new ConcurrentDictionary<string, CxSastScans.Scan>();
-		private ConcurrentDictionary<String, CxOsaScans.Scan> ScaScanCache { get; set; }
+        private ConcurrentDictionary<String, IDictionary<String, String>> SastScanCustomFields { get; set; }
+            = new();
+        private ConcurrentDictionary<String, CxOsaScans.Scan> ScaScanCache { get; set; }
 			= new ConcurrentDictionary<string, CxOsaScans.Scan>();
 
 		private ProjectPolicyIndex Policies { get; set; }
@@ -440,6 +442,9 @@ namespace CxAnalytix.XForm.SastTransformer
 							_log.Trace($"SAST scan record: {s}");
 						State.AddScan(Convert.ToString(s.ProjectId), s.ScanType, ScanProductType.SAST, s.ScanId, s.FinishTime, s.Engine);
 						SastScanCache.TryAdd(s.ScanId, s);
+
+						if (s.CustomFields != null && s.CustomFields.Count > 0)
+							SastScanCustomFields.TryAdd(s.ScanId, s.CustomFields);
 					}
 
 
@@ -951,7 +956,10 @@ namespace CxAnalytix.XForm.SastTransformer
 
 			AddPolicyViolationProperties(scanRecord, flat);
 
-			trx.write(SastScanSummaryOut, flat);
+			if (SastScanCustomFields.ContainsKey(scanRecord.ScanId) )
+                flat.Add("CustomFields", SastScanCustomFields[scanRecord.ScanId]);
+
+            trx.write(SastScanSummaryOut, flat);
 		}
 
 		private static void AddPolicyViolationProperties(ScanDescriptor scanRecord,

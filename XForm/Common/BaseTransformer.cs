@@ -1,6 +1,8 @@
 ﻿using CxAnalytix.Configuration.Impls;
 using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.Interfaces.Transform;
+using log4net.Util;
+using log4net;
 using OutputBootstrapper;
 using ProjectFilter;
 using SDK.Modules.Transformer;
@@ -30,10 +32,14 @@ namespace CxAnalytix.XForm.Common
         public IRecordRef PolicyViolationDetailOut { get; internal set; }
         public IProjectFilter Filter { get; private set; }
 
+        private static readonly ILog _log = LogManager.GetLogger(typeof(BaseTransformer));
+
 
         public BaseTransformer(string moduleName, Type moduleImplType, String stateStorageFileName)
         : base(moduleName, moduleImplType, stateStorageFileName)
         {
+            _log.Debug($"Creating new transformer instance for {moduleName} of type {moduleImplType}");
+
             Filter = new FilterImpl(Config.GetConfig<CxFilter>().TeamRegex,
             Config.GetConfig<CxFilter>().ProjectRegex);
 
