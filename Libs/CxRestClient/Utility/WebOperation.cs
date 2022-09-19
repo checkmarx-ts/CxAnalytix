@@ -2,11 +2,7 @@
 using CxAnalytix.Extensions;
 using CxRestClient.Interfaces;
 using log4net;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;

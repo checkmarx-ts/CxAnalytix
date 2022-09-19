@@ -22,7 +22,7 @@ namespace CxRestClient
         { }
 
         private LoginToken _token = null;
-        public override LoginToken Token
+        protected override LoginToken TokenImpl
         {
             get
             {

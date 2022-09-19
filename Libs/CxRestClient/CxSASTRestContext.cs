@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using log4net;
 using CxRestClient.IO;
 using CxRestClient.Utility;
+using System.Runtime.CompilerServices;
 
 namespace CxRestClient
 {
@@ -33,7 +34,8 @@ namespace CxRestClient
             internal String _InternalUrl { get; set; }
 
             private LoginToken _token = null;
-            public override LoginToken Token
+
+            protected override LoginToken TokenImpl
             {
                 get
                 {
@@ -79,7 +81,7 @@ namespace CxRestClient
 
 
             private LoginToken _token = null;
-            public override LoginToken Token
+            protected override LoginToken TokenImpl
             {
                 get
                 {

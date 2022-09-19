@@ -7,8 +7,10 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
+using static CxRestClient.SAST.CxProjects;
 
 namespace CxRestClient.SAST
 {
@@ -17,6 +19,23 @@ namespace CxRestClient.SAST
         private static ILog _log = LogManager.GetLogger(typeof (CxSastScans));
 
         private static String URL_SUFFIX = "cxrestapi/sast/scans";
+
+        private static String _apiVersion = null;
+
+        [MethodImpl(MethodImplOptions.Synchronized)]
+        private static String GetApiVersion(CxSASTRestContext ctx, CancellationToken token)
+        {
+            if (_apiVersion == null)
+            {
+                var mm = CxVersion.GetServerMajorMinorVersion(ctx, token);
+
+                if (mm.IsUnknown)
+                    _apiVersion = "1.0";
+                else if (mm.Major == 9 && mm.Minor >= 4)
+                    _apiVersion = "1.2";
+            }
+            return _apiVersion;
+        }
 
         private CxSastScans ()
         { }
@@ -86,6 +105,8 @@ namespace CxRestClient.SAST
 
             public String Engine { get => (engine != null) ? (engine["name"] as String) : ("NotSpecified"); }
 
+            [JsonProperty(PropertyName = "customFields")]
+            public SortedDictionary<String, String> CustomFields { get; internal set; }
 
             public override string ToString()
             {
@@ -200,7 +221,7 @@ namespace CxRestClient.SAST
 			}
 			, url
 			, ctx.Sast
-			, token))
+			, token, apiVersion: GetApiVersion (ctx, token) ) )
 				return new List<Scan>(scansReader);
 		}
 	}
