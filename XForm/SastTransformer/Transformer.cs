@@ -34,8 +34,10 @@ namespace CxAnalytix.XForm.SastTransformer
 		private static readonly ILog _log = LogManager.GetLogger(typeof(Transformer));
 		private static readonly String STATE_STORAGE_FILE = "CxAnalytixExportState.json";
 		private static readonly String MODULE_NAME = "SAST";
+		private static readonly int NOT_EXPLOITABLE_STATE = 1;
 
-		private IEnumerable<ScanDescriptor> ScanDescriptors { get; set; }
+
+        private IEnumerable<ScanDescriptor> ScanDescriptors { get; set; }
 
 		private ConcurrentDictionary<String, CxSastScans.Scan> SastScanCache { get; set; }
 			= new ConcurrentDictionary<string, CxSastScans.Scan>();
@@ -764,7 +766,10 @@ namespace CxAnalytix.XForm.SastTransformer
 							_log.Trace($"[Scan: {scan.ScanId}] Processing attributes in Result " +
 								$"[{xr.GetAttribute("NodeId")}].");
 
-							scan.IncrementSeverity(xr.GetAttribute("Severity"));
+							var resultState = xr.GetAttribute("state");
+
+							if (Convert.ToInt32(resultState) != NOT_EXPLOITABLE_STATE)
+								scan.IncrementSeverity(xr.GetAttribute("Severity"));
 
 							writeQueue = new Queue<SortedDictionary<string, object>>();
 							sinkLine = sinkColumn = sinkFile = null;
@@ -775,7 +780,7 @@ namespace CxAnalytix.XForm.SastTransformer
 
 							curResultRec.Add("FalsePositive", xr.GetAttribute("FalsePositive"));
 							curResultRec.Add("ResultSeverity", xr.GetAttribute("Severity"));
-							curResultRec.Add("State", xr.GetAttribute("state"));
+							curResultRec.Add("State", resultState);
 							curResultRec.Add("Remark", xr.GetAttribute("Remark"));
 							curResultRec.Add("ResultDeepLink", xr.GetAttribute("DeepLink"));
 
