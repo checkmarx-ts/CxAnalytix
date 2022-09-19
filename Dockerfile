@@ -22,4 +22,4 @@ RUN apt update && apt install -y xmlstarlet && \
 	apt clean
 
 	
-ENTRYPOINT ["CxAnalytixDaemon"]
+ENTRYPOINT ["./CxAnalytixDaemon"]
