@@ -1,4 +1,5 @@
-﻿using CxRestClient.Utility;
+﻿using CxAnalytix.Exceptions;
+using CxRestClient.Utility;
 using log4net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -57,6 +58,9 @@ namespace CxRestClient.SAST
 
         public static ServerVersion GetServerVersion(CxSASTRestContext ctx, CancellationToken token)
         {
+            var requestUrl = UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX);
+            var apiVersion = "1.1";
+
             return WebOperation.ExecuteGet<ServerVersion>(
             ctx.Sast.Json.CreateClient
             , (response) =>
@@ -70,11 +74,11 @@ namespace CxRestClient.SAST
                         return (ServerVersion)new JsonSerializer().Deserialize(jtr, typeof(ServerVersion));
                 }
             }
-            , UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX)
+            , requestUrl
             , ctx.Sast
-            , token, apiVersion: "1.1",
+            , token, apiVersion: apiVersion,
             responseErrorLogic: (err) => {
-                return false;
+                throw new UnsupportedAPIException(requestUrl, apiVersion);
             } );
         }
 
@@ -89,7 +93,7 @@ namespace CxRestClient.SAST
                 if (m.Success)
                     return new MajorMinor(Convert.ToInt32(m.Groups["major"].Value), Convert.ToInt32(m.Groups["minor"].Value), Convert.ToInt32(v.HotFix));
             }
-            catch (Exception)
+            catch (UnsupportedAPIException)
             {
                 // Some versions of SAST may not have this API.
             }

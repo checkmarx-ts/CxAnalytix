@@ -31,7 +31,7 @@ namespace CxRestClient.SAST
 
                 if (mm.IsUnknown)
                     _apiVersion = "2.0";
-                else if (mm.Major == 9 || (mm.Major == 8 && mm.Minor >= 9) )
+                else if (mm.Major >= 9)
                     _apiVersion = "2.2";
             }
 
