@@ -39,6 +39,15 @@ element is not intended to be user configurable.  The XML snippet \hyperref[lst:
 </configSections>
 \end{code}
 
+\subsection{Encrypted Sections}
+
+Sections annotated with \encrypts will encrypt the section on first run under Windows only.  It should be noted that the encrypted section
+can only be decrypted by the same user account that caused the section to be encrypted.  Users that started by invoking the CxAnalytix CLI 
+as the interactive user will see the CxAnalytix service fail when it is started as Network Service.  Both the CLI and the service use the
+same configuration files, but the encrypted section can not be decrypted by the Network Service user.  All invocations of CxAnalytix
+processes should be done as the same user to avoid this issue.
+
+
 \subsection{Checkmarx Service Connection Configuration}\label{sec:connection}
 
 \subsubsection{Checkmarx SAST Connection Configuration}
