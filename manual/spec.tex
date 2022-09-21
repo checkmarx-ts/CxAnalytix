@@ -209,17 +209,18 @@ violation record.}
 \subsubsection{Record: Scan Statistics}
 \textit{This record is only available for SAST version 9.4 and later.}
 
-\noindent\\In addition to the listed fields, successfully executed general query names (e.g. \texttt{javaScript.Cx.General.Sanitize}) are field names in the 
+\noindent\\In addition to the listed fields, successfully executed general query names \\
+(e.g. \texttt{javaScript.Cx.General.Sanitize}) are field names in the 
 document.  These are variable per scan.  The value associated with the field is the count of elements found when the general query was executed.
 
-\noindent\\Fields prefixed with \textbf{\{language\}_} are dynamically generated.  Only fields for languages detected by the scan are included.
+\noindent\\Fields prefixed with \textbf{\{language\}\_} are dynamically generated.  Only fields for languages detected by the scan are included.
 
 \begin{itemize}
 
     \item CxEnginePackVersion
     \item CxEngineVersion
     \item CxVersion
-    \item \{language\}_DomObjectCount
+    \item \{language\}\_DomObjectCount
     \item EngineOS
     \item FailedGeneralQueries
     \item FailedGeneralQueriesCount
@@ -227,19 +228,19 @@ document.  These are variable per scan.  The value associated with the field is 
     \item FailedQueriesCount
     \item FailedStagesCount
     \item FileExclusionPattern
-    \item \{language\}_FilesParsedSuccessfully
-    \item \{language\}_FilesParseFailure
-    \item \{language\}_FilesParsedPartially
-    \item \{language\}_FilesNotScanned
-    \item \{language\}_FilesParsedSuccessfullyCount
-    \item \{language\}_FilesParseFailureCount
-    \item \{language\}_FilesParsedPartiallyCount
+    \item \{language\}\_FilesParsedSuccessfully
+    \item \{language\}\_FilesParseFailure
+    \item \{language\}\_FilesParsedPartially
+    \item \{language\}\_FilesNotScanned
+    \item \{language\}\_FilesParsedSuccessfullyCount
+    \item \{language\}\_FilesParseFailureCount
+    \item \{language\}\_FilesParsedPartiallyCount
     \item FilteredParsedLOC
     \item FolderExclusionPattern
     \item InstanceId
-    \item \{language\}_LOCParsedCount
-    \item \{language\}_LOCParseFailCount
-    \item \{language\}_LOCParseSuccessPercent
+    \item \{language\}\_LOCParsedCount
+    \item \{language\}\_LOCParseFailCount
+    \item \{language\}\_LOCParseSuccessPercent
     \item PhysicalMemoryPeakMB
     \item ProjectId
     \item ProjectName
