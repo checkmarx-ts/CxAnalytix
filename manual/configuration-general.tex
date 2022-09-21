@@ -176,7 +176,8 @@ is configured with the transformation logic modules to use when crawling Checkma
     SCAScanSummaryRecordName=""
     SCAScanDetailRecordName=""
     ProjectInfoRecordName=""
-    PolicyViolationsRecordName="">
+    PolicyViolationsRecordName=""
+    ScanStatisticsRecordName="">
 
     <EnabledTransformers>
         <Transformer Name="" />
@@ -221,6 +222,9 @@ is configured with the transformation logic modules to use when crawling Checkma
         \texttt{PolicyViolationsRecordName} & N/A & Yes & \makecell[tl]{The name of the corresponding\\
         record collection configured\\
         in the output.}\\
+        \midrule
+        \texttt{ScanStatisticsRecordName} & N/A & No & \makecell[tl]{The name of the record for storing\\
+        scan statistics in the output.}\\
         \bottomrule
     \end{tabularx}
 \end{table}

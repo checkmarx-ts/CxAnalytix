@@ -1,7 +1,14 @@
 \subsection{Log4Net Output Configuration}\label{sec:log4net_out}
 
 The Log4Net configuration is typically limited to modifying the \texttt{cxanalytics.log4net} file to modify the output paths of the
-data output files.  Modifying the output location is described in Section \ref{sec:log4net_out}.
+data output files.  The \href{https://logging.apache.org/log4net/release/manual/configuration.html}{Log4Net Manual} explains
+how to modify the \texttt{cxanalytix.log4net} file to change how logging output is handled.
+
+\noindent\\One use of Log4Net is for CxAnalytix operational logging output.  This log output is used for monitoring and troubleshooting
+how CxAnalytix is operating.  Another use for Log4Net is when the Log4Net Output module is used to write output data to local files.
+This is often used with the Splunk Universal Forwarder to integrate with \hyperref[sec:splunk]{Splunk} or another log aggregation
+and analysis system.  Appendix section \ref{sec:splunk} describes how Log4Net is configured so that the record name maps configured
+as part of the \hyperref[sec:runtime_config]{runtime configuration} write record data to the correct output log file.
 
 \noindent\\The \texttt{CxLogOutput} optional configuration can be used to periodically purge the files created by CxAnalytix As
 scans are crawled over time.  It is presumed that the files created are being forwarded for storage, thus can be purged periodically.
