@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection.PortableExecutable;
 
 namespace CxAnalytix.XForm.Common
 {
@@ -30,6 +31,8 @@ namespace CxAnalytix.XForm.Common
         public IRecordRef ScaScanSummaryOut { get; internal set; }
         public IRecordRef ScaScanDetailOut { get; internal set; }
         public IRecordRef PolicyViolationDetailOut { get; internal set; }
+        public IRecordRef? ScanStatisticsOut { get; internal set; }
+
         public IProjectFilter Filter { get; private set; }
 
         private static readonly ILog _log = LogManager.GetLogger(typeof(BaseTransformer));
@@ -50,6 +53,12 @@ namespace CxAnalytix.XForm.Common
             ScaScanSummaryOut = Output.RegisterRecord(Service.SCAScanSummaryRecordName);
             ScaScanDetailOut = Output.RegisterRecord(Service.SCAScanDetailRecordName);
 
+            if (Service.ScanStatisticsRecordName != null && !String.IsNullOrEmpty(Service.ScanStatisticsRecordName))
+                ScanStatisticsOut = Output.RegisterRecord(Service.ScanStatisticsRecordName);
+            else
+                ScanStatisticsOut = null;
+
+
             ThreadOpts = new ParallelOptions()
             {
                 MaxDegreeOfParallelism = Service.ConcurrentThreads
@@ -65,7 +74,7 @@ namespace CxAnalytix.XForm.Common
                 flat.Add("InstanceId", Service.InstanceIdentifier);
         }
 
-        protected void AddPrimaryKeyElements(ProjectDescriptor rec, IDictionary<String, Object> flat)
+        protected void AddProjectHeaderElements(ProjectDescriptor rec, IDictionary<String, Object> flat)
         {
             flat.Add("ProjectId", rec.ProjectId);
             if (rec.ProjectName != null)
@@ -75,11 +84,26 @@ namespace CxAnalytix.XForm.Common
             AddInstanceIdentifier(flat);
         }
 
+        protected void AddScanHeaderElements(ScanDescriptor rec, IDictionary<String, Object> flat)
+        {
+            if (rec.Project != null)
+                AddProjectHeaderElements(rec.Project, flat);
+
+            if (rec.ScanId != null)
+                flat.Add("ScanId", rec.ScanId);
+
+            if (rec.ScanProduct != null)
+                flat.Add("ScanProduct", rec.ScanProduct.ToString());
+
+            if (rec.ScanType != null)
+                flat.Add("ScanType", rec.ScanType);
+        }
+
 
         protected void OutputProjectInfoRecords(IOutputTransaction trx, ProjectDescriptor project)
         {
             var flat = new SortedDictionary<String, Object>();
-            AddPrimaryKeyElements(project, flat);
+            AddProjectHeaderElements(project, flat);
 
             flat.Add("LastCrawlDate", DateTime.Now);
 
