@@ -658,11 +658,14 @@ namespace CxAnalytix.XForm.SastTransformer
 
                                         try
                                         {
-											OutputScanStatistics(scanTrx, scan, await CxScanStatistics.GetScanFullStatistics(RestContext, ThreadOpts.CancellationToken, scan.ScanId) );
+											var stats = CxScanStatistics.GetScanFullStatistics(RestContext, ThreadOpts.CancellationToken, scan.ScanId);
+
+											if (stats != null)
+                                                OutputScanStatistics(scanTrx, scan, stats);
                                         }
                                         catch (Exception ex)
                                         {
-                                            _log.Warn($"Error fetching scan statistics for scan id {scan.ScanId}, statistics for this scan will not be available.", ex);
+                                            _log.Warn($"Error outputting scan statistics for scan id {scan.ScanId}, statistics for this scan will not be available.", ex);
                                         }
                                     }
 

@@ -165,18 +165,13 @@ namespace CxRestClient.SAST
 
         private static async Task<T> GetForSingleObjectResponse<T>(CxSASTRestContext ctx, CancellationToken token, String endpoint)
         {
-            var responseObj = await WebOperation.ExecuteGetAsync<T>(
+            return await WebOperation.ExecuteGetAsync<T>(
                 ctx.Sast.Json.CreateClient
                 , DeserializeResponse<T>
                 , endpoint
                 , ctx.Sast
                 , token
                 ,apiVersion: API_VERSION);
-
-            if (responseObj == null)
-                throw new UnrecoverableOperationException($"No object returned from {endpoint}");
-
-            return responseObj;
         }
 
         private static String STATISTICS_URL_SUFFIX = "statistics";
@@ -284,22 +279,26 @@ namespace CxRestClient.SAST
             public SuccessfulGeneralQueriesResponse SuccessGeneralQueries { get; internal set; }
         };
 
-        public static async Task<FullScanStatistics> GetScanFullStatistics(CxSASTRestContext ctx, CancellationToken token, String scanId)
+        public static FullScanStatistics GetScanFullStatistics(CxSASTRestContext ctx, CancellationToken token, String scanId)
         {
             var statistics = GetScanStatistics(ctx, token, scanId);
+
             var pf = GetScanParsedFiles(ctx, token, scanId);
             var fq = GetScanFailedQueries(ctx, token, scanId);
             var fgq = GetScanFailedGeneralQueries(ctx, token, scanId);
             var sgq = GetScanSuccessfulGeneralQueries(ctx, token, scanId);
 
-            return await Task.Run(async () => new FullScanStatistics()
+            if (statistics.Result == null)
+                return null;
+
+            return new FullScanStatistics()
             {
-                Statistics = await statistics,
-                ParsedFiles = await pf,
-                FailedQueries = await fq,
-                FailedGeneralQueries = await fgq,
-                SuccessGeneralQueries = await sgq
-            });
+                Statistics = statistics.Result,
+                ParsedFiles = pf.Result,
+                FailedQueries = fq.Result,
+                FailedGeneralQueries = fgq.Result,
+                SuccessGeneralQueries = sgq.Result
+            };
         }
 
     }
