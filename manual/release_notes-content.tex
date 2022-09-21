@@ -1,3 +1,41 @@
+\section{2.0.1}
+
+\subsection*{FEATURES}
+    \begin{itemize}
+        \item Issue \#129 - New record type: scan statistics\\
+		\indent A scan statistics record type has been added for optionally storing the scan statistics for SAST 9.4+ scans.
+	
+        \item Issue \#157 - include branching information for projects in CxAnalytix
+		\indent Added fields in the Project Information Record:
+        \begin{itemize}
+			\item IsBranched
+			\item BranchedAtScanId
+			\item BranchParentProject
+        \end{itemize}
+			
+	    \item Issue \#182 - Scan custom fields\\
+		\indent Scan custom fields, if available, are now exported in the scan summary record.    
+    \end{itemize}
+
+\subsection*{UPDATES}
+    \begin{itemize}
+        \item Additional fields added to some records to aid in filtering when record types include records from multiple Checkmarx products.  
+        This includes but is not limited to:
+        \begin{itemize}
+            \item ScanProduct
+            \item ScanType
+        \end{itemize}
+        \item Issue \#93 - Documentation update regarding decrypting configuration sections encrypted by another user
+    \end{itemize}
+
+\subsection*{BUG FIXES}
+    \begin{itemize}
+        \item Issue \#158 - SAST scan summary totals should match the project state totals
+        \item Issue \#183 - Audit table crawl throws an exception if the connection string is not defined
+        \item Issue \#184 - Authentication issue - can't use disposed object
+    \end{itemize}
+
+
 \section{2.0.0}
 
 \subsection*{FEATURES}
@@ -23,7 +61,7 @@
         \item Outputs have always been pluggable modules, but selection is now more user friendly.
     \end{itemize}
 
-    \subsection*{BUG FIXES}
+\subsection*{BUG FIXES}
     \begin{itemize}
         \item Garbage collection tuning.
     \end{itemize}
