@@ -12,6 +12,7 @@ namespace SDK.Modules.Transformer.Data
         public enum ScanProductType
 		{
             SAST,
+            OSA,
             SCA
 		}
 

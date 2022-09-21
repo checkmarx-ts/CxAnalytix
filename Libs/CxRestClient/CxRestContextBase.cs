@@ -34,14 +34,26 @@ namespace CxRestClient
             Token.ExpireTime = DateTime.MinValue;
         }
 
-        public abstract LoginToken Token { get; }
+
+        private Object _tokenSync = new object();
+
+        public LoginToken Token { 
+            get
+            {
+                lock (_tokenSync)
+                    return TokenImpl;
+
+            }
+        }
+
+        protected abstract LoginToken TokenImpl { get; }
 
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         protected virtual void ValidateToken(ref LoginToken token)
         {
-                if (DateTime.Now.CompareTo(token.ExpireTime) >= 0)
-                    token = GetLoginToken(token.ReauthContent);
+            if (DateTime.Now.CompareTo(token.ExpireTime) >= 0)
+                token = GetLoginToken(token.ReauthContent);
         }
 
         protected LoginToken GetLoginToken(HttpContent authContent)
@@ -113,8 +125,7 @@ namespace CxRestClient
 
         protected LoginToken GetLoginToken(Dictionary<string, string> body)
         {
-            using (var content = new FormUrlEncodedContent(body))
-                return GetLoginToken(content);
+            return GetLoginToken(new FormUrlEncodedContent(body));
         }
 
         #endregion

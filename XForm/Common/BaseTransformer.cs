@@ -1,6 +1,8 @@
 ﻿using CxAnalytix.Configuration.Impls;
 using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.Interfaces.Transform;
+using log4net.Util;
+using log4net;
 using OutputBootstrapper;
 using ProjectFilter;
 using SDK.Modules.Transformer;
@@ -10,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection.PortableExecutable;
 
 namespace CxAnalytix.XForm.Common
 {
@@ -28,12 +31,18 @@ namespace CxAnalytix.XForm.Common
         public IRecordRef ScaScanSummaryOut { get; internal set; }
         public IRecordRef ScaScanDetailOut { get; internal set; }
         public IRecordRef PolicyViolationDetailOut { get; internal set; }
+        public IRecordRef? ScanStatisticsOut { get; internal set; }
+
         public IProjectFilter Filter { get; private set; }
+
+        private static readonly ILog _log = LogManager.GetLogger(typeof(BaseTransformer));
 
 
         public BaseTransformer(string moduleName, Type moduleImplType, String stateStorageFileName)
         : base(moduleName, moduleImplType, stateStorageFileName)
         {
+            _log.Debug($"Creating new transformer instance for {moduleName} of type {moduleImplType}");
+
             Filter = new FilterImpl(Config.GetConfig<CxFilter>().TeamRegex,
             Config.GetConfig<CxFilter>().ProjectRegex);
 
@@ -43,6 +52,12 @@ namespace CxAnalytix.XForm.Common
             PolicyViolationDetailOut = Output.RegisterRecord(Service.PolicyViolationsRecordName);
             ScaScanSummaryOut = Output.RegisterRecord(Service.SCAScanSummaryRecordName);
             ScaScanDetailOut = Output.RegisterRecord(Service.SCAScanDetailRecordName);
+
+            if (Service.ScanStatisticsRecordName != null && !String.IsNullOrEmpty(Service.ScanStatisticsRecordName))
+                ScanStatisticsOut = Output.RegisterRecord(Service.ScanStatisticsRecordName);
+            else
+                ScanStatisticsOut = null;
+
 
             ThreadOpts = new ParallelOptions()
             {
@@ -59,7 +74,7 @@ namespace CxAnalytix.XForm.Common
                 flat.Add("InstanceId", Service.InstanceIdentifier);
         }
 
-        protected void AddPrimaryKeyElements(ProjectDescriptor rec, IDictionary<String, Object> flat)
+        protected void AddProjectHeaderElements(ProjectDescriptor rec, IDictionary<String, Object> flat)
         {
             flat.Add("ProjectId", rec.ProjectId);
             if (rec.ProjectName != null)
@@ -69,11 +84,26 @@ namespace CxAnalytix.XForm.Common
             AddInstanceIdentifier(flat);
         }
 
+        protected void AddScanHeaderElements(ScanDescriptor rec, IDictionary<String, Object> flat)
+        {
+            if (rec.Project != null)
+                AddProjectHeaderElements(rec.Project, flat);
+
+            if (rec.ScanId != null)
+                flat.Add("ScanId", rec.ScanId);
+
+            if (rec.ScanProduct != null)
+                flat.Add("ScanProduct", rec.ScanProduct.ToString());
+
+            if (rec.ScanType != null)
+                flat.Add("ScanType", rec.ScanType);
+        }
+
 
         protected void OutputProjectInfoRecords(IOutputTransaction trx, ProjectDescriptor project)
         {
             var flat = new SortedDictionary<String, Object>();
-            AddPrimaryKeyElements(project, flat);
+            AddProjectHeaderElements(project, flat);
 
             flat.Add("LastCrawlDate", DateTime.Now);
 
@@ -94,6 +124,13 @@ namespace CxAnalytix.XForm.Common
 
             if (project.CustomFields != null && project.CustomFields.Count > 0)
                 flat.Add("CustomFields", project.CustomFields);
+
+            flat.Add("IsBranched", project.IsBranched);
+            if (project.IsBranched)
+            {
+                flat.Add("BranchedAtScanId", project.BranchedAtScanId);
+                flat.Add("BranchParentProject", project.BranchParentProject);
+            }
 
             trx.write(ProjectInfoOut, flat);
         }

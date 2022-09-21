@@ -12,19 +12,17 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.Text;
 using CxAnalytix.Interfaces.Outputs;
-using CxAnalytix.Interfaces.Transform;
 using CxRestClient.MNO.dto;
 using OutputBootstrapper;
 using CxAnalytix.Extensions;
 using CxAnalytix.Exceptions;
-using SDK.Modules.Transformer;
 using CxAnalytix.Configuration.Impls;
-using ProjectFilter;
 using CxRestClient.Utility;
 using SDK.Modules.Transformer.Data;
 using static SDK.Modules.Transformer.Data.ScanDescriptor;
 using CxAnalytix.XForm.Common;
 using CxRestClient.MNO.Collections;
+using static CxRestClient.SAST.CxVersion;
 using System.Linq;
 
 namespace CxAnalytix.XForm.SastTransformer
@@ -34,12 +32,16 @@ namespace CxAnalytix.XForm.SastTransformer
 		private static readonly ILog _log = LogManager.GetLogger(typeof(Transformer));
 		private static readonly String STATE_STORAGE_FILE = "CxAnalytixExportState.json";
 		private static readonly String MODULE_NAME = "SAST";
+		private static readonly int NOT_EXPLOITABLE_STATE = 1;
 
-		private IEnumerable<ScanDescriptor> ScanDescriptors { get; set; }
+
+        private IEnumerable<ScanDescriptor> ScanDescriptors { get; set; }
 
 		private ConcurrentDictionary<String, CxSastScans.Scan> SastScanCache { get; set; }
 			= new ConcurrentDictionary<string, CxSastScans.Scan>();
-		private ConcurrentDictionary<String, CxOsaScans.Scan> ScaScanCache { get; set; }
+        private ConcurrentDictionary<String, IDictionary<String, String>> SastScanCustomFields { get; set; }
+            = new();
+        private ConcurrentDictionary<String, CxOsaScans.Scan> ScaScanCache { get; set; }
 			= new ConcurrentDictionary<string, CxOsaScans.Scan>();
 
 		private ProjectPolicyIndex Policies { get; set; }
@@ -47,6 +49,8 @@ namespace CxAnalytix.XForm.SastTransformer
 		private ConcurrentDictionary<String, String> Teams { get; set; }
 
 		private ConcurrentDictionary<int, ProjectDescriptor> _loadedProjects = new ConcurrentDictionary<int, ProjectDescriptor>();
+
+		private Task<MajorMinor> _sastVersionTask;
 
 
 		private DateTime CheckTime { get; set; } = DateTime.Now;
@@ -179,7 +183,7 @@ namespace CxAnalytix.XForm.SastTransformer
 					ThreadOpts.CancellationToken, sd.ScanId);
 
 				var header = new SortedDictionary<String, Object>();
-				AddPrimaryKeyElements(sd.Project, header);
+				AddScanHeaderElements(sd, header);
 				header.Add("ScanFinished", sd.FinishedStamp);
 
 				foreach (var vuln in vulns)
@@ -244,9 +248,8 @@ namespace CxAnalytix.XForm.SastTransformer
 		private void OutputScaScanSummary(IOutputTransaction trx, ScanDescriptor sd, Dictionary<string, int> licenseCount)
 		{
 			var flat = new SortedDictionary<String, Object>();
-			AddPrimaryKeyElements(sd.Project, flat);
+			AddScanHeaderElements(sd, flat);
 			AddPolicyViolationProperties(sd, flat);
-			flat.Add("ScanId", sd.ScanId);
 			flat.Add("ScanStart", ScaScanCache[sd.ScanId].StartTime);
 			flat.Add("ScanFinished", ScaScanCache[sd.ScanId].FinishTime);
 
@@ -321,7 +324,9 @@ namespace CxAnalytix.XForm.SastTransformer
 
 			var teamsTask = PopulateTeams();
 
-			var projectsTask = Task.Run(() => CxProjects.GetProjects(RestContext, ThreadOpts.CancellationToken), ThreadOpts.CancellationToken);
+			_sastVersionTask = GetSASTVersion();
+
+            var projectsTask = Task.Run(() => CxProjects.GetProjects(RestContext, ThreadOpts.CancellationToken), ThreadOpts.CancellationToken);
 
 			Policies = await policyTask;
 			Teams = await teamsTask;
@@ -400,8 +405,11 @@ namespace CxAnalytix.XForm.SastTransformer
 						PresetId = Convert.ToString(p.PresetId),
 						PresetName = presetName,
 						Policies = combinedPolicyNames,
-						CustomFields = cfDict
-					}
+						CustomFields = cfDict,
+						IsBranched = p.IsBranched,
+						BranchParentProject = (p.IsBranched) ? (p.BranchParentProject) : (null),
+						BranchedAtScanId = (p.IsBranched) ? (p.BranchedAtScanId) : (null)
+                    }
 				))
 				{
 					_log.WarnFormat("Rejected changed when adding new project with duplicate id {0}: New name: [{1}] current name: [{2}].",
@@ -437,6 +445,9 @@ namespace CxAnalytix.XForm.SastTransformer
 							_log.Trace($"SAST scan record: {s}");
 						State.AddScan(Convert.ToString(s.ProjectId), s.ScanType, ScanProductType.SAST, s.ScanId, s.FinishTime, s.Engine);
 						SastScanCache.TryAdd(s.ScanId, s);
+
+						if (s.CustomFields != null && s.CustomFields.Count > 0)
+							SastScanCustomFields.TryAdd(s.ScanId, s.CustomFields);
 					}
 
 
@@ -449,7 +460,7 @@ namespace CxAnalytix.XForm.SastTransformer
 							// Add to crawl state.
 							if (_log.IsTraceEnabled())
 								_log.Trace($"OSA scan record: {s}");
-							State.AddScan(Convert.ToString(s.ProjectId), "Composition", ScanProductType.SCA, s.ScanId, s.FinishTime, "N/A");
+							State.AddScan(Convert.ToString(s.ProjectId), "Composition", ScanProductType.OSA, s.ScanId, s.FinishTime, "N/A");
 							ScaScanCache.TryAdd(s.ScanId, s);
 						}
 					}
@@ -538,12 +549,27 @@ namespace CxAnalytix.XForm.SastTransformer
 			return null;
 		}
 
+		private async Task<MajorMinor> GetSASTVersion ()
+		{
+			return await Task.Run(() => CxVersion.GetServerMajorMinorVersion(RestContext, ThreadOpts.CancellationToken));
+		}
+
+		private bool SupportsScanStatistics(MajorMinor sastVersion)
+		{
+			if (sastVersion.IsUnknown)
+				return false;
+
+			if (sastVersion.Major >= 9 && sastVersion.Minor >= 4)
+				return true;
+
+
+			return false;
+		}
 
 		private void ExecuteSweep()
 		{
 
-
-			if (!IncludeMNO)
+            if (!IncludeMNO)
 				_log.Warn("Management & Orchestration data will not be crawled.");
 
 			if (!IncludeOSA)
@@ -560,12 +586,19 @@ namespace CxAnalytix.XForm.SastTransformer
 			_log.Info($"Crawling {State.ScanCount} scans.");
 
 
-			// Lookup policy violations, report the project information records.
-			Parallel.ForEach<ProjectDescriptor>(State.Projects, ThreadOpts,
-			(project) =>
+            if (!SupportsScanStatistics(_sastVersionTask.Result) )
+                _log.Warn("SAST version does not support scan statistics output record.");
+            else if (ScanStatisticsOut == null)
+                _log.Warn("SAST scan statistics output is not configured, scan statistics will not be available.");
+
+
+
+            // Lookup policy violations, report the project information records.
+            Parallel.ForEach<ProjectDescriptor>(State.Projects, ThreadOpts,
+			async (project) =>
 			{
-				// Do not output project info if a project has no scans.
-				if (State.GetScanCountForProject(project.ProjectId) <= 0)
+                // Do not output project info if a project has no scans.
+                if (State.GetScanCountForProject(project.ProjectId) <= 0)
 				{
 					_log.Info($"Project {project.ProjectId}:{project.TeamName}:{project.ProjectName} has no new scans to process.");
 					return;
@@ -618,7 +651,25 @@ namespace CxAnalytix.XForm.SastTransformer
 							{
 								case ScanProductType.SAST:
 									SastReportOutput(scanTrx, scan);
-									break;
+
+                                    if (SupportsScanStatistics(await _sastVersionTask) && ScanStatisticsOut != null)
+                                    {
+                                        _log.Debug($"Processing scan statistics for ScanId {scan.ScanId}");
+
+                                        try
+                                        {
+											var stats = CxScanStatistics.GetScanFullStatistics(RestContext, ThreadOpts.CancellationToken, scan.ScanId);
+
+											if (stats != null)
+                                                OutputScanStatistics(scanTrx, scan, stats);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            _log.Warn($"Error outputting scan statistics for scan id {scan.ScanId}, statistics for this scan will not be available.", ex);
+                                        }
+                                    }
+
+                                    break;
 
 								case ScanProductType.SCA:
 									ScaReportOutput(scanTrx, scan);
@@ -648,17 +699,72 @@ namespace CxAnalytix.XForm.SastTransformer
 				}
 
 			});
-
-
 		}
 
-		private void OutputPolicyViolationDetails(IOutputTransaction trx, ScanDescriptor scan)
+		private void OutputScanStatistics(IOutputTransaction scanTrx, ScanDescriptor scan, CxScanStatistics.FullScanStatistics fullScanStatistics)
+		{
+            var flat = new SortedDictionary<String, Object>();
+            AddScanHeaderElements(scan, flat);
+
+			foreach (var key in fullScanStatistics.SuccessGeneralQueries.Collection.Keys)
+				flat.Add(key, fullScanStatistics.SuccessGeneralQueries.Collection[key]);
+
+            flat.Add("FailedGeneralQueries", String.Join(';', fullScanStatistics.FailedGeneralQueries.Collection));
+            flat.Add("FailedQueries", String.Join(';', fullScanStatistics.FailedQueries.Collection));
+
+			foreach(var lang in fullScanStatistics.ParsedFiles.Collection.Keys)
+			{
+				if (!String.IsNullOrEmpty(fullScanStatistics.ParsedFiles.Collection[lang].SuccessfullyParsed))
+					flat.Add($"{lang}_FilesParsedSuccessfully", fullScanStatistics.ParsedFiles.Collection[lang].SuccessfullyParsed);
+
+
+                if (!String.IsNullOrEmpty(fullScanStatistics.ParsedFiles.Collection[lang].FailedToParse))
+                    flat.Add($"{lang}_FilesParseFailure", fullScanStatistics.ParsedFiles.Collection[lang].FailedToParse);
+
+
+                if (!String.IsNullOrEmpty(fullScanStatistics.ParsedFiles.Collection[lang].PartiallyParsed))
+                    flat.Add($"{lang}_FilesParsedPartially", fullScanStatistics.ParsedFiles.Collection[lang].PartiallyParsed);
+            }
+
+			foreach(var lang in fullScanStatistics.Statistics.UnscannedFileCountByLanguage.Keys)
+				flat.Add($"{lang}_FilesNotScanned", fullScanStatistics.Statistics.UnscannedFileCountByLanguage[lang]);
+
+            foreach (var lang in fullScanStatistics.Statistics.LanguageStats.Keys)
+			{
+				flat.Add($"{lang}_FilesParsedSuccessfullyCount", fullScanStatistics.Statistics.LanguageStats[lang].FileParseStats.SuccessCount);
+                flat.Add($"{lang}_FilesParseFailureCount", fullScanStatistics.Statistics.LanguageStats[lang].FileParseStats.FailCount);
+                flat.Add($"{lang}_FilesParsedPartiallyCount", fullScanStatistics.Statistics.LanguageStats[lang].FileParseStats.PartialCount);
+                flat.Add($"{lang}_DomObjectCount", fullScanStatistics.Statistics.LanguageStats[lang].DomObjectCount);
+                flat.Add($"{lang}_LOCParsedCount", fullScanStatistics.Statistics.LanguageStats[lang].LOCParseStats.SuccessCount);
+                flat.Add($"{lang}_LOCParseFailCount", fullScanStatistics.Statistics.LanguageStats[lang].LOCParseStats.FailCount);
+                flat.Add($"{lang}_LOCParseSuccessPercent", fullScanStatistics.Statistics.LanguageStats[lang].LOCParseStats.SuccessPercentage);
+            }
+
+			flat.Add("CxVersion", fullScanStatistics.Statistics.ProductVersion);
+            flat.Add("CxEngineVersion", fullScanStatistics.Statistics.EngineVersion);
+            flat.Add("PhysicalMemoryPeakMB", fullScanStatistics.Statistics.PeakPhysicalMemoryMB);
+            flat.Add("VirtualMemoryPeakMB", fullScanStatistics.Statistics.PeakVirtualMemoryMB);
+            
+			flat.Add("ResultCount", fullScanStatistics.Statistics.ResultCount);
+            flat.Add("UnscannedFileCount", fullScanStatistics.Statistics.UnscannedFileCount);
+            flat.Add("FilteredParsedLOC", fullScanStatistics.Statistics.FilteredParsedLOC);
+            flat.Add("UnfilteredParsedLOC", fullScanStatistics.Statistics.UnfilteredParsedLOC);
+            flat.Add("FolderExclusionPattern", fullScanStatistics.Statistics.ExclusionFoldersPattern);
+            flat.Add("FileExclusionPattern", fullScanStatistics.Statistics.ExclusionFilesPattern);
+            flat.Add("FailedQueriesCount", fullScanStatistics.Statistics.FailedQueriesCount);
+            flat.Add("SucessfulGeneralQueriesCount", fullScanStatistics.Statistics.GeneralQueryStats.SuccessCount);
+            flat.Add("FailedGeneralQueriesCount", fullScanStatistics.Statistics.GeneralQueryStats.FailCount);
+            flat.Add("FailedStagesCount", fullScanStatistics.Statistics.FailedStages);
+            flat.Add("EngineOS", fullScanStatistics.Statistics.EngineOS);
+            flat.Add("CxEnginePackVersion", fullScanStatistics.Statistics.EnginePackVersion);
+
+			scanTrx.write(ScanStatisticsOut, flat);
+        }
+
+        private void OutputPolicyViolationDetails(IOutputTransaction trx, ScanDescriptor scan)
 		{
 			var header = new SortedDictionary<String, Object>();
-			AddPrimaryKeyElements(scan.Project, header);
-			header.Add("ScanId", scan.ScanId);
-			header.Add("ScanProduct", scan.ScanProduct.ToString());
-			header.Add("ScanType", scan.ScanType);
+			AddScanHeaderElements(scan, header);
 
 			var violatedRules = PolicyViolations[Convert.ToInt32(scan.Project.ProjectId)].
 				GetViolatedRulesByScanId(scan.ScanId);
@@ -695,10 +801,7 @@ namespace CxAnalytix.XForm.SastTransformer
 		private void ProcessSASTReport(IOutputTransaction trx, ScanDescriptor scan, Stream report)
 		{
 			var reportRec = new SortedDictionary<String, Object>();
-			AddPrimaryKeyElements(scan.Project, reportRec);
-			reportRec.Add("ScanId", scan.ScanId);
-			reportRec.Add("ScanProduct", scan.ScanProduct.ToString ());
-			reportRec.Add("ScanType", scan.ScanType);
+			AddScanHeaderElements(scan, reportRec);
 			reportRec.Add("ScanFinished", scan.FinishedStamp);
 
 			Queue<SortedDictionary<String, Object>> writeQueue = null;
@@ -756,7 +859,10 @@ namespace CxAnalytix.XForm.SastTransformer
 							_log.Trace($"[Scan: {scan.ScanId}] Processing attributes in Result " +
 								$"[{xr.GetAttribute("NodeId")}].");
 
-							scan.IncrementSeverity(xr.GetAttribute("Severity"));
+							var resultState = xr.GetAttribute("state");
+
+							if (Convert.ToInt32(resultState) != NOT_EXPLOITABLE_STATE)
+								scan.IncrementSeverity(xr.GetAttribute("Severity"));
 
 							writeQueue = new Queue<SortedDictionary<string, object>>();
 							sinkLine = sinkColumn = sinkFile = null;
@@ -767,7 +873,7 @@ namespace CxAnalytix.XForm.SastTransformer
 
 							curResultRec.Add("FalsePositive", xr.GetAttribute("FalsePositive"));
 							curResultRec.Add("ResultSeverity", xr.GetAttribute("Severity"));
-							curResultRec.Add("State", xr.GetAttribute("state"));
+							curResultRec.Add("State", resultState);
 							curResultRec.Add("Remark", xr.GetAttribute("Remark"));
 							curResultRec.Add("ResultDeepLink", xr.GetAttribute("DeepLink"));
 
@@ -920,10 +1026,7 @@ namespace CxAnalytix.XForm.SastTransformer
 				return;
 
 			var flat = new SortedDictionary<String, Object>();
-			AddPrimaryKeyElements(scanRecord.Project, flat);
-			flat.Add("ScanId", scanRecord.ScanId);
-			flat.Add("ScanProduct", scanRecord.ScanProduct.ToString());
-			flat.Add("ScanType", scanRecord.ScanType);
+			AddScanHeaderElements(scanRecord, flat);
 			flat.Add("ScanFinished", scanRecord.FinishedStamp);
 			flat.Add("ScanStart", SastScanCache[scanRecord.ScanId].StartTime);
 			flat.Add(PropertyKeys.KEY_ENGINESTART, SastScanCache[scanRecord.ScanId].EngineStartTime);
@@ -948,7 +1051,10 @@ namespace CxAnalytix.XForm.SastTransformer
 
 			AddPolicyViolationProperties(scanRecord, flat);
 
-			trx.write(SastScanSummaryOut, flat);
+			if (SastScanCustomFields.ContainsKey(scanRecord.ScanId) )
+                flat.Add("CustomFields", SastScanCustomFields[scanRecord.ScanId]);
+
+            trx.write(SastScanSummaryOut, flat);
 		}
 
 		private static void AddPolicyViolationProperties(ScanDescriptor scanRecord,

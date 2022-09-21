@@ -2,11 +2,7 @@
 using CxAnalytix.Extensions;
 using CxRestClient.Interfaces;
 using log4net;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -165,7 +161,15 @@ namespace CxRestClient.Utility
 			_log.Error($"Aggregate exception: {sb.ToString()}");
 		}
 
-		public static T ExecuteGet<T>(Func<String, CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
+        public static async Task<T> ExecuteGetAsync<T>(Func<String, CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
+        String url, ICxRestContext ctx, CancellationToken token, Func<HttpResponseMessage, Boolean> responseErrorLogic = null,
+        Func<Exception, Boolean> exceptionErrorLogic = null, String apiVersion = "1.0")
+        {
+			return await Task.Run(() => ExecuteGet(clientFactory, onSuccess, url, ctx, token, responseErrorLogic, exceptionErrorLogic, apiVersion));
+        }
+
+
+        public static T ExecuteGet<T>(Func<String, CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
 			String url, ICxRestContext ctx, CancellationToken token, Func<HttpResponseMessage, Boolean> responseErrorLogic = null,
 			Func<Exception, Boolean> exceptionErrorLogic = null, String apiVersion = "1.0")
 		{
@@ -208,8 +212,14 @@ namespace CxRestClient.Utility
 
 		}
 
+        public static async Task<T> ExecutePostAsync<T>(Func<String, CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
+            String url, Func<HttpContent> contentFactory, ICxRestContext ctx, CancellationToken token,
+            Func<HttpResponseMessage, Boolean> responseErrorLogic = null, Func<Exception, Boolean> exceptionErrorLogic = null, String apiVersion = "1.0")
+		{
+			return await Task.Run(() => ExecutePost(clientFactory, onSuccess, url, contentFactory, ctx, token, responseErrorLogic, exceptionErrorLogic, apiVersion) );
+		}
 
-		public static T ExecutePost<T>(Func<String, CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
+        public static T ExecutePost<T>(Func<String, CxRestClient.IO.CxRestClient> clientFactory, Func<HttpResponseMessage, T> onSuccess,
 			String url, Func<HttpContent> contentFactory, ICxRestContext ctx, CancellationToken token,
 			Func<HttpResponseMessage, Boolean> responseErrorLogic = null, Func<Exception, Boolean> exceptionErrorLogic = null, String apiVersion = "1.0")
 		{

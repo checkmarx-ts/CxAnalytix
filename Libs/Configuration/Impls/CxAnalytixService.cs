@@ -89,6 +89,13 @@ namespace CxAnalytix.Configuration.Impls
             set { this["PolicyViolationsRecordName"] = value; }
         }
 
+        [ConfigurationProperty("ScanStatisticsRecordName", IsRequired = false)]
+        public String ScanStatisticsRecordName
+        {
+            get => (String)this["ScanStatisticsRecordName"];
+            set { this["ScanStatisticsRecordName"] = value; }
+        }
+
         [ConfigurationProperty("ProcessPeriodMinutes", IsRequired = true)]
         public int ProcessPeriodMinutes
         {

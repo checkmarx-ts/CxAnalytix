@@ -64,8 +64,13 @@ namespace CxAnalytix.Out.MongoDBOutput
 
 				_schemas.Add(Service.PolicyViolationsRecordName, MongoDBOut.CreateInstance<PolicyViolationsSchema>(_db, Service.PolicyViolationsRecordName,
 					OutConfig.ShardKeys[Service.PolicyViolationsRecordName]));
-			}
-			catch (Exception ex)
+
+                if (Service.ScanStatisticsRecordName != null && !String.IsNullOrEmpty(Service.ScanStatisticsRecordName))
+                    _schemas.Add(Service.ScanStatisticsRecordName, MongoDBOut.CreateInstance<ScanStatisticsSchema>(_db, Service.ScanStatisticsRecordName,
+                        OutConfig.ShardKeys[Service.ScanStatisticsRecordName]));
+
+            }
+            catch (Exception ex)
 			{
 				_log.Error("Error initializing MongoDB connectivity.", ex);
 				_client = null;

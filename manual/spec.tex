@@ -10,6 +10,7 @@ using OSA.)  Data records can be considered a snapshot of the state of the vulne
 \subsubsection{Record: SAST Scan Summary}
 
 \begin{itemize}
+    \item CustomFields \textit{(Only included if custom fields are defined for the project.  Structure is dynamically generated using custom field name/value elements.)}
     \item CxVersion
     \item DeepLink
     \item EngineFinished
@@ -109,7 +110,9 @@ using OSA.)  Data records can be considered a snapshot of the state of the vulne
     \item RulesViolated \textit{(Requires M\&O)}
     \item ScanFinished
     \item ScanId
+    \item ScanProduct
     \item ScanStart
+    \item ScanType
     \item TeamName
     \item TotalHighVulnerabilities
     \item TotalLibraries
@@ -143,7 +146,9 @@ using OSA.)  Data records can be considered a snapshot of the state of the vulne
     \item Recommendation
     \item ScanFinished
     \item ScanId
+    \item ScanProduct
     \item ScanRiskSeverity
+    \item ScanType
     \item SimilarityId
     \item State
     \item TeamName
@@ -198,6 +203,56 @@ violation record.}
     \item ViolationState
     \item ViolationStatus
     \item ViolationType
+\end{itemize}
+
+
+\subsubsection{Record: Scan Statistics}
+\textit{This record is only available for SAST version 9.4 and later.}
+
+\noindent\\In addition to the listed fields, successfully executed general query names \\
+(e.g. \texttt{javaScript.Cx.General.Sanitize}) are field names in the 
+document.  These are variable per scan.  The value associated with the field is the count of elements found when the general query was executed.
+
+\noindent\\Fields prefixed with \textbf{\{language\}\_} are dynamically generated.  Only fields for languages detected by the scan are included.
+
+\begin{itemize}
+
+    \item CxEnginePackVersion
+    \item CxEngineVersion
+    \item CxVersion
+    \item \{language\}\_DomObjectCount
+    \item EngineOS
+    \item FailedGeneralQueries
+    \item FailedGeneralQueriesCount
+    \item FailedQueries
+    \item FailedQueriesCount
+    \item FailedStagesCount
+    \item FileExclusionPattern
+    \item \{language\}\_FilesParsedSuccessfully
+    \item \{language\}\_FilesParseFailure
+    \item \{language\}\_FilesParsedPartially
+    \item \{language\}\_FilesNotScanned
+    \item \{language\}\_FilesParsedSuccessfullyCount
+    \item \{language\}\_FilesParseFailureCount
+    \item \{language\}\_FilesParsedPartiallyCount
+    \item FilteredParsedLOC
+    \item FolderExclusionPattern
+    \item InstanceId
+    \item \{language\}\_LOCParsedCount
+    \item \{language\}\_LOCParseFailCount
+    \item \{language\}\_LOCParseSuccessPercent
+    \item PhysicalMemoryPeakMB
+    \item ProjectId
+    \item ProjectName
+    \item ResultCount
+    \item ScanId
+    \item ScanProduct
+    \item ScanType
+    \item SucessfulGeneralQueriesCount
+    \item TeamName
+    \item UnfilteredParsedLOC
+    \item UnscannedFileCount
+    \item VirtualMemoryPeakMB
 \end{itemize}
 
 
@@ -399,7 +454,9 @@ violation record.}
     \item ScanFinished
     \item ScanId
     \item ScanOrigin
+    \item ScanProduct
     \item ScanStart
+    \item ScanType
     \item TeamName
     \item TotalDirectDependencies
     \item TotalExploitablePaths
@@ -444,7 +501,9 @@ violation record.}
     \item ProjectName
     \item ScanFinished
     \item ScanId
+    \item ScanProduct
     \item ScanRiskSeverity
+    \item ScanType
     \item State
     \item TeamName
     \item Type

@@ -192,9 +192,8 @@ namespace CxAnalytix.XForm.ScaTransformer
         private void OutputScanDetails(IOutputTransaction scanTrx, ScanDescriptor scan, CxDetailedReport.DetailedRiskReport riskReport, CxRiskState.IndexedRiskStates stateIndex)
         {
             var header = new SortedDictionary<String, Object>();
-            AddPrimaryKeyElements(scan.Project, header);
+            AddScanHeaderElements(scan, header);
             header.Add("ScanFinished", scan.FinishedStamp);
-            header.Add("ScanId", scan.ScanId);
 
             foreach (var vulnerability in riskReport.Vulnerabilities)
             {
@@ -252,10 +251,7 @@ namespace CxAnalytix.XForm.ScaTransformer
         private void OutputPolicyViolations(IOutputTransaction trx, ScanDescriptor sd, CxDetailedReport.DetailedRiskReport riskReport, CxRiskState.IndexedRiskStates stateIndex)
         {
             var header = new SortedDictionary<String, Object>();
-            AddPrimaryKeyElements(sd.Project, header);
-            header.Add("ScanProduct", sd.ScanProduct.ToString());
-            header.Add("ScanType", sd.ScanType);
-            header.Add("ScanId", sd.ScanId);
+            AddScanHeaderElements(sd, header);
 
             foreach(var policy in riskReport.Policies)
             {
@@ -325,8 +321,7 @@ namespace CxAnalytix.XForm.ScaTransformer
         private void OutputScanSummary(IOutputTransaction trx, ScanDescriptor sd, CxDetailedReport.DetailedRiskReport report)
         {
             var flat = new SortedDictionary<String, Object>();
-            AddPrimaryKeyElements(sd.Project, flat);
-            flat.Add("ScanId", sd.ScanId);
+            AddScanHeaderElements(sd, flat);
             flat.Add("ScanStart", ScanHeaderIndex[sd.ScanId].Created);
             flat.Add("ScanFinished", ScanHeaderIndex[sd.ScanId].Updated);
 
