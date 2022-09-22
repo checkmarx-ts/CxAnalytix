@@ -25,6 +25,7 @@ assignees: ''
 > - Log files
 > - Application settings
 > - Screenshots
+> 
 > Please remove sensitive information from any included log output.  Bearer tokens should be considered sensitive information.
 
 
