@@ -28,4 +28,4 @@ assignees: ''
 
 ### Environment Details
 
-> Provide any information relating to the environment the issue was identified in - include applicable version and additional runtime information (include OS or other underlying infrastructure)
+> Provide any information relating to the environment the issue was identified in - include applicable version and additional runtime information (include OS or other underlying infrastructure).  Please include the CxAnalytix version and version+name of the service CxAnalytix is crawling (if known).
