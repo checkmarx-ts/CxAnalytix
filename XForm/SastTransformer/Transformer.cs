@@ -661,7 +661,9 @@ namespace CxAnalytix.XForm.SastTransformer
 											var stats = CxScanStatistics.GetScanFullStatistics(RestContext, ThreadOpts.CancellationToken, scan.ScanId);
 
 											if (stats != null)
-                                                OutputScanStatistics(scanTrx, scan, stats);
+												OutputScanStatistics(scanTrx, scan, stats);
+											else
+												_log.Warn($"Statistics for scan {scan.ScanId} are not available.");
                                         }
                                         catch (Exception ex)
                                         {
