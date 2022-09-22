@@ -7,13 +7,12 @@ ENV CHECKMARX_STATE_PATH=$CHECKMARX_STATE_PATH
 COPY ./ App/
 WORKDIR /App
 
-RUN apt update && apt install -y xmlstarlet && \
+RUN apt update && apt install -y xmlstarlet ca-certificates && \
 	mkdir -p /etc/cxanalytix && \
 	mkdir -p /var/cxanalytix && \
 	mkdir -p /var/log/cxanalytix && \
 	mv cxanalytix.config /etc/cxanalytix && \
 	mv cxanalytix.log4net /etc/cxanalytix && \
-	ln -s /etc/cxanalytix/cxanalytix.log4net cxanalytix.log4net && \
 	xmlstarlet ed -d "//root/appender-ref[@ref='RollingFile']" /etc/cxanalytix/cxanalytix.log4net > /etc/cxanalytix/logtmp.xml && \
 	rm -f /etc/cxanalytix/cxanalytix.log4net && \
 	mv /etc/cxanalytix/logtmp.xml /etc/cxanalytix/cxanalytix.log4net && \
