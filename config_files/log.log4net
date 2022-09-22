@@ -54,7 +54,7 @@
 		<rollingStyle value="Composite" />
 		<staticLogFileName value="false" />
 		<countDirection value="1" />
-		<file type="log4net.Util.PatternString" value="D:\cxanalytix_demo/logs/sast_scan_statistics" />
+		<file type="log4net.Util.PatternString" value="logs/sast_scan_statistics" />
 		<datePattern value="'.'yyyy_MM_dd'.log'" />
 		<preserveLogFileNameExtension value="true" />
 
