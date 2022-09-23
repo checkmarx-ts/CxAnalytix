@@ -1,6 +1,7 @@
 ﻿using CxAnalytix.Configuration.Impls;
 using CxAnalytix.XForm.Common;
 using CxRestClient;
+using CxRestClient.CXONE;
 using log4net;
 using CxOneConnection = CxAnalytix.XForm.CxOneTransformer.Config.CxOneConnection;
 
@@ -37,7 +38,8 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
             var ctx = restBuilder.Build();
 
-            var foo = ctx.Token;
+            var projects = CxProjects.GetProjects(ctx, ThreadOpts.CancellationToken);
+
         }
     }
 }

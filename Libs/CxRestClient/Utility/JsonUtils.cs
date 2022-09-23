@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -73,6 +74,11 @@ namespace CxRestClient.Utility
 
             }
 
+        }
+
+        public static T DeserializeResponse<T>(HttpResponseMessage response)
+        {
+            return DeserializeFromStream<T>(response.Content.ReadAsStreamAsync().Result);
         }
 
 
