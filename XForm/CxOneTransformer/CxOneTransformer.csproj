@@ -19,6 +19,9 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Libs\Configuration\Configuration.csproj" />
+    <ProjectReference Include="..\..\Libs\CxRestClient\CxRestClient.csproj" />
+    <ProjectReference Include="..\..\Libs\Exceptions\Exceptions.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
   </ItemGroup>
 

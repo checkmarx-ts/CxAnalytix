@@ -23,7 +23,7 @@ using static SDK.Modules.Transformer.Data.ScanDescriptor;
 using CxAnalytix.XForm.Common;
 using CxRestClient.MNO.Collections;
 using static CxRestClient.SAST.CxVersion;
-using System.Linq;
+
 
 namespace CxAnalytix.XForm.SastTransformer
 {

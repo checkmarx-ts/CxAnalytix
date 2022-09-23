@@ -26,20 +26,6 @@ namespace CxRestClient
             return this as T;
         }
 
-        protected String User { get; private set; }
-        public virtual T WithUsername(String username)
-        {
-            User = username;
-            return this as T;
-        }
-
-        protected String Password { get; private set; }
-        public virtual T WithPassword(String pass)
-        {
-            Password = pass;
-            return this as T;
-        }
-
         protected int RetryLoop { get; private set; }
         public virtual T WithRetryLoop(int loopCount)
         {
@@ -54,7 +40,21 @@ namespace CxRestClient
             return this as T;
         }
 
-        internal abstract void Validate();
+        internal virtual void Validate()
+        {
+            if (RetryLoop < 0)
+                throw new InvalidOperationException("Retry loop can't be < 0.");
+
+            if (Timeout < 0)
+                throw new InvalidOperationException("Timeout can't be < 0.");
+
+            if (String.IsNullOrEmpty(ApiUrl))
+                throw new InvalidOperationException("API URL was not specified.");
+
+            if (!Uri.IsWellFormedUriString(ApiUrl, UriKind.Absolute))
+                throw new InvalidOperationException("API URL is invalid.");
+
+        }
 
 
     }

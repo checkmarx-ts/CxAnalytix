@@ -13,7 +13,8 @@ namespace SDK.Modules.Transformer.Data
 		{
             SAST,
             OSA,
-            SCA
+            SCA,
+            CXONE
 		}
 
         public ScanDescriptor()

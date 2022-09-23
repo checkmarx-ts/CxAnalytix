@@ -7,19 +7,13 @@ using System.Threading.Tasks;
 
 namespace CxRestClient
 {
-    public abstract class CxSimpleRestContext : CxRestContextBase
+    public abstract class CxSimpleRestContext : CxCommonRestContext
     {
 
-        public CxSimpleRestContext()
+        public CxSimpleRestContext() : base()
         {
-            Json = new CxRestClientFactory("application/json", this);
-            Xml = new CxRestClientFactory("application/xml", this);
-            Any = new CxRestClientFactory("*/*", this);
         }
 
-        public CxRestClientFactory Json { get; internal set; }
-        public CxRestClientFactory Xml { get; internal set; }
-        public CxRestClientFactory Any { get; internal set; }
 
         internal String User { get; set; }
         internal String Password { get; set; }
