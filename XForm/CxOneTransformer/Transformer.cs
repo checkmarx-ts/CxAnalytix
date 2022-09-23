@@ -37,8 +37,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
             var ctx = restBuilder.Build();
 
-
-
+            var foo = ctx.Token;
         }
     }
 }

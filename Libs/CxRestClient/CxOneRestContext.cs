@@ -22,6 +22,9 @@ namespace CxRestClient
         public override string ApiUrl => _InternalApiUrl;
 
         private LoginToken _token;
+        
+        internal CxOneRestContext()
+        { }
 
         protected override LoginToken TokenImpl
         {
