@@ -13,7 +13,8 @@
     "AMQPConfig": "CxAnalytix.Out.AMQPOutput.Config.Impls.AmqpConfig, AMQPOutput",
     "CxLogOutput": "CxAnalytix.Out.Log4NetOutput.Config.Impl.LogOutputConfig, Log4NetOutput",
     "CxMongoOutput": "CxAnalytix.Out.MongoDBOutput.Config.Impl.MongoOutConfig, MongoDBOutput",
-    "CxMongoConnection": "CxAnalytix.Out.MongoDBOutput.Config.Impl.MongoConnectionConfig, MongoDBOutput"
+    "CxMongoConnection": "CxAnalytix.Out.MongoDBOutput.Config.Impl.MongoConnectionConfig, MongoDBOutput",
+    "CxOneCredentials": "CxAnalytix.Configuration.Impls.CxApiTokenCredentials, Configuration"
   },
   "removable_sections": [
     // Leave these two removable elements for unit testing purposes.

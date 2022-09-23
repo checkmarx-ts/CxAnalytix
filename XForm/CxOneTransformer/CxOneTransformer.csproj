@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+
+	  <RootNamespace>CxAnalytix.XForm.CxOneTransformer</RootNamespace>
+	  <Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
+	  <Company>Checkmarx</Company>
+	  <Authors>Checkmarx</Authors>
+	  <Version>0.0.0</Version>
+	  <Description>CxAnalytix crawls and extracts vulnerability scan data from Checkmarx products.</Description>
+	  <Copyright>Copyright (c) 2019-2022 Checkmarx.  All rights reserved.</Copyright>
+	  <PackageProjectUrl>https://github.com/checkmarx-ts/CxAnalytix/wiki</PackageProjectUrl>
+	  <PackageReadmeFile>$(SolutionDir)README.md</PackageReadmeFile>
+	  <RepositoryUrl>https://github.com/checkmarx-ts/CxAnalytix</RepositoryUrl>
+
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Common\Common.csproj" />
+  </ItemGroup>
+
+</Project>

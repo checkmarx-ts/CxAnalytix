@@ -25,6 +25,7 @@
     <ProjectReference Include="..\..\Output\AMQPOutput\AMQPOutput.csproj" />
     <ProjectReference Include="..\..\Output\Log4NetOutput\Log4NetOutput.csproj" />
     <ProjectReference Include="..\..\Output\MongoDBOutput\MongoDBOutput.csproj" />
+    <ProjectReference Include="..\..\XForm\CxOneTransformer\CxOneTransformer.csproj" />
     <ProjectReference Include="..\..\XForm\SastTransformer\SastTransformer.csproj" />
     <ProjectReference Include="..\..\XForm\ScaTransformer\ScaTransformer.csproj" />
     <ProjectReference Include="..\Configuration\Configuration.csproj" />
