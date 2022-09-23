@@ -41,6 +41,12 @@ namespace Configuration_Tests
         }
 
         [Fact]
+        public void IgnoreExtraItems()
+        {
+            Assert.True(ConfigSectionValidator.IsValid(CopyForTest("ignore_extra_items_case.config")));
+        }
+
+        [Fact]
         public void InvalidForSingleRemovable()
         {
             Assert.False(ConfigSectionValidator.IsValid(CopyForTest("single_removable_section_case.config") ));
