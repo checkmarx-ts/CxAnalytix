@@ -1,20 +1,19 @@
-﻿using CxRestClient.Utility;
+﻿using CxRestClient.CXONE.Common;
+using CxRestClient.Utility;
 using log4net;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace CxRestClient.CXONE
 {
-    public class CxProjects
+    public static class CxProjects
     {
         private static ILog _log = LogManager.GetLogger(typeof(CxProjects));
 
         private static String URL_SUFFIX = "api/projects";
-
-        private CxProjects()
-        { }
 
 
         [JsonObject(MemberSerialization.OptIn)]
@@ -53,26 +52,79 @@ namespace CxRestClient.CXONE
         }
 
         [JsonObject(MemberSerialization.OptIn)]
-        public class ProjectCollection
+        public class ProjectCollection : WrappedArray
         {
-            [JsonProperty(PropertyName = "totalCount")]
-            public UInt32 Total { get; internal set; }
-
-            [JsonProperty(PropertyName = "filteredTotalCount")]
-            public UInt32 FilteredTotal { get; internal set; }
-
             [JsonProperty(PropertyName = "projects")]
             public List<Project> Projects { get; internal set; }
-
-
         }
 
-        public static ProjectCollection GetProjects(CxOneRestContext ctx, CancellationToken token)
+        public static async Task<List<Project>> GetProjects(CxOneRestContext ctx, CancellationToken token)
         {
-            return WebOperation.ExecuteGet<ProjectCollection>(ctx.Json.CreateClient,
+            List<Project> response = new();
+
+            await PageableOperation.DoPagedGetRequest<ProjectCollection>((pc) =>
+            {
+
+                if (pc != null && pc.Projects != null)
+                {
+                    response.AddRange(pc.Projects);
+                    return pc.Projects.Count;
+                }
+
+                return 0;
+            }, ctx.Json.CreateClient,
                 JsonUtils.DeserializeResponse<ProjectCollection>,
                 UrlUtils.MakeUrl(ctx.ApiUrl, URL_SUFFIX), ctx, token);
+
+            return response;
         }
+
+
+        [JsonObject(MemberSerialization.OptIn)]
+        public class ScanDescriptor
+        {
+            [JsonProperty(PropertyName = "id")]
+            public String ScanId { get; internal set; }
+
+            [JsonProperty(PropertyName = "updatedAt")]
+            public DateTime Completed { get; internal set; }
+
+            [JsonProperty(PropertyName = "sourceOrigin")]
+            public String Origin { get; internal set; }
+        }
+
+
+        public static async Task<Dictionary<String, ScanDescriptor>> GetProjectLatestScans(CxOneRestContext ctx, CancellationToken token, String scanStatus)
+        {
+
+            Dictionary<String, ScanDescriptor> response = new();
+
+            Dictionary<String, String> parameters = new() { { "scan-status", scanStatus } };
+
+
+            var url = UrlUtils.MakeUrl(ctx.ApiUrl, URL_SUFFIX, "last-scan");
+
+            await PageableOperation.DoPagedGetRequest<Dictionary<String, ScanDescriptor >> ((pc) =>
+            {
+                foreach (var key in pc.Keys)
+                    response.Add(key, pc[key]);
+
+                return pc.Keys.Count;
+
+            }, ctx.Json.CreateClient,
+                JsonUtils.DeserializeResponse<Dictionary<String, ScanDescriptor>>,
+                UrlUtils.MakeUrl(url, parameters), ctx, token);
+
+
+            return response;
+        }
+
+
+        public static async Task<Dictionary<String, ScanDescriptor>> GetProjectLatestCompletedScans(CxOneRestContext ctx, CancellationToken token)
+        {
+            return await GetProjectLatestScans(ctx, token, "Completed");
+        }
+
 
     }
 }

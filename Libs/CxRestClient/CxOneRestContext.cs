@@ -19,6 +19,9 @@ namespace CxRestClient
         private static ILog _log = LogManager.GetLogger(typeof(CxOneRestContext));
 
         public override string LoginUrl => UrlUtils.MakeUrl(_InternalIAMUrl, LOGIN_URI_LEFT, Tenant, LOGIN_URI_RIGHT);
+        
+        public string IAMUrl => _InternalIAMUrl;
+
         public override string ApiUrl => _InternalApiUrl;
 
         private LoginToken _token;
@@ -90,7 +93,9 @@ namespace CxRestClient
 
                 var timeoutSpan = new TimeSpan(0, 0, Timeout);
 
-                HttpClientSingleton.Initialize(_validate, timeoutSpan);
+                // As of the time this was written, the CxOne WAF blocks user agents it doesn't understand.
+                // Adding a spoofed user agent gets around it.
+                HttpClientSingleton.Initialize(_validate, timeoutSpan, "PostmanRuntime-Spoofed");
 
                 CxOneRestContext retVal = new CxOneRestContext()
                 {

@@ -35,9 +35,9 @@ namespace SDK.Modules.Transformer
 
 		public int ProjectCount { get => _currentState.Count; }
 
+		public DateTime OldestScanCheckDate { get; internal set; } = DateTime.MinValue;
 
 		public ICollection<ProjectDescriptorExt> Projects { get => _currentState.Values; }
-
 
 
 		// Confirms a project was found in the remote system.  This allows projects previously crawled to
@@ -55,7 +55,12 @@ namespace SDK.Modules.Transformer
 				// project was found previously, store the updated state.
 				if (currentStateClone.ContainsKey(project.ProjectId))
 				{
-					if (!_confirmedProjects.TryAdd(project.ProjectId, new ProjectDescriptorExt(project, currentStateClone[project.ProjectId])))
+					// Find the earliest scan check, based on previous scan checks.
+					if (OldestScanCheckDate == DateTime.MinValue || OldestScanCheckDate.CompareTo(currentStateClone[project.ProjectId].LastScanCheckDate) < 0)
+                        OldestScanCheckDate = currentStateClone[project.ProjectId].LastScanCheckDate;
+
+
+                    if (!_confirmedProjects.TryAdd(project.ProjectId, new ProjectDescriptorExt(project, currentStateClone[project.ProjectId])))
 						throw new UnrecoverableOperationException($"TryAdd returned false trying to add ProjectId: {project.ProjectId}");
 
 					ProjectDescriptorExt removed;

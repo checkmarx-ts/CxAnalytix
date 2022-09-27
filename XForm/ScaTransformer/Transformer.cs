@@ -145,6 +145,10 @@ namespace CxAnalytix.XForm.ScaTransformer
                     return;
                 }
 
+                var riskStateTask = Task.Run(() => CxRiskState.GetRiskStates(ctx, ThreadOpts.CancellationToken, project.ProjectId),
+                    ThreadOpts.CancellationToken);
+
+
                 using (var pinfoTrx = Output.StartTransaction())
                 {
                     OutputProjectInfoRecords(pinfoTrx, project);
@@ -152,10 +156,6 @@ namespace CxAnalytix.XForm.ScaTransformer
                     if (!ThreadOpts.CancellationToken.IsCancellationRequested)
                         pinfoTrx.Commit();
                 }
-
-
-                var riskStateTask = Task.Run(() => CxRiskState.GetRiskStates(ctx, ThreadOpts.CancellationToken, project.ProjectId),
-                    ThreadOpts.CancellationToken);
 
 
                 foreach (var scan in State.GetScansForProject(project.ProjectId))

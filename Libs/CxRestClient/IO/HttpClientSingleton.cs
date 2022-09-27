@@ -87,6 +87,16 @@ namespace CxRestClient.IO
             }
         }
 
+        public static void Initialize(bool doSSLValidate, TimeSpan opTimeout, String additionalUserAgent)
+        {
+            Initialize(doSSLValidate, opTimeout);
+
+            lock (_lock)
+            {
+                _client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(additionalUserAgent, null));
+            }
+        }
+
         private static HttpClientHandler GetClientHandler ()
         {
             if (!_log.IsNetworkTrace())

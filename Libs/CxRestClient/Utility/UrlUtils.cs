@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace CxRestClient.Utility
 {
-    public class UrlUtils
+    public static class UrlUtils
     {
         public static String MakeUrl(String url, params String[] suffixes)
         {
@@ -28,9 +28,19 @@ namespace CxRestClient.Utility
             return String.Join('&', p);
         }
 
-        public static String MakeUrl(String url, String suffix, Dictionary<String, String> query)
-        => MakeUrl(url, suffix) + ((query.Count > 0) ? ("?" + MakeQueryString(query)) : (""));
+        public static String QueryMarkerValue(String originalUrl)
+        {
+            if (originalUrl.Contains('?'))
+                return "&";
+            else
+                return "?";
+        }
 
+        public static String MakeUrl(String url, String suffix, Dictionary<String, String> query)
+        => MakeUrl(url, suffix) + ((query.Count > 0) ? (QueryMarkerValue(url+suffix) + MakeQueryString(query)) : (""));
+
+        public static String MakeUrl(String url, Dictionary<String, String> query)
+        => url + ((query.Count > 0) ? (QueryMarkerValue(url) + MakeQueryString(query)) : (""));
 
     }
 }
