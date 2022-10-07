@@ -18,7 +18,7 @@ namespace CxRestClient.Utility
             return result.ToString();
         }
 
-        public static String MakeQueryString(Dictionary<String, String> query)
+        public static String MakeQueryString(IDictionary<String, String> query)
         {
             LinkedList<String> p = new LinkedList<string>();
 
@@ -36,7 +36,7 @@ namespace CxRestClient.Utility
                 return "?";
         }
 
-        public static String MakeUrl(String url, String suffix, Dictionary<String, String> query)
+        public static String MakeUrl(String url, String suffix, IDictionary<String, String> query)
         => MakeUrl(url, suffix) + ((query.Count > 0) ? (QueryMarkerValue(url+suffix) + MakeQueryString(query)) : (""));
 
         public static String MakeUrl(String url, Dictionary<String, String> query)

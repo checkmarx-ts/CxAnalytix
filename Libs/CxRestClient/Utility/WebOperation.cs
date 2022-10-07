@@ -126,9 +126,7 @@ namespace CxRestClient.Utility
 						nonRecoveryException = new UnrecoverableOperationException($"Last exception caught: {ex.GetType().Name}: {ex.Message}");
 
 						if (exceptionErrorLogic != null && !exceptionErrorLogic(ex))
-#pragma warning disable CA2200 // Rethrow to preserve stack details
-                            throw ex;
-#pragma warning restore CA2200 // Rethrow to preserve stack details
+                            throw;
                     }
 
 					_log.Debug($"Waiting {delay}ms before retry.");
@@ -199,9 +197,7 @@ namespace CxRestClient.Utility
 					catch (Exception ex)
 					{
 						_log.Error($"GET operation failed for [{url}]", ex);
-#pragma warning disable CA2200 // Rethrow to preserve stack details
-                        throw ex;
-#pragma warning restore CA2200 // Rethrow to preserve stack details
+                        throw;
                     }
 				}
 				, ctx
@@ -252,9 +248,7 @@ namespace CxRestClient.Utility
 					catch (Exception ex)
 					{
 						_log.Error($"POST operation failed for [{url}]", ex);
-#pragma warning disable CA2200 // Rethrow to preserve stack details
-                        throw ex;
-#pragma warning restore CA2200 // Rethrow to preserve stack details
+                        throw;
 
                     }
 				}

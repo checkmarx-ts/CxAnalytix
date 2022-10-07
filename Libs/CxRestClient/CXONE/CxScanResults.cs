@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace CxRestClient.CXONE
 {
-    public class CxScanResults
+    public static class CxScanResults
     {
         private static ILog _log = LogManager.GetLogger(typeof(CxScanResults));
 
@@ -22,15 +22,197 @@ namespace CxRestClient.CXONE
 
 
         [JsonObject(MemberSerialization.OptIn)]
-        public class ScaResult
+        public class CommonResultElements<T>
         {
+
+            [JsonProperty(PropertyName = "id")]
+            public String ResultId { get; internal set; }
+
+            [JsonProperty(PropertyName = "similarityId")]
+            public String SimilarityId { get; internal set; }
+
+            [JsonProperty(PropertyName = "status")]
+            public String Status { get; internal set; }
+
+            [JsonProperty(PropertyName = "state")]
+            public String State { get; internal set; }
+
+            [JsonProperty(PropertyName = "severity")]
+            public String ResultSeverity { get; internal set; }
+
+            [JsonProperty(PropertyName = "created")]
+            public DateTime Created { get; internal set; }
+
+            [JsonProperty(PropertyName = "firstFoundAt")]
+            public DateTime FirstFoundDate { get; internal set; }
+
+            [JsonProperty(PropertyName = "data")]
+            public T Data { get; internal set; }
+
 
         }
 
         [JsonObject(MemberSerialization.OptIn)]
-        public class SastResult
+        public class ScaExploitableMethods
+        {
+            [JsonProperty(PropertyName = "fullName")]
+            public String FullName { get; internal set; }
+
+            [JsonProperty(PropertyName = "namespace")]
+            public String Namespace { get; internal set; }
+
+            [JsonProperty(PropertyName = "shortName")]
+            public String ShortName { get; internal set; }
+
+            [JsonProperty(PropertyName = "sourceFile")]
+            public String SourceFile { get; internal set; }
+
+            [JsonProperty(PropertyName = "packageUiIdentifier")]
+            public String PackageIdentifier { get; internal set; }
+        }
+
+
+        [JsonObject(MemberSerialization.OptIn)]
+        public class ScaResultData
+        {
+            [JsonProperty(PropertyName = "packageIdentifier")]
+            public String PackageIdentifier { get; internal set; }
+
+            [JsonProperty(PropertyName = "publishedAt")]
+            public DateTime PublishedAt { get; internal set; }
+
+            [JsonProperty(PropertyName = "recommendations")]
+            public String Recommendations { get; internal set; }
+
+            [JsonProperty(PropertyName = "recommendedVersion")]
+            public String RecommendedVersion { get; internal set; }
+
+            [JsonProperty(PropertyName = "exploitableMethods")]
+            public List<ScaExploitableMethods> ExploitableMethods { get; internal set; }
+        }
+
+        [JsonObject(MemberSerialization.OptIn)]
+        public class ScaVulnerabilityDetails
+        {
+            [JsonProperty(PropertyName = "cvssScore")]
+            public Double Score { get; internal set; }
+
+            [JsonProperty(PropertyName = "cveName")]
+            public String CveName { get; internal set; }
+
+            [JsonProperty(PropertyName = "cweId")]
+            public String CweId { get; internal set; }
+
+            [JsonObject(MemberSerialization.OptIn)]
+            public class Cvss
+            {
+                [JsonProperty(PropertyName = "version")]
+                public String Version { get; internal set; }
+
+                [JsonProperty(PropertyName = "attackVector")]
+                public String AttackVector { get; internal set; }
+
+                [JsonProperty(PropertyName = "availability")]
+                public String Availability { get; internal set; }
+
+                [JsonProperty(PropertyName = "confidentiality")]
+                public String Confidentiality { get; internal set; }
+
+                [JsonProperty(PropertyName = "attackComplexity")]
+                public String AttackComplexity { get; internal set; }
+            }
+
+            [JsonProperty(PropertyName = "cvss")]
+            public Cvss CvssDetails { get; internal set; }
+        }
+
+        [JsonObject(MemberSerialization.OptIn)]
+        public class ScaResult : CommonResultElements<ScaResultData>
+        {
+            // TODO: SCA comments are not yet implemented.
+
+            [JsonProperty(PropertyName = "vulnerabilityDetails")]
+            public ScaVulnerabilityDetails VulnerabilityDetails { get; internal set; }
+
+        }
+
+
+        [JsonObject(MemberSerialization.OptIn)]
+        public class SastResultData
+        {
+            [JsonProperty(PropertyName = "queryId")]
+            public String QueryId { get; internal set; }
+
+            [JsonProperty(PropertyName = "queryName")]
+            public String QueryName { get; internal set; }
+
+            [JsonProperty(PropertyName = "group")]
+            public String QueryGroup { get; internal set; }
+
+            [JsonProperty(PropertyName = "resultHash")]
+            public String ResultHash { get; internal set; }
+
+            [JsonProperty(PropertyName = "languageName")]
+            public String LanguageName { get; internal set; }
+
+            [JsonProperty(PropertyName = "nodes")]
+            public List<SastDataFlowNode> Flow { get; internal set; }
+
+        }
+
+        [JsonObject(MemberSerialization.OptIn)]
+        public class SastDataFlowNode
+        {
+            [JsonProperty(PropertyName = "id")]
+            public String NodeUniqueId { get; internal set; }
+
+            [JsonProperty(PropertyName = "Line")]
+            public String NodeLine { get; internal set; }
+
+            [JsonProperty(PropertyName = "name")]
+            public String NodeShortName { get; internal set; }
+
+            [JsonProperty(PropertyName = "column")]
+            public String NodeColumn { get; internal set; }
+
+            [JsonProperty(PropertyName = "method")]
+            public String NodeMethod { get; internal set; }
+
+            [JsonProperty(PropertyName = "fileName")]
+            public String NodeFileName { get; internal set; }
+
+            [JsonProperty(PropertyName = "fullName")]
+            public String NodeFullName { get; internal set; }
+
+            [JsonProperty(PropertyName = "typeName")]
+            public String NodeType { get; internal set; }
+
+            [JsonProperty(PropertyName = "methodLine")]
+            public String NodeMethodLine { get; internal set; }
+        }
+
+
+        [JsonObject(MemberSerialization.OptIn)]
+        public class SastVulnerabilityDetails
+        {
+            [JsonProperty(PropertyName = "cweId")]
+            public String CweId { get; internal set; }
+
+            [JsonProperty(PropertyName = "compliances")]
+            public List<String> Categories { get; internal set; }
+        }
+
+
+
+        [JsonObject(MemberSerialization.OptIn)]
+        public class SastResult : CommonResultElements<SastResultData>
         {
 
+            [JsonProperty(PropertyName = "vulnerabilityDetails")]
+            public SastVulnerabilityDetails VulnerabilityDetails { get; internal set; }
+
+            // TODO: Comments don't work in this API as of this time.  Comments are only found in the sast-predicates API, which
+            // would require making a web service call for each simid.
         }
 
 

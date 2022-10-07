@@ -100,6 +100,25 @@ namespace CxAnalytix.XForm.Common
         }
 
 
+        protected virtual void AddAdditionalProjectInfo(IDictionary<String, Object> here, String projectId)
+        {
+
+        }
+
+        protected virtual void AddProductsLastScanDateFields(IDictionary<String, Object> here, ProjectDescriptor project)
+        {
+            foreach (var lastScanProduct in project.LatestScanDateByProduct.Keys)
+                here.Add($"{lastScanProduct}_LastScanDate",
+                    project.LatestScanDateByProduct[lastScanProduct]);
+        }
+
+        protected virtual void AddProductsScanCountFields(IDictionary<String, Object> here, ProjectDescriptor project)
+        {
+            foreach (var scanCountProduct in project.ScanCountByProduct.Keys)
+                here.Add($"{scanCountProduct}_Scans",
+                    project.ScanCountByProduct[scanCountProduct]);
+        }
+
         protected void OutputProjectInfoRecords(IOutputTransaction trx, ProjectDescriptor project)
         {
             var flat = new SortedDictionary<String, Object>();
@@ -114,13 +133,8 @@ namespace CxAnalytix.XForm.Common
             if (project.Policies != null)
                 flat.Add("Policies", project.Policies);
 
-            foreach (var lastScanProduct in project.LatestScanDateByProduct.Keys)
-                flat.Add($"{lastScanProduct}_LastScanDate",
-                    project.LatestScanDateByProduct[lastScanProduct]);
-
-            foreach (var scanCountProduct in project.ScanCountByProduct.Keys)
-                flat.Add($"{scanCountProduct}_Scans",
-                    project.ScanCountByProduct[scanCountProduct]);
+            AddProductsLastScanDateFields(flat, project);
+            AddProductsScanCountFields(flat, project);
 
             if (project.CustomFields != null && project.CustomFields.Count > 0)
                 flat.Add("CustomFields", project.CustomFields);
@@ -131,6 +145,8 @@ namespace CxAnalytix.XForm.Common
                 flat.Add("BranchedAtScanId", project.BranchedAtScanId);
                 flat.Add("BranchParentProject", project.BranchParentProject);
             }
+
+            AddAdditionalProjectInfo(flat, project.ProjectId);
 
             trx.write(ProjectInfoOut, flat);
         }

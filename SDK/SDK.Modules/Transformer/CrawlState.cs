@@ -17,10 +17,12 @@ namespace SDK.Modules.Transformer
 		// Holds the current state of crawls per project.
 		private ConcurrentDictionary<String, ProjectDescriptorExt> _currentState = new ConcurrentDictionary<String, ProjectDescriptorExt>();
 		private ConcurrentDictionary<String, ProjectDescriptorExt> _confirmedProjects = new ConcurrentDictionary<String, ProjectDescriptorExt>();
-		private ConcurrentDictionary<String, ScanDescriptor> _scans = new ConcurrentDictionary<string, ScanDescriptor>();
+		private ConcurrentDictionary<String, ScanDescriptor> _scansInScope = new ConcurrentDictionary<string, ScanDescriptor>();
 		private ConcurrentDictionary<String, SortedSet<ScanDescriptor>> _projectScanIndex = new ConcurrentDictionary<String, SortedSet<ScanDescriptor>>();
 
-		public int ScanCount { get => _scans.Count;  }
+		public int ScanCount { get => _scansInScope.Count;  }
+
+		public ICollection<String> ScopeScanIds { get => _scansInScope.Keys;  }
 
 		public int NewProjects { get; private set; }
 
@@ -185,7 +187,7 @@ namespace SDK.Modules.Transformer
 			if (!_currentState.ContainsKey(projectId))
 				return false;
 
-			if (_scans.ContainsKey(scanId))
+			if (_scansInScope.ContainsKey(scanId))
 			{
 				_log.Warn($"Attempted to add a duplicate scan id [{scanId}] for project {projectId}:[{_currentState[projectId].ProjectName}].");
 				return false;
@@ -210,7 +212,7 @@ namespace SDK.Modules.Transformer
 
 				};
 
-				if (!_scans.TryAdd(scanId, descriptor))
+				if (!_scansInScope.TryAdd(scanId, descriptor))
 					_log.Warn($"Unexpected false result attempting to add Scan ID {scanId} for {scanProduct} to the scans to crawl.");
 
 				if (!_projectScanIndex.ContainsKey(projectId))

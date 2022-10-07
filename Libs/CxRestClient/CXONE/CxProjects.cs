@@ -52,22 +52,27 @@ namespace CxRestClient.CXONE
         }
 
         [JsonObject(MemberSerialization.OptIn)]
-        public class ProjectCollection : WrappedArray
+        public class ProjectCollection : FilteredTotaledArray
         {
             [JsonProperty(PropertyName = "projects")]
-            public List<Project> Projects { get; internal set; }
+            public ProjectIndex Projects { get; internal set; }
         }
 
-        public static async Task<List<Project>> GetProjects(CxOneRestContext ctx, CancellationToken token)
+        public class ProjectIndex : SingleIndexedCollection<Project, String>
         {
-            List<Project> response = new();
+            public override string GetIndexKey(Project item) => item.ProjectId;
+        }
+
+        public static async Task<ProjectIndex> GetProjects(CxOneRestContext ctx, CancellationToken token)
+        {
+            ProjectIndex response = new();
 
             await PageableOperation.DoPagedGetRequest<ProjectCollection>((pc) =>
             {
 
                 if (pc != null && pc.Projects != null)
                 {
-                    response.AddRange(pc.Projects);
+                    response.SyncCombine(pc.Projects);
                     return pc.Projects.Count;
                 }
 

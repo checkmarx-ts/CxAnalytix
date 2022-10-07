@@ -8,10 +8,8 @@ using System.Threading.Tasks;
 namespace CxRestClient.CXONE.Common
 {
     [JsonObject(MemberSerialization.OptIn)]
-    public abstract class WrappedArray
+    public abstract class FilteredTotaledArray : TotaledArray
     {
-        [JsonProperty(PropertyName = "totalCount")]
-        public UInt32 Total { get; internal set; }
 
         [JsonProperty(PropertyName = "filteredTotalCount")]
         public UInt32 FilteredTotal { get; internal set; }

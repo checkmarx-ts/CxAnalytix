@@ -18,5 +18,12 @@ namespace CxAnalytix.XForm.CxOneTransformer.Config
             set { this["IAMURL"] = value; }
         }
 
+        [ConfigurationProperty("DeepLinkUrl", IsRequired = true)]
+        public String DeepLinkUrl
+        {
+            get => (String)this["DeepLinkUrl"];
+            set { this["DeepLinkUrl"] = value; }
+        }
+
     }
 }
