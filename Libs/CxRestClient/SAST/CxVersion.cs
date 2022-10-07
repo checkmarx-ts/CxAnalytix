@@ -28,7 +28,7 @@ namespace CxRestClient.SAST
             [JsonProperty(PropertyName = "version")]
             public String Version { get; internal set; }
             [JsonProperty(PropertyName = "hotFix")]
-            public String HotFix { get; internal set; }
+            public int HotFix { get; internal set; }
 
             [JsonProperty(PropertyName = "enginePackVersion")]
             public String EnginePack { get; internal set; }
@@ -56,10 +56,9 @@ namespace CxRestClient.SAST
             public bool IsUnknown { get; internal set; }
         }
 
-        public static ServerVersion GetServerVersion(CxSASTRestContext ctx, CancellationToken token)
+        public static ServerVersion GetServerVersion(CxSASTRestContext ctx, CancellationToken token, String apiVersion)
         {
             var requestUrl = UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX);
-            var apiVersion = "1.1";
 
             return WebOperation.ExecuteGet<ServerVersion>(
             ctx.Sast.Json.CreateClient
@@ -77,25 +76,24 @@ namespace CxRestClient.SAST
             , requestUrl
             , ctx.Sast
             , token, apiVersion: apiVersion,
-            responseErrorLogic: (err) => {
-                throw new UnsupportedAPIException(requestUrl, apiVersion);
-            } );
+            responseErrorLogic: (err) => false);
         }
 
         public static MajorMinor GetServerMajorMinorVersion(CxSASTRestContext ctx, CancellationToken token)
         {
-            try
-            {
-                var v = GetServerVersion(ctx, token);
+            List<String> apiVersions = new() { "1.1", "1.0" };
 
-                var m = _versionMatcher.Match(v.Version);
-                
-                if (m.Success)
-                    return new MajorMinor(Convert.ToInt32(m.Groups["major"].Value), Convert.ToInt32(m.Groups["minor"].Value), Convert.ToInt32(v.HotFix));
-            }
-            catch (UnsupportedAPIException)
+            foreach(var version in apiVersions)
             {
-                // Some versions of SAST may not have this API.
+                var v = GetServerVersion(ctx, token, version);
+
+                if (v != null)
+                {
+                    var m = _versionMatcher.Match(v.Version);
+
+                    if (m.Success)
+                        return new MajorMinor(Convert.ToInt32(m.Groups["major"].Value), Convert.ToInt32(m.Groups["minor"].Value), v.HotFix);
+                }
             }
 
             return new MajorMinor();

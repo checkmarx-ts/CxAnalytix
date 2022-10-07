@@ -22,6 +22,71 @@ XML reserved characters will need to be XML escaped:
 />
 \end{xml}
 
+
+\subsubsection{AWS DocumentDB Connection String Configuration}
+
+AWS DocumentDB has a MongoDB compatible API, making it suitable for
+use with CxAnalytix.  The configuration console of a DocumentDB cluster will
+provide a MongoDB URI that refers to the\\\texttt{rds-combined-ca-bundle.pem}
+file.  The PEM file contains the AWS Certificate Authority chain for 
+DocumentDB client SSL/TLS
+communication, and must be installed correctly on the machine running
+CxAnalytix.
+
+\noindent\\The URI provided in the DocumentDB cluster console does not
+generally work for the MongoDB driver used by CxAnalytix.  After 
+following one of the below platform-specific certificate installation
+procedures, the MongoDB URI can now be formatted as:
+
+\noindent\\\texttt{mongodb://user:password@machine:27017/database?ssl=true\&retryWrites=false}
+
+
+\noindent\\If the AWS CA bundle is not installed correctly, CxAnalytix
+logs will emit connection errors indicating the CA chain cannot be 
+validated for the DocumentDB server connection.
+
+
+\paragraph{AWS DocumentDB Configuration for Windows}
+
+
+\noindent\\\\For Windows, the requirement is to import the AWS RDS CA bundle
+into the local machine's Trusted Root Authority certificate store.  The 
+\texttt{rds-combined-ca-bundle.pem} PEM
+file\footnote{https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem}
+referenced on AWS documentation is not compatible with importing into the
+Windows certificate store.  Instead, the \texttt{rds-combined-ca-bundle.p7b} P7B version of the file
+\footnote{https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.p7b}
+should be used instead.\footnote{The URLs for the certificate bundles 
+were valid as of the time this document was written.  You may need to find
+the current location of the P7B form of the AWS certificate bundle.}
+
+\noindent\\To import the P7B certificate bundle, open PowerShell as
+an administator and issue the following command:\\
+
+
+\begin{code}{PowerShell Certificate Bundle Import Command}{}{}
+Import-Certificate -FilePath <path>\rds-combined-ca-bundle.p7b -CertStoreLocation cert:\LocalMachine\Root
+\end{code}
+
+
+
+\paragraph{AWS DocumentDB Configuration for Linux}
+
+\noindent\\\\Linux, unlike Windows, requires the 
+\texttt{rds-combined-ca-bundle.pem} PEM file
+\footnote{https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem}
+as the source of the AWS CA certificate bundle.  Installing the AWS CA 
+certificate bundle on Linux\footnote{This was tested
+on Amazon Linux but should apply to other Linux distributions.} is done
+with the following commands:\\
+
+\begin{code}{Linux Certificate Bundle Import Commands}{}{}
+wget https://s3.amazonaws.com/rds-downloads/rds-combined-ca-bundle.pem
+sudo cp rds-combined-ca-bundle.pem /usr/share/pki/ca-trust-source/anchors/
+sudo update-ca-trust
+\end{code}
+   
+
 \subsubsection{MongoDB Shard Keys}
 
 The \texttt{CxMongoOutput} configuration element is optional; it can be used to add an additional field to each record
