@@ -139,9 +139,9 @@ namespace CxAnalytix.XForm.Common
             if (project.CustomFields != null && project.CustomFields.Count > 0)
                 flat.Add("CustomFields", project.CustomFields);
 
-            flat.Add("IsBranched", project.IsBranched);
             if (project.IsBranched)
             {
+                flat.Add("IsBranched", project.IsBranched);
                 flat.Add("BranchedAtScanId", project.BranchedAtScanId);
                 flat.Add("BranchParentProject", project.BranchParentProject);
             }

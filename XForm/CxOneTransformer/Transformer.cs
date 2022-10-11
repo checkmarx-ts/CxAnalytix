@@ -11,6 +11,8 @@ using SDK.Modules.Transformer.Data;
 using System.Collections.Concurrent;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Web;
+using System.Xml.Linq;
 using static SDK.Modules.Transformer.Data.ScanDescriptor;
 using CxOneConnection = CxAnalytix.XForm.CxOneTransformer.Config.CxOneConnection;
 using CxOneProjectScanEngineCount = System.Collections.Concurrent.ConcurrentDictionary<string, System.Collections.Generic.Dictionary<string, System.Tuple<int, System.DateTime>>>;
@@ -24,6 +26,8 @@ namespace CxAnalytix.XForm.CxOneTransformer
         private static readonly ILog _log = LogManager.GetLogger(typeof(Transformer));
         private static readonly String STATE_STORAGE_FILE = "CxAnalytixExportState_CxOne.json";
         private static readonly String MODULE_NAME = "CxOne";
+
+        private static readonly String NE_VALUE = "NOT_EXPLOITABLE";
 
         public Transformer() : base(MODULE_NAME, typeof(Transformer), STATE_STORAGE_FILE)
         {
@@ -188,12 +192,8 @@ namespace CxAnalytix.XForm.CxOneTransformer
                 if (State.GetScanCountForProject(project.ProjectId) <= 0)
                     return;
 
-                // TODO: Application data
                 // TODO: Scan statistics?
-                // TODO: May need to know which type of scan result APIs to retrieve for each scan since a scan can have SAST and SCA scans included in it.
-                
-
-
+              
                 //var riskStateTask = Task.Run(() => CxRiskState.GetRiskStates(ctx, ThreadOpts.CancellationToken, project.ProjectId),
                 //    ThreadOpts.CancellationToken);
 
@@ -288,9 +288,104 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
             var metrics = CxSastScanMetadata.GetScanMetrics(Context, ThreadOpts.CancellationToken, scan.ScanId);
             var flat_summary = new SortedDictionary<String, object>();
-            
+            var flat_details_header = new SortedDictionary<String, object>();
+
             int low = 0, medium = 0, high = 0, info = 0;
 
+            MapBasicScanSummaryData(project, scan, scanHeaders, metadata, metrics, flat_summary);
+
+
+            AddScanHeaderElements(scan, flat_details_header);
+
+            foreach(var detail_entry in sastResults)
+            {
+                var flat_details = new SortedDictionary<String, object>(flat_details_header);
+
+                flat_details.Add("SimilarityId", detail_entry.SimilarityId);
+                flat_details.Add("ResultSeverity", detail_entry.ResultSeverity);
+
+                if (detail_entry.State.CompareTo(NE_VALUE) != 0)
+                {
+                    low += (detail_entry.ResultSeverity.ToLower().CompareTo("low") == 0) ? (1) : (0);
+                    medium += (detail_entry.ResultSeverity.ToLower().CompareTo("medium") == 0) ? (1) : (0);
+                    high += (detail_entry.ResultSeverity.ToLower().CompareTo("high") == 0) ? (1) : (0);
+                    info += (detail_entry.ResultSeverity.ToLower().CompareTo("info") == 0) ? (1) : (0);
+                }
+
+                if (detail_entry.FirstFoundDate != DateTime.MinValue)
+                    flat_details.Add("FirstDetectionDate", detail_entry.FirstFoundDate);
+
+                flat_details.Add("ResultId", detail_entry.ResultId);
+                flat_details.Add("State", detail_entry.State);
+                flat_details.Add("Status", detail_entry.Status);
+                flat_details.Add("QueryCweId", detail_entry.VulnerabilityDetails.CweId);
+                flat_details.Add("QueryCategories", String.Join(",", detail_entry.VulnerabilityDetails.Categories));
+                flat_details.Add("FalsePositive", detail_entry.State.CompareTo(NE_VALUE) == 0);
+                flat_details.Add("Branch", scanHeaders[scan.ScanId].Branch);
+                flat_details.Add("ScanFinished", scanHeaders[scan.ScanId].Updated);
+
+
+                flat_details.Add("QueryName", detail_entry.Data.QueryName);
+                flat_details.Add("QueryId", detail_entry.Data.QueryId);
+                flat_details.Add("QueryLanguage", detail_entry.Data.LanguageName);
+                flat_details.Add("QueryGroup", detail_entry.Data.QueryGroup);
+
+                flat_details.Add("VulnerabilityId", detail_entry.Data.ResultHash);
+
+                flat_details.Add("ResultDeepLink", UrlUtils.MakeUrl(UrlUtils.MakeUrl(ConnectionConfig.DeepLinkUrl, 
+                    "results", scan.ScanId, project.ProjectId, "sast"), 
+                    new Dictionary<String, String> { { "result-id", HttpUtility.UrlEncode(detail_entry.Data.ResultHash)} }));
+
+
+
+                var node_cache = new List<SortedDictionary<String, object>> ();
+
+                String sink_col = String.Empty;
+                String sink_line = String.Empty;
+                String sink_file = String.Empty;
+
+                int node_index = 0;
+                foreach(var node in detail_entry.Data.Flow)
+                {
+                    var flat_node = new SortedDictionary<String, object>(flat_details);
+                    ;
+
+                    sink_col = node.NodeColumn;
+                    sink_line = node.NodeLine;
+                    sink_file = node.NodeFileName;
+
+                    flat_node.Add("NodeColumn", node.NodeColumn);
+                    flat_node.Add("NodeFileName", node.NodeFileName);
+                    flat_node.Add("NodeLine", node.NodeLine);
+                    flat_node.Add("NodeLength", node.NodeLength);
+                    flat_node.Add("NodeType", node.NodeType);
+                    flat_node.Add("NodeName", node.NodeFileName);
+                    flat_node.Add("NodeId", ++node_index);
+
+                    node_cache.Add(flat_node);
+                }
+
+
+                foreach (var entry in node_cache)
+                {
+                    entry.Add("SinkColumn", sink_col);
+                    entry.Add("SinkFileName", sink_file);
+                    entry.Add("SinkLine", sink_line);
+                    scanTrx.write(SastScanDetailOut, entry);
+                }
+            }
+
+            flat_summary.Add("Information", info);
+            flat_summary.Add("Low", low);
+            flat_summary.Add("Medium", medium);
+            flat_summary.Add("High", high);
+
+            scanTrx.write(SastScanSummaryOut, flat_summary);
+        }
+
+        private void MapBasicScanSummaryData(ProjectDescriptor project, ScanDescriptor scan, CxScans.ScanIndex scanHeaders, 
+            CxSastScanMetadata.SastScanMetadata metadata, Task<CxSastScanMetadata.SastScanMetrics> metrics, SortedDictionary<string, object> flat_summary)
+        {
             AddScanHeaderElements(scan, flat_summary);
             flat_summary.Add("DeepLink", UrlUtils.MakeUrl(ConnectionConfig.DeepLinkUrl, "results", scan.ScanId, project.ProjectId, "sast"));
             flat_summary.Add("SourceOrigin", scanHeaders[scan.ScanId].SourceOrigin);
@@ -312,22 +407,9 @@ namespace CxAnalytix.XForm.CxOneTransformer
             flat_summary.Add("LinesOfCode", metadata.LOC);
             flat_summary.Add("FileCount", metadata.FileCount);
 
-            flat_summary.Add("Languages", String.Join(";", metrics.Result.ScannedFilesByLanguage.Keys) );
-            flat_summary.Add("FailedLinesOfCode", 
-                metrics.Result.ParseFailureLOCByLanguage.Count > 0 ? metrics.Result.ParseFailureLOCByLanguage.Values.Aggregate( (x, y) => x + y) : 0);
-
-
-
-
-
-            // TODO: TOTALS FROM DETAILS
-            flat_summary.Add("Information", info);
-            flat_summary.Add("Low", low);
-            flat_summary.Add("Medium", medium);
-            flat_summary.Add("High", high);
-
-
-            scanTrx.write(SastScanSummaryOut, flat_summary);
+            flat_summary.Add("Languages", String.Join(";", metrics.Result.ScannedFilesByLanguage.Keys));
+            flat_summary.Add("FailedLinesOfCode",
+                metrics.Result.ParseFailureLOCByLanguage.Count > 0 ? metrics.Result.ParseFailureLOCByLanguage.Values.Aggregate((x, y) => x + y) : 0);
         }
 
         protected override void AddProductsLastScanDateFields(IDictionary<string, object> here, ProjectDescriptor project)

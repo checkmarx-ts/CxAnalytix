@@ -175,6 +175,9 @@ namespace CxRestClient.CXONE
             [JsonProperty(PropertyName = "column")]
             public String NodeColumn { get; internal set; }
 
+            [JsonProperty(PropertyName = "length")]
+            public String NodeLength { get; internal set; }
+
             [JsonProperty(PropertyName = "method")]
             public String NodeMethod { get; internal set; }
 
