@@ -9,10 +9,7 @@ using log4net;
 using OutputBootstrapper;
 using SDK.Modules.Transformer.Data;
 using System.Collections.Concurrent;
-using System.Collections.Specialized;
-using System.Linq;
 using System.Web;
-using System.Xml.Linq;
 using static SDK.Modules.Transformer.Data.ScanDescriptor;
 using CxOneConnection = CxAnalytix.XForm.CxOneTransformer.Config.CxOneConnection;
 using CxOneProjectScanEngineCount = System.Collections.Concurrent.ConcurrentDictionary<string, System.Collections.Generic.Dictionary<string, System.Tuple<int, System.DateTime>>>;
@@ -287,18 +284,21 @@ namespace CxAnalytix.XForm.CxOneTransformer
         {
 
             var metrics = CxSastScanMetadata.GetScanMetrics(Context, ThreadOpts.CancellationToken, scan.ScanId);
+            var project_config = CxConfiguration.GetProjectConfiguration(Context, ThreadOpts.CancellationToken, project.ProjectId);
+
             var flat_summary = new SortedDictionary<String, object>();
             var flat_details_header = new SortedDictionary<String, object>();
 
-            int low = 0, medium = 0, high = 0, info = 0;
+            int low = 0, medium = 0, high = 0, info = 0, result_count = 0;
 
             MapBasicScanSummaryData(project, scan, scanHeaders, metadata, metrics, flat_summary);
 
 
             AddScanHeaderElements(scan, flat_details_header);
 
-            foreach(var detail_entry in sastResults)
+            foreach (var detail_entry in sastResults)
             {
+                result_count++;
                 var flat_details = new SortedDictionary<String, object>(flat_details_header);
 
                 flat_details.Add("SimilarityId", detail_entry.SimilarityId);
@@ -332,20 +332,20 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
                 flat_details.Add("VulnerabilityId", detail_entry.Data.ResultHash);
 
-                flat_details.Add("ResultDeepLink", UrlUtils.MakeUrl(UrlUtils.MakeUrl(ConnectionConfig.DeepLinkUrl, 
-                    "results", scan.ScanId, project.ProjectId, "sast"), 
-                    new Dictionary<String, String> { { "result-id", HttpUtility.UrlEncode(detail_entry.Data.ResultHash)} }));
+                flat_details.Add("ResultDeepLink", UrlUtils.MakeUrl(UrlUtils.MakeUrl(ConnectionConfig.DeepLinkUrl,
+                    "results", scan.ScanId, project.ProjectId, "sast"),
+                    new Dictionary<String, String> { { "result-id", HttpUtility.UrlEncode(detail_entry.Data.ResultHash) } }));
 
 
 
-                var node_cache = new List<SortedDictionary<String, object>> ();
+                var node_cache = new List<SortedDictionary<String, object>>();
 
                 String sink_col = String.Empty;
                 String sink_line = String.Empty;
                 String sink_file = String.Empty;
 
                 int node_index = 0;
-                foreach(var node in detail_entry.Data.Flow)
+                foreach (var node in detail_entry.Data.Flow)
                 {
                     var flat_node = new SortedDictionary<String, object>(flat_details);
                     ;
@@ -381,6 +381,68 @@ namespace CxAnalytix.XForm.CxOneTransformer
             flat_summary.Add("High", high);
 
             scanTrx.write(SastScanSummaryOut, flat_summary);
+
+            OutputScanStatistics(scanTrx, scan, metadata, metrics, project_config, result_count);
+        }
+
+        private void OutputScanStatistics(IOutputTransaction scanTrx, ScanDescriptor scan, CxSastScanMetadata.SastScanMetadata metadata, 
+            Task<CxSastScanMetadata.SastScanMetrics> metrics, Task<CxConfiguration.ProjectConfiguration> project_config, int result_count)
+        {
+            var statistics = new SortedDictionary<String, object>();
+            AddScanHeaderElements(scan, statistics);
+
+
+            statistics.Add("FilteredParsedLOC", metadata.LOC);
+            statistics.Add("UnfilteredParsedLOC", metrics.Result.ParsedLOCByLanguage.Sum((kv) => Convert.ToUInt32(kv.Value)));
+            statistics.Add("PhysicalMemoryPeakMB", metrics.Result.MemoryPeak);
+            statistics.Add("VirtualMemoryPeakMB", metrics.Result.VirtualMemoryPeak);
+            statistics.Add("ResultCount", result_count);
+            statistics.Add("FileFilter", project_config.Result.SastFileFilter);
+
+            var good_scan_lang_keys = metrics.Result.ParsedLOCByLanguage != null ? metrics.Result.ParsedLOCByLanguage.Keys.AsEnumerable() : new List<String> { };
+            var bad_scan_lang_keys = metrics.Result.ParseFailureLOCByLanguage != null ? metrics.Result.ParseFailureLOCByLanguage.Keys.AsEnumerable() : new List<String> { };
+
+            var lang_keys = good_scan_lang_keys.Union(bad_scan_lang_keys);
+
+            Dictionary<String, Tuple<ulong, ulong>> langLOC_GoodBad = new(lang_keys.AsGenerator((lang) => KeyValuePair.Create(lang, new Tuple<ulong, ulong>(
+                    (metrics.Result.ParsedLOCByLanguage != null && metrics.Result.ParsedLOCByLanguage.ContainsKey(lang)) ?
+                    (metrics.Result.ParsedLOCByLanguage[lang]) : (0),
+                    (metrics.Result.ParseFailureLOCByLanguage != null && metrics.Result.ParseFailureLOCByLanguage.ContainsKey(lang)) ?
+                    (metrics.Result.ParseFailureLOCByLanguage[lang]) : (0)))));
+
+
+            ulong unscanned_files = 0;
+
+            foreach (var lang in lang_keys)
+            {
+                if (langLOC_GoodBad[lang].Item1 > 0 || langLOC_GoodBad[lang].Item2 > 0)
+                {
+                    statistics.Add($"{lang}_LOCParseSuccessPercent",
+                        Convert.ToUInt32((langLOC_GoodBad[lang].Item1 / (double)((langLOC_GoodBad[lang].Item1 + langLOC_GoodBad[lang].Item2)) * 100.0)));
+                    statistics.Add($"{lang}_LOCParseFailCount", langLOC_GoodBad[lang].Item2);
+                    statistics.Add($"{lang}_LOCParsedCount", langLOC_GoodBad[lang].Item2);
+                }
+
+                if (metrics.Result.DomObjectsByLanguage != null && metrics.Result.DomObjectsByLanguage.ContainsKey(lang))
+                    statistics.Add($"{lang}_DomObjectCount", metrics.Result.DomObjectsByLanguage[lang]);
+
+                if (metrics.Result.UnscannedFilesByLanguage != null && metrics.Result.UnscannedFilesByLanguage.ContainsKey(lang))
+                {
+                    statistics.Add($"{lang}_FilesNotScanned", metrics.Result.UnscannedFilesByLanguage[lang]);
+                    unscanned_files += metrics.Result.UnscannedFilesByLanguage[lang];
+                }
+
+                if (metrics.Result.ScannedFilesByLanguage != null && metrics.Result.ScannedFilesByLanguage.ContainsKey(lang))
+                {
+                    statistics.Add($"{lang}_FilesParsedSuccessfullyCount", metrics.Result.ScannedFilesByLanguage[lang].GoodFiles);
+                    statistics.Add($"{lang}_FilesParseFailureCount", metrics.Result.ScannedFilesByLanguage[lang].BadFiles);
+                    statistics.Add($"{lang}_FilesParsedPartiallyCount", metrics.Result.ScannedFilesByLanguage[lang].PartiallyGoodFiles);
+                }
+            }
+
+            statistics.Add("UnscannedFileCount", unscanned_files);
+
+            scanTrx.write(ScanStatisticsOut, statistics);
         }
 
         private void MapBasicScanSummaryData(ProjectDescriptor project, ScanDescriptor scan, CxScans.ScanIndex scanHeaders, 

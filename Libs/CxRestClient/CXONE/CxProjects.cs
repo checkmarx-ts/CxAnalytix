@@ -129,7 +129,5 @@ namespace CxRestClient.CXONE
         {
             return await GetProjectLatestScans(ctx, token, "Completed");
         }
-
-
     }
 }

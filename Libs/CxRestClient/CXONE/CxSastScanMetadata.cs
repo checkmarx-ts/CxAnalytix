@@ -117,6 +117,9 @@ namespace CxRestClient.CXONE
             [JsonProperty(PropertyName = "failedLocPerLanguage", NullValueHandling = NullValueHandling.Ignore)]
             public Dictionary<String, UInt64> ParseFailureLOCByLanguage = new();
 
+            [JsonProperty(PropertyName = "fileCountOfDetectedButNotScannedLanguages", NullValueHandling = NullValueHandling.Ignore)]
+            public Dictionary<String, UInt64> UnscannedFilesByLanguage = new();
+
             [JsonProperty(PropertyName = "scannedFilesPerLanguage", NullValueHandling = NullValueHandling.Ignore)]
             public Dictionary<String, FileCountMetrics> ScannedFilesByLanguage = new();
 
