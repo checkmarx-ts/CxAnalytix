@@ -416,14 +416,14 @@ namespace CxRestClient.SCA
             public String Category { get; internal set; }
         }
 
-        public static DetailedRiskReport GetDetailedReport(CxSCARestContext ctx, CancellationToken token, String riskReportId)
+        public static DetailedRiskReport GetDetailedReport(CxCommonRestContext ctx, CancellationToken token, String riskReportId, String additionalRoutePrefix = "")
         {
             return WebOperation.ExecuteGet<DetailedRiskReport>(ctx.Json.CreateClient,
                 (response) =>
                 {
                     return JsonUtils.DeserializeFromStream<DetailedRiskReport>(response.Content.ReadAsStream());
                 },
-                UrlUtils.MakeUrl(ctx.ApiUrl, String.Format(URL_SUFFIX, riskReportId)), ctx, token);
+                UrlUtils.MakeUrl(ctx.ApiUrl, additionalRoutePrefix, String.Format(URL_SUFFIX, riskReportId)), ctx, token);
 
         }
 

@@ -10,6 +10,7 @@ using OutputBootstrapper;
 using SDK.Modules.Transformer.Data;
 using System.Collections.Concurrent;
 using System.Web;
+using static CxRestClient.SCA.CxRiskState;
 using static SDK.Modules.Transformer.Data.ScanDescriptor;
 using CxOneConnection = CxAnalytix.XForm.CxOneTransformer.Config.CxOneConnection;
 using CxOneProjectScanEngineCount = System.Collections.Concurrent.ConcurrentDictionary<string, System.Collections.Generic.Dictionary<string, System.Tuple<int, System.DateTime>>>;
@@ -189,10 +190,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
                 if (State.GetScanCountForProject(project.ProjectId) <= 0)
                     return;
 
-                // TODO: Scan statistics?
-              
-                //var riskStateTask = Task.Run(() => CxRiskState.GetRiskStates(ctx, ThreadOpts.CancellationToken, project.ProjectId),
-                //    ThreadOpts.CancellationToken);
+                var sca_risk_states = CxScanResults.GetScaRiskStates(Context, ThreadOpts.CancellationToken, project.ProjectId);
 
                 using (var pinfoTrx = Output.StartTransaction())
                 {
@@ -222,7 +220,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
                             OutputSastScanResults(scanTrx, project, scan, loadedScans, rpt.SastResults, scanMetadata.Result[scan.ScanId]);
 
                         if (rpt.ScaResults != null && rpt.ScaResults.Count > 0)
-                            OutputScaScanResults(scanTrx, project, scan, rpt.ScaResults);
+                            OutputScaScanResults(scanTrx, project, scan, loadedScans, rpt.ScaResults, sca_risk_states.Result);
 
 
                         //var riskReport = CxDetailedReport.GetDetailedReport(ctx, ThreadOpts.CancellationToken, ScanHeaderIndex[scan.ScanId].RiskReportId);
@@ -274,9 +272,65 @@ namespace CxAnalytix.XForm.CxOneTransformer
             }
         }
 
-        private void OutputScaScanResults(IOutputTransaction scanTrx, ProjectDescriptor project, ScanDescriptor scan, List<CxScanResults.ScaResult> scaResults)
+        private void OutputScaScanResults(IOutputTransaction scanTrx, ProjectDescriptor project, ScanDescriptor scan, 
+            CxScans.ScanIndex scanHeaders, List<CxScanResults.ScaResult> scaResults, IndexedRiskStates riskStates)
         {
-            //throw new NotImplementedException();
+            var detailed_report = CxScanResults.GetScaScanResults(Context, ThreadOpts.CancellationToken, scan.ScanId);
+
+            var flat_summary = new SortedDictionary<String, Object>();
+            AddScanHeaderElements(scan, flat_summary);
+            AddCommonScanFields(scan, scanHeaders, flat_summary);
+
+            ScaTransformer.Transformer.FillScanSummaryData(detailed_report.Result, flat_summary, scan.Project.ProjectName);
+            scanTrx.write(ScaScanSummaryOut, flat_summary);
+
+
+
+            var flat_detail = new SortedDictionary<String, Object>();
+            AddScanHeaderElements(scan, flat_detail);
+            AddCommonScanFields(scan, scanHeaders, flat_detail);
+
+
+
+            // Detail
+            /*
+CVEDescription
+• CVEName
+• CVEPubDate
+• CVEScore
+• CVEUrl
+• CVSS_AttackComplexity
+• CVSS_AttackVector
+• CVSS_Availability
+• CVSS_Confidentiality
+• CVSS_Score
+• CVSS_Severity
+• CVSS_Version
+• CWE
+• ExploitableMethods
+• InstanceId (Only included if an instance id is configured)
+• LibraryId
+• LibraryLatestReleaseDate
+• LibraryLatestVersion
+• LibraryLegalRisk_{License & Version} (Field name is dynamically generated)
+• LibraryLicenses
+• LibraryName
+• LibraryReleaseDate
+• LibraryVersion
+• ProjectId
+• ProjectName
+• ScanFinished
+• ScanId
+• ScanProduct
+• ScanRiskSeverity
+• ScanType
+• State
+• TeamName
+• Type
+• VulnerabilityId
+             
+             */
+
         }
 
         private void OutputSastScanResults(IOutputTransaction scanTrx, ProjectDescriptor project, ScanDescriptor scan, CxScans.ScanIndex scanHeaders, 
@@ -452,18 +506,10 @@ namespace CxAnalytix.XForm.CxOneTransformer
             flat_summary.Add("DeepLink", UrlUtils.MakeUrl(ConnectionConfig.DeepLinkUrl, "results", scan.ScanId, project.ProjectId, "sast"));
             flat_summary.Add("SourceOrigin", scanHeaders[scan.ScanId].SourceOrigin);
             flat_summary.Add("SourceType", scanHeaders[scan.ScanId].SourceType);
-            flat_summary.Add("Engines", scanHeaders[scan.ScanId].EnginesAsString);
-            flat_summary.Add("Initiator", scanHeaders[scan.ScanId].Initiator);
 
             AddPairsAsTags(scanHeaders[scan.ScanId].Tags, flat_summary);
 
-
-            flat_summary.Add("Branch", scanHeaders[scan.ScanId].Branch);
-            flat_summary.Add("ScanStart", scanHeaders[scan.ScanId].Created);
-            flat_summary.Add("ScanFinished", scanHeaders[scan.ScanId].Updated);
-
-            var scanTime = scanHeaders[scan.ScanId].Updated - scanHeaders[scan.ScanId].Created;
-            flat_summary.Add("ScanTime", scanTime.ToString(@"hh\h\:mm\m\:ss\s"));
+            AddCommonScanFields(scan, scanHeaders, flat_summary);
 
             flat_summary.Add("Preset", metadata.Preset);
             flat_summary.Add("LinesOfCode", metadata.LOC);
@@ -472,6 +518,18 @@ namespace CxAnalytix.XForm.CxOneTransformer
             flat_summary.Add("Languages", String.Join(";", metrics.Result.ScannedFilesByLanguage.Keys));
             flat_summary.Add("FailedLinesOfCode",
                 metrics.Result.ParseFailureLOCByLanguage.Count > 0 ? metrics.Result.ParseFailureLOCByLanguage.Values.Aggregate((x, y) => x + y) : 0);
+        }
+
+        private static void AddCommonScanFields(ScanDescriptor scan, CxScans.ScanIndex scanHeaders, SortedDictionary<string, object> flat_summary)
+        {
+            flat_summary.Add("Branch", scanHeaders[scan.ScanId].Branch);
+            flat_summary.Add("ScanStart", scanHeaders[scan.ScanId].Created);
+            flat_summary.Add("ScanFinished", scanHeaders[scan.ScanId].Updated);
+            flat_summary.Add("Engines", scanHeaders[scan.ScanId].EnginesAsString);
+            flat_summary.Add("Initiator", scanHeaders[scan.ScanId].Initiator);
+
+            var scanTime = scanHeaders[scan.ScanId].Updated - scanHeaders[scan.ScanId].Created;
+            flat_summary.Add("ScanTime", scanTime.ToString(@"hh\h\:mm\m\:ss\s"));
         }
 
         protected override void AddProductsLastScanDateFields(IDictionary<string, object> here, ProjectDescriptor project)

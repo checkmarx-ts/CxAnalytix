@@ -23,6 +23,7 @@
     <ProjectReference Include="..\..\Libs\CxRestClient\CxRestClient.csproj" />
     <ProjectReference Include="..\..\Libs\Exceptions\Exceptions.csproj" />
     <ProjectReference Include="..\Common\Common.csproj" />
+    <ProjectReference Include="..\ScaTransformer\ScaTransformer.csproj" />
   </ItemGroup>
 
 </Project>

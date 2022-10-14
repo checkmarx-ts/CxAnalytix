@@ -318,13 +318,8 @@ namespace CxAnalytix.XForm.ScaTransformer
             }
         }
 
-        private void OutputScanSummary(IOutputTransaction trx, ScanDescriptor sd, CxDetailedReport.DetailedRiskReport report)
+        public static void FillScanSummaryData(CxDetailedReport.DetailedRiskReport report, IDictionary<String, Object> flat, String projectName)
         {
-            var flat = new SortedDictionary<String, Object>();
-            AddScanHeaderElements(sd, flat);
-            flat.Add("ScanStart", ScanHeaderIndex[sd.ScanId].Created);
-            flat.Add("ScanFinished", ScanHeaderIndex[sd.ScanId].Updated);
-
             flat.Add("LegalHigh", report.Summary.LicensesLegalRisk.High);
             flat.Add("LegalMedium", report.Summary.LicensesLegalRisk.Medium);
             flat.Add("LegalLow", report.Summary.LicensesLegalRisk.Low);
@@ -347,8 +342,8 @@ namespace CxAnalytix.XForm.ScaTransformer
             flat.Add("LowVulnerabilityLibraries", report.Summary.LowVulnerablePackages);
 
             // Due to the counts above not being accurate, this total is not accurate.
-            flat.Add("NonVulnerableLibraries", report.Summary.TotalPackages - 
-                (report.Summary.HighVulnerablePackages + report.Summary.MediumVulnerablePackages + report.Summary.LowVulnerablePackages) );
+            flat.Add("NonVulnerableLibraries", report.Summary.TotalPackages -
+                (report.Summary.HighVulnerablePackages + report.Summary.MediumVulnerablePackages + report.Summary.LowVulnerablePackages));
 
             flat.Add("VulnerabilityScore", report.Summary.RiskScore);
 
@@ -365,12 +360,12 @@ namespace CxAnalytix.XForm.ScaTransformer
                     currentPackages.Add(pkg.Id);
             }
 
-            foreach(var vuln in report.Vulnerabilities)
+            foreach (var vuln in report.Vulnerabilities)
             {
                 if (vuln.IsIgnored)
                     continue;
 
-                if (outDatedPackages.Contains(vuln.PackageId) )
+                if (outDatedPackages.Contains(vuln.PackageId))
                 {
                     outdatedVuln++;
                     continue;
@@ -383,19 +378,31 @@ namespace CxAnalytix.XForm.ScaTransformer
                 }
 
                 // It should be impossible to see this in the log if we assume the detailed report is compiled correctly.
-                _log.Warn($"Cannot determine if {vuln.PackageId} is current or outdated in project {sd.Project.ProjectName}.");
+                _log.Warn($"Cannot determine if {vuln.PackageId} is current or outdated in project {projectName}.");
             }
 
             flat.Add("VulnerableAndOutdated", outdatedVuln);
             flat.Add("VulnerableAndUpdated", updatedVuln);
 
+            flat.Add("TotalDirectDependencies", report.Summary.DirectPackages);
+            flat.Add("ScanOrigin", report.Summary.ScanOrigin);
+            flat.Add("TotalExploitablePaths", report.Summary.ExploitablePathsFound);
+        }
+
+
+        private void OutputScanSummary(IOutputTransaction trx, ScanDescriptor sd, CxDetailedReport.DetailedRiskReport report)
+        {
+            var flat = new SortedDictionary<String, Object>();
+            AddScanHeaderElements(sd, flat);
+            flat.Add("ScanStart", ScanHeaderIndex[sd.ScanId].Created);
+            flat.Add("ScanFinished", ScanHeaderIndex[sd.ScanId].Updated);
+
+            FillScanSummaryData(report, flat, sd.Project.ProjectName);
+
             flat.Add("RulesViolated", sd.RulesViolated);
             flat.Add("PolicyViolations", sd.PoliciesViolated);
             flat.Add("PoliciesViolated", String.Join(";", sd.ViolatedPolicies));
 
-            flat.Add("TotalDirectDependencies", report.Summary.DirectPackages);
-            flat.Add("ScanOrigin", report.Summary.ScanOrigin);
-            flat.Add("TotalExploitablePaths", report.Summary.ExploitablePathsFound);
 
             trx.write(ScaScanSummaryOut, flat);
         }

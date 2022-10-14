@@ -1,4 +1,5 @@
 ﻿using CxAnalytix.Exceptions;
+using CxRestClient.SCA;
 using CxRestClient.Utility;
 using log4net;
 using Newtonsoft.Json;
@@ -11,6 +12,8 @@ using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using static CxRestClient.SCA.CxDetailedReport;
+using static CxRestClient.SCA.CxRiskState;
 
 namespace CxRestClient.CXONE
 {
@@ -303,9 +306,17 @@ namespace CxRestClient.CXONE
             },
                 UrlUtils.MakeUrl(ctx.ApiUrl, URL_SUFFIX, parameters), ctx, token, pageSize: MAX_RESULTS_PER_PAGE);
 
-
             return response;
+        }
 
+        public static async Task<DetailedRiskReport> GetScaScanResults(CxOneRestContext ctx, CancellationToken token, String scanId)
+        {
+            return await Task.Run(() => CxDetailedReport.GetDetailedReport(ctx, token, scanId, "api/sca"));
+        }
+
+        public static async Task<IndexedRiskStates> GetScaRiskStates(CxOneRestContext ctx, CancellationToken token, String projectId)
+        {
+            return await Task.Run(() => CxRiskState.GetRiskStates(ctx, token, projectId, "api/sca"));
         }
 
     }

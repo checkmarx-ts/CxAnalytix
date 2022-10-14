@@ -12,7 +12,7 @@ namespace CxRestClient.Utility
         {
             StringBuilder result = new(url.TrimEnd('/'));
 
-            foreach (var suffix in suffixes)
+            foreach (var suffix in suffixes.Where((x) => !String.IsNullOrEmpty(x) ) )
                 result.Append("/").Append(suffix.TrimStart('/'));
 
             return result.ToString();
@@ -22,7 +22,7 @@ namespace CxRestClient.Utility
         {
             LinkedList<String> p = new LinkedList<string>();
 
-            foreach (String k in query.Keys)
+            foreach (var k in query.Keys)
                 p.AddLast(String.Format("{0}={1}", k, query[k]));
 
             return String.Join('&', p);
