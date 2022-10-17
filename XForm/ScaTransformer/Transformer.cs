@@ -17,6 +17,7 @@ using OutputBootstrapper;
 using CxAnalytix.XForm.ScaTransformer.Policy;
 using ScanHeaderIndex_t = System.Collections.Concurrent.ConcurrentDictionary<string, CxRestClient.SCA.CxScans.Scan>;
 using CxAnalytix.Interfaces.Outputs;
+using System.Reflection.PortableExecutable;
 
 namespace CxAnalytix.XForm.ScaTransformer
 {
@@ -189,12 +190,9 @@ namespace CxAnalytix.XForm.ScaTransformer
 
 		}
 
-        private void OutputScanDetails(IOutputTransaction scanTrx, ScanDescriptor scan, CxDetailedReport.DetailedRiskReport riskReport, CxRiskState.IndexedRiskStates stateIndex)
+        public static IEnumerable<IDictionary<String, Object>> GenerateScanDetailData(CxDetailedReport.DetailedRiskReport riskReport, 
+            IDictionary<String, Object> header, ScanDescriptor scan, CxRiskState.IndexedRiskStates stateIndex)
         {
-            var header = new SortedDictionary<String, Object>();
-            AddScanHeaderElements(scan, header);
-            header.Add("ScanFinished", scan.FinishedStamp);
-
             foreach (var vulnerability in riskReport.Vulnerabilities)
             {
                 var flat = new SortedDictionary<String, Object>(header);
@@ -233,7 +231,7 @@ namespace CxAnalytix.XForm.ScaTransformer
                 flat.Add("LibraryReleaseDate", package.ReleaseDate);
                 flat.Add("LibraryVersion", package.Version);
 
-                if (package.Licenses != null && package.Licenses.Count> 0)
+                if (package.Licenses != null && package.Licenses.Count > 0)
                 {
                     flat.Add("LibraryLicenses", String.Join(";", package.Licenses));
                     foreach (var license in package.Licenses)
@@ -244,8 +242,22 @@ namespace CxAnalytix.XForm.ScaTransformer
                     }
                 }
 
-                scanTrx.write(ScaScanDetailOut, flat);
+                yield return flat;
             }
+        }
+
+
+        private void OutputScanDetails(IOutputTransaction scanTrx, ScanDescriptor scan, CxDetailedReport.DetailedRiskReport riskReport, CxRiskState.IndexedRiskStates stateIndex)
+        {
+            var header = new SortedDictionary<String, Object>();
+
+            AddScanHeaderElements(scan, header);
+            header.Add("ScanFinished", scan.FinishedStamp);
+
+            foreach (var flat_details in GenerateScanDetailData(riskReport, header, scan, stateIndex) )
+                scanTrx.write(ScaScanDetailOut, flat_details);
+
+
         }
 
         private void OutputPolicyViolations(IOutputTransaction trx, ScanDescriptor sd, CxDetailedReport.DetailedRiskReport riskReport, CxRiskState.IndexedRiskStates stateIndex)

@@ -284,53 +284,12 @@ namespace CxAnalytix.XForm.CxOneTransformer
             ScaTransformer.Transformer.FillScanSummaryData(detailed_report.Result, flat_summary, scan.Project.ProjectName);
             scanTrx.write(ScaScanSummaryOut, flat_summary);
 
+            var detail_header = new SortedDictionary<String, Object>();
+            AddScanHeaderElements(scan, detail_header);
+            AddCommonScanFields(scan, scanHeaders, detail_header);
 
-
-            var flat_detail = new SortedDictionary<String, Object>();
-            AddScanHeaderElements(scan, flat_detail);
-            AddCommonScanFields(scan, scanHeaders, flat_detail);
-
-
-
-            // Detail
-            /*
-CVEDescription
-• CVEName
-• CVEPubDate
-• CVEScore
-• CVEUrl
-• CVSS_AttackComplexity
-• CVSS_AttackVector
-• CVSS_Availability
-• CVSS_Confidentiality
-• CVSS_Score
-• CVSS_Severity
-• CVSS_Version
-• CWE
-• ExploitableMethods
-• InstanceId (Only included if an instance id is configured)
-• LibraryId
-• LibraryLatestReleaseDate
-• LibraryLatestVersion
-• LibraryLegalRisk_{License & Version} (Field name is dynamically generated)
-• LibraryLicenses
-• LibraryName
-• LibraryReleaseDate
-• LibraryVersion
-• ProjectId
-• ProjectName
-• ScanFinished
-• ScanId
-• ScanProduct
-• ScanRiskSeverity
-• ScanType
-• State
-• TeamName
-• Type
-• VulnerabilityId
-             
-             */
-
+            foreach (var flat_details in ScaTransformer.Transformer.GenerateScanDetailData(detailed_report.Result, detail_header, scan, riskStates))
+                scanTrx.write(ScaScanDetailOut, flat_details);
         }
 
         private void OutputSastScanResults(IOutputTransaction scanTrx, ProjectDescriptor project, ScanDescriptor scan, CxScans.ScanIndex scanHeaders, 
