@@ -222,28 +222,11 @@ namespace CxAnalytix.XForm.CxOneTransformer
                         if (rpt.ScaResults != null && rpt.ScaResults.Count > 0)
                             OutputScaScanResults(scanTrx, project, scan, loadedScans, rpt.ScaResults, sca_risk_states.Result);
 
-
-                        //var riskReport = CxDetailedReport.GetDetailedReport(ctx, ThreadOpts.CancellationToken, ScanHeaderIndex[scan.ScanId].RiskReportId);
-
-                        //foreach (var policy in riskReport.Policies)
-                        //    if (policy.IsViolating)
-                        //        foreach (var rule in policy.Rules)
-                        //            if (rule.IsViolated)
-                        //                scan.IncrementPolicyViolation(policy.PolicyName, rule.Name);
-
-                        //OutputScanSummary(scanTrx, scan, riskReport);
-                        //OutputScanDetails(scanTrx, scan, riskReport, riskStateTask.Result);
-                        //OutputPolicyViolations(scanTrx, scan, riskReport, riskStateTask.Result);
-
-
                         if (!ThreadOpts.CancellationToken.IsCancellationRequested && scanTrx.Commit())
                             State.ScanCompleted(scan);
                     }
                 }
-
-
             });
-
         }
 
         private void AddPairsAsTags(IDictionary<String, String> from, IDictionary<String, Object> to)
