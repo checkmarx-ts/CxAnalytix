@@ -19,5 +19,7 @@ namespace SDK.Modules.Transformer
         }
 
         public abstract void DoTransform(CancellationToken token);
+
+        public abstract void Dispose();
     }
 }

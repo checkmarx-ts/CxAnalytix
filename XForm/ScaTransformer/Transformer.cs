@@ -418,6 +418,13 @@ namespace CxAnalytix.XForm.ScaTransformer
             trx.write(ScaScanSummaryOut, flat);
         }
 
-
+        public override void Dispose()
+        {
+            if (PoliciesTask != null)
+            {
+                PoliciesTask.Dispose();
+                PoliciesTask = null;
+            }
+        }
     }
 }

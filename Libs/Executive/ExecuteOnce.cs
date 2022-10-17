@@ -96,6 +96,8 @@ namespace CxAnalytix.Executive
 
                 _log.Info($"Finished executing data transformer for module: {xformer.DisplayName}");
 
+                xformer.Dispose();
+
             });
 
             _log.InfoFormat("Data transformation finished in {0:0.00} minutes.",
