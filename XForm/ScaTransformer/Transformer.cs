@@ -187,7 +187,6 @@ namespace CxAnalytix.XForm.ScaTransformer
                     }
                 }
             });
-
 		}
 
         public static IEnumerable<IDictionary<String, Object>> GenerateScanDetailData(CxDetailedReport.DetailedRiskReport riskReport, 

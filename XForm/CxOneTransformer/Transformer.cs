@@ -278,107 +278,107 @@ namespace CxAnalytix.XForm.CxOneTransformer
         private void OutputSastScanResults(IOutputTransaction scanTrx, ProjectDescriptor project, ScanDescriptor scan, CxScans.ScanIndex scanHeaders, 
             List<CxScanResults.SastResult> sastResults, CxSastScanMetadata.SastScanMetadata metadata)
         {
-
-            var metrics = CxSastScanMetadata.GetScanMetrics(Context, ThreadOpts.CancellationToken, scan.ScanId);
-            var project_config = CxConfiguration.GetProjectConfiguration(Context, ThreadOpts.CancellationToken, project.ProjectId);
-
-            var flat_summary = new SortedDictionary<String, object>();
-            var flat_details_header = new SortedDictionary<String, object>();
-
-            int low = 0, medium = 0, high = 0, info = 0, result_count = 0;
-
-            MapBasicScanSummaryData(project, scan, scanHeaders, metadata, metrics, flat_summary);
-
-
-            AddScanHeaderElements(scan, flat_details_header);
-
-            foreach (var detail_entry in sastResults)
+            using (var metrics = CxSastScanMetadata.GetScanMetrics(Context, ThreadOpts.CancellationToken, scan.ScanId))
+            using (var project_config = CxConfiguration.GetProjectConfiguration(Context, ThreadOpts.CancellationToken, project.ProjectId))
             {
-                result_count++;
-                var flat_details = new SortedDictionary<String, object>(flat_details_header);
+                var flat_summary = new SortedDictionary<String, object>();
+                var flat_details_header = new SortedDictionary<String, object>();
 
-                flat_details.Add("SimilarityId", detail_entry.SimilarityId);
-                flat_details.Add("ResultSeverity", detail_entry.ResultSeverity);
+                int low = 0, medium = 0, high = 0, info = 0, result_count = 0;
 
-                if (detail_entry.State.CompareTo(NE_VALUE) != 0)
+                MapBasicScanSummaryData(project, scan, scanHeaders, metadata, metrics, flat_summary);
+
+
+                AddScanHeaderElements(scan, flat_details_header);
+
+                foreach (var detail_entry in sastResults)
                 {
-                    low += (detail_entry.ResultSeverity.ToLower().CompareTo("low") == 0) ? (1) : (0);
-                    medium += (detail_entry.ResultSeverity.ToLower().CompareTo("medium") == 0) ? (1) : (0);
-                    high += (detail_entry.ResultSeverity.ToLower().CompareTo("high") == 0) ? (1) : (0);
-                    info += (detail_entry.ResultSeverity.ToLower().CompareTo("info") == 0) ? (1) : (0);
+                    result_count++;
+                    var flat_details = new SortedDictionary<String, object>(flat_details_header);
+
+                    flat_details.Add("SimilarityId", detail_entry.SimilarityId);
+                    flat_details.Add("ResultSeverity", detail_entry.ResultSeverity);
+
+                    if (detail_entry.State.CompareTo(NE_VALUE) != 0)
+                    {
+                        low += (detail_entry.ResultSeverity.ToLower().CompareTo("low") == 0) ? (1) : (0);
+                        medium += (detail_entry.ResultSeverity.ToLower().CompareTo("medium") == 0) ? (1) : (0);
+                        high += (detail_entry.ResultSeverity.ToLower().CompareTo("high") == 0) ? (1) : (0);
+                        info += (detail_entry.ResultSeverity.ToLower().CompareTo("info") == 0) ? (1) : (0);
+                    }
+
+                    if (detail_entry.FirstFoundDate != DateTime.MinValue)
+                        flat_details.Add("FirstDetectionDate", detail_entry.FirstFoundDate);
+
+                    flat_details.Add("ResultId", detail_entry.ResultId);
+                    flat_details.Add("State", detail_entry.State);
+                    flat_details.Add("Status", detail_entry.Status);
+                    flat_details.Add("QueryCweId", detail_entry.VulnerabilityDetails.CweId);
+                    flat_details.Add("QueryCategories", String.Join(",", detail_entry.VulnerabilityDetails.Categories));
+                    flat_details.Add("FalsePositive", detail_entry.State.CompareTo(NE_VALUE) == 0);
+                    flat_details.Add("Branch", scanHeaders[scan.ScanId].Branch);
+                    flat_details.Add("ScanFinished", scanHeaders[scan.ScanId].Updated);
+
+
+                    flat_details.Add("QueryName", detail_entry.Data.QueryName);
+                    flat_details.Add("QueryId", detail_entry.Data.QueryId);
+                    flat_details.Add("QueryLanguage", detail_entry.Data.LanguageName);
+                    flat_details.Add("QueryGroup", detail_entry.Data.QueryGroup);
+
+                    flat_details.Add("VulnerabilityId", detail_entry.Data.ResultHash);
+
+                    flat_details.Add("ResultDeepLink", UrlUtils.MakeUrl(UrlUtils.MakeUrl(ConnectionConfig.DeepLinkUrl,
+                        "results", scan.ScanId, project.ProjectId, "sast"),
+                        new Dictionary<String, String> { { "result-id", HttpUtility.UrlEncode(detail_entry.Data.ResultHash) } }));
+
+
+
+                    var node_cache = new List<SortedDictionary<String, object>>();
+
+                    String sink_col = String.Empty;
+                    String sink_line = String.Empty;
+                    String sink_file = String.Empty;
+
+                    int node_index = 0;
+                    foreach (var node in detail_entry.Data.Flow)
+                    {
+                        var flat_node = new SortedDictionary<String, object>(flat_details);
+                        ;
+
+                        sink_col = node.NodeColumn;
+                        sink_line = node.NodeLine;
+                        sink_file = node.NodeFileName;
+
+                        flat_node.Add("NodeColumn", node.NodeColumn);
+                        flat_node.Add("NodeFileName", node.NodeFileName);
+                        flat_node.Add("NodeLine", node.NodeLine);
+                        flat_node.Add("NodeLength", node.NodeLength);
+                        flat_node.Add("NodeType", node.NodeType);
+                        flat_node.Add("NodeName", node.NodeFileName);
+                        flat_node.Add("NodeId", ++node_index);
+
+                        node_cache.Add(flat_node);
+                    }
+
+
+                    foreach (var entry in node_cache)
+                    {
+                        entry.Add("SinkColumn", sink_col);
+                        entry.Add("SinkFileName", sink_file);
+                        entry.Add("SinkLine", sink_line);
+                        scanTrx.write(SastScanDetailOut, entry);
+                    }
                 }
 
-                if (detail_entry.FirstFoundDate != DateTime.MinValue)
-                    flat_details.Add("FirstDetectionDate", detail_entry.FirstFoundDate);
+                flat_summary.Add("Information", info);
+                flat_summary.Add("Low", low);
+                flat_summary.Add("Medium", medium);
+                flat_summary.Add("High", high);
 
-                flat_details.Add("ResultId", detail_entry.ResultId);
-                flat_details.Add("State", detail_entry.State);
-                flat_details.Add("Status", detail_entry.Status);
-                flat_details.Add("QueryCweId", detail_entry.VulnerabilityDetails.CweId);
-                flat_details.Add("QueryCategories", String.Join(",", detail_entry.VulnerabilityDetails.Categories));
-                flat_details.Add("FalsePositive", detail_entry.State.CompareTo(NE_VALUE) == 0);
-                flat_details.Add("Branch", scanHeaders[scan.ScanId].Branch);
-                flat_details.Add("ScanFinished", scanHeaders[scan.ScanId].Updated);
+                scanTrx.write(SastScanSummaryOut, flat_summary);
 
-
-                flat_details.Add("QueryName", detail_entry.Data.QueryName);
-                flat_details.Add("QueryId", detail_entry.Data.QueryId);
-                flat_details.Add("QueryLanguage", detail_entry.Data.LanguageName);
-                flat_details.Add("QueryGroup", detail_entry.Data.QueryGroup);
-
-                flat_details.Add("VulnerabilityId", detail_entry.Data.ResultHash);
-
-                flat_details.Add("ResultDeepLink", UrlUtils.MakeUrl(UrlUtils.MakeUrl(ConnectionConfig.DeepLinkUrl,
-                    "results", scan.ScanId, project.ProjectId, "sast"),
-                    new Dictionary<String, String> { { "result-id", HttpUtility.UrlEncode(detail_entry.Data.ResultHash) } }));
-
-
-
-                var node_cache = new List<SortedDictionary<String, object>>();
-
-                String sink_col = String.Empty;
-                String sink_line = String.Empty;
-                String sink_file = String.Empty;
-
-                int node_index = 0;
-                foreach (var node in detail_entry.Data.Flow)
-                {
-                    var flat_node = new SortedDictionary<String, object>(flat_details);
-                    ;
-
-                    sink_col = node.NodeColumn;
-                    sink_line = node.NodeLine;
-                    sink_file = node.NodeFileName;
-
-                    flat_node.Add("NodeColumn", node.NodeColumn);
-                    flat_node.Add("NodeFileName", node.NodeFileName);
-                    flat_node.Add("NodeLine", node.NodeLine);
-                    flat_node.Add("NodeLength", node.NodeLength);
-                    flat_node.Add("NodeType", node.NodeType);
-                    flat_node.Add("NodeName", node.NodeFileName);
-                    flat_node.Add("NodeId", ++node_index);
-
-                    node_cache.Add(flat_node);
-                }
-
-
-                foreach (var entry in node_cache)
-                {
-                    entry.Add("SinkColumn", sink_col);
-                    entry.Add("SinkFileName", sink_file);
-                    entry.Add("SinkLine", sink_line);
-                    scanTrx.write(SastScanDetailOut, entry);
-                }
+                OutputScanStatistics(scanTrx, scan, metadata, metrics, project_config, result_count);
             }
-
-            flat_summary.Add("Information", info);
-            flat_summary.Add("Low", low);
-            flat_summary.Add("Medium", medium);
-            flat_summary.Add("High", high);
-
-            scanTrx.write(SastScanSummaryOut, flat_summary);
-
-            OutputScanStatistics(scanTrx, scan, metadata, metrics, project_config, result_count);
         }
 
         private void OutputScanStatistics(IOutputTransaction scanTrx, ScanDescriptor scan, CxSastScanMetadata.SastScanMetadata metadata, 
