@@ -35,21 +35,25 @@ namespace RegressionTester
 			using (var scaSummary = new ScaScanSummaryTester(oldPath, newPath))
 			using (var sastSummary = new SastScanSummaryTester(oldPath, newPath))
 			using (var sastDetail = new SastScanDetailTester(oldPath, newPath))
-			{
-				var scaDetailTask = scaDetail.PerformTest();
-				var scaSummaryTask = scaSummary.PerformTest();
-				var sastDetailTask = sastDetail.PerformTest();
-				var sastSummaryTask = sastSummary.PerformTest();
-				var policyViolationsTask = policyViolations.PerformTest();
-				var projectInfoTask = projectInfo.PerformTest();
-
-				projectInfoTask.Wait();
-				sastSummaryTask.Wait();
-				sastDetailTask.Wait();
-				scaSummaryTask.Wait();
-				scaDetailTask.Wait();
-				policyViolationsTask.Wait();
-			}
+            using (var sastStats = new ScanStatisticsTester(oldPath, newPath))
+            {
+				using (var scaDetailTask = scaDetail.PerformTest())
+				using (var scaSummaryTask = scaSummary.PerformTest())
+				using (var sastDetailTask = sastDetail.PerformTest())
+				using (var sastSummaryTask = sastSummary.PerformTest())
+				using (var policyViolationsTask = policyViolations.PerformTest())
+				using (var projectInfoTask = projectInfo.PerformTest())
+				using (var statsTask = sastStats.PerformTest())
+				{
+					projectInfoTask.Wait();
+					sastSummaryTask.Wait();
+					sastDetailTask.Wait();
+					scaSummaryTask.Wait();
+					scaDetailTask.Wait();
+					policyViolationsTask.Wait();
+					statsTask.Wait();
+				}
+            }
 
 
 		}
