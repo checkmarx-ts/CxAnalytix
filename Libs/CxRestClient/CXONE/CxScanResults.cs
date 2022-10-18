@@ -144,7 +144,7 @@ namespace CxRestClient.CXONE
         public class SastResultData
         {
             [JsonProperty(PropertyName = "queryId")]
-            public String QueryId { get; internal set; }
+            public String QueryEntryId { get; internal set; }
 
             [JsonProperty(PropertyName = "queryName")]
             public String QueryName { get; internal set; }

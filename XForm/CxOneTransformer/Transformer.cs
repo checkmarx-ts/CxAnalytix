@@ -57,9 +57,10 @@ namespace CxAnalytix.XForm.CxOneTransformer
         private Task<CxApplications.ApplicationIndex>? ApplicationsFetchTask { get; set; }
 
 
-
         private CxOneProjectScanEngineCount ScanEngineStats { get; set; } = new();
 
+
+        private CxAudit.QueryDataMediator QueryData { get; set; }
 
         private static String NormalizeEngineName(String name) => $"{ScanProductType.CXONE}_{name}";
 
@@ -98,6 +99,8 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
         public override void DoTransform(CancellationToken token)
         {
+            QueryData = new(Context, token);
+
             ThreadOpts.CancellationToken = token;
 
             _log.Debug("Starting CxOne transform");
@@ -327,11 +330,16 @@ namespace CxAnalytix.XForm.CxOneTransformer
                     flat_details.Add("Branch", scanHeaders[scan.ScanId].Branch);
                     flat_details.Add("ScanFinished", scanHeaders[scan.ScanId].Updated);
 
+                    var query_source = QueryData.GetQuerySource(project.ProjectId, detail_entry.Data);
+                    var query = QueryData.GetQuery(project.ProjectId, detail_entry.Data);
 
                     flat_details.Add("QueryName", detail_entry.Data.QueryName);
-                    flat_details.Add("QueryId", detail_entry.Data.QueryId);
+                    flat_details.Add("QueryId", query.Id);
                     flat_details.Add("QueryLanguage", detail_entry.Data.LanguageName);
                     flat_details.Add("QueryGroup", detail_entry.Data.QueryGroup);
+                    flat_details.Add("QuerySeverity", query_source.Severity.ToString());
+                    flat_details.Add("QueryVersionCode", query_source.Modified);
+
 
                     flat_details.Add("VulnerabilityId", detail_entry.Data.ResultHash);
 
