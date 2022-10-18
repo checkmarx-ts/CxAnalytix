@@ -151,6 +151,11 @@ namespace CxAnalytix.XForm.Common
             trx.write(ProjectInfoOut, flat);
         }
 
+        protected void AddPairsAsTags(IDictionary<String, String> from, IDictionary<String, Object> to)
+        {
+            foreach (var key in from.Keys)
+                to.Add($"TAG_{key}", from[key]);
+        }
 
     }
 }

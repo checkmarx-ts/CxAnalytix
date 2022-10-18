@@ -32,6 +32,8 @@ namespace CxAnalytix.XForm.ScaTransformer
 
         private ScanHeaderIndex_t ScanHeaderIndex { get; set; }
 
+        private CxProjects.ProjectIndex Projects { get; set; }
+
 
         public Transformer() : base(MODULE_NAME, typeof(Transformer), STATE_STORAGE_FILE)
 		{
@@ -50,6 +52,12 @@ namespace CxAnalytix.XForm.ScaTransformer
 
                     return new ScaPolicyIndex(CxPolicies.GetPolicies(ctx, ThreadOpts.CancellationToken));
                 }, ThreadOpts.CancellationToken);
+        }
+
+        protected override void AddAdditionalProjectInfo(IDictionary<string, object> here, string projectId)
+        {
+            base.AddAdditionalProjectInfo(here, projectId);
+            AddPairsAsTags(Projects[projectId].Tags, here);
         }
 
         public override void DoTransform(CancellationToken token)
@@ -76,15 +84,14 @@ namespace CxAnalytix.XForm.ScaTransformer
             PoliciesTask = PopulatePolicies(ctx);
 
             _log.Debug("Retrieving SCA projects.");
-            var projects = CxProjects.GetProjects(ctx, ThreadOpts.CancellationToken);
+
+            Projects = CxProjects.GetProjects(ctx, ThreadOpts.CancellationToken);
 
             var projectDescriptors = new ConcurrentBag<ProjectDescriptor>();
 
-
             _log.Debug("Resolving projects.");
 
-
-            Parallel.ForEach(projects, ThreadOpts, (p) => {
+            Parallel.ForEach(Projects, ThreadOpts, (p) => {
 
                 // Projects don't need to have a team assignment, unlike in SAST
                 if (! ( (p.Teams.Count == 0) ? Filter.Matches(p.ProjectName) : p.Teams.Any((t) => Filter.Matches(t, p.ProjectName))))
@@ -413,6 +420,8 @@ namespace CxAnalytix.XForm.ScaTransformer
             flat.Add("RulesViolated", sd.RulesViolated);
             flat.Add("PolicyViolations", sd.PoliciesViolated);
             flat.Add("PoliciesViolated", String.Join(";", sd.ViolatedPolicies));
+
+            AddPairsAsTags(ScanHeaderIndex[sd.ScanId].Tags, flat);
 
 
             trx.write(ScaScanSummaryOut, flat);

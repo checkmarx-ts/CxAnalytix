@@ -239,12 +239,6 @@ namespace CxAnalytix.XForm.CxOneTransformer
             }
         }
 
-        private void AddPairsAsTags(IDictionary<String, String> from, IDictionary<String, Object> to)
-        {
-            foreach (var key in from.Keys)
-                to.Add($"TAG_{key}", from[key]);
-        }
-
         protected override void AddAdditionalProjectInfo(IDictionary<string, object> here, string projectId)
         {
             base.AddAdditionalProjectInfo(here, projectId);
