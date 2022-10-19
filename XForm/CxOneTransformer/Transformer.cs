@@ -8,9 +8,12 @@ using CxRestClient.Utility;
 using log4net;
 using OutputBootstrapper;
 using SDK.Modules.Transformer.Data;
+using System;
 using System.Collections.Concurrent;
+using System.Text;
 using System.Web;
 using static CxRestClient.CXONE.CxConfiguration;
+using static CxRestClient.CXONE.CxSastPredicates;
 using static CxRestClient.SCA.CxRiskState;
 using static SDK.Modules.Transformer.Data.ScanDescriptor;
 using CxOneConnection = CxAnalytix.XForm.CxOneTransformer.Config.CxOneConnection;
@@ -21,7 +24,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
 {
     public class Transformer : BaseTransformer
     {
-        
+
         private static readonly ILog _log = LogManager.GetLogger(typeof(Transformer));
         private static readonly String STATE_STORAGE_FILE = "CxAnalytixExportState_CxOne.json";
         private static readonly String MODULE_NAME = "CxOne";
@@ -31,7 +34,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
         public Transformer() : base(MODULE_NAME, typeof(Transformer), STATE_STORAGE_FILE)
         {
             ConnectionConfig = Configuration.Impls.Config.GetConfig<CxOneConnection>();
-            
+
             var creds = Configuration.Impls.Config.GetConfig<CxApiTokenCredentials>();
 
             var restBuilder = new CxOneRestContext.CxOneRestContextBuilder();
@@ -63,9 +66,11 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
         private CxAudit.QueryDataMediator QueryData { get; set; }
 
-        private static String NormalizeEngineName(String name) => $"{ScanProductType.CXONE}_{name}";
+        private static String NormalizeEngineName(String name) => $"{name.ToUpper()}";
 
         private ConcurrentDictionary<String, Task<ProjectConfiguration>> ProjectConfigFetchTasks { get; set; } = new();
+
+        private PredicateMediator Predicates { get; set;}
 
 
         private void TrackScanEngineStats(String projectId, CxScans.Scan scan)
@@ -103,6 +108,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
         public override void DoTransform(CancellationToken token)
         {
             QueryData = new(Context, token);
+            Predicates = new(Context, token);
 
             ThreadOpts.CancellationToken = token;
 
@@ -310,6 +316,8 @@ namespace CxAnalytix.XForm.CxOneTransformer
                     flat_details.Add("SimilarityId", detail_entry.SimilarityId);
                     flat_details.Add("ResultSeverity", detail_entry.ResultSeverity);
 
+                    flat_details.Add("Remark", String.Join(";", Predicates.GetComments(project.ProjectId, detail_entry.SimilarityId) ) );
+
                     if (detail_entry.State.CompareTo(NE_VALUE) != 0)
                     {
                         low += (detail_entry.ResultSeverity.ToLower().CompareTo("low") == 0) ? (1) : (0);
@@ -346,7 +354,6 @@ namespace CxAnalytix.XForm.CxOneTransformer
                     flat_details.Add("ResultDeepLink", UrlUtils.MakeUrl(UrlUtils.MakeUrl(ConnectionConfig.DeepLinkUrl,
                         "results", scan.ScanId, project.ProjectId, "sast"),
                         new Dictionary<String, String> { { "result-id", HttpUtility.UrlEncode(detail_entry.Data.ResultHash) } }));
-
 
 
                     var node_cache = new List<SortedDictionary<String, object>>();
@@ -504,6 +511,12 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
         public override void Dispose()
         {
+            if (QueryData != null)
+                QueryData.Dispose();
+
+            if (Predicates != null)
+                Predicates.Dispose();
+
             if (ProjectsFetchTask != null)
             {
                 ProjectsFetchTask.Dispose();
