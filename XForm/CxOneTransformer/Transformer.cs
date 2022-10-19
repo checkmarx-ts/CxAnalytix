@@ -280,14 +280,13 @@ namespace CxAnalytix.XForm.CxOneTransformer
                 var flat_summary = new SortedDictionary<String, Object>();
                 AddScanHeaderElements(scan, flat_summary);
                 AddCommonScanFields(scan, scanHeaders, flat_summary);
-
+                AddPairsAsTags(scanHeaders[scan.ScanId].Tags, flat_summary);
                 ScaTransformer.Transformer.FillScanSummaryData(detailed_report.Result, flat_summary, scan.Project.ProjectName);
                 scanTrx.write(ScaScanSummaryOut, flat_summary);
 
                 var detail_header = new SortedDictionary<String, Object>();
                 AddScanHeaderElements(scan, detail_header);
                 AddCommonScanFields(scan, scanHeaders, detail_header);
-
                 foreach (var flat_details in ScaTransformer.Transformer.GenerateScanDetailData(detailed_report.Result, detail_header, scan, riskStates))
                     scanTrx.write(ScaScanDetailOut, flat_details);
             }
