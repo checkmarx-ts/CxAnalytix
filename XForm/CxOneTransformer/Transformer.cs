@@ -10,6 +10,7 @@ using OutputBootstrapper;
 using SDK.Modules.Transformer.Data;
 using System.Collections.Concurrent;
 using System.Web;
+using static CxRestClient.CXONE.CxConfiguration;
 using static CxRestClient.SCA.CxRiskState;
 using static SDK.Modules.Transformer.Data.ScanDescriptor;
 using CxOneConnection = CxAnalytix.XForm.CxOneTransformer.Config.CxOneConnection;
@@ -64,6 +65,8 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
         private static String NormalizeEngineName(String name) => $"{ScanProductType.CXONE}_{name}";
 
+        private ConcurrentDictionary<String, Task<ProjectConfiguration>> ProjectConfigFetchTasks { get; set; } = new();
+
 
         private void TrackScanEngineStats(String projectId, CxScans.Scan scan)
         {
@@ -117,7 +120,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
                 Parallel.ForEach(ProjectsFetchTask.Result, ThreadOpts, (p) =>
                 {
-
+                    ProjectConfigFetchTasks.TryAdd(p.ProjectId, CxConfiguration.GetProjectConfiguration(Context, ThreadOpts.CancellationToken, p.ProjectId));
                     String groupsString = String.Join(",", p.Groups.ConvertAll((groupId) => groupsTask.Result[groupId].Path));
 
                     // Projects don't need to have a team assignment, unlike in SAST
@@ -135,7 +138,8 @@ namespace CxAnalytix.XForm.CxOneTransformer
                         {
                             ProjectId = p.ProjectId,
                             ProjectName = p.ProjectName,
-                            TeamName = groupsString
+                            TeamName = groupsString,
+                            PresetName = ProjectConfigFetchTasks[p.ProjectId].Result.Preset
 
                         });
                     }
@@ -243,8 +247,11 @@ namespace CxAnalytix.XForm.CxOneTransformer
         {
             base.AddAdditionalProjectInfo(here, projectId);
 
+
             if (ProjectsFetchTask != null)
             {
+                here.Add("ProjectCreated", ProjectsFetchTask.Result[projectId].Created);
+                here.Add("ProjectUpdated", ProjectsFetchTask.Result[projectId].Updated);
                 here.Add("CriticalityLevel", ProjectsFetchTask.Result[projectId].Criticality);
                 here.Add("RepoUrl", ProjectsFetchTask.Result[projectId].RepoUrl);
                 here.Add("RepoMainBranch", ProjectsFetchTask.Result[projectId].MainBranch);
@@ -284,7 +291,6 @@ namespace CxAnalytix.XForm.CxOneTransformer
             List<CxScanResults.SastResult> sastResults, CxSastScanMetadata.SastScanMetadata metadata)
         {
             using (var metrics = CxSastScanMetadata.GetScanMetrics(Context, ThreadOpts.CancellationToken, scan.ScanId))
-            using (var project_config = CxConfiguration.GetProjectConfiguration(Context, ThreadOpts.CancellationToken, project.ProjectId))
             {
                 var flat_summary = new SortedDictionary<String, object>();
                 var flat_details_header = new SortedDictionary<String, object>();
@@ -387,12 +393,12 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
                 scanTrx.write(SastScanSummaryOut, flat_summary);
 
-                OutputScanStatistics(scanTrx, scan, metadata, metrics, project_config, result_count);
+                OutputScanStatistics(scanTrx, scan, metadata, metrics, ProjectConfigFetchTasks[project.ProjectId].Result, result_count);
             }
         }
 
         private void OutputScanStatistics(IOutputTransaction scanTrx, ScanDescriptor scan, CxSastScanMetadata.SastScanMetadata metadata, 
-            Task<CxSastScanMetadata.SastScanMetrics> metrics, Task<CxConfiguration.ProjectConfiguration> project_config, int result_count)
+            Task<CxSastScanMetadata.SastScanMetrics> metrics, ProjectConfiguration project_config, int result_count)
         {
             var statistics = new SortedDictionary<String, object>();
             AddScanHeaderElements(scan, statistics);
@@ -403,7 +409,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
             statistics.Add("PhysicalMemoryPeakMB", metrics.Result.MemoryPeak);
             statistics.Add("VirtualMemoryPeakMB", metrics.Result.VirtualMemoryPeak);
             statistics.Add("ResultCount", result_count);
-            statistics.Add("FileFilter", project_config.Result.SastFileFilter);
+            statistics.Add("FileFilter", project_config.SastFileFilter);
 
             var good_scan_lang_keys = metrics.Result.ParsedLOCByLanguage != null ? metrics.Result.ParsedLOCByLanguage.Keys.AsEnumerable() : new List<String> { };
             var bad_scan_lang_keys = metrics.Result.ParseFailureLOCByLanguage != null ? metrics.Result.ParseFailureLOCByLanguage.Keys.AsEnumerable() : new List<String> { };
@@ -488,7 +494,6 @@ namespace CxAnalytix.XForm.CxOneTransformer
         {
             foreach(var engine in ScanEngineStats[project.ProjectId].Keys)
                 here.Add($"{engine}_LastScanDate", ScanEngineStats[project.ProjectId][engine].Item2);
-
         }
 
         protected override void AddProductsScanCountFields(IDictionary<string, object> here, ProjectDescriptor project)
@@ -510,6 +515,9 @@ namespace CxAnalytix.XForm.CxOneTransformer
                 ApplicationsFetchTask.Dispose();
                 ApplicationsFetchTask = null;
             }
+
+            foreach (var config_task in ProjectConfigFetchTasks.Values)
+                config_task.Dispose();
         }
     }
 }
