@@ -88,13 +88,17 @@ namespace CxRestClient.CXONE
         private static String AsSourceReferenceKey(this Query data) => data.Path;
 
 
-        public class QueryDataMediator
+        public class QueryDataMediator : IDisposable
         {
             private CxOneRestContext _ctx;
             private CancellationToken _token;
 
             private Dictionary<String, QueriesIndex> _projectQueries = new();
             private Dictionary<String, QuerySourceIndex> _projectQuerySources = new();
+
+            private long _hit = 0;
+            private long _miss = 0;
+
 
             public QueryDataMediator(CxOneRestContext ctx, CancellationToken token)
             {
@@ -106,8 +110,13 @@ namespace CxRestClient.CXONE
             {
                 lock (_projectQueries)
                     if (!_projectQueries.ContainsKey(projectId))
+                    {
+                        _miss++;
                         using (var fetch = GetQueries(_ctx, _token, projectId))
                             _projectQueries.Add(projectId, fetch.Result);
+                    }
+                    else
+                        _hit++;
 
                 return _projectQueries[projectId];
             }
@@ -129,10 +138,13 @@ namespace CxRestClient.CXONE
                 }
 
                 return _projectQuerySources[projectId][query.AsSourceReferenceKey()];
-            } 
-        }
+            }
 
-        public static QueryDataMediator CreateQueryDataMediator(CxOneRestContext ctx, CancellationToken token) => new(ctx, token);
+            public void Dispose()
+            {
+                _log.Debug($"QueryDataMediator: {_hit} cache hits and {_miss} misses.");
+            }
+        }
 
         public static async Task<QueriesIndex> GetQueries(CxOneRestContext ctx, CancellationToken token, String projectId)
         {

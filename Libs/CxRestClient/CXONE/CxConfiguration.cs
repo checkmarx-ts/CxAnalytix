@@ -49,6 +49,7 @@ namespace CxRestClient.CXONE
         {
 
             public String SastFileFilter => this["scan.config.sast.filter"].ConfigValue;
+            public String Preset => this["scan.config.sast.presetName"].ConfigValue;
 
         }
 
