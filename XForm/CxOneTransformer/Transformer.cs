@@ -350,7 +350,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
                     flat_details.Add("VulnerabilityId", detail_entry.Data.ResultHash);
 
-                    flat_details.Add("ResultDeepLink", UrlUtils.MakeUrl(UrlUtils.MakeUrl(ConnectionConfig.DeepLinkUrl,
+                    flat_details.Add("ResultDeepLink", UrlUtils.MakeUrl(UrlUtils.MakeUrl(ConnectionConfig.URL,
                         "results", scan.ScanId, project.ProjectId, "sast"),
                         new Dictionary<String, String> { { "result-id", HttpUtility.UrlEncode(detail_entry.Data.ResultHash) } }));
 
@@ -467,7 +467,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
             CxSastScanMetadata.SastScanMetadata metadata, Task<CxSastScanMetadata.SastScanMetrics> metrics, SortedDictionary<string, object> flat_summary)
         {
             AddScanHeaderElements(scan, flat_summary);
-            flat_summary.Add("DeepLink", UrlUtils.MakeUrl(ConnectionConfig.DeepLinkUrl, "results", scan.ScanId, project.ProjectId, "sast"));
+            flat_summary.Add("DeepLink", UrlUtils.MakeUrl(ConnectionConfig.URL, "results", scan.ScanId, project.ProjectId, "sast"));
             flat_summary.Add("SourceOrigin", scanHeaders[scan.ScanId].SourceOrigin);
             flat_summary.Add("SourceType", scanHeaders[scan.ScanId].SourceType);
 
