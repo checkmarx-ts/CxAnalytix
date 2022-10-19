@@ -1,12 +1,19 @@
 \section{General Configuration}\label{sec:general}
 
-\subsection{Never Do This}
+\subsection{Configuration Element Startup Checks}
 
 The \texttt{cxanalytix.config} file needs to be modified to supply the appropriate configuration elements.  The \texttt{configSections}
-element is not intended to be user configurable.  The XML snippet \hyperref[lst:motouch]{"Part of the Configuration File to Never Change"} shows an example of the contents of this XML element;
-\textbf{never change anything in this section.}
+element should generally not need to be modified as part of the configuration.  
+The XML snippet \hyperref[lst:motouch]{"configSections Element of the Configuration File"} shows an example of the contents of this XML element.
 
-\begin{code}{Part of the Configuration File to Never Change}{\label{lst:motouch}}{}
+\noindent\\For first-time installs, modifying the \texttt{configSections} is never required.  For upgrades, new features may require additions
+to the \texttt{configSections} when using the \texttt{cxanalytix.config} file from the previous version of CxAnalytix.  CxAnalytix
+will perform a check on the configuration file at start to ensure all required elements are found in the \texttt{configSections} element.
+
+\noindent\\In the event that a required element is missing, the CxAnalytix process will exit.  A log entry in the CxAnalytix service log can be found
+that will explain which element to add to the \texttt{configSections} element.
+
+\begin{code}{configSections Element of the Configuration File}{\label{lst:motouch}}{}
 <configSections>
     <section name="CxAnalytixService" 
         type="CxAnalytix.Configuration.Impls.CxAnalytixService, Configuration" />
@@ -36,6 +43,10 @@ element is not intended to be user configurable.  The XML snippet \hyperref[lst:
         type="CxAnalytix.Out.MongoDBOutput.Config.Impl.MongoOutConfig, MongoDBOutput" />
     <section name="CxMongoConnection" 
         type="CxAnalytix.Out.MongoDBOutput.Config.Impl.MongoConnectionConfig, MongoDBOutput" />
+    <section name="CxOneCredentials" 
+        type="CxAnalytix.Configuration.Impls.CxApiTokenCredentials, Configuration" />
+    <section name="CxOneConnection" 
+        type="CxAnalytix.XForm.CxOneTransformer.Config.CxOneConnection, CxOneTransformer" />
 </configSections>
 \end{code}
 
@@ -159,6 +170,60 @@ Configuring a connection to Checkmarx SCA requires the elements \texttt{CxSCACon
 \end{table}
 
 
+\subsubsection{Checkmarx One Connection Configuration}
+Configuring a connection to Checkmarx One requires the elements \texttt{CxOneConnection} and \texttt{CxOneCredentials}.
+
+\begin{xml}{CxOneConnection}{\expandsenv}{}
+<CxOneConnection
+    URL=""
+    IAMURL=""
+    TimeoutSeconds="" 
+    ValidateCertificates="true"
+    RetryLoop=""
+    />
+\end{xml}
+
+\begin{table}[h]
+    \caption{CxOneConnection Attributes}        
+    \begin{tabularx}{\textwidth}{cccl}
+        \toprule
+        \textbf{Attribute} & \textbf{Default} & \textbf{Required} & \textbf{Description}\\
+        \midrule
+        \texttt{URL} & N/A & Yes & \makecell[l]{The URL to the Checkmarx One API.}\\
+        \midrule
+        \texttt{IAMURL} & N/A & No & \makecell[l]{The URL to the Checkmarx One authentication API endpoint.}\\
+        \midrule
+        \texttt{TimeoutSeconds} & 300 & No & \makecell[l]{The number of seconds to wait until an\\API operation times out.}\\
+        \midrule
+        \texttt{ValidateCertificates} & True & No & \makecell[l]{Validate SSL certificates for\\API endpoints.}\\
+        \midrule
+        \texttt{RetryLoop} & 0 & No & \makecell[l]{The number of retries for an API operation\\after the operation times out.}\\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\begin{xml}{CxOneCredentials}{\expandsenv\encrypts}{}
+<CxOneCredentials
+    Tenant=""
+    Token=""
+    />
+\end{xml}
+    
+\begin{table}[h]
+    \caption{CxOneCredentials Attributes}        
+    \begin{tabularx}{\textwidth}{cccl}
+        \toprule
+        \textbf{Attribute} & \textbf{Default} & \textbf{Required} & \textbf{Description}\\
+        \midrule
+        \texttt{Tenant} & N/A & Yes & \makecell[l]{The name of the CheckmarxOne tenant.}\\
+        \midrule
+        \texttt{Token} & N/A & Yes & \makecell[l]{A CheckmarxOne API token.}\\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+
+
 \subsection{CxAnalytix Service and CLI Execution Configuration}\label{sec:runtime_config}
 
 The \texttt{CxAnalytixService} element provides the runtime configuration for CxAnalytix.  The child element \texttt{EnabledTransformers}
@@ -180,6 +245,8 @@ is configured with the transformation logic modules to use when crawling Checkma
     ScanStatisticsRecordName="">
 
     <EnabledTransformers>
+        <Transformer Name="" />
+        ...
         <Transformer Name="" />
     </EnabledTransformers>
 
@@ -243,6 +310,7 @@ attribute \texttt{Name} of the child element \texttt{Transformer} can be given o
 \begin{itemize}
     \item SAST
     \item SCA
+    \item CxOne
 \end{itemize}
 
 \noindent\\One or more \texttt{Transformer} elements are required.  In the example below, both the SAST and SCA transformers are configured.
@@ -256,6 +324,8 @@ The selected services must have corresponding connection configurations as descr
     </EnabledTransformers>
 </CxAnalytixService>
 \end{xml}
+
+\noindent\\Adding \texttt{Transformer} element with duplicate \texttt{Name} attributes will ignore all but the first added element.
 
 \subsection{Limiting the Scope of Crawling by Filtering}
 
