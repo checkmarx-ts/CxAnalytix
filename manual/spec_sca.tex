@@ -1,0 +1,121 @@
+\subsection{Fields for Outputs Generated from Checkmarx SCA}
+
+
+\subsubsection{Record: SCA Scan Summary}
+
+\begin{itemize}
+
+    \item HighVulnerabilityLibraries
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item LegalHigh
+    \item LegalLow
+    \item LegalMedium
+    \item LegalUnknown
+    \item LowVulnerabilityLibraries
+    \item MediumVulnerabilityLibraries
+    \item NonVulnerableLibraries
+    \item PoliciesViolated
+    \item PolicyViolations
+    \item ProjectId
+    \item ProjectName
+    \item RulesViolated
+    \item ScanFinished
+    \item ScanId
+    \item ScanOrigin
+    \item ScanProduct
+    \item ScanStart
+    \item ScanType
+    \item TAG\_\{tag name\} \textit{Dynamically generated if scan is tagged}
+    \item TeamName
+    \item TotalDirectDependencies
+    \item TotalExploitablePaths
+    \item TotalHighVulnerabilities
+    \item TotalLegalRiskPackages
+    \item TotalLibraries
+    \item TotalLowVulnerabilities
+    \item TotalMediumVulnerabilities
+    \item VulnerabilityScore
+    \item VulnerableAndOutdated
+    \item VulnerableAndUpdated
+\end{itemize}
+
+
+\subsubsection{Record: SCA Vulnerability Details}
+
+\begin{itemize}
+    \item CVEDescription
+    \item CVEName
+    \item CVEPubDate
+    \item CVEScore
+    \item CVEUrl
+    \item CVSS\_AttackComplexity
+    \item CVSS\_AttackVector
+    \item CVSS\_Availability
+    \item CVSS\_Confidentiality
+    \item CVSS\_Score
+    \item CVSS\_Severity
+    \item CVSS\_Version
+    \item CWE
+    \item ExploitableMethods
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item LibraryId
+    \item LibraryLatestReleaseDate
+    \item LibraryLatestVersion
+    \item LibraryLegalRisk\_\{License \& Version\} \textit{(Field name is dynamically generated)}
+    \item LibraryLicenses
+    \item LibraryName
+    \item LibraryReleaseDate
+    \item LibraryVersion
+    \item ProjectId
+    \item ProjectName
+    \item ScanFinished
+    \item ScanId
+    \item ScanProduct
+    \item ScanRiskSeverity
+    \item ScanType
+    \item State
+    \item TeamName
+    \item Type
+    \item VulnerabilityId
+\end{itemize}
+
+
+\subsubsection{Record: Project Information}
+
+\begin{itemize}
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item LastCrawlDate
+    \item Policies
+    \item Preset
+    \item ProjectId
+    \item ProjectName
+    \item SCA\_LastScanDate \textit{(Requires OSA)}
+    \item SCA\_Scans \textit{(Requires OSA)}
+    \item TAG\_\{tag name\} \textit{Dynamically generated if project is tagged}
+    \item TeamName
+\end{itemize}
+
+
+
+\subsubsection{Record: Policy Violations Details}
+\begin{itemize}
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item PolicyName
+    \item ProjectId
+    \item ProjectName
+    \item RuleName
+    \item RuleType
+    \item ScanId
+    \item ScanProduct
+    \item ScanType
+    \item TeamName
+    \item ViolationId
+    \item ViolationName
+    \item ViolationOccurredDate
+    \item ViolationRiskScore
+    \item ViolationSeverity
+    \item ViolationState
+    \item ViolationStatus
+\end{itemize}
+
+
