@@ -514,8 +514,6 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
         public override void Dispose()
         {
-            CancellationTokenSource.CreateLinkedTokenSource(ThreadOpts.CancellationToken).Cancel();
-
             if (QueryData != null)
                 QueryData.Dispose();
 
@@ -524,7 +522,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
             if (ProjectsFetchTask != null)
             {
-                ProjectsFetchTask.Wait();
+                ProjectsFetchTask.Wait(ConnectionConfig.TimeoutSeconds * 1000);
                 if (ProjectsFetchTask.IsCompleted)
                 {
                     ProjectsFetchTask.Dispose();
@@ -534,7 +532,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
             if (ApplicationsFetchTask != null)
             {
-                ApplicationsFetchTask.Wait();
+                ApplicationsFetchTask.Wait(ConnectionConfig.TimeoutSeconds * 1000);
                 if (ApplicationsFetchTask.IsCompleted)
                 {
                     ApplicationsFetchTask.Dispose();
@@ -544,7 +542,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
             foreach (var config_task in ProjectConfigFetchTasks.Values)
             {
-                config_task.Wait();
+                config_task.Wait(ConnectionConfig.TimeoutSeconds * 1000);
                 if (config_task.IsCompleted)
                     config_task.Dispose();
             }
