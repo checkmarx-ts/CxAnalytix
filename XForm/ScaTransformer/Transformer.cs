@@ -57,7 +57,8 @@ namespace CxAnalytix.XForm.ScaTransformer
         protected override void AddAdditionalProjectInfo(IDictionary<string, object> here, string projectId)
         {
             base.AddAdditionalProjectInfo(here, projectId);
-            AddPairsAsTags(Projects[projectId].Tags, here);
+            if (Projects[projectId].Tags != null)
+                AddPairsAsTags(Projects[projectId].Tags, here);
         }
 
         public override void DoTransform(CancellationToken token)
@@ -94,7 +95,7 @@ namespace CxAnalytix.XForm.ScaTransformer
             Parallel.ForEach(Projects, ThreadOpts, (p) => {
 
                 // Projects don't need to have a team assignment, unlike in SAST
-                if (! ( (p.Teams.Count == 0) ? Filter.Matches(p.ProjectName) : p.Teams.Any((t) => Filter.Matches(t, p.ProjectName))))
+                if (! ( (p.Teams.Count == 0) ? Filter.Matches("", p.ProjectName) : p.Teams.Any((t) => Filter.Matches(t, p.ProjectName))))
                 {
                     if (_log.IsDebugEnabled)
                         _log.Debug($"FILTERED: Project: [{p.ProjectName}] with assigned teams [{String.Join(",", p.Teams)}]");

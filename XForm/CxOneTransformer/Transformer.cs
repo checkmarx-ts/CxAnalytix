@@ -130,7 +130,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
                     String groupsString = String.Join(",", p.Groups.ConvertAll((groupId) => groupsTask.Result[groupId].Path));
 
                     // Projects don't need to have a team assignment, unlike in SAST
-                    if (!((p.Groups.Count == 0) ? Filter.Matches(p.ProjectName)
+                    if (!((p.Groups.Count == 0) ? Filter.Matches("", p.ProjectName)
                         : p.Groups.Any((t) => Filter.Matches(groupsTask.Result[t].Path, p.ProjectName))))
                     {
                         if (_log.IsDebugEnabled)
