@@ -34,26 +34,13 @@ namespace CxAnalytix.XForm.CxOneTransformer
         public Transformer() : base(MODULE_NAME, typeof(Transformer), STATE_STORAGE_FILE)
         {
             ConnectionConfig = Configuration.Impls.Config.GetConfig<CxOneConnection>();
-
-            var creds = Configuration.Impls.Config.GetConfig<CxApiTokenCredentials>();
-
-            var restBuilder = new CxOneRestContext.CxOneRestContextBuilder();
-            restBuilder.WithApiURL(ConnectionConfig.URL)
-                .WithIAMUrl(ConnectionConfig.IamUrl)
-                .WithOpTimeout(ConnectionConfig.TimeoutSeconds)
-                .WithSSLValidate(ConnectionConfig.ValidateCertificates)
-                .WithApiToken(creds.Token)
-                .WithTenant(creds.Tenant)
-                .WithRetryLoop(ConnectionConfig.RetryLoop);
-
-            Context = restBuilder.Build();
         }
 
         private CxOneConnection ConnectionConfig { get; set; }
 
         public override string DisplayName => "CheckmarxOne";
 
-        private CxOneRestContext Context { get; set; }
+        private CxOneRestContext? Context { get; set; }
 
 
         private Task<CxProjects.ProjectIndex>? ProjectsFetchTask { get; set; }
@@ -64,13 +51,13 @@ namespace CxAnalytix.XForm.CxOneTransformer
         private CxOneProjectScanEngineCount ScanEngineStats { get; set; } = new();
 
 
-        private CxAudit.QueryDataMediator QueryData { get; set; }
+        private CxAudit.QueryDataMediator? QueryData { get; set; }
 
         private static String NormalizeEngineName(String name) => $"{name.ToUpper()}";
 
         private ConcurrentDictionary<String, Task<ProjectConfiguration>> ProjectConfigFetchTasks { get; set; } = new();
 
-        private PredicateMediator Predicates { get; set;}
+        private PredicateMediator? Predicates { get; set;}
 
 
         private void TrackScanEngineStats(String projectId, CxScans.Scan scan)
@@ -107,6 +94,20 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
         public override void DoTransform(CancellationToken token)
         {
+            var creds = Configuration.Impls.Config.GetConfig<CxApiTokenCredentials>();
+
+            var restBuilder = new CxOneRestContext.CxOneRestContextBuilder();
+            restBuilder.WithApiURL(ConnectionConfig.URL)
+                .WithIAMUrl(ConnectionConfig.IamUrl)
+                .WithOpTimeout(ConnectionConfig.TimeoutSeconds)
+                .WithSSLValidate(ConnectionConfig.ValidateCertificates)
+                .WithApiToken(creds.Token)
+                .WithTenant(creds.Tenant)
+                .WithRetryLoop(ConnectionConfig.RetryLoop);
+
+
+            Context = restBuilder.Build();
+
             QueryData = new(Context, token);
             Predicates = new(Context, token);
 
