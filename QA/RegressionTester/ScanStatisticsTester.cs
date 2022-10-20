@@ -17,7 +17,7 @@ namespace RegressionTester
 
         protected override string[] UniqueIdentifierKeys => new string[] { "ScanId" };
 
-        protected override string[] FilteredKeys => throw new NotImplementedException();
+        protected override string[] FilteredKeys => new string[] { };
 
         protected override string TestName => "SAST Scan Statistics";
     }

@@ -15,7 +15,7 @@ namespace RegressionTester
 
 		protected override string FileMask => "sca_scan_detail*";
 
-		protected override string[] UniqueIdentifierKeys => new string[] { "ScanId", "VulnerabilityId" };
+		protected override string[] UniqueIdentifierKeys => new string[] { "ScanId", "VulnerabilityId", "LibraryId" };
 
 		protected override string[] FilteredKeys => new string[] { };
 
