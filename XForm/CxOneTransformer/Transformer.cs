@@ -316,7 +316,8 @@ namespace CxAnalytix.XForm.CxOneTransformer
                     flat_details.Add("SimilarityId", detail_entry.SimilarityId);
                     flat_details.Add("ResultSeverity", detail_entry.ResultSeverity);
 
-                    flat_details.Add("Remark", String.Join(";", Predicates.GetComments(project.ProjectId, detail_entry.SimilarityId) ) );
+                    if (Predicates != null)
+                        flat_details.Add("Remark", String.Join(";", Predicates.GetComments(project.ProjectId, detail_entry.SimilarityId)));
 
                     if (detail_entry.State.CompareTo(NE_VALUE) != 0)
                     {
@@ -338,16 +339,18 @@ namespace CxAnalytix.XForm.CxOneTransformer
                     flat_details.Add("Branch", scanHeaders[scan.ScanId].Branch);
                     flat_details.Add("ScanFinished", scanHeaders[scan.ScanId].Updated);
 
-                    var query_source = QueryData.GetQuerySource(project.ProjectId, detail_entry.Data);
-                    var query = QueryData.GetQuery(project.ProjectId, detail_entry.Data);
+                    if (QueryData != null)
+                    {
+                        var query_source = QueryData.GetQuerySource(project.ProjectId, detail_entry.Data);
+                        var query = QueryData.GetQuery(project.ProjectId, detail_entry.Data);
 
-                    flat_details.Add("QueryName", detail_entry.Data.QueryName);
-                    flat_details.Add("QueryId", query.Id);
-                    flat_details.Add("QueryLanguage", detail_entry.Data.LanguageName);
-                    flat_details.Add("QueryGroup", detail_entry.Data.QueryGroup);
-                    flat_details.Add("QuerySeverity", query_source.Severity.ToString());
-                    flat_details.Add("QueryVersionCode", query_source.Modified);
-
+                        flat_details.Add("QueryName", detail_entry.Data.QueryName);
+                        flat_details.Add("QueryId", query.Id);
+                        flat_details.Add("QueryLanguage", detail_entry.Data.LanguageName);
+                        flat_details.Add("QueryGroup", detail_entry.Data.QueryGroup);
+                        flat_details.Add("QuerySeverity", query_source.Severity.ToString());
+                        flat_details.Add("QueryVersionCode", query_source.Modified);
+                    }
 
                     flat_details.Add("VulnerabilityId", detail_entry.Data.ResultHash);
 
@@ -511,6 +514,8 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
         public override void Dispose()
         {
+            CancellationTokenSource.CreateLinkedTokenSource(ThreadOpts.CancellationToken).Cancel();
+
             if (QueryData != null)
                 QueryData.Dispose();
 
@@ -519,18 +524,30 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
             if (ProjectsFetchTask != null)
             {
-                ProjectsFetchTask.Dispose();
-                ProjectsFetchTask = null;
+                ProjectsFetchTask.Wait();
+                if (ProjectsFetchTask.IsCompleted)
+                {
+                    ProjectsFetchTask.Dispose();
+                    ProjectsFetchTask = null;
+                }
             }
 
             if (ApplicationsFetchTask != null)
             {
-                ApplicationsFetchTask.Dispose();
-                ApplicationsFetchTask = null;
+                ApplicationsFetchTask.Wait();
+                if (ApplicationsFetchTask.IsCompleted)
+                {
+                    ApplicationsFetchTask.Dispose();
+                    ApplicationsFetchTask = null;
+                }
             }
 
             foreach (var config_task in ProjectConfigFetchTasks.Values)
-                config_task.Dispose();
+            {
+                config_task.Wait();
+                if (config_task.IsCompleted)
+                    config_task.Dispose();
+            }
         }
     }
 }
