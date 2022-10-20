@@ -20,6 +20,49 @@ their instance of VSCode to build and debug CxAnalytix.  A basic \texttt{launch.
 updated as versions of .Net Core and VSCode change over time.
 
 
+\subsection{GitHub Workflows}
+
+The GitHub workflows are part of the official CxAnalytix repository that are used to build and publish release and pre-release builds.  Forks of the CxAnalytix
+repository can also use these workflows to build and publish release artifacts.\footnote{GitHub will, by default, disable the workflows on forks.  You will need token
+visit the \texttt{Actions} tab of your repository to enable the workflows.}
+
+\noindent\\By default, the \texttt{build-ci} workflow executes on pushes, pull requests, or pull request updates on any branch.  The CI build is meant to
+assure that code changes have not broken the build process.  No artifacts are published as part of the CI build.
+
+\noindent\\The \texttt{build-release} and \texttt{build-prerelease} workflows are used to publish release and pre-release artifacts.  Platform specific zip and pdf 
+artifacts are published in the code Releases section of GitHub.  A Docker image is also published in the owning organization's GitHub packages repository as 
+\\\texttt{cxanalytix/cxanalytix:\textit{<tag>}}.  Each workflow requires the following Action secrets to be defined:
+
+\begin{table}[h]
+    \caption{GitHub Action Secrets}        
+    \begin{tabularx}{\textwidth}{ll}
+        \toprule
+        \textbf{Secret Name} & \textbf{Description} \\
+        \midrule
+        \texttt{PACKAGE\_PAT} & \makecell[l]{A personal access token that has the appropriate permissions\\to perform build operations.} \\
+        \midrule
+        \texttt{PACKAGE\_USER} & The user associated with the PAT. \\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\noindent\\The package PAT requires the permissions that allow the following build operations:\\
+
+\begin{enumerate}
+    \item Set and delete tags on the CxAnalytix repository.
+    \item Publish releases for the CxAnalytix repository.
+    \item Publish packages in the CxAnalytix repository's owning organization.
+\end{enumerate}
+
+\subsubsection{Invoking the GitHub Release and Pre-Release Workflows}
+
+\noindent\\The \texttt{build-release} and \texttt{build-prerelease} workflows are typically manually invoked by navigating to \texttt{Actions}
+and highlighting the workflow that is to be invoked.  The \texttt{Run Workflow} button on the right side of the screen, as shown in the screen
+shot below, allows a branch to be chosen and a release version to be defined.  If everything executes correctly, a release or pre-release
+is published and the repository is tagged.
+
+\noindent\\\includegraphics[scale=.4]{graphics/github-workflow.png}
+
 \section{Developing New Modules}
 
 The transformation and output modules are dynamically loaded at runtime.  They are developed with an SDK component included in the CxAnalytix source tree.
