@@ -422,7 +422,8 @@ namespace CxAnalytix.XForm.ScaTransformer
             flat.Add("PolicyViolations", sd.PoliciesViolated);
             flat.Add("PoliciesViolated", String.Join(";", sd.ViolatedPolicies));
 
-            AddPairsAsTags(ScanHeaderIndex[sd.ScanId].Tags, flat);
+            if (ScanHeaderIndex[sd.ScanId].Tags != null)
+                AddPairsAsTags(ScanHeaderIndex[sd.ScanId].Tags, flat);
 
 
             trx.write(ScaScanSummaryOut, flat);
