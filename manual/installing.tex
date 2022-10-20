@@ -35,8 +35,8 @@ files can be left in the same directory as the runtime or deployed to different 
     \item Execute: \texttt{sc.exe create CxAnalytix binpath="\{install folder path\}/CxAnalytixService.exe"}
     \item Make the directory \texttt{\windowsconfigpathbase}
     \item Move the \texttt{cxanalytix.config} and \texttt{cxanalytix.log4net} \\to \windowsconfigpathbase.
-    \item Set the permissions on \texttt{\windowsconfigpathbase} to allow Read/Write access to the service account that is running
-    CxAnalytixService (usually this is NETWORK SERVICE).
+    \item Ensure permissions for the folder \texttt{\windowsconfigpathbase} allow Read/Write access to the service account that is running
+    CxAnalytixService.\footnote{Usually this is set to SYSTEM by default and does not need modification.}
 \end{enumerate}
 
 
