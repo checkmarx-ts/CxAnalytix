@@ -31,7 +31,6 @@ namespace CxAnalytixCLI
 
                     ExecuteLoop.Execute(ctoken);
                 }
-
             });
         }
 
