@@ -45,6 +45,10 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="CommandLineParser" Version="2.9.1" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <ProjectReference Include="..\..\Libs\Executive\Executive.csproj" />
 	</ItemGroup>
 

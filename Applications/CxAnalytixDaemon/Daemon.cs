@@ -24,8 +24,19 @@ namespace CxAnalytixDaemon
 		public Task StartAsync(CancellationToken cancellationToken)
 		{
 			_cancelToken = new CancellationTokenSource();
+            _cancelToken.Token.Register(() =>
+			{
+				var token = new CancellationTokenSource();
 
-			_serviceTask = Task.Run( () =>
+				using (var task = StopAsync(token.Token) )
+				{
+					if (!_serviceTask.Wait(120000))
+						token.Cancel();
+				}
+			});
+
+
+            _serviceTask = Task.Run( () =>
 			{
                 ExecuteLoop.Execute(_cancelToken);
 
@@ -38,9 +49,10 @@ namespace CxAnalytixDaemon
 		{
 			if (_cancelToken != null && _serviceTask != null && !_serviceTask.IsCompleted)
 			{
-				_cancelToken.Cancel();
+                if (!_cancelToken.IsCancellationRequested)
+                    _cancelToken.Cancel();
 
-				try
+                try
 				{
 					_serviceTask.Wait(cancellationToken);
 				}
