@@ -431,11 +431,7 @@ namespace CxAnalytix.XForm.ScaTransformer
 
         public override void Dispose()
         {
-            if (PoliciesTask != null)
-            {
-                PoliciesTask.Dispose();
-                PoliciesTask = null;
-            }
+            PoliciesTask = PoliciesTask.DisposeTask();
         }
     }
 }

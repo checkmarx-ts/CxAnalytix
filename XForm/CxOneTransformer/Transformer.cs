@@ -520,32 +520,13 @@ namespace CxAnalytix.XForm.CxOneTransformer
             if (Predicates != null)
                 Predicates.Dispose();
 
-            if (ProjectsFetchTask != null)
-            {
-                ProjectsFetchTask.Wait(ConnectionConfig.TimeoutSeconds * 1000);
-                if (ProjectsFetchTask.IsCompleted)
-                {
-                    ProjectsFetchTask.Dispose();
-                    ProjectsFetchTask = null;
-                }
-            }
+            ProjectsFetchTask = ProjectsFetchTask.DisposeTask();
+            ApplicationsFetchTask = ApplicationsFetchTask.DisposeTask();
 
-            if (ApplicationsFetchTask != null)
-            {
-                ApplicationsFetchTask.Wait(ConnectionConfig.TimeoutSeconds * 1000);
-                if (ApplicationsFetchTask.IsCompleted)
-                {
-                    ApplicationsFetchTask.Dispose();
-                    ApplicationsFetchTask = null;
-                }
-            }
+            foreach (var key in ProjectConfigFetchTasks.Keys)
+                ProjectConfigFetchTasks[key] = ProjectConfigFetchTasks[key].DisposeTask();
+            ProjectConfigFetchTasks = null;
 
-            foreach (var config_task in ProjectConfigFetchTasks.Values)
-            {
-                config_task.Wait(ConnectionConfig.TimeoutSeconds * 1000);
-                if (config_task.IsCompleted)
-                    config_task.Dispose();
-            }
         }
     }
 }

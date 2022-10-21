@@ -1086,12 +1086,7 @@ namespace CxAnalytix.XForm.SastTransformer
 
 		public override void Dispose()
 		{
-			if (_sastVersionTask != null)
-			{
-                _sastVersionTask.Dispose();
-				_sastVersionTask = null;
-
-            }
+			_sastVersionTask = _sastVersionTask.DisposeTask();
 		}
 	}
 }

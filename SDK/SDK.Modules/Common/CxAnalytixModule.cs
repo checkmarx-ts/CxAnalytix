@@ -21,7 +21,8 @@ namespace SDK.Modules.Common
         protected override void Load(ContainerBuilder builder)
         {
             base.Load(builder);
-            builder.RegisterType(_type).Named<T>(_name.ToLower()).Named<T>(_name);
+            builder.RegisterType(_type).Named<T>(_name.ToLower()).Named<T>(_name)
+                .OwnedByLifetimeScope().InstancePerDependency();
             Registrar.ModuleRegistry.RegisterModule<T>(_name);
         }
     }
