@@ -39,6 +39,8 @@ namespace CxAnalytix.Executive
                 }
 
 
+                GC.Collect();
+
                 Task.Delay(Service.ProcessPeriodMinutes * 60 * 1000, t.Token).Wait();
             } while (!t.Token.IsCancellationRequested);
 

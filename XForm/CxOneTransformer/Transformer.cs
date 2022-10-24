@@ -164,6 +164,12 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
                 Parallel.ForEach(State.Projects, ThreadOpts, (projDescriptor) =>
                 {
+                    if (!lastScansTask.Result.ContainsKey(projDescriptor.ProjectId))
+                    {
+                        _log.Info($"Project {projDescriptor.ProjectId}:{projDescriptor.TeamName}:{projDescriptor.ProjectName} contains no scans.");
+                        return;
+                    }
+
                     var latestScanDateForProject = lastScansTask.Result[projDescriptor.ProjectId].Completed;
 
                     // This skips some API I/O since we know the last scan date of some projects.
@@ -334,7 +340,10 @@ namespace CxAnalytix.XForm.CxOneTransformer
                     flat_details.Add("State", detail_entry.State);
                     flat_details.Add("Status", detail_entry.Status);
                     flat_details.Add("QueryCweId", detail_entry.VulnerabilityDetails.CweId);
-                    flat_details.Add("QueryCategories", String.Join(",", detail_entry.VulnerabilityDetails.Categories));
+                    
+                    if (detail_entry.VulnerabilityDetails.Categories != null)
+                        flat_details.Add("QueryCategories", String.Join(",", detail_entry.VulnerabilityDetails.Categories));
+
                     flat_details.Add("FalsePositive", detail_entry.State.CompareTo(NE_VALUE) == 0);
                     flat_details.Add("Branch", scanHeaders[scan.ScanId].Branch);
                     flat_details.Add("ScanFinished", scanHeaders[scan.ScanId].Updated);
