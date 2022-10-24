@@ -34,9 +34,5 @@ namespace CxAnalytixCLI
             });
         }
 
-        private static void Console_CancelKeyPress(object sender, ConsoleCancelEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

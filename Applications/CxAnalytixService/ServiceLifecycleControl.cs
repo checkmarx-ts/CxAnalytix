@@ -53,7 +53,6 @@ namespace CxAnalytixService
             base.OnStart(args);
 
             _cancelToken = new CancellationTokenSource();
-            _cancelToken.Token.Register(stopService);
 
             _serviceTask = Task.Run( () =>
             {
