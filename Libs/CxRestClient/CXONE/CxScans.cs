@@ -67,7 +67,7 @@ namespace CxRestClient.CXONE
             [JsonProperty(PropertyName = "engines")]
             public List<String> EnginesForScan { get; set; }
 
-            public String EnginesAsString => String.Join(";", EnginesForScan);
+            public String EnginesAsString => (EnginesForScan != null) ? String.Join(";", EnginesForScan) : "";
 
             [JsonProperty(PropertyName = "metadata")]
             ScanMetadata Metadata { get; set; }

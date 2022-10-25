@@ -62,6 +62,8 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
         private void TrackScanEngineStats(String projectId, CxScans.Scan scan)
         {
+            if (scan.EnginesForScan == null)
+                return;
 
             lock (ScanEngineStats)
             {
@@ -511,8 +513,9 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
         protected override void AddProductsLastScanDateFields(IDictionary<string, object> here, ProjectDescriptor project)
         {
-            foreach(var engine in ScanEngineStats[project.ProjectId].Keys)
-                here.Add($"{engine}_LastScanDate", ScanEngineStats[project.ProjectId][engine].Item2);
+            if (ScanEngineStats.ContainsKey(project.ProjectId))
+                foreach (var engine in ScanEngineStats[project.ProjectId].Keys)
+                    here.Add($"{engine}_LastScanDate", ScanEngineStats[project.ProjectId][engine].Item2);
         }
 
         protected override void AddProductsScanCountFields(IDictionary<string, object> here, ProjectDescriptor project)
