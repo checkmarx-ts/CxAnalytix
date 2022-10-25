@@ -121,11 +121,24 @@ namespace CxRestClient.CXONE
                 return _projectQueries[projectId];
             }
 
-            public Query GetQuery(String projectId, SastResultData data) => GetQueryIndex(projectId)[data.AsCompositeKey()];
+            public Query GetQuery(String projectId, SastResultData data) 
+            {
+                var key = data.AsCompositeKey();
+                if (GetQueryIndex(projectId).ContainsKey(key))
+                    return GetQueryIndex(projectId)[key];
+                else
+                {
+                    _log.Warn($"Could not obtain query data for query [{key}]");
+                    return null;
+                }
+            }
 
             public QuerySource GetQuerySource(String projectId, SastResultData data)
             {
                 var query = GetQuery(projectId, data);
+
+                if (query == null)
+                    return null;
 
                 lock (_projectQuerySources)
                 {
