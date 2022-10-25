@@ -520,8 +520,9 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
         protected override void AddProductsScanCountFields(IDictionary<string, object> here, ProjectDescriptor project)
         {
-            foreach (var engine in ScanEngineStats[project.ProjectId].Keys)
-                here.Add($"{engine}_Scans", ScanEngineStats[project.ProjectId][engine].Item1);
+            if (ScanEngineStats.ContainsKey(project.ProjectId))
+                foreach (var engine in ScanEngineStats[project.ProjectId].Keys)
+                    here.Add($"{engine}_Scans", ScanEngineStats[project.ProjectId][engine].Item1);
         }
 
         public override void Dispose()
