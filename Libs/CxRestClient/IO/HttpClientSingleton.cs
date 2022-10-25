@@ -24,12 +24,13 @@ namespace CxRestClient.IO
                 _userAgent = new ProductInfoHeaderValue($"{agent.CompanyName}-{agent.ProductName}", agent.ProductVersion);
                 _log.Debug($"User Agent: {_userAgent}");
             }
-            catch (Exception ex)
+            catch (Exception)
 			{
+                agent = new CxAnalytix.Utilities.Reflection.UserAgentComponents();
+
+                _userAgent = new ProductInfoHeaderValue($"{agent.CompanyName}-{agent.ProductName}", agent.ProductVersion);
                 // Attempting to assign values such as "Microsoft Corporation" causes the
                 // user agent class to throw an exception.
-
-                _log.Error("Unable to set User Agent header.", ex);
 			}
         }
 

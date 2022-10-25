@@ -12,6 +12,14 @@ namespace CxAnalytix.Utilities
 
         public class UserAgentComponents
         {
+            public UserAgentComponents()
+            {
+                CompanyName = "Checkmarx";
+                ProductName = "CxAnalytix";
+                ProductVersion = "0.0.0";
+            }
+
+
             public String CompanyName { get; internal set; }
             public String ProductName { get; internal set; }
             public String ProductVersion { get; internal set; }
@@ -21,32 +29,24 @@ namespace CxAnalytix.Utilities
         {
             var assembly = System.Reflection.Assembly.GetEntryAssembly();
 
-            String companyName = "Checkmarx";
-            String productName = "CxAnalytix";
-            String productVersion = "0.0.0";
+            var result = new UserAgentComponents();
 
             if (assembly != null)
             {
                 var companyAttrib = assembly.CustomAttributes.FirstOrDefault((x) => x.AttributeType == typeof(System.Reflection.AssemblyCompanyAttribute));
                 if (companyAttrib != null)
-                    companyName = companyAttrib.ConstructorArguments[0].ToString().Replace("\"", "");
+                    result.CompanyName = companyAttrib.ConstructorArguments[0].ToString().Replace("\"", "");
 
                 var productAttrib = assembly.CustomAttributes.FirstOrDefault((x) => x.AttributeType == typeof(System.Reflection.AssemblyProductAttribute));
                 if (productAttrib != null)
-                    productName = productAttrib.ConstructorArguments[0].ToString().Replace("\"", "");
+                    result.ProductName = productAttrib.ConstructorArguments[0].ToString().Replace("\"", "");
 
                 var versionAttrib = assembly.CustomAttributes.FirstOrDefault((x) => x.AttributeType == typeof(System.Reflection.AssemblyInformationalVersionAttribute));
                 if (versionAttrib != null)
-                    productVersion = versionAttrib.ConstructorArguments[0].ToString().Replace("\"", "");
+                    result.ProductVersion = versionAttrib.ConstructorArguments[0].ToString().Replace("\"", "");
             }
 
-            return new UserAgentComponents()
-            {
-                CompanyName = companyName,
-                ProductName = productName,
-                ProductVersion = productVersion
-
-            };
+            return result;
         }
 
         public static Assembly[] GetOutputAssemblies()
