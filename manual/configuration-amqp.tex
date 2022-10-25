@@ -17,7 +17,7 @@ for configuration of SSL certificate options.  The full example XML is displayed
 
 
 \begin{xml}{AMQPConnection}{\expandsenv\encrypts}{}
-<AMQPConnection UserName="foo" Password="bar">
+<AMQPConnection UserName="foo" Password="bar" TimeoutSeconds="600">
     <ClusterNodes>
         <Endpoint 
             AmqpUri="amqp://localhost:5672" 
@@ -48,6 +48,8 @@ for configuration of SSL certificate options.  The full example XML is displayed
         \texttt{Username} & N/A & Yes & \makecell[l]{The user name used to authenticate with the AMQP endpoint.}\\
         \midrule
         \texttt{Password} & N/A & Yes & \makecell[l]{The password used to authenticate with the AMQP endpoint.}\\
+        \midrule
+        \texttt{TimeoutSeconds} & 600 & No & \makecell[l]{The AMQP connection connection timeout.}\\
         \bottomrule
     \end{tabularx}
 \end{table}
@@ -214,7 +216,7 @@ element configured to sent records to a specific AMQP Exchange, using a dynamica
 
 
 
-\par{\noindent\\The \texttt{Filter} Element}
+\par{\noindent\\\\The \texttt{Filter} Element}
 
 
 \noindent\\The optional \texttt{Filter} element can be used to change the data fields that are sent to the AMQP endpoint
