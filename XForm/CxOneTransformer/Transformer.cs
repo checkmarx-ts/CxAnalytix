@@ -239,7 +239,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
                                 _log.Info($"Processing {scan.ScanProduct} scan {scan.ScanId}:{projid}:{projname}[{scan.FinishedStamp}]");
 
-                            using (var rpt = CxScanResults.GetScanResults(Context, ThreadOpts.CancellationToken, scan.ScanId))
+                                using (var rpt = CxScanResults.GetScanResults(Context, ThreadOpts.CancellationToken, scan.ScanId))
                                 {
 
                                     if (rpt.Result.SastResults != null && rpt.Result.SastResults.Count > 0)
@@ -247,6 +247,8 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
                                     if (rpt.Result.ScaResults != null && rpt.Result.ScaResults.Count > 0)
                                         OutputScaScanResults(scanTrx, project, scan, loadedScans, rpt.Result.ScaResults, sca_risk_states.Result);
+                                    else
+                                        sca_risk_states.Wait();
 
                                     if (!ThreadOpts.CancellationToken.IsCancellationRequested && scanTrx.Commit())
                                         State.ScanCompleted(scan);
