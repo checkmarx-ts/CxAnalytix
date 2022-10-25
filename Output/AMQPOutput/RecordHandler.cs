@@ -20,9 +20,10 @@ namespace CxAnalytix.Out.AMQPOutput
 
 		public string RecordName => _recordName;
 
-		private String _exchange;
+		public String Exchange { get; private set; }
 		private String _topic;
-		private DictionaryFilter<String, object> _filter = null;
+
+        private DictionaryFilter<String, object> _filter = null;
 		private Dictionary<String, String> _headers = null;
 
 		private static int MAX_ROUTING_KEY_SIZE = 255;
@@ -34,7 +35,7 @@ namespace CxAnalytix.Out.AMQPOutput
 		{
 			_recordName = recordName;
 
-			_exchange = QueueConfig.Exchange;
+			Exchange = QueueConfig.Exchange;
 			_topic = recordName;
 			var record_cfg = QueueConfig.Records[recordName];
 
@@ -42,7 +43,7 @@ namespace CxAnalytix.Out.AMQPOutput
 			if (record_cfg != null)
 			{
 				if (!String.IsNullOrEmpty(record_cfg.Exchange))
-					_exchange = record_cfg.Exchange;
+					Exchange = record_cfg.Exchange;
 
 				if (!String.IsNullOrEmpty(record_cfg.TopicSpec))
 					_topic = record_cfg.TopicSpec;
@@ -68,28 +69,32 @@ namespace CxAnalytix.Out.AMQPOutput
 			}
 		}
 
+		private void write_raw(IModel channel, IDictionary<string, object> headers, IDictionary<string, object> record)
+		{
+            var props = channel.CreateBasicProperties();
+            props.ContentType = "application/json";
+			props.Type = _recordName;
+			props.Headers = headers;
 
-		public void write(IModel channel, IDictionary<string, object> record)
+            channel.BasicPublish(Exchange, record.ComposeString(_topic).Truncate(MAX_ROUTING_KEY_SIZE), props,
+                Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(record, Defs.serializerSettings)));
+        }
+
+
+        public void write(IModel channel, IDictionary<string, object> headers, IDictionary<string, object> record)
 		{
 			var dict = record;
 
 			if (_filter != null)
 				dict = _filter.Filter(record);
 
-			var props = channel.CreateBasicProperties();
-			props.ContentType = "application/json";
-			props.Type = _recordName;
-
-			props.Headers = new Dictionary<String, Object>();
-			props.Headers.Add(GENERATION_KEY, 0);
+			headers.Add(GENERATION_KEY, 0);
 
 			if (_headers != null)
 				foreach (var headerSpec in _headers)
-					props.Headers.Add(headerSpec.Key, record.ComposeString(headerSpec.Value));
+					headers.Add(headerSpec.Key, record.ComposeString(headerSpec.Value));
 
-
-			channel.BasicPublish(_exchange, record.ComposeString(_topic).Truncate(MAX_ROUTING_KEY_SIZE), props, 
-				Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dict, Defs.serializerSettings) ) );
+			write_raw(channel, headers, dict);
 		}
 	}
 }

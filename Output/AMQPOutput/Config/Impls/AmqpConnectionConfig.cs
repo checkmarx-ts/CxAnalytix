@@ -42,9 +42,22 @@ namespace CxAnalytix.Out.AMQPOutput.Config.Impls
 			}
 		}
 
+        [ConfigurationProperty("TimeoutSeconds", IsRequired = false, DefaultValue = 600)]
+        public int TimeoutSeconds
+        {
+            get
+            {
+                return (int)this["TimeoutSeconds"];
+            }
+
+            set
+            {
+                this["TimeoutSeconds"] = value;
+            }
+        }
 
 
-		[ConfigurationProperty("ClusterNodes", IsDefaultCollection = false, IsRequired = true)]
+        [ConfigurationProperty("ClusterNodes", IsDefaultCollection = false, IsRequired = true)]
 		[ConfigurationCollection(typeof(AmqpEndpointCollection), AddItemName = "Endpoint")]
 		public AmqpEndpointCollection Endpoints
 		{

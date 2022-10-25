@@ -3,7 +3,6 @@ using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Runtime.CompilerServices;
-using System.Linq;
 
 [assembly: InternalsVisibleTo("CxRestClient_Tests")]
 namespace CxRestClient.IO
@@ -18,39 +17,19 @@ namespace CxRestClient.IO
 
 		static HttpClientSingleton()
 		{
-            var assembly = System.Reflection.Assembly.GetEntryAssembly();
-
-            String companyName = "Checkmarx";
-            String productName = "CxAnalytix";
-            String productVersion = "0.0.0";
-
-            _userAgent = new ProductInfoHeaderValue($"{companyName}-{productName}", productVersion);
-
-            if (assembly != null)
-            {
-				var companyAttrib = assembly.CustomAttributes.FirstOrDefault((x) => x.AttributeType == typeof(System.Reflection.AssemblyCompanyAttribute));
-				if (companyAttrib != null)
-					companyName = companyAttrib.ConstructorArguments[0].ToString().Replace("\"", "");
-
-				var productAttrib = assembly.CustomAttributes.FirstOrDefault((x) => x.AttributeType == typeof(System.Reflection.AssemblyProductAttribute));
-				if (productAttrib != null)
-					productName = productAttrib.ConstructorArguments[0].ToString().Replace("\"", "");
-
-				var versionAttrib = assembly.CustomAttributes.FirstOrDefault((x) => x.AttributeType == typeof(System.Reflection.AssemblyInformationalVersionAttribute));
-				if (versionAttrib != null)
-					productVersion = versionAttrib.ConstructorArguments[0].ToString().Replace("\"", "");
-			}
-
+            var agent = CxAnalytix.Utilities.Reflection.GetUserAgentName();
 
             try
             {
-                _userAgent = new ProductInfoHeaderValue($"{companyName}-{productName}", productVersion);
+                _userAgent = new ProductInfoHeaderValue($"{agent.CompanyName}-{agent.ProductName}", agent.ProductVersion);
                 _log.Debug($"User Agent: {_userAgent}");
             }
-            catch (Exception)
+            catch (Exception ex)
 			{
                 // Attempting to assign values such as "Microsoft Corporation" causes the
                 // user agent class to throw an exception.
+
+                _log.Error("Unable to set User Agent header.", ex);
 			}
         }
 
