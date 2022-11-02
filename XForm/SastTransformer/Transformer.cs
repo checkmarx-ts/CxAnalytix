@@ -23,7 +23,7 @@ using static SDK.Modules.Transformer.Data.ScanDescriptor;
 using CxAnalytix.XForm.Common;
 using CxRestClient.MNO.Collections;
 using static CxRestClient.SAST.CxVersion;
-using System.Linq;
+
 
 namespace CxAnalytix.XForm.SastTransformer
 {
@@ -1084,5 +1084,9 @@ namespace CxAnalytix.XForm.SastTransformer
 			return b.ToString();
 		}
 
-    }
+		public override void Dispose()
+		{
+			_sastVersionTask = _sastVersionTask.DisposeTask();
+		}
+	}
 }

@@ -151,23 +151,12 @@ namespace CxRestClient.SAST
         private CxScanStatistics()
         { }
 
-        private static T DeserializeResponse<T>(HttpResponseMessage response)
-        {
-            using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
-            using (var reader = new JsonTextReader(sr))
-            {
-                JToken jt = JToken.Load(reader);
-                using (var jtr = new JTokenReader(jt))
-                    return (T)new JsonSerializer().Deserialize(jtr, typeof(T));
-            }
-
-        }
 
         private static async Task<T> GetForSingleObjectResponse<T>(CxSASTRestContext ctx, CancellationToken token, String endpoint)
         {
             return await WebOperation.ExecuteGetAsync<T>(
                 ctx.Sast.Json.CreateClient
-                , DeserializeResponse<T>
+                , JsonUtils.DeserializeResponse<T>
                 , endpoint
                 , ctx.Sast
                 , token

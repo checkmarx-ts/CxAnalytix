@@ -1,5 +1,6 @@
 ﻿using Autofac;
 using CxAnalytix.Configuration.Utils;
+using CxAnalytix.Exceptions;
 using log4net;
 using System;
 using System.Configuration;
@@ -25,6 +26,9 @@ namespace CxAnalytix.Configuration.Impls
 
 			if (!File.Exists(map.ExeConfigFilename))
 				throw new FileNotFoundException("Configuration file missing.", map.ExeConfigFilename);
+
+			if (!ConfigSectionValidator.IsValid(map.ExeConfigFilename))
+				throw new UnrecoverableOperationException("The configuration is not valid.");
 
 			_cfgManager = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.None);
 

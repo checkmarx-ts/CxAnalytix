@@ -117,7 +117,7 @@ namespace CxRestClient
         #endregion
 
 
-        public class CxSASTRestContextBuilder : CxRestContextBuilderCommon<CxSASTRestContextBuilder>
+        public class CxSASTRestContextBuilder : CxRestContextWithCredsBuilderBase<CxSASTRestContextBuilder>
         {
 
 

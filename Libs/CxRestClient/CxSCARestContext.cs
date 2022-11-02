@@ -43,7 +43,7 @@ namespace CxRestClient
             }
         }
 
-        public class CxSCARestContextBuilder : CxRestContextBuilderCommon<CxSCARestContextBuilder>
+        public class CxSCARestContextBuilder : CxRestContextWithCredsBuilderBase<CxSCARestContextBuilder>
         {
             private String _tenant;
             public CxSCARestContextBuilder WithTenant(String tenant)
@@ -88,6 +88,7 @@ namespace CxRestClient
             internal override void Validate()
             {
                 base.Validate();
+
                 if (String.IsNullOrEmpty(_tenant))
                     throw new InvalidOperationException("Tenant was not provided is invalid.");
 

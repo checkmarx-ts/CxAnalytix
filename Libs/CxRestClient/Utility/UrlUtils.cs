@@ -6,31 +6,41 @@ using System.Threading.Tasks;
 
 namespace CxRestClient.Utility
 {
-    public class UrlUtils
+    public static class UrlUtils
     {
         public static String MakeUrl(String url, params String[] suffixes)
         {
             StringBuilder result = new(url.TrimEnd('/'));
 
-            foreach (var suffix in suffixes)
+            foreach (var suffix in suffixes.Where((x) => !String.IsNullOrEmpty(x) ) )
                 result.Append("/").Append(suffix.TrimStart('/'));
 
             return result.ToString();
         }
 
-        public static String MakeQueryString(Dictionary<String, String> query)
+        public static String MakeQueryString(IDictionary<String, String> query)
         {
             LinkedList<String> p = new LinkedList<string>();
 
-            foreach (String k in query.Keys)
+            foreach (var k in query.Keys)
                 p.AddLast(String.Format("{0}={1}", k, query[k]));
 
             return String.Join('&', p);
         }
 
-        public static String MakeUrl(String url, String suffix, Dictionary<String, String> query)
-        => MakeUrl(url, suffix) + ((query.Count > 0) ? ("?" + MakeQueryString(query)) : (""));
+        public static String QueryMarkerValue(String originalUrl)
+        {
+            if (originalUrl.Contains('?'))
+                return "&";
+            else
+                return "?";
+        }
 
+        public static String MakeUrl(String url, String suffix, IDictionary<String, String> query)
+        => MakeUrl(url, suffix) + ((query.Count > 0) ? (QueryMarkerValue(url+suffix) + MakeQueryString(query)) : (""));
+
+        public static String MakeUrl(String url, Dictionary<String, String> query)
+        => url + ((query.Count > 0) ? (QueryMarkerValue(url) + MakeQueryString(query)) : (""));
 
     }
 }

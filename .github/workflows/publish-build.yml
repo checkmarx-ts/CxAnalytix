@@ -22,7 +22,7 @@ jobs:
   build-packages:
     runs-on: ubuntu-latest
     env:
-      DOCKER_REPO: ghcr.io/checkmarx-ts/cxanalytix/cxanalytix
+      DOCKER_REPO: ghcr.io/${{ github.repository_owner }}/cxanalytix/cxanalytix
     steps:
       - name: Set up Docker Buildx
         id: buildx
@@ -80,6 +80,9 @@ jobs:
           popd
           echo \<P\> >> release.md
           echo docker pull $DOCKER_REPO:v${{ inputs.tag }} >> release.md
+
+      - name: Edit manual's version stamp
+        run: echo ${{ inputs.tag }} > manual/version.tex
 
       - name: Build PDF Manual
         uses: xu-cheng/latex-action@v2

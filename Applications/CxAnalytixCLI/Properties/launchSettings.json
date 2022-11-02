@@ -3,7 +3,7 @@
     "CxAnalytixCLI": {
       "commandName": "Executable",
       "executablePath": "dotnet.exe",
-      "commandLineArgs": "CxAnalytixCLI.dll"
+      "commandLineArgs": "CxAnalytixCLI.dll --loop"
     }
   }
 }

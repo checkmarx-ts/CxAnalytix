@@ -27,7 +27,7 @@
     \centering
     \includegraphics[scale=.4]{graphics/cx_logo-dark.png}
     \vfill
-    \textcolor{Sienna}{\Huge CxAnalytix 2.x}
+    \textcolor{Sienna}{\Huge CxAnalytix\\\input{version}}
     \vfill
     {\Large\textbf{Nathan Leach, CSSLP\\Checkmarx Principal Solution Architect}}
 \end{titlepage}
@@ -44,7 +44,7 @@ scan data is normally consumed by development teams to remediate issues found in
 projects.  The development team will perform triage and code changes as they assess what is required 
 from the scan results. 
 
-CxAnalytix was created when managment teams expressed the desire to create dashboards with
+CxAnalytix was created when management teams expressed the desire to create dashboards with
 aggregated views of vulnerabilities across all scanning activity.  While CxAnalytix itself
 does not produce these dashboards, it crawls scan results and collects the vulnerability
 data that is then integrated into custom dashboards.\\\\
@@ -100,6 +100,7 @@ and versioned with each CxAnalytix release.
 \input{shard_key_cookbook.tex}
 \input{key-format-specification.tex}
 \input{splunk.tex}
+\input{amqp_patterns.tex}
 \input{troubleshooting.tex}
 
 

@@ -55,14 +55,16 @@ namespace CxRestClient.SCA
 
         }
 
-        public static IEnumerable<Project> GetProjects(CxSCARestContext ctx, CancellationToken token)
+        public class ProjectIndex : SingleIndexedCollection<Project, String>
         {
+            public override string GetIndexKey(Project item) => item.ProjectId;
+        }
 
-            using (var r = WebOperation.ExecuteGet<JsonResponseArrayReader<Project>>(ctx.Json.CreateClient, 
-                (response) => new JsonResponseArrayReader<Project>(response.Content.ReadAsStream()),
-                UrlUtils.MakeUrl(ctx.ApiUrl, URL_SUFFIX), ctx, token))
-                return new List<Project>(r);
-
+        public static ProjectIndex GetProjects(CxSCARestContext ctx, CancellationToken token)
+        {
+            return WebOperation.ExecuteGet<ProjectIndex>(ctx.Json.CreateClient,
+                JsonUtils.DeserializeResponse<ProjectIndex>,
+                UrlUtils.MakeUrl(ctx.ApiUrl, URL_SUFFIX), ctx, token);
         }
 
     }

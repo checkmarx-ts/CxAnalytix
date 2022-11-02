@@ -44,14 +44,14 @@ namespace CxAnalytix.Executive
             _xformersContainer = builder.Build();
         }
 
-        private static IEnumerable<ITransformer> LoadTransformers()
+        private static IEnumerable<ITransformer> LoadTransformers(ILifetimeScope lifeScope)
         {
             var retVal = new LinkedList<ITransformer>();
             foreach (EnabledTransformer requestedXform in Service.Transformers)
             {
                 try
                 {
-                    retVal.AddLast(_xformersContainer.ResolveNamed<ITransformer>(requestedXform.Name.ToLower()));
+                    retVal.AddLast(lifeScope.ResolveNamed<ITransformer>(requestedXform.Name.ToLower()));
                 }
                 catch (ComponentNotRegisteredException ex)
                 {
@@ -66,57 +66,62 @@ namespace CxAnalytix.Executive
 
         public static void Execute(CancellationTokenSource? t = null)
         {
-            if (t == null)
-                t = _defaultCancelToken;
+            using (var scope = _xformersContainer.BeginLifetimeScope())
+            {
+                if (t == null)
+                    t = _defaultCancelToken;
 
-            var entry = Assembly.GetEntryAssembly();
+                var entry = Assembly.GetEntryAssembly();
 
 
-            _log.Info($"Start via [{(entry != null ? entry.GetName() : "UNKNOWN")}]");
+                _log.Info($"Start via [{(entry != null ? entry.GetName() : "UNKNOWN")}]");
 
-            _log.InfoFormat("CWD: {0}", Directory.GetCurrentDirectory());
+                _log.InfoFormat("CWD: {0}", Directory.GetCurrentDirectory());
 
-            DateTime start = DateTime.Now;
-            _log.Info($"Starting data transformation with {Service.Transformers.Count} transformers.");
+                DateTime start = DateTime.Now;
+                _log.Info($"Starting data transformation with {Service.Transformers.Count} transformers.");
 
-            Parallel.ForEach<ITransformer>(LoadTransformers(), new ParallelOptions() { CancellationToken = t.Token
-            }, 
-            (xformer) => {
-
-                _log.Info($"Begin executing data transformer for module: {xformer.DisplayName}");
-                try
+                Parallel.ForEach<ITransformer>(LoadTransformers(scope), new ParallelOptions()
                 {
-                    xformer.DoTransform(t.Token);
-                }
-                catch (Exception ex)
+                    CancellationToken = t.Token
+                },
+                (xformer) =>
                 {
-                    _log.Error($"Unhandled exception when executing transformer module: {xformer.DisplayName}", ex);
 
-                }
+                    _log.Info($"Begin executing data transformer for module: {xformer.DisplayName}");
+                    try
+                    {
+                        xformer.DoTransform(t.Token);
+                    }
+                    catch (Exception ex)
+                    {
+                        _log.Error($"Unhandled exception when executing transformer module: {xformer.DisplayName}", ex);
 
-                _log.Info($"Finished executing data transformer for module: {xformer.DisplayName}");
+                    }
 
-            });
+                    _log.Info($"Finished executing data transformer for module: {xformer.DisplayName}");
+                });
 
-            _log.InfoFormat("Data transformation finished in {0:0.00} minutes.",
-                DateTime.Now.Subtract(start).TotalMinutes);
+                _log.InfoFormat("Data transformation finished in {0:0.00} minutes.",
+                    DateTime.Now.Subtract(start).TotalMinutes);
 
-            start = DateTime.Now;
+                start = DateTime.Now;
 
-            if (!t.Token.IsCancellationRequested)
-                using (var auditTrx = Output.StartTransaction())
-                {
-                    AuditTrailCrawler.CrawlAuditTrails(t.Token);
+                if (!t.Token.IsCancellationRequested)
+                    using (var auditTrx = Output.StartTransaction())
+                    {
+                        AuditTrailCrawler.CrawlAuditTrails(t.Token);
 
-                    if (!t.Token.IsCancellationRequested)
-                        auditTrx.Commit();
-                }
+                        if (!t.Token.IsCancellationRequested)
+                            auditTrx.Commit();
+                    }
 
-            _log.InfoFormat("Audit data transformation finished in {0:0.00} minutes.",
-                DateTime.Now.Subtract(start).TotalMinutes);
+                _log.InfoFormat("Audit data transformation finished in {0:0.00} minutes.",
+                    DateTime.Now.Subtract(start).TotalMinutes);
 
 
-            _log.Info("End");
+                _log.Info("End");
+            }
         }
     }
 }

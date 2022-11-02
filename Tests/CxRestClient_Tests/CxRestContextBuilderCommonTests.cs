@@ -6,7 +6,7 @@ namespace CxRestClient_Tests
 {
 
 	[TestFixture(typeof(CxSASTRestContext.CxSASTRestContextBuilder))]
-	public class CxRestContextBuilderCommonTests<T> where T : CxRestContextBuilderBase<T>, new()
+	public class CxRestContextBuilderCommonTests<T> where T : CxRestContextWithCredsBuilderBase<T>, new()
 	{
 
 		[Test]

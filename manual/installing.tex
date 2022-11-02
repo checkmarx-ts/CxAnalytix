@@ -34,7 +34,9 @@ files can be left in the same directory as the runtime or deployed to different 
     \item Open Powershell or Windows command prompt as administrator.
     \item Execute: \texttt{sc.exe create CxAnalytix binpath="\{install folder path\}/CxAnalytixService.exe"}
     \item Make the directory \texttt{\windowsconfigpathbase}
-    \item Move the \texttt{cxanalytix.config} and \texttt{cxanalytix.log4net} \\to \windowsconfigpath.
+    \item Move the \texttt{cxanalytix.config} and \texttt{cxanalytix.log4net} \\to \windowsconfigpathbase.
+    \item Ensure permissions for the folder \texttt{\windowsconfigpathbase} allow Read/Write access to the service account that is running
+    CxAnalytixService.\footnote{Usually this is set to SYSTEM by default and does not need modification.}
 \end{enumerate}
 
 
@@ -178,9 +180,13 @@ customizing the logging output location and verbosity.
 
 \section{Upgrading}
 
-Configuration files for versions of CxAnalytix with the same major version\footnote{The major version is the first 
-number in the version stamp.  e.g. v2.0.0 has a major version of 2.} are backwards compatible unless stated otherwise 
-in the release notes.  Upgrades only require replacing the CxAnalytix binaries.
+
+Configuration elements found in \texttt{cxanalytix.config} are generally backwards compatible for versions
+of CxAnalytix with the same major version\footnote{The major version is the first 
+number in the version stamp.  e.g. v2.0.0 has a major version of 2.}.  New features may require additions
+to the \texttt{cxanalytix.config} file. Please refer to Chapter \ref{chap:configuration} for additional details
+about modifying the configuration file.
+
 
 \noindent\\When configuring CxAnalytix, it is recommended that the configuration, state, and log files are stored
 in directories separate from the CxAnalytix binaries.  This will prevent the inadvertent misconfiguration on upgrade.

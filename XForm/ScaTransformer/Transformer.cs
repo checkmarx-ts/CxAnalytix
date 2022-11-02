@@ -17,6 +17,7 @@ using OutputBootstrapper;
 using CxAnalytix.XForm.ScaTransformer.Policy;
 using ScanHeaderIndex_t = System.Collections.Concurrent.ConcurrentDictionary<string, CxRestClient.SCA.CxScans.Scan>;
 using CxAnalytix.Interfaces.Outputs;
+using System.Reflection.PortableExecutable;
 
 namespace CxAnalytix.XForm.ScaTransformer
 {
@@ -30,6 +31,8 @@ namespace CxAnalytix.XForm.ScaTransformer
         private ScaPolicyIndex Policies => PoliciesTask.Result;
 
         private ScanHeaderIndex_t ScanHeaderIndex { get; set; }
+
+        private CxProjects.ProjectIndex Projects { get; set; }
 
 
         public Transformer() : base(MODULE_NAME, typeof(Transformer), STATE_STORAGE_FILE)
@@ -49,6 +52,13 @@ namespace CxAnalytix.XForm.ScaTransformer
 
                     return new ScaPolicyIndex(CxPolicies.GetPolicies(ctx, ThreadOpts.CancellationToken));
                 }, ThreadOpts.CancellationToken);
+        }
+
+        protected override void AddAdditionalProjectInfo(IDictionary<string, object> here, string projectId)
+        {
+            base.AddAdditionalProjectInfo(here, projectId);
+            if (Projects[projectId].Tags != null)
+                AddPairsAsTags(Projects[projectId].Tags, here);
         }
 
         public override void DoTransform(CancellationToken token)
@@ -75,18 +85,17 @@ namespace CxAnalytix.XForm.ScaTransformer
             PoliciesTask = PopulatePolicies(ctx);
 
             _log.Debug("Retrieving SCA projects.");
-            var projects = CxProjects.GetProjects(ctx, ThreadOpts.CancellationToken);
+
+            Projects = CxProjects.GetProjects(ctx, ThreadOpts.CancellationToken);
 
             var projectDescriptors = new ConcurrentBag<ProjectDescriptor>();
 
-
             _log.Debug("Resolving projects.");
 
-
-            Parallel.ForEach(projects, ThreadOpts, (p) => {
+            Parallel.ForEach(Projects, ThreadOpts, (p) => {
 
                 // Projects don't need to have a team assignment, unlike in SAST
-                if (! ( (p.Teams.Count == 0) ? Filter.Matches(p.ProjectName) : p.Teams.Any((t) => Filter.Matches(t, p.ProjectName))))
+                if (! ( (p.Teams.Count == 0) ? Filter.Matches("", p.ProjectName) : p.Teams.Any((t) => Filter.Matches(t, p.ProjectName))))
                 {
                     if (_log.IsDebugEnabled)
                         _log.Debug($"FILTERED: Project: [{p.ProjectName}] with assigned teams [{String.Join(",", p.Teams)}]");
@@ -145,6 +154,10 @@ namespace CxAnalytix.XForm.ScaTransformer
                     return;
                 }
 
+                var riskStateTask = Task.Run(() => CxRiskState.GetRiskStates(ctx, ThreadOpts.CancellationToken, project.ProjectId),
+                    ThreadOpts.CancellationToken);
+
+
                 using (var pinfoTrx = Output.StartTransaction())
                 {
                     OutputProjectInfoRecords(pinfoTrx, project);
@@ -152,10 +165,6 @@ namespace CxAnalytix.XForm.ScaTransformer
                     if (!ThreadOpts.CancellationToken.IsCancellationRequested)
                         pinfoTrx.Commit();
                 }
-
-
-                var riskStateTask = Task.Run(() => CxRiskState.GetRiskStates(ctx, ThreadOpts.CancellationToken, project.ProjectId),
-                    ThreadOpts.CancellationToken);
 
 
                 foreach (var scan in State.GetScansForProject(project.ProjectId))
@@ -186,15 +195,11 @@ namespace CxAnalytix.XForm.ScaTransformer
                     }
                 }
             });
-
 		}
 
-        private void OutputScanDetails(IOutputTransaction scanTrx, ScanDescriptor scan, CxDetailedReport.DetailedRiskReport riskReport, CxRiskState.IndexedRiskStates stateIndex)
+        public static IEnumerable<IDictionary<String, Object>> GenerateScanDetailData(CxDetailedReport.DetailedRiskReport riskReport, 
+            IDictionary<String, Object> header, ScanDescriptor scan, CxRiskState.IndexedRiskStates stateIndex)
         {
-            var header = new SortedDictionary<String, Object>();
-            AddScanHeaderElements(scan, header);
-            header.Add("ScanFinished", scan.FinishedStamp);
-
             foreach (var vulnerability in riskReport.Vulnerabilities)
             {
                 var flat = new SortedDictionary<String, Object>(header);
@@ -233,7 +238,7 @@ namespace CxAnalytix.XForm.ScaTransformer
                 flat.Add("LibraryReleaseDate", package.ReleaseDate);
                 flat.Add("LibraryVersion", package.Version);
 
-                if (package.Licenses != null && package.Licenses.Count> 0)
+                if (package.Licenses != null && package.Licenses.Count > 0)
                 {
                     flat.Add("LibraryLicenses", String.Join(";", package.Licenses));
                     foreach (var license in package.Licenses)
@@ -244,8 +249,22 @@ namespace CxAnalytix.XForm.ScaTransformer
                     }
                 }
 
-                scanTrx.write(ScaScanDetailOut, flat);
+                yield return flat;
             }
+        }
+
+
+        private void OutputScanDetails(IOutputTransaction scanTrx, ScanDescriptor scan, CxDetailedReport.DetailedRiskReport riskReport, CxRiskState.IndexedRiskStates stateIndex)
+        {
+            var header = new SortedDictionary<String, Object>();
+
+            AddScanHeaderElements(scan, header);
+            header.Add("ScanFinished", scan.FinishedStamp);
+
+            foreach (var flat_details in GenerateScanDetailData(riskReport, header, scan, stateIndex) )
+                scanTrx.write(ScaScanDetailOut, flat_details);
+
+
         }
 
         private void OutputPolicyViolations(IOutputTransaction trx, ScanDescriptor sd, CxDetailedReport.DetailedRiskReport riskReport, CxRiskState.IndexedRiskStates stateIndex)
@@ -318,13 +337,8 @@ namespace CxAnalytix.XForm.ScaTransformer
             }
         }
 
-        private void OutputScanSummary(IOutputTransaction trx, ScanDescriptor sd, CxDetailedReport.DetailedRiskReport report)
+        public static void FillScanSummaryData(CxDetailedReport.DetailedRiskReport report, IDictionary<String, Object> flat, String projectName)
         {
-            var flat = new SortedDictionary<String, Object>();
-            AddScanHeaderElements(sd, flat);
-            flat.Add("ScanStart", ScanHeaderIndex[sd.ScanId].Created);
-            flat.Add("ScanFinished", ScanHeaderIndex[sd.ScanId].Updated);
-
             flat.Add("LegalHigh", report.Summary.LicensesLegalRisk.High);
             flat.Add("LegalMedium", report.Summary.LicensesLegalRisk.Medium);
             flat.Add("LegalLow", report.Summary.LicensesLegalRisk.Low);
@@ -347,8 +361,8 @@ namespace CxAnalytix.XForm.ScaTransformer
             flat.Add("LowVulnerabilityLibraries", report.Summary.LowVulnerablePackages);
 
             // Due to the counts above not being accurate, this total is not accurate.
-            flat.Add("NonVulnerableLibraries", report.Summary.TotalPackages - 
-                (report.Summary.HighVulnerablePackages + report.Summary.MediumVulnerablePackages + report.Summary.LowVulnerablePackages) );
+            flat.Add("NonVulnerableLibraries", report.Summary.TotalPackages -
+                (report.Summary.HighVulnerablePackages + report.Summary.MediumVulnerablePackages + report.Summary.LowVulnerablePackages));
 
             flat.Add("VulnerabilityScore", report.Summary.RiskScore);
 
@@ -365,12 +379,12 @@ namespace CxAnalytix.XForm.ScaTransformer
                     currentPackages.Add(pkg.Id);
             }
 
-            foreach(var vuln in report.Vulnerabilities)
+            foreach (var vuln in report.Vulnerabilities)
             {
                 if (vuln.IsIgnored)
                     continue;
 
-                if (outDatedPackages.Contains(vuln.PackageId) )
+                if (outDatedPackages.Contains(vuln.PackageId))
                 {
                     outdatedVuln++;
                     continue;
@@ -383,23 +397,41 @@ namespace CxAnalytix.XForm.ScaTransformer
                 }
 
                 // It should be impossible to see this in the log if we assume the detailed report is compiled correctly.
-                _log.Warn($"Cannot determine if {vuln.PackageId} is current or outdated in project {sd.Project.ProjectName}.");
+                _log.Warn($"Cannot determine if {vuln.PackageId} is current or outdated in project {projectName}.");
             }
 
             flat.Add("VulnerableAndOutdated", outdatedVuln);
             flat.Add("VulnerableAndUpdated", updatedVuln);
 
+            flat.Add("TotalDirectDependencies", report.Summary.DirectPackages);
+            flat.Add("ScanOrigin", report.Summary.ScanOrigin);
+            flat.Add("TotalExploitablePaths", report.Summary.ExploitablePathsFound);
+        }
+
+
+        private void OutputScanSummary(IOutputTransaction trx, ScanDescriptor sd, CxDetailedReport.DetailedRiskReport report)
+        {
+            var flat = new SortedDictionary<String, Object>();
+            AddScanHeaderElements(sd, flat);
+            flat.Add("ScanStart", ScanHeaderIndex[sd.ScanId].Created);
+            flat.Add("ScanFinished", ScanHeaderIndex[sd.ScanId].Updated);
+
+            FillScanSummaryData(report, flat, sd.Project.ProjectName);
+
             flat.Add("RulesViolated", sd.RulesViolated);
             flat.Add("PolicyViolations", sd.PoliciesViolated);
             flat.Add("PoliciesViolated", String.Join(";", sd.ViolatedPolicies));
 
-            flat.Add("TotalDirectDependencies", report.Summary.DirectPackages);
-            flat.Add("ScanOrigin", report.Summary.ScanOrigin);
-            flat.Add("TotalExploitablePaths", report.Summary.ExploitablePathsFound);
+            if (ScanHeaderIndex[sd.ScanId].Tags != null)
+                AddPairsAsTags(ScanHeaderIndex[sd.ScanId].Tags, flat);
+
 
             trx.write(ScaScanSummaryOut, flat);
         }
 
-
+        public override void Dispose()
+        {
+            PoliciesTask = PoliciesTask.DisposeTask();
+        }
     }
 }

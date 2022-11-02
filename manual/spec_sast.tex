@@ -1,0 +1,423 @@
+\subsection{Fields for Outputs Generated from Checkmarx SAST and OSA}
+
+\subsubsection{Record: SAST Scan Summary}
+
+\begin{itemize}
+    \item CustomFields \textit{(Only included if custom fields are defined for the project.  Structure is dynamically generated using custom field name/value elements.)}
+    \item CxVersion
+    \item DeepLink
+    \item EngineFinished
+    \item EngineStart
+    \item FailedLinesOfCode
+    \item FileCount
+    \item High
+    \item Information
+    \item Initiator
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item Languages
+    \item LinesOfCode
+    \item Low
+    \item Medium
+    \item PoliciesViolated \textit{(Requires M\&O)}
+    \item PolicyViolations \textit{(Requires M\&O)}
+    \item Preset
+    \item ProjectId
+    \item ProjectName
+    \item ReportCreationTime
+    \item RulesViolated
+    \item ScanComments
+    \item ScanFinished
+    \item ScanId
+    \item ScanProcessingEngine
+    \item ScanProduct
+    \item ScanRisk
+    \item ScanRiskSeverity
+    \item ScanStart
+    \item ScanTime
+    \item ScanType
+    \item SourceOrigin
+    \item TeamName
+\end{itemize}
+
+
+\subsubsection{Record: SAST Vulnerability Details}
+
+\begin{itemize}
+    \item FalsePositive
+    \item FirstDetectionDate
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item NodeCodeSnippet
+    \item NodeColumn
+    \item NodeFileName
+    \item NodeId
+    \item NodeLength
+    \item NodeLine
+    \item NodeName
+    \item NodeType
+    \item PathId
+    \item ProjectId
+    \item ProjectName
+    \item QueryCategories
+    \item QueryCweId
+    \item QueryGroup
+    \item QueryId
+    \item QueryLanguage
+    \item QueryName
+    \item QuerySeverity
+    \item QueryVersionCode
+    \item Remark
+    \item ResultDeepLink
+    \item ResultId
+    \item ResultSeverity
+    \item ScanFinished
+    \item ScanId
+    \item ScanProduct
+    \item ScanType
+    \item SimilarityId
+    \item SinkColumn
+    \item SinkFileName
+    \item SinkLine
+    \item State
+    \item Status
+    \item TeamName
+    \item VulnerabilityId
+\end{itemize}
+
+\subsubsection{Record: SCA Scan Summary}
+
+\textit{Note that for Checkmarx SAST, OSA provides the results for Software Composition Analysis.}
+
+\begin{itemize}
+    \item HighVulnerabilityLibraries
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item LegalHigh
+    \item LegalLow
+    \item LegalMedium
+    \item LowVulnerabilityLibraries
+    \item MediumVulnerabilityLibraries
+    \item NonVulnerableLibraries
+    \item PoliciesViolated \textit{(Requires M\&O)}
+    \item PolicyViolations \textit{(Requires M\&O)}
+    \item ProjectId
+    \item ProjectName
+    \item RulesViolated \textit{(Requires M\&O)}
+    \item ScanFinished
+    \item ScanId
+    \item ScanProduct
+    \item ScanStart
+    \item ScanType
+    \item TeamName
+    \item TotalHighVulnerabilities
+    \item TotalLibraries
+    \item TotalLowVulnerabilities
+    \item TotalMediumVulnerabilities
+    \item VulnerabilityScore
+    \item VulnerableAndOutdated
+    \item VulnerableAndUpdated
+\end{itemize}
+
+\subsubsection{Record: SCA Vulnerability Details}
+
+
+\begin{itemize}
+    \item CVEDescription
+    \item CVEName
+    \item CVEPubDate
+    \item CVEScore
+    \item CVEUrl
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item LibraryId
+    \item LibraryLatestReleaseDate
+    \item LibraryLatestVersion
+    \item LibraryLegalRisk\_\{License \& Version\} \textit{(Field name is dynamically generated)}
+    \item LibraryLicenses
+    \item LibraryName
+    \item LibraryReleaseDate
+    \item LibraryVersion
+    \item ProjectId
+    \item ProjectName
+    \item Recommendation
+    \item ScanFinished
+    \item ScanId
+    \item ScanProduct
+    \item ScanRiskSeverity
+    \item ScanType
+    \item SimilarityId
+    \item State
+    \item TeamName
+    \item VulnerabilityId    
+\end{itemize}
+
+
+\subsubsection{Record: Project Information}
+
+\begin{itemize}
+    \item CustomFields \textit{(Only included if custom fields are defined for the project.  Structure is dynamically generated using custom field name/value elements.)}
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item LastCrawlDate
+    \item Policies \textit{(Requires M\&O)}
+    \item Preset
+    \item ProjectId
+    \item ProjectName
+    \item SAST\_LastScanDate
+    \item SAST\_Scans
+    \item SCA\_LastScanDate \textit{(Requires OSA)}
+    \item SCA\_Scans \textit{(Requires OSA)}
+    \item TeamName
+\end{itemize}
+
+
+
+\subsubsection{Record: Policy Violations Details}
+\textit{This record requires M\&O to be installed and policies assigned to projects prior to scans.  Scans performed without a policy assigned will not have a policy
+violation record.}
+
+\begin{itemize}
+    \item FirstViolationDetectionDate
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item PolicyName
+    \item ProjectId
+    \item ProjectName
+    \item RuleCreateDate
+    \item RuleDescription
+    \item RuleId
+    \item RuleName
+    \item RuleType
+    \item ScanId
+    \item ScanProduct
+    \item ScanType
+    \item TeamName
+    \item ViolationId
+    \item ViolationName
+    \item ViolationOccurredDate
+    \item ViolationRiskScore
+    \item ViolationSeverity
+    \item ViolationSource
+    \item ViolationState
+    \item ViolationStatus
+    \item ViolationType
+\end{itemize}
+
+
+\subsubsection{Record: Scan Statistics}
+\textit{This record is only available for SAST version 9.4 and later.}
+
+\noindent\\In addition to the listed fields, successfully executed general query names \\
+(e.g. \texttt{javaScript.Cx.General.Sanitize}) are field names in the 
+document.  These are variable per scan.  The value associated with the field is the count of elements found when the general query was executed.
+
+\noindent\\Fields prefixed with \textbf{\{language\}\_} are dynamically generated.  Only fields for languages detected by the scan are included.
+
+\begin{itemize}
+
+    \item CxEnginePackVersion
+    \item CxEngineVersion
+    \item CxVersion
+    \item \{language\}\_DomObjectCount
+    \item EngineOS
+    \item FailedGeneralQueries
+    \item FailedGeneralQueriesCount
+    \item FailedQueries
+    \item FailedQueriesCount
+    \item FailedStagesCount
+    \item FileExclusionPattern
+    \item \{language\}\_FilesParsedSuccessfully
+    \item \{language\}\_FilesParseFailure
+    \item \{language\}\_FilesParsedPartially
+    \item \{language\}\_FilesNotScanned
+    \item \{language\}\_FilesParsedSuccessfullyCount
+    \item \{language\}\_FilesParseFailureCount
+    \item \{language\}\_FilesParsedPartiallyCount
+    \item FilteredParsedLOC
+    \item FolderExclusionPattern
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item \{language\}\_LOCParsedCount
+    \item \{language\}\_LOCParseFailCount
+    \item \{language\}\_LOCParseSuccessPercent
+    \item PhysicalMemoryPeakMB
+    \item ProjectId
+    \item ProjectName
+    \item ResultCount
+    \item ScanId
+    \item ScanProduct
+    \item ScanType
+    \item SucessfulGeneralQueriesCount
+    \item TeamName
+    \item UnfilteredParsedLOC
+    \item UnscannedFileCount
+    \item VirtualMemoryPeakMB
+\end{itemize}
+
+
+\subsubsection{Record: CxDB.accesscontrol.AuditTrail}
+
+\begin{itemize}
+    \item Details
+    \item Id
+    \item OriginIpAddress
+    \item TimeStamp
+    \item Type
+    \item UserId
+    \item UserName
+\end{itemize}
+
+
+\subsubsection{Record: CxActivity.dbo.AuditTrail}
+\begin{itemize}
+    \item Action
+    \item EndTime
+    \item EntityId
+    \item EntityType
+    \item Origin
+    \item Remarks
+    \item StartTime
+    \item Success
+    \item UserName
+\end{itemize}
+
+
+\subsubsection{Record: CxActivity.dbo.Audit\_DataRetention}
+\begin{itemize}
+    \item DataRetentionRequestId
+    \item DeletedScanId
+    \item Id
+    \item InititiatorName
+    \item TimeStamp
+\end{itemize}
+
+
+\subsubsection{Record: CxActivity.dbo.Audit\_Logins}
+\begin{itemize}
+    \item Client
+    \item ErrorMessage
+    \item Event
+    \item Id
+    \item IsSuccessfull
+    \item OwnerId
+    \item TimeStamp
+\end{itemize}
+
+\subsubsection{Record: CxActivity.dbo.Audit\_Presets}
+
+\begin{itemize}
+    \item Event
+    \item Id
+    \item IsSuccessfull
+    \item OwnerId
+    \item OwnerName
+    \item OwnerType
+    \item PresetId
+    \item PresetName
+    \item TimeStamp
+\end{itemize}
+
+
+\subsubsection{Record: CxActivity.dbo.Audit\_Projects}
+\begin{itemize}
+    \item Client
+    \item Event
+    \item Id
+    \item OwnerId
+    \item OwnerName
+    \item ProjectId
+    \item ProjectName
+    \item TimeStamp
+\end{itemize}
+
+
+\subsubsection{Record: CxActivity.dbo.Audit\_Queries}
+\begin{itemize}
+    \item Comments
+    \item CurrentUserName
+    \item Cwe
+    \item CxDescriptionID
+    \item DraftSource
+    \item EngineMetadata
+    \item Event
+    \item Id
+    \item IsCheckOut
+    \item IsCompiled
+    \item IsDeprecated
+    \item IsEncrypted
+    \item IsExecutable
+    \item IsSuccessfull
+    \item Name
+    \item OwnerId
+    \item OwnerName
+    \item OwnerType
+    \item PackageId
+    \item QueryId
+    \item Severity
+    \item Source
+    \item TimeStamp
+    \item UpdateTime
+    \item Version
+\end{itemize}
+
+\subsubsection{Record: CxActivity.dbo.Audit\_QueriesActions}
+\begin{itemize}
+    \item Comment
+    \item Event
+    \item Id
+    \item IsSuccessfull
+    \item OwnerId
+    \item OwnerName
+    \item OwnerType
+    \item TimeStamp
+\end{itemize}
+
+
+\subsubsection{Record: CxActivity.dbo.Audit\_Reports}
+\begin{itemize}
+    \item Id
+    \item OwnerId
+    \item OwnerName
+    \item ReportType
+    \item ReportTypeID
+    \item ScanID
+    \item TimeStamp
+\end{itemize}
+
+\subsubsection{Record: CxActivity.dbo.Audit\_ScanRequests}
+\begin{itemize}
+    \item Event
+    \item EventInitiatorUserId
+    \item EventInitiatorUserName
+    \item Id
+    \item IsSuccessfull
+    \item ProjectId
+    \item ProjectName
+    \item ScanID
+    \item ScanOwnerName
+    \item ScanRequestId
+    \item TimeStamp
+\end{itemize}
+
+\subsubsection{Record: CxActivity.dbo.Audit\_Scans}
+\begin{itemize}
+    \item Client
+    \item Event
+    \item Id
+    \item IsSuccessfull
+    \item OwnerId
+    \item OwnerName
+    \item ProjectId
+    \item ProjectName
+    \item ScanID
+    \item TimeStamp
+    \item UpdateType
+\end{itemize}
+
+
+\subsubsection{Record: CxActivity.dbo.Audit\_Users}
+\begin{itemize}
+    \item Comment
+    \item Event
+    \item Id
+    \item IsSuccessfull
+    \item OwnerId
+    \item OwnerName
+    \item TimeStamp
+    \item UserId
+    \item UserName
+\end{itemize}

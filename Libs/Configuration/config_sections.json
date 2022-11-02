@@ -1,0 +1,27 @@
+{
+  "required_sections": {
+    "CxAnalytixService": "CxAnalytix.Configuration.Impls.CxAnalytixService, Configuration",
+    "CxSASTCredentials": "CxAnalytix.Configuration.Impls.CxCredentials, Configuration",
+    "CxSCACredentials": "CxAnalytix.Configuration.Impls.CxMultiTenantCredentials, Configuration",
+    "CxSASTConnection": "CxAnalytix.Configuration.Impls.CxSASTConnection, Configuration",
+    "CxSCAConnection": "CxAnalytix.XForm.ScaTransformer.Config.CxScaConnection, ScaTransformer",
+    "ProjectFilterRegex": "CxAnalytix.Configuration.Impls.CxFilter, Configuration",
+    "CxAuditTrailSuppressions": "CxAnalytix.AuditTrails.Crawler.Config.CxAuditTrailSuppressions, CxAuditTrailsCrawler",
+    "CxAuditTrailRecords": "CxAnalytix.AuditTrails.Crawler.Config.CxAuditTrailRecordNameMap, CxAuditTrailsCrawler",
+    "CxDB": "CxAnalytix.CxAuditTrails.DB.Config.CxAuditDBConnection, CxAuditTrailsDB",
+    "AMQPConnection": "CxAnalytix.Out.AMQPOutput.Config.Impls.AmqpConnectionConfig, AMQPOutput",
+    "AMQPConfig": "CxAnalytix.Out.AMQPOutput.Config.Impls.AmqpConfig, AMQPOutput",
+    "CxLogOutput": "CxAnalytix.Out.Log4NetOutput.Config.Impl.LogOutputConfig, Log4NetOutput",
+    "CxMongoOutput": "CxAnalytix.Out.MongoDBOutput.Config.Impl.MongoOutConfig, MongoDBOutput",
+    "CxMongoConnection": "CxAnalytix.Out.MongoDBOutput.Config.Impl.MongoConnectionConfig, MongoDBOutput",
+    "CxOneCredentials": "CxAnalytix.Configuration.Impls.CxApiTokenCredentials, Configuration",
+    "CxOneConnection": "CxAnalytix.XForm.CxOneTransformer.Config.CxOneConnection, CxOneTransformer"
+  },
+  "removable_sections": [
+    // Leave these two removable elements for unit testing purposes.
+    "Canary_Remove_Internal_Testing1",
+    "Canary_Remove_Internal_Testing2"
+
+
+  ]
+}

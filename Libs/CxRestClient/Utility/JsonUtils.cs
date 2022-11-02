@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
 
@@ -60,19 +61,35 @@ namespace CxRestClient.Utility
         }
 
 
-        public static T DeserializeFromStream<T>(Stream jsonStream)
+        public static T DeserializeFromStream<T>(Stream jsonStream, params JsonConverter[] additionalConverters)
         {
+            var serializer = new JsonSerializer();
+
+            if (additionalConverters != null && additionalConverters.Length > 0)
+                foreach (var conv in additionalConverters)
+                    serializer.Converters.Add(conv);
+
             using (var sr = new StreamReader(jsonStream))
             using (var jtr = new JsonTextReader(sr))
             {
                 var jt = JToken.Load(jtr);
                 using (var reader = jt.CreateReader())
                 {
-                    return (T)new JsonSerializer().Deserialize(reader, typeof(T));
+                    return (T)serializer.Deserialize(reader, typeof(T));
                 }
 
             }
 
+        }
+
+        public static T DeserializeResponse<T>(HttpResponseMessage response, params JsonConverter[] additionalConverters)
+        {
+            return DeserializeFromStream<T>(response.Content.ReadAsStream(), additionalConverters);
+        }
+
+        public static T DeserializeResponse<T>(HttpResponseMessage response)
+        {
+            return DeserializeFromStream<T>(response.Content.ReadAsStream());
         }
 
 

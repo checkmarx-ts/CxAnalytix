@@ -14,7 +14,7 @@ namespace RegressionTester
 
 		protected override string FileMask => "sast_project_info*";
 
-		protected override string[] UniqueIdentifierKeys => new string[] { "ProjectId", "SAST_Scans" };
+		protected override string[] UniqueIdentifierKeys => new string[] { "ProjectId" };
 
 		protected override string[] FilteredKeys => new string[] { "LastCrawlDate" };
 

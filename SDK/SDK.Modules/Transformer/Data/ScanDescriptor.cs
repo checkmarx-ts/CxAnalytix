@@ -13,19 +13,21 @@ namespace SDK.Modules.Transformer.Data
 		{
             SAST,
             OSA,
-            SCA
+            SCA,
+            CXONE
 		}
 
         public ScanDescriptor()
         {
             SeverityCounts = new();
             ViolatedPolicies = new();
+            Project = new();
         }
 
         /// <summary>
         /// The descriptor for the project that owns the scan.
         /// </summary>
-        public ProjectDescriptor? Project {get; set;}
+        public ProjectDescriptor Project {get; set;}
         /// <summary>
         /// The type of scan that was performed.
         /// </summary>

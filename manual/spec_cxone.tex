@@ -1,0 +1,223 @@
+\subsection{Fields for Outputs Generated from Checkmarx One}
+
+
+\subsubsection{Record: SAST Scan Summary}
+
+\begin{itemize}
+    \item Branch
+    \item DeepLink
+    \item Engines
+    \item FailedLinesOfCode
+    \item FileCount
+    \item High
+    \item Information
+    \item Initiator
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item Languages
+    \item LinesOfCode
+    \item Low
+    \item Medium
+    \item Preset
+    \item ProjectId
+    \item ProjectName
+    \item ScanFinished
+    \item ScanId
+    \item ScanProduct
+    \item ScanStart
+    \item ScanTime
+    \item ScanType
+    \item SourceOrigin
+    \item SourceType
+    \item TAG\_\{tag name\} \textit{Dynamically generated if scan is tagged}
+    \item TeamName
+\end{itemize}
+
+
+\subsubsection{Record: SAST Vulnerability Details}
+
+\begin{itemize}
+    \item Branch
+    \item FalsePositive
+    \item FirstDetectionDate
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item NodeColumn
+    \item NodeFileName
+    \item NodeId
+    \item NodeLength
+    \item NodeLine
+    \item NodeName
+    \item NodeType
+    \item ProjectId
+    \item ProjectName
+    \item QueryCategories
+    \item QueryCweId
+    \item QueryGroup
+    \item QueryId
+    \item QueryLanguage
+    \item QueryName
+    \item QuerySeverity
+    \item QueryVersionCode
+    \item Remark
+    \item ResultDeepLink
+    \item ResultId
+    \item ResultSeverity
+    \item ScanFinished
+    \item ScanId
+    \item ScanProduct
+    \item ScanType
+    \item SimilarityId
+    \item SinkColumn
+    \item SinkFileName
+    \item SinkLine
+    \item State
+    \item Status
+    \item TeamName
+    \item VulnerabilityId
+\end{itemize}
+
+
+\subsubsection{Record: Project Information}
+
+\noindent\\Note that scan counts and last scan dates only reflect the scans retrieved since the last crawl.
+
+\begin{itemize}
+    \item Applications
+    \item ApplicationMaxCriticality
+    \item ApplicationMinCriticality
+    \item CriticalityLevel
+    \item SAST\_LastScanDate
+    \item SAST\_Scans
+    \item KICS\_LastScanDate
+    \item KICS\_Scans
+    \item SCA\_LastScanDate
+    \item SCA\_Scans
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item LastCrawlDate
+    \item Preset
+    \item ProjectCreated
+    \item ProjectId
+    \item ProjectName
+    \item ProjectUpdated
+    \item RepoMainBranch
+    \item RepoUrl
+    \item TAG\_\{tag name\} \textit{Dynamically generated if project is tagged}
+    \item TeamName
+\end{itemize}
+
+
+\subsubsection{Record: SCA Scan Summary}
+
+\begin{itemize}
+    \item Branch
+    \item Engines
+    \item HighVulnerabilityLibraries
+    \item Initiator
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item LegalHigh
+    \item LegalLow
+    \item LegalMedium
+    \item LegalUnknown
+    \item LowVulnerabilityLibraries
+    \item MediumVulnerabilityLibraries
+    \item NonVulnerableLibraries
+    \item ProjectId
+    \item ProjectName
+    \item ScanFinished
+    \item ScanId
+    \item ScanOrigin
+    \item ScanProduct
+    \item ScanStart
+    \item ScanTime
+    \item ScanType
+    \item TAG\_\{tag name\} \textit{Dynamically generated if scan is tagged}
+    \item TeamName
+    \item TotalDirectDependencies
+    \item TotalExploitablePaths
+    \item TotalHighVulnerabilities
+    \item TotalLegalRiskPackages
+    \item TotalLibraries
+    \item TotalLowVulnerabilities
+    \item TotalMediumVulnerabilities
+    \item VulnerabilityScore
+    \item VulnerableAndOutdated
+    \item VulnerableAndUpdated
+\end{itemize}
+
+
+\subsubsection{Record: SCA Vulnerability Details}
+
+\begin{itemize}
+    \item Branch
+    \item CVEDescription
+    \item CVEName
+    \item CVEPubDate
+    \item CVEScore
+    \item CVEUrl
+    \item CVSS\_AttackComplexity
+    \item CVSS\_AttackVector
+    \item CVSS\_Availability
+    \item CVSS\_Confidentiality
+    \item CVSS\_Score
+    \item CVSS\_Severity
+    \item CVSS\_Version
+    \item CWE
+    \item Engines
+    \item ExploitableMethods
+    \item Initiator
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item LibraryId
+    \item LibraryLatestReleaseDate
+    \item LibraryLatestVersion
+    \item LibraryLegalRisk\_\{License \& Version\} \textit{(Field name is dynamically generated)}
+    \item LibraryLicenses
+    \item LibraryName
+    \item LibraryReleaseDate
+    \item LibraryVersion
+    \item ProjectId
+    \item ProjectName
+    \item ScanFinished
+    \item ScanStart
+    \item ScanId
+    \item ScanProduct
+    \item ScanRiskSeverity
+    \item ScanTime
+    \item ScanType
+    \item State
+    \item TeamName
+    \item Type
+    \item VulnerabilityId
+\end{itemize}
+
+
+\subsubsection{Record: Scan Statistics}
+
+\noindent\\In addition to the listed fields, successfully executed general query names \\
+(e.g. \texttt{javaScript.Cx.General.Sanitize}) are field names in the 
+document.  These are variable per scan.  The value associated with the field is the count of elements found when the general query was executed.
+
+\noindent\\Fields prefixed with \textbf{\{language\}\_} are dynamically generated.  Only fields for languages detected by the scan are included.
+
+\begin{itemize}
+    \item \{language\}\_DomObjectCount
+    \item FileFilter
+    \item \{language\}\_FilesNotScanned
+    \item \{language\}\_FilesParsedSuccessfullyCount
+    \item \{language\}\_FilesParseFailureCount
+    \item \{language\}\_FilesParsedPartiallyCount
+    \item FilteredParsedLOC
+    \item InstanceId \textit{(Only included if an instance id is configured)}
+    \item \{language\}\_LOCParsedCount
+    \item \{language\}\_LOCParseFailCount
+    \item \{language\}\_LOCParseSuccessPercent
+    \item PhysicalMemoryPeakMB
+    \item ProjectId
+    \item ProjectName
+    \item ResultCount
+    \item ScanId
+    \item ScanProduct
+    \item ScanType
+    \item TeamName
+    \item UnfilteredParsedLOC
+    \item UnscannedFileCount
+    \item VirtualMemoryPeakMB
+\end{itemize}

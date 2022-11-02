@@ -58,19 +58,18 @@ namespace CxRestClient.SCA
             }
         }
 
-        public static IndexedRiskStates GetRiskStates(CxSCARestContext ctx, CancellationToken token, String projectId)
+        public static IndexedRiskStates GetRiskStates(CxCommonRestContext ctx, CancellationToken token, String projectId, String additionalRoutePrefix = "")
         {
             var idx = WebOperation.ExecuteGet<IndexedRiskStates>(ctx.Json.CreateClient,
                 (response) =>
                 {
                     return JsonUtils.DeserializeFromStream<IndexedRiskStates>(response.Content.ReadAsStream());
                 },
-                UrlUtils.MakeUrl(ctx.ApiUrl, URL_SUFFIX, projectId), ctx, token);
+                UrlUtils.MakeUrl(ctx.ApiUrl, additionalRoutePrefix, URL_SUFFIX, projectId), ctx, token);
 
             idx.ProjectId = projectId;
 
             return idx;
-
         }
 
     }
