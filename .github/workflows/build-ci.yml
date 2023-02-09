@@ -12,6 +12,10 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.actor != 'dependabot'
     steps:
+      - name: Actor
+        run: |
+          echo GITHUB_ACTOR
+          echo ${{ github.actor }}
       - name: Dotnet Core Install
         uses: actions/setup-dotnet@v2
         with:
