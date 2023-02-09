@@ -10,7 +10,7 @@ jobs:
   
   infer-csharp-pr-comment:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot'
     steps:
       - name: Dotnet Core Install
         uses: actions/setup-dotnet@v2
