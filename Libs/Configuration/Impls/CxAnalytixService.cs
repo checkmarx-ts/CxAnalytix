@@ -47,6 +47,7 @@ namespace CxAnalytix.Configuration.Impls
             set { this["OutputModuleName"] = value; }
         }
 
+        [RecordNameConfig]
         [ConfigurationProperty("SASTScanSummaryRecordName", IsRequired = true)]
         public String SASTScanSummaryRecordName
         {
@@ -55,6 +56,7 @@ namespace CxAnalytix.Configuration.Impls
         }
 
         [ConfigurationProperty("SASTScanDetailRecordName", IsRequired = true)]
+        [RecordNameConfig]
         public String SASTScanDetailRecordName
         {
             get => (String)this["SASTScanDetailRecordName"];
@@ -62,6 +64,7 @@ namespace CxAnalytix.Configuration.Impls
         }
 
         [ConfigurationProperty("SCAScanSummaryRecordName", IsRequired = true)]
+        [RecordNameConfig]
         public String SCAScanSummaryRecordName
         {
             get => (String)this["SCAScanSummaryRecordName"];
@@ -69,6 +72,7 @@ namespace CxAnalytix.Configuration.Impls
         }
 
         [ConfigurationProperty("SCAScanDetailRecordName", IsRequired = true)]
+        [RecordNameConfig]
         public String SCAScanDetailRecordName
         {
             get => (String)this["SCAScanDetailRecordName"];
@@ -76,6 +80,7 @@ namespace CxAnalytix.Configuration.Impls
         }
 
         [ConfigurationProperty("ProjectInfoRecordName", IsRequired = true)]
+        [RecordNameConfig]
         public String ProjectInfoRecordName
         {
             get => (String)this["ProjectInfoRecordName"];
@@ -83,6 +88,7 @@ namespace CxAnalytix.Configuration.Impls
         }
 
         [ConfigurationProperty("PolicyViolationsRecordName", IsRequired = true)]
+        [RecordNameConfig]
         public String PolicyViolationsRecordName
         {
             get => (String)this["PolicyViolationsRecordName"];
@@ -90,6 +96,7 @@ namespace CxAnalytix.Configuration.Impls
         }
 
         [ConfigurationProperty("ScanStatisticsRecordName", IsRequired = false)]
+        [RecordNameConfig]
         public String ScanStatisticsRecordName
         {
             get => (String)this["ScanStatisticsRecordName"];
@@ -117,7 +124,5 @@ namespace CxAnalytix.Configuration.Impls
                 this["EnabledTransformers"] = value;
             }
         }
-
-
     }
 }
