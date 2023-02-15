@@ -62,9 +62,9 @@ namespace CxAnalytix.Configuration.Impls
                 {
                     result.Add(elements[i]);
                 }
-                catch (Exception)
+                catch (ConfigurationErrorsException ex)
                 {
-                    // Eat exceptions related to sections that can't deserialize
+                    _log.Warn($"Configuration error: {ex.Message}");
                 }
 
             return result;

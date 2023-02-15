@@ -41,10 +41,10 @@ namespace CxAnalytix.Out.MongoDBOutput
 				_client = new MongoClient(mu);
 
 				if (!_client.ListDatabaseNames().ToList().Contains(mu.DatabaseName))
-					_log.Warn($"Database {mu.DatabaseName} does not exist, it will be created.");
+					throw new ProcessFatalException($"Database {mu.DatabaseName} does not exist, did you forget to run the CxAnalytix MongoTool?");
 
 				_db = _client.GetDatabase(mu.DatabaseName);
-
+/*
 				// It is a violation of OOP principles for this component to know about these records.  At some point the schema
 				// creation may be moved to an installer that initializes the DB prior to running the application.
 				_schemas.Add(Service.SASTScanDetailRecordName,
@@ -68,15 +68,13 @@ namespace CxAnalytix.Out.MongoDBOutput
                 if (Service.ScanStatisticsRecordName != null && !String.IsNullOrEmpty(Service.ScanStatisticsRecordName))
                     _schemas.Add(Service.ScanStatisticsRecordName, MongoDBOut.CreateInstance<ScanStatisticsSchema>(_db, Service.ScanStatisticsRecordName,
                         OutConfig.ShardKeys[Service.ScanStatisticsRecordName]));
-
+*/
             }
             catch (Exception ex)
 			{
 				_log.Error("Error initializing MongoDB connectivity.", ex);
 				_client = null;
-#pragma warning disable CA2200 // Rethrow to preserve stack details
-                throw ex;
-#pragma warning restore CA2200 // Rethrow to preserve stack details
+                throw;
             }
 		}
 
