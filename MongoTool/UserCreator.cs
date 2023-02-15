@@ -15,10 +15,6 @@ namespace CxAnalytix.MongoTool
     {
         private static ILog _log = LogManager.GetLogger(typeof(UserCreator));
 
-        public static void AssignRoles(MongoUrl mongoEndpoint, String loginDBName, String runtimeUser, String runtimePassword)
-        {
-        }
-
         private static IMongoCollection<BsonDocument> GetUsersCollection(MongoUrl loginDBUrl)
         {
             var loginDB = loginDBUrl.GetDatabase();
