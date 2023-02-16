@@ -8,6 +8,9 @@ CxAnalytix is a background process that crawls and extracts vulnerability data f
     * OSA (optional)
     * Management & Orchestration (optional)
 * Checkmarx SCA
+* Checkmarx One
+	* SAST Scans
+	* SCA Scans
 
 
 The vulnerability data is then transformed into a flattened JSON document and stored for at-scale data analysis.  Pluggable data transports are implemented for storage flexibility; data can be easily stored and accessed locally or transported to data lakes for more advanced analysis.
