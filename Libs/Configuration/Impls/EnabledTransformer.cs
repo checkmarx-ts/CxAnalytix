@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace CxAnalytix.Configuration.Impls
 {
-    public class EnabledTransformer : ConfigurationElement
+    public class EnabledTransformer : ConfigurationElement, IKeyProducer
     {
 
 		[ConfigurationProperty("Name", IsRequired = true)]
@@ -17,5 +17,6 @@ namespace CxAnalytix.Configuration.Impls
 			set => base["Name"] = value;
 		}
 
-	}
+		public string Key => Name;
+    }
 }

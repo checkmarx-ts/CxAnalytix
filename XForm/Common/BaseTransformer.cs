@@ -52,11 +52,7 @@ namespace CxAnalytix.XForm.Common
             PolicyViolationDetailOut = Output.RegisterRecord(Service.PolicyViolationsRecordName);
             ScaScanSummaryOut = Output.RegisterRecord(Service.SCAScanSummaryRecordName);
             ScaScanDetailOut = Output.RegisterRecord(Service.SCAScanDetailRecordName);
-
-            if (Service.ScanStatisticsRecordName != null && !String.IsNullOrEmpty(Service.ScanStatisticsRecordName))
-                ScanStatisticsOut = Output.RegisterRecord(Service.ScanStatisticsRecordName);
-            else
-                ScanStatisticsOut = null;
+            ScanStatisticsOut = Output.RegisterRecord(Service.ScanStatisticsRecordName);
 
 
             ThreadOpts = new ParallelOptions()

@@ -48,14 +48,14 @@ namespace CxAnalytix.Configuration.Impls
         }
 
         [RecordNameConfig]
-        [ConfigurationProperty("SASTScanSummaryRecordName", IsRequired = true)]
+        [ConfigurationProperty("SASTScanSummaryRecordName", IsRequired = false, DefaultValue = null)]
         public String SASTScanSummaryRecordName
         {
             get => (String)this["SASTScanSummaryRecordName"];
             set { this["SASTScanSummaryRecordName"] = value; }
         }
 
-        [ConfigurationProperty("SASTScanDetailRecordName", IsRequired = true)]
+        [ConfigurationProperty("SASTScanDetailRecordName", IsRequired = false, DefaultValue = null)]
         [RecordNameConfig]
         public String SASTScanDetailRecordName
         {
@@ -63,7 +63,7 @@ namespace CxAnalytix.Configuration.Impls
             set { this["SASTScanDetailRecordName"] = value; }
         }
 
-        [ConfigurationProperty("SCAScanSummaryRecordName", IsRequired = true)]
+        [ConfigurationProperty("SCAScanSummaryRecordName", IsRequired = false, DefaultValue = null)]
         [RecordNameConfig]
         public String SCAScanSummaryRecordName
         {
@@ -71,7 +71,7 @@ namespace CxAnalytix.Configuration.Impls
             set { this["SCAScanSummaryRecordName"] = value; }
         }
 
-        [ConfigurationProperty("SCAScanDetailRecordName", IsRequired = true)]
+        [ConfigurationProperty("SCAScanDetailRecordName", IsRequired = false, DefaultValue = null)]
         [RecordNameConfig]
         public String SCAScanDetailRecordName
         {
@@ -79,7 +79,7 @@ namespace CxAnalytix.Configuration.Impls
             set { this["SCAScanDetailRecordName"] = value; }
         }
 
-        [ConfigurationProperty("ProjectInfoRecordName", IsRequired = true)]
+        [ConfigurationProperty("ProjectInfoRecordName", IsRequired = false, DefaultValue = null)]
         [RecordNameConfig]
         public String ProjectInfoRecordName
         {
@@ -87,7 +87,7 @@ namespace CxAnalytix.Configuration.Impls
             set { this["ProjectInfoRecordName"] = value; }
         }
 
-        [ConfigurationProperty("PolicyViolationsRecordName", IsRequired = true)]
+        [ConfigurationProperty("PolicyViolationsRecordName", IsRequired = false, DefaultValue = null)]
         [RecordNameConfig]
         public String PolicyViolationsRecordName
         {
@@ -95,7 +95,7 @@ namespace CxAnalytix.Configuration.Impls
             set { this["PolicyViolationsRecordName"] = value; }
         }
 
-        [ConfigurationProperty("ScanStatisticsRecordName", IsRequired = false)]
+        [ConfigurationProperty("ScanStatisticsRecordName", IsRequired = false, DefaultValue = null)]
         [RecordNameConfig]
         public String ScanStatisticsRecordName
         {
@@ -111,18 +111,12 @@ namespace CxAnalytix.Configuration.Impls
         }
 
         [ConfigurationProperty("EnabledTransformers", IsDefaultCollection = false, IsRequired = true)]
-        [ConfigurationCollection(typeof(EnabledTransformersCollection), AddItemName = "Transformer")]
-        public EnabledTransformersCollection Transformers
+        [ConfigurationCollection(typeof(ConfigElementCollection<EnabledTransformer>), AddItemName = "Transformer")]
+        public ConfigElementCollection<EnabledTransformer> Transformers
         {
-            get
-            {
-                return (EnabledTransformersCollection)this["EnabledTransformers"];
-            }
-
-            set
-            {
-                this["EnabledTransformers"] = value;
-            }
+            get => (ConfigElementCollection <EnabledTransformer>)this["EnabledTransformers"];
+            set => this["EnabledTransformers"] = value;
         }
+
     }
 }
