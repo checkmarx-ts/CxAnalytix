@@ -1,3 +1,21 @@
+\section{2.1.1}
+
+\subsection*{FEATURES}
+    \begin{itemize}
+        \item Issue 54 - Explicit record suppression
+        \item Issue 55 - Externalize MongoDB schema creation
+    \end{itemize}
+
+    \subsubsection*{Explicit record suppression}
+    All records can be suppressed by removing the associated record mapping attribute from the CxAnalytixService configuration element 
+    or setting the name of the record to an empty string.
+
+    \subsubsection*{Externalize MongoDB schema creation}
+    A new executable named MongoTool can be found in the source distribution.  This tool will create the MongoDB database and collections
+    as well as assign the appropriate user permissions to the database.  Default indexes (other than for the \_id field) are no longer created.  You can drop
+    any previously created default indexes if desired.
+
+
 \section{2.1.0}
 
 \subsection*{UPDATES}
