@@ -89,7 +89,7 @@ jobs:
           dotnet-version: 6.*
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v1          
+        uses: docker/setup-buildx-action@v2          
       - name: Fetch Code
         uses: actions/checkout@v3
       - name: Platform build linux-x64
@@ -115,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Build Manual
         id: build_manual
         uses: xu-cheng/latex-action@v2
