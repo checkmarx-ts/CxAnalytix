@@ -43,7 +43,7 @@ jobs:
          
           
       - name: Fetch Code @ tag v${{ inputs.tag }}
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: refs/tags/v${{ inputs.tag }}
 
