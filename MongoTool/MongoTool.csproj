@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net6.0</TargetFramework>
+		<ApplicationIcon />
+		<RootNamespace>CxAnalytix.MongoTool</RootNamespace>
+		<Configurations>Debug;Release;ReleaseWindows;ReleaseLinux</Configurations>
+		<Company>Checkmarx</Company>
+		<Authors>Checkmarx</Authors>
+		<Version>0.0.0</Version>
+		<Description>Tool to initialize or update the CxAnalytix MongoDB schema.</Description>
+		<Copyright>Copyright (c) 2019-2023 Checkmarx.  All rights reserved.</Copyright>
+		<PackageProjectUrl>https://github.com/checkmarx-ts/CxAnalytix/wiki</PackageProjectUrl>
+		<PackageReadmeFile>$(SolutionDir)README.md</PackageReadmeFile>
+		<RepositoryUrl>https://github.com/checkmarx-ts/CxAnalytix</RepositoryUrl>
+		<RepositoryType></RepositoryType>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<Nullable>disable</Nullable>
+	</PropertyGroup>
+
+
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="log4net" Version="2.0.15" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\Libs\Configuration\Configuration.csproj" />
+    <ProjectReference Include="..\Libs\CxAuditTrailsCrawler\CxAuditTrailsCrawler.csproj" />
+    <ProjectReference Include="..\Libs\Exceptions\Exceptions.csproj" />
+    <ProjectReference Include="..\Output\AMQPOutput\AMQPOutput.csproj" />
+    <ProjectReference Include="..\Output\Log4NetOutput\Log4NetOutput.csproj" />
+    <ProjectReference Include="..\Output\MongoDBOutput\MongoDBOutput.csproj" />
+    <ProjectReference Include="..\XForm\CxOneTransformer\CxOneTransformer.csproj" />
+    <ProjectReference Include="..\XForm\SastTransformer\SastTransformer.csproj" />
+    <ProjectReference Include="..\XForm\ScaTransformer\ScaTransformer.csproj" />
+  </ItemGroup>
+
+	<Target Name="CopyConfigs" AfterTargets="Build">
+		<Copy SourceFiles="$(ProjectDir)../config_files/dotnet.exe.config;$(ProjectDir)../config_files/log.log4net" DestinationFiles="$(TargetDir)/cxanalytix.config;$(TargetDir)/cxanalytix.log4net" />
+		<Copy SourceFiles="$(ProjectDir)../config_files/dotnet.exe.config;$(ProjectDir)../config_files/log.log4net" DestinationFiles="$(PublishDir)/cxanalytix.config;$(PublishDir)/cxanalytix.log4net" />
+	</Target>
+
+</Project>

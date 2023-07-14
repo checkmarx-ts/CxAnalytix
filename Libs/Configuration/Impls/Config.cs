@@ -2,14 +2,18 @@
 using CxAnalytix.Configuration.Utils;
 using CxAnalytix.Exceptions;
 using log4net;
+using log4net.Util;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Configuration;
 using System.IO;
 
 
+
 namespace CxAnalytix.Configuration.Impls
 {
-    public class Config
+    public static class Config
     {
         private static System.Configuration.Configuration _cfgManager;
         private static ILog _log = LogManager.GetLogger(typeof (Config) );
@@ -32,14 +36,16 @@ namespace CxAnalytix.Configuration.Impls
 
 			_cfgManager = ConfigurationManager.OpenMappedExeConfiguration(map, ConfigurationUserLevel.None);
 
-			if (OperatingSystem.IsWindows())
+
+
+            if (OperatingSystem.IsWindows())
 				EncryptSensitiveSections();
 			else
 				_log.Warn("This platform does not support encrypting credentials in the configuration file.  Your credentials may be stored in plain text.");
 
 			var builder = new ContainerBuilder();
 
-			foreach(var sec in _cfgManager.Sections)
+			foreach(var sec in _cfgManager.Sections.OnlyValid() )
             {
 				builder.RegisterInstance(sec).As(sec.GetType()).ExternallyOwned();
             }
@@ -47,47 +53,60 @@ namespace CxAnalytix.Configuration.Impls
 
 		}
 
-		public static T GetConfig<T>()
+        private static IEnumerable<ConfigurationSection> OnlyValid(this ConfigurationSectionCollection elements)
         {
-			return _configDI.Resolve<T>();
+            List<ConfigurationSection> result = new();
+
+            for (int i = 0; i < elements.Count; i++)
+                try
+                {
+                    result.Add(elements[i]);
+                }
+                catch (ConfigurationErrorsException ex)
+                {
+                    _log.Warn($"Configuration error: {ex.Message}");
+                }
+
+            return result;
+        }
+
+        public static T GetConfig<T>() => _configDI.Resolve<T>();
+
+        private static void EncryptSensitiveSections()
+        {
+            foreach (var section in _cfgManager.Sections.OnlyValid())
+            {
+                var attribs = section.GetType().GetCustomAttributes(typeof(SecureConfigSectionAttribute), true);
+
+                if (attribs != null && attribs.Length > 0)
+                {
+                    bool found = false;
+                    foreach (SecureConfigSectionAttribute attribInst in attribs)
+                    {
+                        if (attribInst.IsPropSet(section.GetType(), section))
+                        {
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found)
+                        continue;
+                }
+                else
+                    continue;
+
+                if (!section.SectionInformation.IsProtected)
+                {
+                    section.SectionInformation.ProtectSection("DataProtectionConfigurationProvider");
+                    section.SectionInformation.ForceSave = true;
+                    section.SectionInformation.ForceDeclaration(true);
+                }
+            }
+
+            _cfgManager.Save(ConfigurationSaveMode.Modified);
         }
 
 
-		private static void EncryptSensitiveSections()
-		{
-			foreach (ConfigurationSection section in _cfgManager.Sections)
-			{
-				var attribs = section.GetType().GetCustomAttributes(typeof(SecureConfigSectionAttribute), true);
-
-				if (attribs != null && attribs.Length > 0)
-				{
-					bool found = false;
-					foreach (SecureConfigSectionAttribute attribInst in attribs)
-					{
-						if (attribInst.IsPropSet(section.GetType(), section))
-						{
-							found = true;
-							break;
-						}
-					}
-
-					if (!found)
-						continue;
-				}
-				else
-					continue;
-
-				if (!section.SectionInformation.IsProtected)
-				{
-					section.SectionInformation.ProtectSection("DataProtectionConfigurationProvider");
-					section.SectionInformation.ForceSave = true;
-					section.SectionInformation.ForceDeclaration(true);
-				}
-			}
-
-            _cfgManager.Save(ConfigurationSaveMode.Modified);
-		}
-
-        
     }
 }

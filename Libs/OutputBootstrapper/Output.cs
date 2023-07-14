@@ -44,10 +44,9 @@ namespace OutputBootstrapper
 		}
 
         [MethodImpl(MethodImplOptions.Synchronized)]
-
 		public static IOutputTransaction StartTransaction()
 		{
-			var retVal =  _outFactory.StartTransaction();
+			var retVal =  new RecordSuppressionMediator(_outFactory.StartTransaction());
 
 			_log.Trace($"Starting output transaction: {retVal.TransactionId}");
 
@@ -57,9 +56,12 @@ namespace OutputBootstrapper
 		[MethodImpl(MethodImplOptions.Synchronized)]
 		public static IRecordRef RegisterRecord(String name)
 		{
+			if (String.IsNullOrEmpty(name))
+				return new RecordRefWrapper();
+
 			_log.Debug($"Registering record with name {name}");
 
-			return _outFactory.RegisterRecord(name);
+			return new RecordRefWrapper(_outFactory.RegisterRecord(name));
 		}
 
 	}

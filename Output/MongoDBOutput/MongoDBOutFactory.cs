@@ -41,42 +41,15 @@ namespace CxAnalytix.Out.MongoDBOutput
 				_client = new MongoClient(mu);
 
 				if (!_client.ListDatabaseNames().ToList().Contains(mu.DatabaseName))
-					_log.Warn($"Database {mu.DatabaseName} does not exist, it will be created.");
+					throw new ProcessFatalException($"Database {mu.DatabaseName} does not exist, did you forget to run the CxAnalytix MongoTool?");
 
 				_db = _client.GetDatabase(mu.DatabaseName);
-
-				// It is a violation of OOP principles for this component to know about these records.  At some point the schema
-				// creation may be moved to an installer that initializes the DB prior to running the application.
-				_schemas.Add(Service.SASTScanDetailRecordName,
-					MongoDBOut.CreateInstance<SastDetailSchema>(_db, Service.SASTScanDetailRecordName, OutConfig.ShardKeys[Service.SASTScanDetailRecordName]));
-
-				_schemas.Add(Service.SASTScanSummaryRecordName, MongoDBOut.CreateInstance<SastSummarySchema>(_db, Service.SASTScanSummaryRecordName,
-					OutConfig.ShardKeys[Service.SASTScanSummaryRecordName]));
-
-				_schemas.Add(Service.SCAScanSummaryRecordName, MongoDBOut.CreateInstance<SCASummarySchema>(_db, Service.SCAScanSummaryRecordName,
-					OutConfig.ShardKeys[Service.SCAScanSummaryRecordName]));
-
-				_schemas.Add(Service.SCAScanDetailRecordName, MongoDBOut.CreateInstance<SCADetailSchema>(_db, Service.SCAScanDetailRecordName,
-					OutConfig.ShardKeys[Service.SCAScanDetailRecordName]));
-
-				_schemas.Add(Service.ProjectInfoRecordName, MongoDBOut.CreateInstance<ProjectInfoSchema>(_db, Service.ProjectInfoRecordName,
-					OutConfig.ShardKeys[Service.ProjectInfoRecordName]));
-
-				_schemas.Add(Service.PolicyViolationsRecordName, MongoDBOut.CreateInstance<PolicyViolationsSchema>(_db, Service.PolicyViolationsRecordName,
-					OutConfig.ShardKeys[Service.PolicyViolationsRecordName]));
-
-                if (Service.ScanStatisticsRecordName != null && !String.IsNullOrEmpty(Service.ScanStatisticsRecordName))
-                    _schemas.Add(Service.ScanStatisticsRecordName, MongoDBOut.CreateInstance<ScanStatisticsSchema>(_db, Service.ScanStatisticsRecordName,
-                        OutConfig.ShardKeys[Service.ScanStatisticsRecordName]));
-
             }
             catch (Exception ex)
 			{
 				_log.Error("Error initializing MongoDB connectivity.", ex);
 				_client = null;
-#pragma warning disable CA2200 // Rethrow to preserve stack details
-                throw ex;
-#pragma warning restore CA2200 // Rethrow to preserve stack details
+                throw;
             }
 		}
 
@@ -125,24 +98,12 @@ namespace CxAnalytix.Out.MongoDBOutput
 				throw new ProcessFatalException("The connection to MongoDB could not be established.");
 
 			lock (_schemas)
+			{
 				if (!_schemas.ContainsKey(recordName))
-				{
 					_schemas.Add(recordName, MongoDBOut.CreateInstance<GenericSchema>(_db, recordName, OutConfig.ShardKeys[recordName]));
-
-					return _schemas[recordName];
-				}
-				else
-				{
-					var dest = _schemas[recordName];
-
-					if (!dest.VerifyOrCreateSchema())
-					{
-						_log.Warn($"Schema for {recordName} could not be verified or created, no data will be output for this record type.");
-						return new Dummy();
-					}
-
-					return dest;
-				}
+            
+				return _schemas[recordName];
+            }
 		}
 	}
 }

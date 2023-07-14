@@ -176,10 +176,78 @@ CxAnalytix produces logging useful for troubleshooting and/or execution tracking
 \texttt{cxanalytix.log4net} file is generally located in the same directory as the \texttt{cxanalytix.config} file, and will allow for
 customizing the logging output location and verbosity.
 
+\section{MongoDB Schema Initialization}\label{sec:mongotool}
+
+Versions of CxAnalytix prior to 2.1.1 initialized the MongoDB collection schema on the first run after the MongoDB output is configured. Prior 
+versions would also create several default indexes as part of the collection schema creation. This is no longer the case.
+
+\noindent\\As of CxAnalytix 2.1.1, it is now required to execute \texttt{MongoTool} prior to the first start after initial installtion, 
+upgrades or configuration changes that would change the MongoDB collection schema.  Any indexes that were created by CxAnalytix in versions 
+prior to version 2.1.1 can be safely dropped if desired.  See Section \ref{sec:bringyourownindex} for information regarding defining indexes
+appropriate for your querying needs.
+
+\noindent\\The executable \texttt{MongoTool} command line parameters are described in Table \ref{tab:mongo_tool_opts}.  
+
+
+\subsection{MongoDB Secure Usage Pattern}
+
+Many applications that use databases deploy the runtime application with a user account that does
+not have administrative privileges.  Using a non-administrative user in the configured
+\hyperref[sec:mongo_config]{MongoDB connection URL} may be desired to limit the capability
+of the CxAnalytix MongoDB user if the credentials are somehow exposed. Using \texttt{MongoTool},
+these steps can be followed to configure CxAnalytix to access MongoDB with a minimally privileged
+user account:
+
+\begin{enumerate}
+    \item Using the \texttt{-u} or \texttt{--url} option, provide the MongoDB connection
+    URL to \texttt{MongoTool} that contains the administrative account and password.
+    This allows \texttt{MongoTool} to create collections and users with the appropriate roles.
+
+    \item Provide the \texttt{----mongo-user} and \texttt{--mongo-password} options
+    to \texttt{MongoTool}.  These are the credentials for a minimally-privileged user
+    that will be created as part of the MongoDB schema creation.
+
+    \item Configure the \hyperref[sec:mongo_config]{MongoDB connection URL} with the
+    user credentials for the minimally-privileged user created by \texttt{MongoTool}.
+\end{enumerate}
+
+
+\begin{table}
+    \centering
+    \begin{tabular}{|l|l|l|l|}
+        \toprule
+        \textbf{Option} & \textbf{Required} & \textbf{Default} & \textbf{Description}\\
+        \midrule
+        \makecell[cl]{\texttt{-d}\\
+        \texttt{---debug}} & No & False & \makecell[cl]{Turns on debug logging.}\\
+        \midrule
+        \makecell[cl]{\texttt{-u}\\
+        \texttt{---url}} & No & N/A & \makecell[cl]{Specify the URL to use for the MongoDB connection. This must\\
+        be provided if the \texttt{-c} flag is not provided.  This option and the \\
+        \texttt{-c} option can not be used at the same time.}\\
+        \midrule
+        \makecell[cl]{\texttt{-c}} & No & N/A & \makecell[cl]{Use the existing CxAnalytix configuration to connect to\\
+        MongoDB if the \texttt{-u} or \texttt{---url} option is not provided.  This option\\
+        can not be used with the \texttt{-u} or \texttt{---url} options.}\\
+        \midrule
+        \makecell[cl]{\texttt{-l}\\
+        \texttt{---login-db}} & No & "admin" & \makecell[cl]{The MongoDB database used for login.}\\
+        \midrule
+        \makecell[cl]{\texttt{---mongo-user}} & No & null & \makecell[cl]{If provided, the name of the MongoDB user to\\
+        create and assign to the CxAnalytix database\\
+        with minimal privileges.}\\
+        \midrule
+        \makecell[cl]{\texttt{---mongo-password}} & No & null & \makecell[cl]{The password to set for the user name defined with\\
+        the option \texttt{---mongo-user}.}\\
+        \bottomrule
+    \end{tabular}
+    \caption{MongoTool Command Line Options}
+    \label{tab:mongo_tool_opts}
+\end{table}
+
 
 
 \section{Upgrading}
-
 
 Configuration elements found in \texttt{cxanalytix.config} are generally backwards compatible for versions
 of CxAnalytix with the same major version\footnote{The major version is the first 
@@ -193,5 +261,10 @@ in directories separate from the CxAnalytix binaries.  This will prevent the ina
 
 
 \noindent\\Note that if installing from the CxAnalytix zip binary that there is a default version of \texttt{cxanalytix.config}
-and \texttt{cxanalytix.log4net} in the zip binary.  These default configuration files can safely be removed upon
-upgrading the CxAnalytix binaries.
+and \texttt{cxanalytix.log4net} in the zip binary.  These default configuration files are provided for first time installers to
+use to get CxAnalytix running for the first time.  These files should be removed upon upgrading the CxAnalytix binaries.  If
+CxAnalytix fails to start properly after upgrade, the example files may be loaded first according to the rules described in
+Chapter \ref{chap:installation}: \textit{Configuration File Path Resolution}.
+
+\noindent\\If your output is MongoDB and the upgrade will change the collection schema, you should run \texttt{MongoTool} as
+described in Section \ref{sec:mongotool}

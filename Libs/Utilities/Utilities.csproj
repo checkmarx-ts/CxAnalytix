@@ -8,7 +8,7 @@
 	  <Authors>Checkmarx</Authors>
 	  <Version>0.0.0</Version>
 	  <Description>CxAnalytix crawls and extracts vulnerability scan data from Checkmarx products.</Description>
-	  <Copyright>Copyright (c) 2019-2022 Checkmarx.  All rights reserved.</Copyright>
+	  <Copyright>Copyright (c) 2019-2023 Checkmarx.  All rights reserved.</Copyright>
 	  <PackageProjectUrl>https://github.com/checkmarx-ts/CxAnalytix/wiki</PackageProjectUrl>
 	  <PackageReadmeFile>$(SolutionDir)README.md</PackageReadmeFile>
 	  <RepositoryUrl>https://github.com/checkmarx-ts/CxAnalytix</RepositoryUrl>
@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.15" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
 </Project>

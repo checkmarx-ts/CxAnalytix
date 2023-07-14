@@ -281,17 +281,17 @@ is configured with the transformation logic modules to use when crawling Checkma
         values can be found in\\
         the \hyperref[lst:outmodules]{Available Output Modules} list.}\\
         \midrule
-        \texttt{SASTScanSummaryRecordName}\\
+        \makecell[tc]{\texttt{SASTScanSummaryRecordName}\\
         \texttt{SASTScanDetailRecordName}\\
         \texttt{SCAScanSummaryRecordName}\\
         \texttt{SCAScanDetailRecordName}\\
         \texttt{ProjectInfoRecordName}\\
-        \texttt{PolicyViolationsRecordName} & N/A & Yes & \makecell[tl]{The name of the corresponding\\
-        record collection configured\\
-        in the output.}\\
-        \midrule
-        \texttt{ScanStatisticsRecordName} & N/A & No & \makecell[tl]{The name of the record for storing\\
-        scan statistics in the output.}\\
+        \texttt{PolicyViolationsRecordName}\\
+        \texttt{ScanStatisticsRecordName}} & N/A & No & \makecell[tl]{The name of the corresponding\\
+        record collection configured in the \\
+        output. If blank or omitted,\\
+        the corresponding record type\\
+        is not output.}\\
         \bottomrule
     \end{tabularx}
 \end{table}

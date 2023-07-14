@@ -10,14 +10,18 @@ jobs:
   
   infer-csharp-pr-comment:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot'
     steps:
+      - name: Actor
+        run: |
+          echo GITHUB_ACTOR
+          echo ${{ github.actor }}
       - name: Dotnet Core Install
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 6.*
       - name: Fetch Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Platform build win-x64
         run: dotnet publish --self-contained -c ReleaseWindows -o artifacts/win-x64 -r win-x64
       - name: Platform build linux-x64
@@ -58,7 +62,7 @@ jobs:
         with:
           dotnet-version: 6.*
       - name: Fetch Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Platform build win-x64
         run: dotnet publish --self-contained -c ReleaseWindows -o artifacts -r win-x64
        
@@ -71,7 +75,7 @@ jobs:
         with:
           dotnet-version: 6.*
       - name: Fetch Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Platform build linux-x64
         run: dotnet publish --self-contained -c ReleaseLinux -o artifacts -r linux-x64
 
@@ -85,9 +89,9 @@ jobs:
           dotnet-version: 6.*
       - name: Set up Docker Buildx
         id: buildx
-        uses: docker/setup-buildx-action@v1          
+        uses: docker/setup-buildx-action@v2          
       - name: Fetch Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Platform build linux-x64
         run: dotnet publish --self-contained -c ReleaseLinux -o artifacts -r linux-x64
       - name: Build Docker Container
@@ -102,7 +106,7 @@ jobs:
         with:
           dotnet-version: 6.*
       - name: Fetch Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Run Tests
         run: dotnet test --verbosity q
               
@@ -111,7 +115,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Build Manual
         id: build_manual
         uses: xu-cheng/latex-action@v2
@@ -126,7 +130,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Fetch Code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Build Release Notes
         id: build_release_notes
         uses: xu-cheng/latex-action@v2
