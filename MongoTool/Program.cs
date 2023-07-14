@@ -55,11 +55,6 @@ parsedData.WithParsed((opts) =>
             if (ex.InnerException != null)
                 _log.Debug(ex.InnerException.Message);
         }
-    else
-    {
-        _log.Error("Do not supply a connection string if indicating it should load from the CxAnalytix configuration file.");
-        Environment.Exit(1);
-    }
 
     if (opts.MongoConnectionString == null)
     {
@@ -103,7 +98,7 @@ public class CommandLineOpts
     [Option('u', "url", SetName="connection", Default = null, Required = false, HelpText = "Use this MongoDB connection URL.")]
     public MongoUrl MongoConnectionString { get; set; }
 
-    [Option('c', SetName = "connection", Default = false, Required = false, HelpText = "Load the MongoDB connection URL from the CxAnalytix configuration file.")]
+    [Option('c', SetName = "connection", Default = true, Required = false, HelpText = "Load the MongoDB connection URL from the CxAnalytix configuration file.")]
     public bool UseConfigConnectionString { get; set; }
 
     [Option('d', "debug", Default = false, Required = false, HelpText = "Enable debug output.")]
