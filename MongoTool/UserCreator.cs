@@ -15,50 +15,53 @@ namespace CxAnalytix.MongoTool
     {
         private static ILog _log = LogManager.GetLogger(typeof(UserCreator));
 
-        private static IMongoCollection<BsonDocument> GetUsersCollection(MongoUrl loginDBUrl)
-        {
-            var loginDB = loginDBUrl.GetDatabase();
-
-            if (String.IsNullOrEmpty(loginDB.ListCollectionNames().ToEnumerable().FirstOrDefault(name => name.Equals("system.users"))))
-                throw new ProcessFatalException($"Cannot find [system.users] in the login DB [{loginDBUrl.DatabaseName}].");
-
-            return loginDB.GetCollection<BsonDocument>("system.users");
-        }
-
         public static void CreateOrUpdateUser(MongoUrl mongoEndpoint, String loginDBName)
         {
-            CreateOrUpdateUser(mongoEndpoint, loginDBName, mongoEndpoint.Username, mongoEndpoint.Password);
+            try
+            {
+                CreateOrUpdateUser(mongoEndpoint, loginDBName, mongoEndpoint.Username, mongoEndpoint.Password);
+            }
+            catch (MongoCommandException ex)
+            {
+                _log.Warn($"Failed to set roles for database [{mongoEndpoint.DatabaseName}] user [{mongoEndpoint.Username}] Error [{ex.Message}]");
+            }
         }
 
-
-        public static void CreateOrUpdateUser(MongoUrl mongoEndpoint, String loginDBName, String targetUser, String targetPassword)
+        private static void CreateOrUpdateUser(IMongoDatabase inThisDB, String targetDBName, String targetUser, String targetPassword)
         {
-            var loginEndpoint = mongoEndpoint.ChangeToDB(loginDBName);
+            var getUsersCommand = new BsonDocument() { { "usersInfo", 1 } };
+            var usersDB = inThisDB.RunCommand<BsonDocument>(getUsersCommand);
 
-            var filter = new BsonDocument() { { "user", new BsonDocument() { { "$eq", targetUser } } },
-                { "db", new BsonDocument() { { "$eq", mongoEndpoint.DatabaseName } }  } };
-
-            var findResult = GetUsersCollection(loginEndpoint).Find<BsonDocument>(filter);
+            var foundUser = usersDB.GetElement("users").Value.AsBsonArray.SingleOrDefault((bval) => bval["user"].AsString.ToLower().CompareTo(targetUser.ToLower()) == 0);
 
             BsonDocument command = null;
-            if (findResult.CountDocuments() == 0)
+            if (foundUser == null || foundUser.IsBsonNull)
             {
-                _log.Info($"Creating user [{mongoEndpoint.DatabaseName}.{targetUser}]...");
+                _log.Info($"Creating user [{inThisDB.DatabaseNamespace}.{targetUser}] with [readWrite] role for database [{targetDBName}]");
 
                 command = new BsonDocument() { { "createUser", targetUser }, { "pwd", targetPassword},
-                { "roles", new BsonArray() { new BsonDocument() { { "role", "readWrite" }, { "db", mongoEndpoint.DatabaseName } } } } };
+                { "roles", new BsonArray() { new BsonDocument() { { "role", "readWrite" }, { "db", targetDBName } } } } };
 
             }
             else
             {
-                _log.Info($"User [{mongoEndpoint.DatabaseName}.{targetUser}] exists, granting [readWrite] role to database [{mongoEndpoint.DatabaseName}]");
+                _log.Info($"User [{inThisDB.DatabaseNamespace}.{targetUser}] exists, granting [readWrite] role for database [{targetDBName}]");
 
                 command = new BsonDocument() { { "grantRolesToUser", targetUser },
-                { "roles", new BsonArray() { new BsonDocument() { { "role", "readWrite" }, { "db", mongoEndpoint.DatabaseName } } } } };
+                { "roles", new BsonArray() { new BsonDocument() { { "role", "readWrite" }, { "db", targetDBName } } } } };
             }
 
-            if (!loginEndpoint.GetDatabase(mongoEndpoint.DatabaseName).RunCommand<BsonDocument>(command).CheckSuccess())
-                throw new ProcessFatalException($"Error executing command for [{mongoEndpoint.DatabaseName}.{targetUser}]");
+            if (!inThisDB.RunCommand<BsonDocument>(command).CheckSuccess())
+                throw new ProcessFatalException($"Error executing command for [{inThisDB.DatabaseNamespace}.{targetUser}]");
+        }
+
+        public static void CreateOrUpdateUser(MongoUrl mongoEndpoint, String loginDBName, String targetUser, String targetPassword)
+        {
+            var adminDB = mongoEndpoint.ChangeToDB(loginDBName).GetDatabase();
+            var targetDB = adminDB.Client.GetDatabase(mongoEndpoint.DatabaseName);
+
+            CreateOrUpdateUser(adminDB, mongoEndpoint.DatabaseName, targetUser, targetPassword);
+            CreateOrUpdateUser(targetDB, mongoEndpoint.DatabaseName, targetUser, targetPassword);
         }
 
     }

@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<OutputType>Exe</OutputType>
 		<TargetFramework>net6.0</TargetFramework>
@@ -36,5 +36,10 @@
     <ProjectReference Include="..\XForm\SastTransformer\SastTransformer.csproj" />
     <ProjectReference Include="..\XForm\ScaTransformer\ScaTransformer.csproj" />
   </ItemGroup>
+
+	<Target Name="CopyConfigs" AfterTargets="Build">
+		<Copy SourceFiles="$(ProjectDir)../config_files/dotnet.exe.config;$(ProjectDir)../config_files/log.log4net" DestinationFiles="$(TargetDir)/cxanalytix.config;$(TargetDir)/cxanalytix.log4net" />
+		<Copy SourceFiles="$(ProjectDir)../config_files/dotnet.exe.config;$(ProjectDir)../config_files/log.log4net" DestinationFiles="$(PublishDir)/cxanalytix.config;$(PublishDir)/cxanalytix.log4net" />
+	</Target>
 
 </Project>

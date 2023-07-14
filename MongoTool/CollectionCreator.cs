@@ -3,6 +3,7 @@ using CxAnalytix.Configuration.Utils;
 using CxAnalytix.Exceptions;
 using CxAnalytix.Extensions;
 using log4net;
+using Microsoft.IdentityModel.Tokens;
 using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
@@ -39,8 +40,14 @@ namespace CxAnalytix.MongoTool
                 {
                     if (!existingCollections.Contains(p.GetValue(serviceConfig)))
                     {
-                        _log.Info($"Creating collection for record type [{p.Name}] with the name [{p.GetValue(serviceConfig)}].");
-                        db.CreateCollection(p.GetValue(serviceConfig) as String);
+                        var collectionName = p.GetValue(serviceConfig) as String;
+                        if (collectionName.IsNullOrEmpty())
+                            _log.Info($"Skipping creation for collection for record type [{p.Name}] because the collection name is not defined.");
+                        else
+                        {
+                            _log.Info($"Creating collection for record type [{p.Name}] with the name [{collectionName}].");
+                            db.CreateCollection(collectionName);
+                        }
                     }
                     else
                         _log.Info($"Collection for record type [{p.Name}] named [{p.GetValue(serviceConfig)}] already exists.");
