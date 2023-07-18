@@ -1,4 +1,5 @@
 ﻿using CxAnalytix.Exceptions;
+using CxAnalytix.Extensions;
 using CxRestClient.Utility;
 using log4net;
 using Newtonsoft.Json;
@@ -7,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Net.Http;
 using System.Text;
@@ -270,24 +272,51 @@ namespace CxRestClient.SAST
 
         public static FullScanStatistics GetScanFullStatistics(CxSASTRestContext ctx, CancellationToken token, String scanId)
         {
-            var statistics = GetScanStatistics(ctx, token, scanId);
+            CancellationTokenSource localToken = new();
 
-            var pf = GetScanParsedFiles(ctx, token, scanId);
-            var fq = GetScanFailedQueries(ctx, token, scanId);
-            var fgq = GetScanFailedGeneralQueries(ctx, token, scanId);
-            var sgq = GetScanSuccessfulGeneralQueries(ctx, token, scanId);
+            List<Task> runningTasks = new();
 
-            if (statistics.Result == null)
-                return null;
+            using (token.Register(() => localToken.Cancel()))
+                try
+                {
+                    var statistics = GetScanStatistics(ctx, localToken.Token, scanId);
+                    runningTasks.Add(statistics);
 
-            return new FullScanStatistics()
-            {
-                Statistics = statistics.Result,
-                ParsedFiles = pf.Result,
-                FailedQueries = fq.Result,
-                FailedGeneralQueries = fgq.Result,
-                SuccessGeneralQueries = sgq.Result
-            };
+                    var pf = GetScanParsedFiles(ctx, localToken.Token, scanId);
+                    runningTasks.Add(pf);
+
+                    var fq = GetScanFailedQueries(ctx, localToken.Token, scanId);
+                    runningTasks.Add(fq);
+
+                    var fgq = GetScanFailedGeneralQueries(ctx, localToken.Token, scanId);
+                    runningTasks.Add(fgq);
+
+                    var sgq = GetScanSuccessfulGeneralQueries(ctx, localToken.Token, scanId);
+                    runningTasks.Add(sgq);
+
+
+                    if (statistics.Result != null)
+                        return new FullScanStatistics()
+                        {
+                            Statistics = statistics.Result,
+                            ParsedFiles = pf.Result,
+                            FailedQueries = fq.Result,
+                            FailedGeneralQueries = fgq.Result,
+                            SuccessGeneralQueries = sgq.Result
+                        };
+                }
+                catch (Exception)
+                {
+                    localToken.Cancel();
+                    throw;
+                }
+                finally
+                {
+                    runningTasks.SafeWaitAllToEnd();
+                    runningTasks.DisposeTasks();
+                }
+
+            return null;
         }
 
     }
