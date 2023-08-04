@@ -14,5 +14,11 @@ namespace CxAnalytix.Configuration.Impls
             set { this["mnoURL"] = value; }
         }
 
+        [ConfigurationProperty("UseOdata", IsRequired = false)]
+        public CxSASTAPIOverrides Overrides
+        {
+            get => (CxSASTAPIOverrides)this["UseOdata"];
+            set => this["UseOdata"] = value;
+        }
 	}
 }

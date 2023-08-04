@@ -1,4 +1,5 @@
 ﻿using CxAnalytix.Configuration.Impls;
+using CxAnalytix.Exceptions;
 using CxAnalytix.Extensions;
 using CxAnalytix.Interfaces.Outputs;
 using CxAnalytix.XForm.Common;
@@ -10,10 +11,14 @@ using OutputBootstrapper;
 using SDK.Modules.Transformer.Data;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Text;
 using System.Web;
 using static CxRestClient.CXONE.CxConfiguration;
+using static CxRestClient.CXONE.CxGroups;
 using static CxRestClient.CXONE.CxSastPredicates;
+using static CxRestClient.CXONE.CxSastScanMetadata;
+using static CxRestClient.CXONE.CxScanResults;
 using static CxRestClient.SCA.CxRiskState;
 using static SDK.Modules.Transformer.Data.ScanDescriptor;
 using CxOneConnection = CxAnalytix.XForm.CxOneTransformer.Config.CxOneConnection;
@@ -94,7 +99,7 @@ namespace CxAnalytix.XForm.CxOneTransformer
         }
 
 
-        public override void DoTransform(CancellationToken token)
+        public override void DoTransform(CancellationToken outerToken)
         {
             var creds = Configuration.Impls.Config.GetConfig<CxApiTokenCredentials>();
 
@@ -110,154 +115,229 @@ namespace CxAnalytix.XForm.CxOneTransformer
 
             Context = restBuilder.Build();
 
-            QueryData = new(Context, token);
-            Predicates = new(Context, token);
+            CancellationTokenSource localToken = new();
 
-            ThreadOpts.CancellationToken = token;
-
-            _log.Debug("Starting CxOne transform");
-
-            ProjectsFetchTask = CxProjects.GetProjects(Context, token);
-            ApplicationsFetchTask = CxApplications.GetApplications(Context, token);
-
-            using (var groupsTask = CxGroups.GetGroups(Context, token))
-            using (var lastScansTask = CxProjects.GetProjectLatestCompletedScans(Context, token))
+            using (outerToken.Register(() => localToken?.Cancel()))
             {
 
-                _log.Debug("Resolving projects.");
-                var projectDescriptors = new ConcurrentBag<ProjectDescriptor>();
+                QueryData = new(Context, localToken.Token);
+                Predicates = new(Context, localToken.Token);
 
-                Parallel.ForEach(ProjectsFetchTask.Result, ThreadOpts, (p) =>
+                ThreadOpts.CancellationToken = localToken.Token;
+
+                _log.Debug("Starting CxOne transform");
+
+                ProjectsFetchTask = CxProjects.GetProjects(Context, localToken.Token);
+                ApplicationsFetchTask = CxApplications.GetApplications(Context, localToken.Token);
+
+                Task<IDictionary<String, Group>>? groupsTask = null;
+                Task<Dictionary<String, CxRestClient.CXONE.CxProjects.ScanDescriptor>>? lastScansTask = null;
+                Task<ScanMetadataIndex> scanMetadata = null;
+
+                List<Task> sweepTasks = new();
+
+                try
                 {
-                    ProjectConfigFetchTasks.TryAdd(p.ProjectId, CxConfiguration.GetProjectConfiguration(Context, ThreadOpts.CancellationToken, p.ProjectId));
-                    String groupsString = String.Join(",", p.Groups.ConvertAll((groupId) => groupsTask.Result[groupId].Path));
 
-                    // Projects don't need to have a team assignment, unlike in SAST
-                    if (!((p.Groups.Count == 0) ? Filter.Matches("", p.ProjectName)
-                        : p.Groups.Any((t) => Filter.Matches(groupsTask.Result[t].Path, p.ProjectName))))
+                    sweepTasks.Add(groupsTask = CxGroups.GetGroups(Context, localToken.Token));
+                    sweepTasks.Add(lastScansTask = CxProjects.GetProjectLatestCompletedScans(Context, localToken.Token));
+
+                    _log.Debug("Resolving projects.");
+
+                    State.ConfirmProjects(ResolveProjects(groupsTask));
+
+                    _log.Info($"{State.ProjectCount} projects are targets to check for new scans. Since last crawl: {State.DeletedProjects}"
+                        + $" projects removed, {State.NewProjects} new projects.");
+
+                    _log.Debug("Resolving scans.");
+
+                    var loadedScans = ResolveScans(lastScansTask);
+
+                    _log.Info($"Crawling {State.ScanCount} scans.");
+
+                    sweepTasks.Add(scanMetadata = CxSastScanMetadata.GetScanMetadata(Context, localToken.Token, ThreadOpts, State.ScopeScanIds));
+
+                    Parallel.ForEach<ProjectDescriptor>(State.Projects, ThreadOpts,
+                    (project) =>
                     {
-                        if (_log.IsDebugEnabled)
-                            _log.Debug($"FILTERED: Project: [{p.ProjectName}] with assigned groups " +
-                                $"[{groupsString}]");
-                        return;
-                    }
-                    else
-                    {
-                        projectDescriptors.Add(new ProjectDescriptor()
-                        {
-                            ProjectId = p.ProjectId,
-                            ProjectName = p.ProjectName,
-                            TeamName = groupsString,
-                            PresetName = ProjectConfigFetchTasks[p.ProjectId].Result.Preset
+                        if (State.GetScanCountForProject(project.ProjectId) <= 0)
+                            return;
 
-                        });
-                    }
-                });
+                        CancellationTokenSource loopToken = new();
+                        Task<IndexedRiskStates> sca_risk_states = null;
 
-                State.ConfirmProjects(projectDescriptors);
-
-                _log.Info($"{State.ProjectCount} projects are targets to check for new scans. Since last crawl: {State.DeletedProjects}"
-                    + $" projects removed, {State.NewProjects} new projects.");
-
-                _log.Debug("Resolving scans.");
-
-                var loadedScans = new CxScans.ScanIndex();
-
-
-                Parallel.ForEach(State.Projects, ThreadOpts, (projDescriptor) =>
-                {
-                    if (!lastScansTask.Result.ContainsKey(projDescriptor.ProjectId))
-                    {
-                        _log.Info($"Project {projDescriptor.ProjectId}:{projDescriptor.TeamName}:{projDescriptor.ProjectName} contains no scans.");
-                        return;
-                    }
-
-                    var latestScanDateForProject = lastScansTask.Result[projDescriptor.ProjectId].Completed;
-
-                    // This skips some API I/O since we know the last scan date of some projects.
-                    if (projDescriptor.LastScanCheckDate.CompareTo(latestScanDateForProject) < 0)
-                    {
-                        using (var scanCollection = CxScans.GetCompletedScans(Context, ThreadOpts.CancellationToken, projDescriptor.ProjectId))
-                        {
-                            foreach (var s in scanCollection.Result.Scans)
+                        using (ThreadOpts.CancellationToken.Register(() => loopToken?.Cancel()))
+                            try
                             {
-                                // Add to crawl state.
-                                if (_log.IsTraceEnabled())
-                                    _log.Trace($"CxOne scan record: {s}");
+                                sca_risk_states = CxScanResults.GetScaRiskStates(Context, loopToken.Token, project.ProjectId);
 
-                                State.AddScan(Convert.ToString(s.ProjectId), s.ScanType, ScanProductType.CXONE, s.ScanId, s.Updated, s.EnginesAsString);
-                                TrackScanEngineStats(projDescriptor.ProjectId, s);
+                                using (var pinfoTrx = Output.StartTransaction())
+                                {
+                                    OutputProjectInfoRecords(pinfoTrx, project);
+
+                                    if (!loopToken.IsCancellationRequested)
+                                        pinfoTrx.Commit();
+                                }
+
+
+                                foreach (var scan in State.GetScansForProject(project.ProjectId))
+                                {
+                                    if (loopToken.IsCancellationRequested)
+                                        break;
+
+
+                                    using (var scanTrx = Output.StartTransaction())
+                                    {
+                                        var projid = (scan.Project == null) ? "Unknown ProjectId" : scan.Project.ProjectId;
+                                        var projname = (scan.Project == null) ? "Unknown Project Name" : scan.Project.ProjectName;
+
+                                        _log.Info($"Processing {scan.ScanProduct} scan [{scan.ScanId}] for project [{projname}]" +
+                                            $" assigned to team(s) [{scan.Project.TeamName}]" +
+                                            $" finished [{scan.FinishedStamp}]");
+
+                                        Task<ResultsCollection> rpt = null;
+                                        rpt = CxScanResults.GetScanResults(Context, loopToken.Token, scan.ScanId);
+
+                                        try
+                                        {
+                                            if (rpt.Result.SastResults != null && rpt.Result.SastResults.Count > 0)
+                                                OutputSastScanResults(scanTrx, project, scan, loadedScans, rpt.Result.SastResults, scanMetadata.Result[scan.ScanId]);
+
+                                            if (rpt.Result.ScaResults != null && rpt.Result.ScaResults.Count > 0)
+                                                OutputScaScanResults(scanTrx, project, scan, loadedScans, rpt.Result.ScaResults, sca_risk_states.Result);
+
+                                            if (!loopToken.IsCancellationRequested && scanTrx.Commit())
+                                                State.ScanCompleted(scan);
+                                        }
+                                        catch (Exception ex)
+                                        {
+                                            if (loopToken != null)
+                                                loopToken.Cancel();
+
+                                            throw new ScanCrawlException(scan.ScanId, project.ProjectName, project.TeamName, ex);
+                                        }
+                                        finally
+                                        {
+                                            if (rpt != null)
+                                            {
+                                                rpt.SafeWaitToEnd();
+                                                rpt.DisposeTask();
+                                            }
+                                        }
+                                    }
+                                }
                             }
+                            catch (ScanCrawlException uex)
+                            {
+                                loopToken.Cancel();
+                                _log.Error($"Scan crawling stopped for project id [{project.ProjectId}].", uex);
+                            }
+                            catch (Exception)
+                            {
+                                loopToken.Cancel();
+                                throw;
+                            }
+                            finally
+                            {
 
-                            loadedScans.SyncCombine(scanCollection.Result.Scans);
-                        }
-                    }
-                    else
-                        _log.Info($"Project {projDescriptor.ProjectId}:{projDescriptor.TeamName}:{projDescriptor.ProjectName} has no new scans to process.");
-                });
-
-                if (State.Projects == null)
+                                if (sca_risk_states != null)
+                                {
+                                    sca_risk_states.SafeWaitToEnd();
+                                    sca_risk_states.DisposeTask();
+                                }
+                            }
+                    });
+                }
+                catch (Exception)
                 {
-                    _log.Error("Scans to crawl do not appear to be resolved, unable to crawl scan data.");
+                    localToken.Cancel();
+                    throw;
+                }
+                finally
+                {
+                    sweepTasks.SafeWaitAllToEnd();
+                    sweepTasks.DisposeTasks();
+                }
+            }
+        }
+
+
+        private CxScans.ScanIndex ResolveScans(Task<Dictionary<String, CxRestClient.CXONE.CxProjects.ScanDescriptor>> lastScansTask)
+        {
+            var loadedScans = new CxScans.ScanIndex();
+
+            Parallel.ForEach(State.Projects, ThreadOpts, (projDescriptor) =>
+            {
+                if (!lastScansTask.Result.ContainsKey(projDescriptor.ProjectId))
+                {
+                    _log.Info($"Project {projDescriptor.ProjectId}:{projDescriptor.TeamName}:{projDescriptor.ProjectName} contains no scans.");
                     return;
                 }
 
-                _log.Info($"Crawling {State.ScanCount} scans.");
+                var latestScanDateForProject = lastScansTask.Result[projDescriptor.ProjectId].Completed;
 
-
-
-                var scanMetadata = CxSastScanMetadata.GetScanMetadata(Context, token, ThreadOpts, State.ScopeScanIds);
-
-                Parallel.ForEach<ProjectDescriptor>(State.Projects, ThreadOpts,
-                (project) =>
+                // This skips some API I/O since we know the last scan date of some projects.
+                if (projDescriptor.LastScanCheckDate.CompareTo(latestScanDateForProject) < 0)
                 {
-                    if (State.GetScanCountForProject(project.ProjectId) <= 0)
-                        return;
-
-                    using (var sca_risk_states = CxScanResults.GetScaRiskStates(Context, ThreadOpts.CancellationToken, project.ProjectId))
+                    using (var scanCollection = CxScans.GetCompletedScans(Context, ThreadOpts.CancellationToken, projDescriptor.ProjectId))
                     {
-
-                        using (var pinfoTrx = Output.StartTransaction())
+                        foreach (var s in scanCollection.Result.Scans)
                         {
-                            OutputProjectInfoRecords(pinfoTrx, project);
+                            // Add to crawl state.
+                            if (_log.IsTraceEnabled())
+                                _log.Trace($"CxOne scan record: {s}");
 
-                            if (!ThreadOpts.CancellationToken.IsCancellationRequested)
-                                pinfoTrx.Commit();
+                            State.AddScan(Convert.ToString(s.ProjectId), s.ScanType, ScanProductType.CXONE, s.ScanId, s.Updated, s.EnginesAsString);
+                            TrackScanEngineStats(projDescriptor.ProjectId, s);
                         }
 
-
-                        foreach (var scan in State.GetScansForProject(project.ProjectId))
-                        {
-                            if (ThreadOpts.CancellationToken.IsCancellationRequested)
-                                break;
-
-
-                            using (var scanTrx = Output.StartTransaction())
-                            {
-                                var projid = (scan.Project == null) ? "Unknown ProjectId" : scan.Project.ProjectId;
-                                var projname = (scan.Project == null) ? "Unknown Project Name" : scan.Project.ProjectName;
-
-                                _log.Info($"Processing {scan.ScanProduct} scan {scan.ScanId}:{projid}:{projname}[{scan.FinishedStamp}]");
-
-                                using (var rpt = CxScanResults.GetScanResults(Context, ThreadOpts.CancellationToken, scan.ScanId))
-                                {
-
-                                    if (rpt.Result.SastResults != null && rpt.Result.SastResults.Count > 0)
-                                        OutputSastScanResults(scanTrx, project, scan, loadedScans, rpt.Result.SastResults, scanMetadata.Result[scan.ScanId]);
-
-                                    if (rpt.Result.ScaResults != null && rpt.Result.ScaResults.Count > 0)
-                                        OutputScaScanResults(scanTrx, project, scan, loadedScans, rpt.Result.ScaResults, sca_risk_states.Result);
-                                    else
-                                        sca_risk_states.Wait();
-
-                                    if (!ThreadOpts.CancellationToken.IsCancellationRequested && scanTrx.Commit())
-                                        State.ScanCompleted(scan);
-                                }
-                            }
-                        }
+                        loadedScans.SyncCombine(scanCollection.Result.Scans);
                     }
-                });
-            }
+                }
+                else
+                    _log.Info($"Project {projDescriptor.ProjectId}:{projDescriptor.TeamName}:{projDescriptor.ProjectName} has no new scans to process.");
+            });
+
+            if (State.Projects == null)
+                throw new UnrecoverableOperationException ("Scans to crawl do not appear to be resolved, unable to crawl scan data.");
+
+            return loadedScans;
+        }
+
+
+
+
+        private ConcurrentBag<ProjectDescriptor> ResolveProjects(Task<IDictionary<string, Group>>? groupsTask)
+        {
+            var projectDescriptors = new ConcurrentBag<ProjectDescriptor>();
+
+            Parallel.ForEach(ProjectsFetchTask.Result, ThreadOpts, (p) =>
+            {
+                ProjectConfigFetchTasks.TryAdd(p.ProjectId, CxConfiguration.GetProjectConfiguration(Context, ThreadOpts.CancellationToken, p.ProjectId));
+                String groupsString = String.Join(",", p.Groups.ConvertAll((groupId) => groupsTask.Result[groupId].Path));
+
+                // Projects don't need to have a team assignment, unlike in SAST
+                if (!((p.Groups.Count == 0) ? Filter.Matches("", p.ProjectName)
+                    : p.Groups.Any((t) => Filter.Matches(groupsTask.Result[t].Path, p.ProjectName))))
+                {
+                    if (_log.IsDebugEnabled)
+                        _log.Debug($"FILTERED: Project: [{p.ProjectName}] with assigned groups " +
+                            $"[{groupsString}]");
+                    return;
+                }
+                else
+                {
+                    projectDescriptors.Add(new ProjectDescriptor()
+                    {
+                        ProjectId = p.ProjectId,
+                        ProjectName = p.ProjectName,
+                        TeamName = groupsString,
+                        PresetName = ProjectConfigFetchTasks[p.ProjectId].Result.Preset
+
+                    });
+                }
+            });
+            return projectDescriptors;
         }
 
         protected override void AddAdditionalProjectInfo(IDictionary<string, object> here, string projectId)
@@ -546,12 +626,19 @@ namespace CxAnalytix.XForm.CxOneTransformer
             if (Predicates != null)
                 Predicates.Dispose();
 
-            ProjectsFetchTask = ProjectsFetchTask.DisposeTask();
-            ApplicationsFetchTask = ApplicationsFetchTask.DisposeTask();
+            ProjectsFetchTask.SafeWaitToEnd();
 
             foreach (var key in ProjectConfigFetchTasks.Keys)
+            {
+                ProjectConfigFetchTasks[key].SafeWaitToEnd();
                 ProjectConfigFetchTasks[key] = ProjectConfigFetchTasks[key].DisposeTask();
-            ProjectConfigFetchTasks = null;
+            }
+
+            ProjectsFetchTask = ProjectsFetchTask.DisposeTask();
+
+            ApplicationsFetchTask.SafeWaitToEnd();
+            ApplicationsFetchTask = ApplicationsFetchTask.DisposeTask();
+
 
         }
     }

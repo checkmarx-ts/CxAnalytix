@@ -131,6 +131,13 @@ CxAnalytix requires a SAST service account to authenticate with the SAST APIs to
     \begin{itemize}
         \item SAST->Project \& Scans->Save Sast Scan
         \item Reports->Generate Scan Reports
+        \item Scan Results->View Results
+    \end{itemize}
+
+    \item If you have \hyperref[sec:connection]{configured any APIs to use OData}, 
+    the CxAnalytix role should have the following additional permissions:
+    \begin{itemize}
+		\item API->Use Odata
     \end{itemize}
 
 \end{itemize}
@@ -142,7 +149,7 @@ CxAnalytix requires an SCA service account authenticate with the SCA APIs to cra
 \begin{itemize}
     \item The service account should be assigned at a team level that allows visibility to all projects that require crawling. 
     Usually this is the \verb|/CxServer|
-    team but will depend on your configured team heirarchy. Any projects assigned to teams above or at a sibling level of the service account's assigned team 
+    team but will depend on your configured team hierarchy. Any projects assigned to teams above or at a sibling level of the service account's assigned team 
     will not be visible to crawling requests.
 
     \item A role named CxAnalytix should be created and assigned to the service account user. The role should have the following minimum permissions:

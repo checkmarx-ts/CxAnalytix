@@ -11,7 +11,7 @@ namespace CxAnalytix.Executive
 {
     public class ExecuteLoop : ExecuteOnce
     {
-        private static readonly ILog appLog = LogManager.GetLogger(typeof(ExecuteLoop));
+        private static readonly ILog _log = LogManager.GetLogger(typeof(ExecuteLoop));
 
         public static new void Execute(CancellationTokenSource t)
         {
@@ -35,19 +35,23 @@ namespace CxAnalytix.Executive
                 }
                 catch (Exception ex)
                 {
-                    appLog.Error("Vulnerability data transformation aborted due to unhandled exception.", ex);
+                    _log.Error("Vulnerability data transformation aborted due to unhandled exception.", ex);
                 }
 
 
                 GC.Collect();
 
-                Task.Delay(Service.ProcessPeriodMinutes * 60 * 1000, t.Token).Wait();
+                using (var delay = Task.Delay(Service.ProcessPeriodMinutes * 60 * 1000, t.Token))
+                    delay.Wait(t.Token);
+
             } while (!t.Token.IsCancellationRequested);
+
+            _log.Info("Execution complete, ending.");
 
         }
         private static void Fatal(Exception ex, CancellationTokenSource ct)
         {
-            appLog.Error("Fatal exception caught, program ending.", ex);
+            _log.Error("Fatal exception caught, program ending.", ex);
             ct.Cancel();
             Process.GetCurrentProcess().Kill(true);
 

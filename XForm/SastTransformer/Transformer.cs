@@ -326,7 +326,8 @@ namespace CxAnalytix.XForm.SastTransformer
 
 			_sastVersionTask = GetSASTVersion();
 
-            var projectsTask = Task.Run(() => CxProjects.GetProjects(RestContext, ThreadOpts.CancellationToken), ThreadOpts.CancellationToken);
+            var projectsTask = Task.Run(() => CxProjects.GetProjects(RestContext, ThreadOpts.CancellationToken, 
+				Config.GetConfig<CxSASTConnection>().Overrides.Project), ThreadOpts.CancellationToken);
 
 			Policies = await policyTask;
 			Teams = await teamsTask;

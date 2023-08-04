@@ -64,6 +64,16 @@ namespace CxAnalytix.Executive
             return retVal;
         }
 
+        private static void LogExceptionAsError(int counter, Exception ex)
+        {
+            if (ex == null)
+                return;
+
+            _log.Error($"Exception Level {counter}", ex);
+
+            LogExceptionAsError(counter++, ex.InnerException);
+        }
+
         public static void Execute(CancellationTokenSource? t = null)
         {
             using (var scope = _xformersContainer.BeginLifetimeScope())
@@ -92,6 +102,22 @@ namespace CxAnalytix.Executive
                     try
                     {
                         xformer.DoTransform(t.Token);
+                    }
+                    catch (AggregateException aex)
+                    {
+                        _log.Error($"Unhandled exception when executing transformer module: {xformer.DisplayName}", aex);
+                        int counter = 0;
+
+
+                        foreach(var ex in aex.InnerExceptions)
+                        {
+                            _log.Error($"-- BEGIN AGGREGATE EXCEPTION {++counter} --");
+
+                            LogExceptionAsError(0, ex);
+
+                            _log.Error($"-- END AGGREGATE EXCEPTION {counter} --");
+                        }
+
                     }
                     catch (Exception ex)
                     {

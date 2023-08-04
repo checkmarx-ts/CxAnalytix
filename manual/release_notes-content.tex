@@ -1,3 +1,25 @@
+\section{2.1.2}
+
+\subsection*{FEATURES}
+    \begin{itemize}
+        \item CheckmarxOne crawl stabilization.
+        \item SAST scan statistic record retrieval stabilization.
+    \end{itemize}
+
+
+\subsection*{UPDATES}
+\begin{itemize}
+    \item Issue 225 - Documentation updates for required SAST user roles.
+    \\\\Additional roles are required to allow retrieval of the scan statistics data.
+
+    \item The OData API can be used in lieu of the REST API for some scenarios where the
+    REST API performs poorly.
+    \\\\Please review the configuration documentation sections to understand any limitations
+    introduced by using the OData API.  Additional security roles may be needed for
+    your service account to be able to use the OData API; please review the deployment
+    documentation to understand any required security role changes.
+\end{itemize}
+
 \section{2.1.1}
 
 \subsection*{FEATURES}

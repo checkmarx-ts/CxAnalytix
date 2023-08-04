@@ -71,8 +71,9 @@ Configuring a connection to Checkmarx SAST requires the elements \texttt{CxSASTC
     mnoURL=""
     TimeoutSeconds="" 
     ValidateCertificates="true"
-    RetryLoop=""
-    />
+    RetryLoop="">
+    <UseOdata Projects="" />
+</CxSASTConnection>
 \end{xml}
 
 \begin{table}[h]
@@ -90,6 +91,32 @@ Configuring a connection to Checkmarx SAST requires the elements \texttt{CxSASTC
         \texttt{ValidateCertificates} & True & No & \makecell[l]{Validate SSL certificates for\\API endpoints.}\\
         \midrule
         \texttt{RetryLoop} & 0 & No & \makecell[l]{The number of retries for an API operation\\after the operation times out.}\\
+        \bottomrule
+    \end{tabularx}
+\end{table}
+
+\noindent\\The sub-element \texttt{UseOdata} is optional.  The properties for the element indicate
+when some API I/O should be done using the OData API instead of the REST API. This may be used
+in cases where REST APIs are performing poorly due to the size of the response payload.
+\footnote{It is recommended to avoid using the OData API unless there are no other options.}
+
+\noindent\\Note that using the Odata API introduces the following limitations:
+
+\begin{itemize}
+    \item Project
+    \begin{itemize}
+        \item Branch projects no longer export any branch information.  The branch information is
+        not available via the Odata API.
+    \end{itemize}
+\end{itemize}
+
+\begin{table}[h]
+    \caption{UseOdata Attributes}        
+    \begin{tabularx}{\textwidth}{cccl}
+        \toprule
+        \textbf{Attribute} & \textbf{Default} & \textbf{Required} & \textbf{Description}\\
+        \midrule
+        \texttt{Project} & False & No & \makecell[l]{Use the Odata API to retrieve SAST projects.}\\
         \bottomrule
     \end{tabularx}
 \end{table}

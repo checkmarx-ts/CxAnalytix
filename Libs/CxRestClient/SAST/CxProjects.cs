@@ -18,7 +18,11 @@ namespace CxRestClient.SAST
     {
         private static ILog _log = LogManager.GetLogger(typeof(CxProjects));
 
-        private static String URL_SUFFIX = "cxrestapi/projects";
+        private static readonly String REST_URL_SUFFIX = "cxrestapi/projects";
+
+        private static readonly int ODATA_TOP = 25;
+        private static readonly String ODATA_URL_SUFFIX = "cxwebinterface/odata/v1/Projects?$expand=CustomFields&$select=OwningTeamId,PresetId,Id,Name,IsPublic" +
+            $"&$orderby=Id asc&$top={ODATA_TOP}";
 
         private static String _apiVersion = null;
 
@@ -41,13 +45,32 @@ namespace CxRestClient.SAST
         private CxProjects()
         { }
 
+        #region DTOs
+
         [JsonObject(MemberSerialization.OptIn)]
         public class ProjectCustomFields
         {
             [JsonProperty(PropertyName = "name")]
             public String FieldName { get; internal set; }
+
+            [JsonProperty(PropertyName = "FieldName")]
+            private String odata_FieldName
+            {
+                get => FieldName;
+                set => FieldName = value;
+            }
+
+
             [JsonProperty(PropertyName = "value")]
             public String FieldValue { get; internal set; }
+
+            [JsonProperty(PropertyName = "FieldValue")]
+            private String odata_FieldValue
+            {
+                get => FieldValue;
+                set => FieldValue = value;
+            }
+
         }
 
         [JsonObject(MemberSerialization.OptIn)]
@@ -55,15 +78,61 @@ namespace CxRestClient.SAST
         {
             [JsonProperty(PropertyName = "teamId")]
             public String TeamId { get; internal set; }
+            [JsonProperty(PropertyName = "OwningTeamId")]
+            private String odata_TeamId
+            {
+                get => TeamId;
+                set => TeamId = value;
+            }
+
+
+
             public int PresetId { get; internal set; }
+
+
             [JsonProperty(PropertyName = "id")]
             public int ProjectId { get; internal set; }
+            [JsonProperty(PropertyName = "Id")]
+            private int odata_ProjectId
+            {
+                get => ProjectId;
+                set => ProjectId = value;
+            }
+
+
             [JsonProperty(PropertyName = "name")]
             public String ProjectName { get; internal set; }
+            [JsonProperty(PropertyName = "Name")]
+            private String odata_ProjectName
+            {
+                get => ProjectName;
+                set => ProjectName = value;
+            }
+
+
+
+
             [JsonProperty(PropertyName = "isPublic")]
             public bool IsPublic { get; internal set; }
+            [JsonProperty(PropertyName = "IsPublic")]
+            private bool odata_IsPublic
+            {
+                get => IsPublic;
+                set => IsPublic = value;
+            }
+
+
+
             [JsonProperty(PropertyName = "customFields")]
             public List<ProjectCustomFields> CustomFields { get; internal set; }
+            [JsonProperty(PropertyName = "CustomFields")]
+            private List<ProjectCustomFields> odata_CustomFields
+            {
+                get => CustomFields;
+                set => CustomFields = value;
+            }
+
+
 
             [JsonProperty(PropertyName = "isBranched")]
             public bool IsBranched { get; internal set; }
@@ -78,6 +147,7 @@ namespace CxRestClient.SAST
             public override string ToString() =>
                 $"{ProjectId}:{ProjectName} [TeamId: {TeamId} Public: {IsPublic} CustomFields: {CustomFields.Count}]";
 		}
+        #endregion
 
         private class ProjectReader : IEnumerable<Project>, IEnumerator<Project>, IDisposable
         {
@@ -161,12 +231,57 @@ namespace CxRestClient.SAST
             {
                 throw new NotImplementedException();
             }
-
-
         }
 
+        private static IEnumerable<Project> GetProjects_odata(CxSASTRestContext ctx, CancellationToken token)
+        {
+            List<Project> returnedResults = new();
 
-        public static IEnumerable<Project> GetProjects(CxSASTRestContext ctx, CancellationToken token)
+            var filter = new Dictionary<String, String>();
+            List<Project> fetchedPage = null;
+
+            do
+            {
+                String requestUrl = UrlUtils.MakeUrl(ctx.Sast.ApiUrl, ODATA_URL_SUFFIX, filter);
+
+                using (var projectReader = WebOperation.ExecuteGet<ProjectReader>(
+                ctx.Sast.Json.CreateClient
+                , (response) =>
+                {
+                    using (var sr = new StreamReader(response.Content.ReadAsStreamAsync().Result))
+                    using (var jtr = new JsonTextReader(sr))
+                    {
+                        JToken jt = JToken.Load(jtr);
+
+                        return new ProjectReader(jt["value"], ctx, token);
+                    }
+                }
+                , requestUrl
+                , ctx.Sast
+                , token))
+                    fetchedPage = new List<Project>(projectReader);
+
+                if (fetchedPage != null)
+                {
+                    returnedResults.AddRange(fetchedPage);
+                    filter["$filter"] = $"id gt {fetchedPage[fetchedPage.Count - 1].ProjectId}";
+                }
+
+
+            } while (fetchedPage != null && fetchedPage.Count == ODATA_TOP);
+
+            return returnedResults;
+        }
+
+        public static IEnumerable<Project> GetProjects(CxSASTRestContext ctx, CancellationToken token, bool useOData)
+        {
+            if (useOData)
+                return GetProjects_odata(ctx, token);
+            else
+                return GetProjects_rest(ctx, token);
+        }
+
+        private static IEnumerable<Project> GetProjects_rest(CxSASTRestContext ctx, CancellationToken token)
         {
             using (var projectReader = WebOperation.ExecuteGet<ProjectReader>(
             ctx.Sast.Json.CreateClient
@@ -180,7 +295,7 @@ namespace CxRestClient.SAST
                     return new ProjectReader(jt, ctx, token);
                 }
             }
-            , UrlUtils.MakeUrl(ctx.Sast.ApiUrl, URL_SUFFIX)
+            , UrlUtils.MakeUrl(ctx.Sast.ApiUrl, REST_URL_SUFFIX)
             , ctx.Sast
             , token, apiVersion: GetApiVersion(ctx, token) ))
                 return new List<Project>(projectReader);
