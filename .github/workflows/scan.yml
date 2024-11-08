@@ -25,7 +25,6 @@ jobs:
           cx-tenant: ${{ secrets.CXONE_TENANT }}
           cx-client-id: ${{ secrets.CXONE_CLIENT_ID }}
           cx-client-secret: ${{ secrets.CXONE_CLIENT_SECRET }}
-          cx-cli-debug: true
           build-container-tag: mcr.microsoft.com/dotnet/sdk:6.0
           upload-sarif-file: false
         
