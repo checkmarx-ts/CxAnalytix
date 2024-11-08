@@ -1,0 +1,31 @@
+name: Checkmarx One Scan
+on: 
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+jobs:
+  execute-checkmarx-scan:
+    permissions:
+      security-events: write
+      contents: read
+      pull-requests: write
+      statuses: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch Code
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+  
+      - name: Scan with CxOne++ Action
+        id: scan
+        uses: checkmarx-ts/cxone-plusplus-github-action@v2
+        with:
+          cx-tenant: ${{ secrets.CXONE_TENANT }}
+          cx-client-id: ${{ secrets.CXONE_CLIENT_ID }}
+          cx-client-secret: ${{ secrets.CXONE_CLIENT_SECRET }}
+          cx-cli-debug: true
+          build-container-tag: mcr.microsoft.com/dotnet/sdk:6.0
+          upload-sarif-file: false
+        
