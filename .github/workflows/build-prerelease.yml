@@ -10,7 +10,7 @@ on:
       
 jobs:
   create-tag:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     outputs:
       tag: ${{ steps.create-tag.outputs.tag }}
     steps:
@@ -18,20 +18,20 @@ jobs:
         run: echo ::set-output name=tag::${{ github.event.inputs.version }}-$GITHUB_RUN_NUMBER-prerelease
         id: create-tag
       - name: Tag repo v${{ steps.create-tag.outputs.tag }}
-        uses: richardsimko/update-tag@v1
+        uses: richardsimko/update-tag@aab2434e9a5040687874aa39d1c6377ec0cb0d94 # v1.1.6
         with:
           tag_name: v${{ steps.create-tag.outputs.tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           
   remove-tag-on-failure:
-    runs-on: ubuntu-latest
+    runs-on: cx-public-ubuntu-x64
     if: always()
     needs: [create-tag, publish-prerelease]
     steps:
-      - uses: technote-space/workflow-conclusion-action@v2
+      - uses: technote-space/workflow-conclusion-action@482bb0dbebad067b3b26ca4f6222c4023cf51ccf # v2.2.2
       - name: Fetch Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
         if: env.WORKFLOW_CONCLUSION == 'failure'
       - name: Remove Prerelease Tag
         run: git push origin ':refs/tags/v${{ needs.create-tag.outputs.tag }}'
