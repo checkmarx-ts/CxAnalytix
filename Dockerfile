@@ -1,4 +1,4 @@
-FROM debian:stable-slim
+FROM debian:stable-slim@sha256:5012d0517aa0075a7150a45aae67586641e898913b7af3b08228108565b5f90c
 
 ARG CHECKMARX_STATE_PATH=/var/cxanalytix
 
